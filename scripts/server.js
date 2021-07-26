@@ -22,8 +22,15 @@ app.listen(3000, function () {
 
 function asyncResponse(asyncFn, contentType = "text/javascript") {
   return async (req, res) => {
-    const content = await asyncFn();
-    res.type(contentType);
-    res.end(content);
+    // console.log("request", req.url);
+    try {
+      const content = await asyncFn();
+      res.type(contentType);
+      res.send(content);
+      res.end();
+    } catch (e) {
+      res.status(500);
+      res.end(e.message);
+    }
   };
 }

@@ -1,0 +1,49 @@
+html,
+body {
+  font-family: Helvetica, Tahoma, Verdana, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+.case-wrapper {
+  border-left: 4px solid #ccc;
+  display: grid;
+  gap: 10px 5px;
+  grid-template:
+    "header header header"
+    "content instrumented-log react-log";
+  grid-template-columns: 1fr 1fr 1fr;
+  margin: 10px 0;
+}
+
+.case-wrapper h2 {
+  grid-area: header;
+  margin: 0;
+  padding: 4px 10px;
+  font-size: 18px;
+  font-weight: normal;
+  color: #09d;
+  background-color: #e0e0e0;
+}
+
+.case-wrapper .content {
+  grid-area: content;
+  padding-left: 10px;
+}
+
+.case-wrapper .instrumented-log {
+  grid-area: instrumented-log;
+}
+
+.case-wrapper .react-log {
+  grid-area: react-log;
+}
+
+.case-wrapper .instrumented-log h3,
+.case-wrapper .react-log h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+}

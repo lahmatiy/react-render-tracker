@@ -10,8 +10,10 @@ const publisher = rempl.createPublisher(
   }
 );
 
-console.log("publisher");
 export default function (React) {
+  if (React.default) {
+    React = React.default;
+  }
   console.log("Will attach to ", React);
   publisher.publish("Hello from app/publisher. React version " + React.version);
 }
