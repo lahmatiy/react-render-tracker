@@ -1,0 +1,31 @@
+{
+  "name": "react-render-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node scripts/server",
+    "build": "node scripts/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lahmatiy/react-render-tracker.git"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lahmatiy/react-render-tracker/issues"
+  },
+  "homepage": "https://github.com/lahmatiy/react-render-tracker#readme",
+  "dependencies": {
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "rempl": "^1.0.0-alpha.19"
+  },
+  "devDependencies": {
+    "esbuild": "^0.12.16",
+    "eslint": "^7.31.0",
+    "express": "^4.17.1",
+    "prettier": "^2.3.2"
+  }
+}
