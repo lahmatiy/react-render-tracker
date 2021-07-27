@@ -46,7 +46,7 @@ export default function (testcase: TestCase) {
         case "childList":
           for (const node of mutation.addedNodes) {
             const target = node as HTMLElement;
-            if (target.hasAttribute("data-send-event")) {
+            if (target.hasAttribute(emulateEventAttribute)) {
               emulateEvent(target);
             }
           }
@@ -58,7 +58,7 @@ export default function (testcase: TestCase) {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["data-send-event"],
+    attributeFilter: [emulateEventAttribute],
   });
 
   return {
