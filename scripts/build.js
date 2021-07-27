@@ -12,7 +12,7 @@ exports.buildPlayground = async function (config) {
     ...config,
   });
 
-  if (result.outputFiles?.length) {
+  if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
 };
@@ -26,7 +26,7 @@ exports.buildSubscriber = async function (config) {
     ...config,
   });
 
-  if (result.outputFiles?.length) {
+  if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
 };
@@ -41,7 +41,7 @@ exports.buildPublisher = async function (config) {
     ...config,
   });
 
-  if (result.outputFiles?.length) {
+  if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
 };
