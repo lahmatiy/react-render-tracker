@@ -1,6 +1,21 @@
 import { createElement } from "./dom-utils.js";
 import { TestCase } from "./types.js";
 
+const emulateEventAttribute = "data-send-event";
+
+function emulateEvent(target: HTMLElement) {
+  const value = target.getAttribute(emulateEventAttribute);
+  switch (value) {
+    case "click":
+      target.click();
+      break;
+    default:
+      console.warn(
+        `Unknown event type "${value}" in "${emulateEventAttribute}" attribute`
+      );
+  }
+}
+
 export default function (testcase: TestCase) {
   let contentEl;
   let instrumentedEl;
@@ -19,6 +34,32 @@ export default function (testcase: TestCase) {
   ]);
 
   document.body.append(el);
+
+  const observer = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      switch (mutation.type) {
+        case "attributes":
+          if (mutation.attributeName === emulateEventAttribute) {
+            emulateEvent(mutation.target as HTMLElement);
+          }
+          break;
+        case "childList":
+          for (const node of mutation.addedNodes) {
+            const target = node as HTMLElement;
+            if (target.hasAttribute("data-send-event")) {
+              emulateEvent(target);
+            }
+          }
+          break;
+      }
+    }
+  });
+  observer.observe(contentEl, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-send-event"],
+  });
 
   return {
     container: contentEl,
