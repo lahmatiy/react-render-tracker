@@ -11,22 +11,35 @@ function Child() {
   return <>{context}</>;
 }
 
-function Root() {
+function MyContextProvider({ children }) {
   const { useState } = useTrackRender();
   const [value, setValue] = useState(0);
 
-  setTimeout(() => {
-    if (value < 2) {
-      setValue(value + 1);
-    }
-  }, 10);
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      if (value < 2) {
+        setValue(value + 1);
+      }
+    }, 10);
+    return () => clearTimeout(t);
+  }, [value]);
 
   return (
     <MyContext.Provider
       value={value === 2 ? "OK" : "Fail: waiting for context change"}
     >
-      <Child />
+      {children}
     </MyContext.Provider>
+  );
+}
+
+function Root() {
+  useTrackRender();
+
+  return (
+    <MyContextProvider>
+      <Child />
+    </MyContextProvider>
   );
 }
 
