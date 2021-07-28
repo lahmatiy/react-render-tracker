@@ -6,7 +6,7 @@ const ElementName = ({ data, children, isSelected }) => {
     <span className={`tree-element__name ${isSelected ? "selected" : ""}`}>
       {children}
       <span className="tree-element__bracket">&lt;</span>
-      {data.name}
+      {data.displayName || 'Unknown'}
       <span className="tree-element__bracket">&gt;</span>
       <ElementId id={data.id} />
     </span>

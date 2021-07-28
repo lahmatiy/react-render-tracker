@@ -15,7 +15,7 @@ const ElementInfo = ({ data }) => {
             </tr>
           </thead>
           <tbody>
-            {data.lifecycle.map((event, i) => (
+            {data.lifecycle?.map((event, i) => (
               <tr key={event.timestamp + i}>
                 <td>{event.timestamp}</td>
                 <td>{event.phase}</td>

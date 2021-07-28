@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 
-import { handleFilterDataElement } from "./data/helpers";
+import { getTreeData, handleFilterDataElement } from "./data/helpers";
 
 import TreeElement from "./components/TreeElement";
 import ElementInfo from "./components/element/ElementInfo";
@@ -12,7 +12,9 @@ function App({ data }) {
   const [searched, setSearched] = useState("");
 
   const filteredData = useMemo(() => {
-    return handleFilterDataElement(data, searched);
+    if (!data) return null;
+    const parsedData = getTreeData(data);
+    return handleFilterDataElement(parsedData, searched);
   }, [data, searched]);
 
   return (
