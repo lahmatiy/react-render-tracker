@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ChevronDown } from 'react-feather';
+import React, { useState } from "react";
+import ChevronDown from "react-feather/dist/icons/chevron-down";
 
-import ElementName from './element/ElementName';
+import ElementName from "./element/ElementName";
 
 const TreeElement = ({ data, onSelect, root, selectedId }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -9,27 +9,36 @@ const TreeElement = ({ data, onSelect, root, selectedId }) => {
   const handleSelect = event => {
     event.stopPropagation();
     onSelect(data);
-  }
+  };
 
-  let classes = 'tree-element__container';
-  if (root) classes += ' root';
+  let classes = "tree-element__container";
+  if (root) classes += " root";
 
   const handleToggle = () => {
     setIsCollapsed(prev => !prev);
-  }
+  };
 
   return (
     <div className={classes} onClick={handleSelect}>
       <ElementName data={data} isSelected={selectedId === data.id}>
-        <button className={`tree-element__toggle ${isCollapsed ? 'open' : ''}`} onClick={handleToggle}>
+        <button
+          className={`tree-element__toggle ${isCollapsed ? "open" : ""}`}
+          onClick={handleToggle}
+        >
           <ChevronDown />
         </button>
       </ElementName>
-      {isCollapsed && data.children.map(child => (
-        <TreeElement data={child} key={child.id} onSelect={onSelect} selectedId={selectedId} />
-      ))}
+      {isCollapsed &&
+        data.children.map(child => (
+          <TreeElement
+            data={child}
+            key={child.id}
+            onSelect={onSelect}
+            selectedId={selectedId}
+          />
+        ))}
     </div>
-  )
-}
+  );
+};
 
 export default TreeElement;

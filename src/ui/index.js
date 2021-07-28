@@ -1,15 +1,25 @@
 // import { getSubscriber } from "rempl";
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
-
+import { getSubscriber } from "rempl";
 import App from "./App";
 
-// import './index.scss';
+// bootstrap HTML document
+document.head.appendChild(document.createElement("style")).append(__CSS__);
+const rootEl = document.createElement("div");
+document.body.appendChild(rootEl);
 
-// getSubscriber().subscribe(data => {
-//   document.body.innerHTML = data;
-// });
+// render React app
+ReactDOM.render(<AppWithData />, rootEl);
 
-document.body.innerHTML = `<div id="root"></div>`;
+// subscribe to data and pass it to app
+function AppWithData() {
+  const [data, setData] = React.useState(null);
 
-ReactDOM.render(<App />, document.getElementById("root"));
+  useEffect(
+    () => getSubscriber().ns("component-tree").subscribe(setData),
+    [setData]
+  );
+
+  return <App data={data} />;
+}

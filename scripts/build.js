@@ -17,12 +17,25 @@ exports.buildPlayground = async function (config) {
   }
 };
 
-exports.buildSubscriber = async function (config) {
+exports.buildSubscriber = async function (config, configCSS) {
+  const css = await esbuild.buildSync({
+    entryPoints: ["src/ui/index.css"],
+    bundle: true,
+    sourcemap: true,
+    loader: {
+      ".png": "dataurl",
+      ".svg": "dataurl",
+    },
+    ...configCSS,
+    write: false,
+  });
   const result = await esbuild.buildSync({
     entryPoints: ["src/ui/index.js"],
     bundle: true,
+    sourcemap: true,
     format: "esm",
     loader: { ".js": "jsx" },
+    define: { __CSS__: JSON.stringify(css.outputFiles[0].text) },
     write: false,
     ...config,
   });

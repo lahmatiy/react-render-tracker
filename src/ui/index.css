@@ -1,0 +1,187 @@
+@import "./styles/tailwind.css";
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", "monospace";
+  color: var(--text);
+
+  --text: #323334;
+  --icon: #999999;
+  --primary: #0279c9;
+  --brand: #61dbfb;
+  --border: rgba(234, 234, 234, 1);
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tools-header {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.tools-header > div {
+  flex: 1;
+  border: 1px var(--border) solid;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+}
+
+.tools-header > div + div {
+  border-left: none;
+}
+
+.tools-content {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tools-content > div {
+  flex: 1;
+  border-left: 1px var(--border) solid;
+  border-right: 1px var(--border) solid;
+  flex-shrink: 0;
+  overflow: auto;
+}
+
+.tools-content > div + div {
+  border-left: none;
+}
+
+.tree-element__container {
+  position: relative;
+  margin-left: 20px;
+}
+
+.tree-element__container:after {
+  position: absolute;
+  left: 5px;
+  top: 0;
+  height: 100%;
+  content: "";
+  background: var(--brand);
+  width: 1px;
+  display: none;
+}
+
+.tree-element__container:last-of-type:after {
+  height: calc(100% - 13px);
+}
+
+.tree-element__container.root:after {
+  display: none;
+}
+
+.tree-element__name {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--primary);
+  border-radius: 5px;
+  cursor: pointer;
+  padding-right: 15px;
+  transition: 0.2s;
+}
+
+.tree-element__name:hover {
+  color: var(--brand);
+}
+
+.tree-element__name.selected {
+  background: rgba(2, 121, 201, 0.1);
+}
+
+.tree-element__name:before {
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 15px;
+  height: 1px;
+  content: "";
+  background: var(--brand);
+  display: none;
+}
+
+.tree-element__bracket {
+  color: #a1a1a1;
+  padding: 0 2px;
+}
+
+.tree-element__id {
+  color: #a1a1a1;
+  font-size: 10px;
+}
+
+.tree-element__toggle {
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: 0.2s;
+  transform: rotate(-90deg);
+}
+
+.tree-element__toggle svg {
+  width: 15px;
+  color: var(--icon);
+  transition: 0.2s;
+}
+
+.tree-element__toggle:hover svg {
+  color: black;
+}
+
+.tree-element__toggle.open {
+  transform: rotate(0);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+table thead {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--icon);
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 5px;
+}
+
+input {
+  padding: 8px 14px;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.search-components {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-components svg {
+  color: var(--icon);
+  width: 15px;
+}

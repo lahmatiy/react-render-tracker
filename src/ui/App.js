@@ -1,28 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 
-import data from './data/treeData';
-import { handleFilterDataElement } from './data/helpers';
+import { handleFilterDataElement } from "./data/helpers";
 
-import TreeElement from './components/TreeElement';
-import ElementInfo from './components/element/ElementInfo';
-import Card from './components/ui/Card';
-import ToolsHeader from './components/layout/ToolsHeader';
+import TreeElement from "./components/TreeElement";
+import ElementInfo from "./components/element/ElementInfo";
+import Card from "./components/ui/Card";
+import ToolsHeader from "./components/layout/ToolsHeader";
 
-function App() {
+function App({ data }) {
   const [selectedElement, setSelectedElement] = useState(null);
-  const [searched, setSearched] = useState('');
+  const [searched, setSearched] = useState("");
 
   const filteredData = useMemo(() => {
-    return handleFilterDataElement(data, searched)
-  }, [searched]);
+    return handleFilterDataElement(data, searched);
+  }, [data, searched]);
 
   return (
     <div className="App">
-      <ToolsHeader setSearched={setSearched} searched={searched} selected={selectedElement} />
+      <ToolsHeader
+        setSearched={setSearched}
+        searched={searched}
+        selected={selectedElement}
+      />
       <div className="tools-content">
         <div>
           <Card>
-            <TreeElement data={filteredData} onSelect={setSelectedElement} selectedId={selectedElement?.id} root />
+            {filteredData && (
+              <TreeElement
+                data={filteredData}
+                onSelect={setSelectedElement}
+                selectedId={selectedElement?.id}
+                root
+              />
+            )}
           </Card>
         </div>
         {selectedElement && <ElementInfo data={selectedElement} />}
