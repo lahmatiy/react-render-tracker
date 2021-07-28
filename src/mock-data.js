@@ -1,248 +1,105 @@
 const treeData = {
-  "id": 1,
-  "name": "App",
-  "lifecycle": [
-    {
-      "phase": "mount",
-      "timestamp": "2021-07-27T09:15:40.531Z"
-    },
-    {
-      "phase": "update",
-      "reason": "useState",
-      "timestamp": "2021-07-27T09:15:40.531Z"
-    }
-  ],
-  "children": [
-    {
-      "id": 2,
-      "name": "Foo",
-      "lifecycle": [
-        {
-          "phase": "mount",
-          "timestamp": "2021-07-27T09:15:40.531Z"
-        },
-        {
-          "phase": "update",
-          "reason": "useContext",
-          "timestamp": "2021-07-27T09:15:40.531Z"
-        },
-        {
-          "phase": "unmount",
-          "timestamp": "2021-07-27T09:15:40.531Z"
-        }
-      ],
-      "children": [
-        {
-          "id": 3,
-          "name": "Bar",
-          "lifecycle": [
-            {
-              "phase": "mount",
-              "timestamp": "2021-07-27T09:15:40.531Z"
-            },
-            {
-              "phase": "update",
-              "reason": "parent",
-              "timestamp": "2021-07-27T09:15:40.531Z"
-            }
-          ],
-          "children": [
-            {
-              "id": 5,
-              "name": "Baz",
-              "lifecycle": [
-                {
-                  "phase": "mount",
-                  "timestamp": "2021-07-27T09:15:40.531Z"
-                },
-                {
-                  "phase": "update",
-                  "reason": "parent",
-                  "timestamp": "2021-07-27T09:15:40.531Z"
-                }
-              ],
-              "children": [
-                {
-                  "id": 15,
-                  "name": "Baz",
-                  "lifecycle": [
-                    {
-                      "phase": "mount",
-                      "timestamp": "2021-07-27T09:15:40.531Z"
-                    },
-                    {
-                      "phase": "update",
-                      "reason": "parent",
-                      "timestamp": "2021-07-27T09:15:40.531Z"
-                    }
-                  ],
-                  "children": [],
-                  "unmounted": true
-                },
-              ],
-              "unmounted": true
-            },
-            {
-              "id": 7,
-              "name": "Baz",
-              "lifecycle": [
-                {
-                  "phase": "mount",
-                  "timestamp": "2021-07-30T09:15:40.531Z"
-                }
-              ],
-              "children": [
-                {
-                  "id": 8,
-                  "name": "Baz",
-                  "lifecycle": [
-                    {
-                      "phase": "mount",
-                      "timestamp": "2021-07-30T09:15:40.531Z"
-                    }
-                  ],
-                  "children": [
-                    {
-                      "id": 9,
-                      "name": "Baz",
-                      "lifecycle": [
-                        {
-                          "phase": "mount",
-                          "timestamp": "2021-07-30T09:15:40.531Z"
-                        }
-                      ],
-                      "children": [
-                        {
-                          "id": 10,
-                          "name": "Baz",
-                          "lifecycle": [
-                            {
-                              "phase": "mount",
-                              "timestamp": "2021-07-30T09:15:40.531Z"
-                            }
-                          ],
-                          "children": [
-                            {
-                              "id": 11,
-                              "name": "Baz",
-                              "lifecycle": [
-                                {
-                                  "phase": "mount",
-                                  "timestamp": "2021-07-30T09:15:40.531Z"
-                                }
-                              ],
-                              "children": [
-                                {
-                                  "id": 12,
-                                  "name": "Card",
-                                  "lifecycle": [
-                                    {
-                                      "phase": "mount",
-                                      "timestamp": "2021-07-30T09:15:40.531Z"
-                                    }
-                                  ],
-                                  "children": [
-                                    {
-                                      "id": 13,
-                                      "name": "Baz",
-                                      "lifecycle": [
-                                        {
-                                          "phase": "mount",
-                                          "timestamp": "2021-07-30T09:15:40.531Z"
-                                        }
-                                      ],
-                                      "children": [
-                                        {
-                                          "id": 14,
-                                          "name": "Test",
-                                          "lifecycle": [
-                                            {
-                                              "phase": "mount",
-                                              "timestamp": "2021-07-30T09:15:40.531Z"
-                                            }
-                                          ],
-                                          "children": []
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-
-                        {
-                          "id": 23,
-                          "name": "Header",
-                          "lifecycle": [
-                            {
-                              "phase": "mount",
-                              "timestamp": "2021-07-30T09:15:40.531Z"
-                            }
-                          ],
-                          "children": [
-                            {
-                              "id": 20,
-                              "name": "AsideLayout",
-                              "lifecycle": [
-                                {
-                                  "phase": "mount",
-                                  "timestamp": "2021-07-30T09:15:40.531Z"
-                                }
-                              ],
-                              "children": [
-                                {
-                                  "id": 21,
-                                  "name": "Baz",
-                                  "lifecycle": [
-                                    {
-                                      "phase": "mount",
-                                      "timestamp": "2021-07-30T09:15:40.531Z"
-                                    }
-                                  ],
-                                  "children": [
-                                    {
-                                      "id": 22,
-                                      "name": "Test",
-                                      "lifecycle": [
-                                        {
-                                          "phase": "mount",
-                                          "timestamp": "2021-07-30T09:15:40.531Z"
-                                        }
-                                      ],
-                                      "children": []
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ],
-          "unmounted": true
-        }
-      ],
-      "unmounted": true
-    },
-    {
-      "id": 4,
-      "name": "Bar",
-      "lifecycle": [
-        {
-          "action": "mount",
-          "timestamp": "2021-07-27T09:15:40.531Z"
-        }
-      ],
-      "children": []
-    }
-  ]
+  "1": {
+    "children": [
+      3
+    ],
+    "depth": -1,
+    "displayName": null,
+    "hocDisplayNames": null,
+    "id": 1,
+    "isCollapsed": false,
+    "key": null,
+    "ownerId": 0,
+    "parentId": 0,
+    "type": 11,
+    "weight": 0
+  },
+  "3": {
+    "children": [
+      5
+    ],
+    "depth": 0,
+    "displayName": "App",
+    "hocDisplayNames": null,
+    "id": 3,
+    "isCollapsed": false,
+    "key": null,
+    "ownerId": 0,
+    "parentId": 1,
+    "type": 5,
+    "weight": 1
+  },
+  "5": {
+    "children": [
+      11,
+      13,
+      15,
+      17
+    ],
+    "depth": 1,
+    "displayName": "ProfilerTester",
+    "hocDisplayNames": null,
+    "id": 5,
+    "isCollapsed": false,
+    "key": null,
+    "ownerId": 3,
+    "parentId": 3,
+    "type": 5,
+    "weight": 1
+  },
+  "11": {
+    "children": [],
+    "depth": 2,
+    "displayName": "TreeItem",
+    "hocDisplayNames": null,
+    "id": 11,
+    "isCollapsed": false,
+    "key": "0",
+    "ownerId": 5,
+    "parentId": 5,
+    "type": 5,
+    "weight": 1
+  },
+  "13": {
+    "children": [],
+    "depth": 2,
+    "displayName": "TreeItem",
+    "hocDisplayNames": null,
+    "id": 13,
+    "isCollapsed": false,
+    "key": "1",
+    "ownerId": 5,
+    "parentId": 5,
+    "type": 5,
+    "weight": 1
+  },
+  "15": {
+    "children": [],
+    "depth": 2,
+    "displayName": "TreeItem",
+    "hocDisplayNames": null,
+    "id": 15,
+    "isCollapsed": false,
+    "key": "2",
+    "ownerId": 5,
+    "parentId": 5,
+    "type": 5,
+    "weight": 1
+  },
+  "17": {
+    "children": [],
+    "depth": 2,
+    "displayName": "TreeItem",
+    "hocDisplayNames": null,
+    "id": 17,
+    "isCollapsed": false,
+    "key": "3",
+    "ownerId": 5,
+    "parentId": 5,
+    "type": 5,
+    "weight": 1
+  }
 }
+
 
 export default treeData;
