@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
-import FilterComponents from '../form/FilterComponents';
-import ElementName from '../element/ElementName';
+import FilterComponents from "../form/FilterComponents";
+import ElementName from "../element/ElementName";
 
 const ToolsHeader = ({ setSearched, searched, selected }) => {
   return (
@@ -15,7 +15,7 @@ const ToolsHeader = ({ setSearched, searched, selected }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 export default ToolsHeader;

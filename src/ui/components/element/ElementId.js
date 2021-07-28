@@ -1,11 +1,7 @@
-import React from 'react';
+import React from "react";
 
 const ElementId = ({ id }) => {
-  return (
-    <span className="tree-element__id">
-      #{id}
-    </span>
-  )
+  return <span className="tree-element__id">#{id}</span>;
 };
 
 export default ElementId;
