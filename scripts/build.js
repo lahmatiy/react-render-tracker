@@ -22,6 +22,7 @@ exports.buildSubscriber = async function (config) {
     entryPoints: ["src/ui/index.js"],
     bundle: true,
     format: "esm",
+    loader: { ".js": "jsx" },
     write: false,
     ...config,
   });
