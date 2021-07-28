@@ -46,7 +46,10 @@ export default function (testcase: TestCase) {
         case "childList":
           for (const node of mutation.addedNodes) {
             const target = node as HTMLElement;
-            if (target.hasAttribute(emulateEventAttribute)) {
+            if (
+              target.nodeType === 1 &&
+              target.hasAttribute(emulateEventAttribute)
+            ) {
               emulateEvent(target);
             }
           }
