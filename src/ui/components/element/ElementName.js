@@ -8,11 +8,9 @@ const ElementName = ({ data, children, isSelected, isDisabled }) => {
   return (
     <span className={classes}>
       {children}
-      <span className="tree-element__bracket">&lt;</span>
       <span className={isDisabled ? 'disabled' : ''}>
         {data.displayName || 'Unknown'}
       </span>
-      <span className="tree-element__bracket">&gt;</span>
       <ElementId id={data.id} />
       <span className="tree-element__count">
         ({renderCount})

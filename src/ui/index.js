@@ -20,12 +20,9 @@ function AppWithData() {
     () =>
       getSubscriber()
         .ns("tree-changes")
-        .subscribe(changes => {
+        .subscribe((changes = []) => {
+          // TODO refactor into separate helper func pls
           const componentTree = {};
-
-          if (!changes) {
-            changes = [];
-          }
 
           for (const change of changes) {
             const {
@@ -44,7 +41,9 @@ function AppWithData() {
 
             if (removedElementIDs.length) {
               for (const id of removedElementIDs) {
+                const parentId = componentTree[id].parentId;
                 componentTree[id].isUnmounted = true;
+                componentTree[parentId].children.push(id);
               }
             }
 

@@ -11,7 +11,7 @@ body {
   --text-muted: #a1a1a1;
   --icon: #999999;
   --primary: #0279c9;
-  --brand: #61dbfb;
+  --brand: #3fc1e2;
   --border: rgba(234, 234, 234, 1);
 }
 
@@ -72,7 +72,7 @@ body {
   color: var(--primary);
   border-radius: 5px;
   cursor: pointer;
-  padding-right: 15px;
+  padding: 3px 15px 3px 5px;
   transition: 0.2s;
 }
 
@@ -97,6 +97,7 @@ body {
 .tree-element__id {
   color: #a1a1a1;
   font-size: 10px;
+  margin-left: 5px;
 }
 
 .tree-element__toggle {
@@ -153,6 +154,10 @@ table td {
   padding: 5px;
 }
 
+table td {
+  font-size: 13px;
+}
+
 input {
   padding: 8px 14px;
   border: none;
@@ -170,4 +175,22 @@ input {
 .search-components svg {
   color: var(--icon);
   width: 15px;
+}
+
+.icon-toggle {
+  padding: 4px;
+  cursor: pointer;
+}
+
+.icon-toggle svg {
+  height: 15px;
+  transition: 0.2s;
+}
+
+.icon-toggle.active svg {
+  color: var(--primary);
+}
+
+.icon-toggle:hover svg {
+  color: var(--brand);
 }

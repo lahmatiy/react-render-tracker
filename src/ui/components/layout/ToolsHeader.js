@@ -1,11 +1,17 @@
 import React from "react";
 
-import FilterComponents from "../form/FilterComponents";
+import { Code } from "react-feather";
 
-const ToolsHeader = ({ setSearched, searched }) => {
+import FilterComponents from "../form/FilterComponents";
+import ButtonToggle from "../ui/ButtonToggle";
+
+const ToolsHeader = ({ setSearched, searched, onShowDisabled, showDisabled }) => {
   return (
     <div className="tools-header">
-      <FilterComponents onChange={setSearched} value={searched} />
+      <div>
+        <FilterComponents onChange={setSearched} value={searched} />
+        <ButtonToggle Icon={Code} isActive={showDisabled} onChange={onShowDisabled} tooltip="Toggle unmounted elements" />
+      </div>
     </div>
   );
 };
