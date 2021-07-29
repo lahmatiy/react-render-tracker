@@ -1,3 +1,5 @@
+import "./devtools";
+
 import * as React from "react";
 import ReactDOM from "react-dom";
 import testCases from "./cases/index.js";
