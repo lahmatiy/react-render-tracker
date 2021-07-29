@@ -4,6 +4,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Arial", "monospace";
+  font-size: 14px;
   color: var(--text);
 
   --text: #323334;
@@ -24,18 +25,18 @@ body {
 .tools-header {
   display: flex;
   flex-shrink: 0;
+  border-bottom: 1px var(--border) solid;
 }
 
 .tools-header > div {
   flex: 1;
-  border: 1px var(--border) solid;
-  padding: 10px 20px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
 }
 
 .tools-header > div + div {
-  border-left: none;
+  border-left: 1px var(--border) solid;
 }
 
 .tools-content {
@@ -47,14 +48,12 @@ body {
 
 .tools-content > div {
   flex: 1;
-  border-left: 1px var(--border) solid;
-  border-right: 1px var(--border) solid;
   flex-shrink: 0;
   overflow: auto;
 }
 
 .tools-content > div + div {
-  border-left: none;
+  border-left: 1px var(--border) solid;
 }
 
 .tree-element__container {
@@ -135,7 +134,7 @@ ul {
 }
 
 .card {
-  padding: 20px;
+  padding: 10px;
 }
 
 table {
