@@ -35,6 +35,7 @@ function App({ data }) {
                   onSelect={setSelectedElement}
                   selectedId={selectedElement?.id}
                   key={rootElement.id}
+                  highlight={searched}
                   root
                 />
               )

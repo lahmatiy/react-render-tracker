@@ -1,3 +1,5 @@
+import React from "react";
+
 export const handleFilterDataElement = (data, searched, showDisabled) => {
   let rootsArray = JSON.parse(JSON.stringify(data));
 
@@ -61,4 +63,28 @@ export const getTreeData = (data) => {
   }
 
   return Object.keys(result).map(rootId => result[rootId]);
+};
+
+export const getElementNameHighlight = (name, highlight) => {
+  if (!highlight) return name;
+
+  const re = new RegExp(highlight.toLowerCase(), "g");
+  const match = re.exec(name.toLowerCase());
+
+  let result = name;
+
+  if (match) {
+    const { index } = match;
+    result =
+      (<>
+          {name.slice(0, index)}
+          <span className="highlight">
+            {name.slice(index, index + highlight.length)}
+          </span>
+          {name.slice(index + highlight.length)}
+        </>
+      );
+  }
+
+  return result;
 };

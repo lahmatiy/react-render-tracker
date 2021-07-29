@@ -89,6 +89,14 @@ body {
   background: rgba(2, 121, 201, 0.1);
 }
 
+.tree-element__name .highlight {
+  background: var(--brand);
+  color: #ffffff;
+  padding: 0 2px;
+  margin: 0 -2px;
+  border-radius: 2px;
+}
+
 .tree-element__bracket {
   color: #a1a1a1;
   padding: 0 2px;
@@ -106,6 +114,7 @@ body {
   cursor: pointer;
   transition: 0.2s;
   transform: rotate(-90deg);
+  margin-right: 5px;
 }
 
 .tree-element__toggle svg {
@@ -144,7 +153,6 @@ table {
 
 table thead {
   font-size: 13px;
-  text-transform: uppercase;
   color: var(--icon);
 }
 
@@ -185,12 +193,10 @@ input {
 .icon-toggle svg {
   height: 15px;
   transition: 0.2s;
+  color: var(--text-muted);
 }
 
-.icon-toggle.active svg {
-  color: var(--primary);
-}
-
-.icon-toggle:hover svg {
+.icon-toggle.active svg,
+.icon-toggle:hover svg{
   color: var(--brand);
 }

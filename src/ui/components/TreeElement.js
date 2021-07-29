@@ -3,7 +3,7 @@ import ChevronDown from "react-feather/dist/icons/chevron-down";
 
 import ElementName from "./element/ElementName";
 
-const TreeElement = ({ data, onSelect, root, selectedId }) => {
+const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleSelect = event => {
@@ -20,7 +20,7 @@ const TreeElement = ({ data, onSelect, root, selectedId }) => {
 
   return (
     <div className={classes} onClick={handleSelect}>
-      <ElementName data={data} isSelected={selectedId === data.id} isDisabled={data.isUnmounted}>
+      <ElementName data={data} isSelected={selectedId === data.id} isDisabled={data.isUnmounted} highlight={highlight}>
         <button
           className={`tree-element__toggle ${isCollapsed ? "open" : ""}`}
           onClick={handleToggle}
@@ -35,6 +35,7 @@ const TreeElement = ({ data, onSelect, root, selectedId }) => {
             key={child.id}
             onSelect={onSelect}
             selectedId={selectedId}
+            highlight={highlight}
           />
         ))}
     </div>
