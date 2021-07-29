@@ -1,15 +1,9 @@
-import "./devtools";
-
 import * as React from "react";
 import ReactDOM from "react-dom";
 import testCases from "./cases/index.js";
 import createTestCaseWrapper from "./create-test-case-wrapper.jsx";
-import attachReactRenderTracker from "../src/index.js";
 import rempl from "rempl";
 import { RenderContextProvider } from "./helpers.jsx";
-import { TestCase } from "./types.js";
-
-attachReactRenderTracker(React);
 
 Promise.all(testCases).then(testCases => {
   for (const test of testCases) {

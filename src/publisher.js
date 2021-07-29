@@ -1,3 +1,4 @@
+import "./publisher/index";
 import rempl from "rempl";
 
 export const publisher = rempl.createPublisher(
