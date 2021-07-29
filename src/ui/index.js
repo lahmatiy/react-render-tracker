@@ -17,7 +17,30 @@ function AppWithData() {
   const [data, setData] = React.useState(null);
 
   useEffect(
-    () => getSubscriber().ns("component-tree").subscribe(setData),
+    () =>
+      getSubscriber()
+        .ns("tree-changes")
+        .subscribe(changes => {
+          const componentTree = {};
+
+          for (const change of changes) {
+            const { addedElements, removedElementIDs } = change;
+
+            if (addedElements.length) {
+              for (const element of addedElements) {
+                componentTree[element.id] = element;
+              }
+            }
+
+            if (removedElementIDs.length) {
+              for (const id of removedElementIDs) {
+                componentTree[id].isUnmounted = true;
+              }
+            }
+          }
+
+          setData(componentTree);
+        }),
     [setData]
   );
 

@@ -34,6 +34,7 @@ import {
   UNSUPPORTED_VERSION_URL,
   REACT_DEVTOOLS_WORKPLACE_URL,
 } from "./constants.js";
+import { publisher } from "../../src/publisher";
 
 const idToElement = new Map();
 const rootIDToRendererID = new Map();
@@ -48,6 +49,7 @@ let weightAcrossRoots = 0;
 let cachedErrorCount = 0;
 let cachedWarningCount = 0;
 let cachedErrorAndWarningTuples = [];
+let storedActions = [];
 let hasOwnerMetadata = false;
 let supportsNativeInspection = true;
 let supportsProfiling = false;
@@ -149,7 +151,6 @@ export function init(hook, global, agent = {}) {
   const subs = [
     hook.sub("renderer-attached", ({ id, renderer, rendererInterface }) => {
       // agent.setRendererInterface(id, rendererInterface);
-
       // Now that the Store and the renderer interface are connected,
       // it's time to flush the pending operation codes to the frontend.
       rendererInterface.flushInitialOperations();
@@ -518,13 +519,22 @@ export function init(hook, global, agent = {}) {
             }
           }
 
-          console.log({
+          const payload = {
             addedElements: addedElementIDs.map(id => {
               return idToElement.get(id);
             }),
-            removedElementIDs,
-            latestCommitProfilingMetadata,
-          });
+            removedElementIDs: [...removedElementIDs].map(([id]) => id),
+            latestCommitProfilingMetadata: {
+              ...latestCommitProfilingMetadata,
+              changeDescriptions: Object.fromEntries(
+                latestCommitProfilingMetadata.changeDescriptions
+              ),
+            },
+          };
+
+          storedActions.push(payload);
+
+          publisher.ns("tree-changes").publish(storedActions);
         }
 
         latestCommitProfilingMetadata = null;

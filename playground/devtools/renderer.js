@@ -1329,14 +1329,25 @@ export function attach(hook, rendererID, renderer, global) {
       ) {
         while (next !== null) {
           if (didHookChange(prev, next)) {
+            const effect =
+              isEffect(prev.memoizedState) && isEffect(next.memoizedState);
+
             indices.push({
               index,
               prev: {
-                value: prev.memoizedState,
+                ...(!effect
+                  ? {
+                      value: prev.memoizedState,
+                    }
+                  : {}),
                 dependencies: prev.memoizedState.deps,
               },
               next: {
-                value: next.memoizedState,
+                ...(!effect
+                  ? {
+                      value: next.memoizedState,
+                    }
+                  : {}),
                 dependencies: next.memoizedState.deps,
               },
             });
