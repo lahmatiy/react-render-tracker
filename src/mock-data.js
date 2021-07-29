@@ -48,7 +48,7 @@ const treeData = {
       17
     ],
     "depth": 1,
-    "displayName": "ProfilerTester",
+    "displayName": "UnmountedTester",
     "hocDisplayNames": null,
     "id": 5,
     "isCollapsed": false,

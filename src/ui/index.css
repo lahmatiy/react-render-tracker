@@ -77,6 +77,11 @@ body {
   transition: 0.2s;
 }
 
+.tree-element__name .disabled {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
 .tree-element__name:hover {
   color: var(--brand);
 }

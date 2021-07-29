@@ -20,7 +20,7 @@ const ElementInfo = ({ data }) => {
             <tr key={timestamp}>
               <td>{timestamp}</td>
               <td>{event.phase}</td>
-              <td>{event.reason}</td>
+              <td>{event.reason?. join(', ')}</td>
             </tr>
           );
         })}
