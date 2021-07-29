@@ -1,10 +1,10 @@
 import { RendererInterface, ReactRenderer } from "./types";
 import { detectReactBuildType } from "./utils/detect-react-build-type";
 
-type Fiber = any
-type FiberRoot = any
+type Fiber = any;
+type FiberRoot = any;
 
-type EventHandler<TData = unknown> = (data: TData) => void
+type EventHandler<TData = unknown> = (data: TData) => void;
 
 /**
  * {@link packages/react-devtools-shared/src/hook.js}
@@ -116,19 +116,17 @@ export class DevtoolsHook {
 
         // Bonus: throw an exception hoping that it gets picked up by a reporting system.
         // Not synchronously so that it doesn't break the calling code.
-        setTimeout(function() {
+        setTimeout(function () {
           throw new Error(
             "React is running in production mode, but dead code " +
-            "elimination has not been applied. Read how to correctly " +
-            "configure React for production: " +
-            "https://reactjs.org/link/perf-use-production-build"
+              "elimination has not been applied. Read how to correctly " +
+              "configure React for production: " +
+              "https://reactjs.org/link/perf-use-production-build"
           );
         });
       }
-    } catch (err) {
-    }
+    } catch (err) {}
   };
-
 
   /**
    * React calls this method
@@ -143,7 +141,11 @@ export class DevtoolsHook {
   /**
    * React calls this method
    */
-  onCommitFiberRoot = (rendererId: number, root: FiberRoot, priorityLevel: any) => {
+  onCommitFiberRoot = (
+    rendererId: number,
+    root: FiberRoot,
+    priorityLevel: any
+  ) => {
     const mountedRoots = this.getFiberRoots(rendererId);
     const current = root.current;
     const isKnownRoot = mountedRoots.has(root);

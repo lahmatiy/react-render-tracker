@@ -20,7 +20,7 @@ export function installHook(target) {
     enumerable: false,
     get() {
       return hook;
-    }
+    },
   });
 
   return hook;

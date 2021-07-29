@@ -1,5 +1,10 @@
 import { ElementType } from "../types";
-import { ElementTypeClass, ElementTypeForwardRef, ElementTypeFunction, ElementTypeMemo } from "../constants";
+import {
+  ElementTypeClass,
+  ElementTypeForwardRef,
+  ElementTypeFunction,
+  ElementTypeMemo,
+} from "../constants";
 
 export function utfDecodeString(array: Array<number>): string {
   return String.fromCodePoint(...array);
@@ -8,9 +13,9 @@ export function utfDecodeString(array: Array<number>): string {
 export function separateDisplayNameAndHOCs(
   displayName: string | null,
   type: ElementType
-): [ string | null, Array<string> | null ] {
+): [string | null, Array<string> | null] {
   if (displayName === null) {
-    return [ null, null ];
+    return [null, null];
   }
 
   let parsedDisplayName = displayName;
@@ -35,19 +40,19 @@ export function separateDisplayNameAndHOCs(
 
   if (type === ElementTypeMemo) {
     if (hocDisplayNames === null) {
-      hocDisplayNames = [ "Memo" ];
+      hocDisplayNames = ["Memo"];
     } else {
       hocDisplayNames.unshift("Memo");
     }
   } else if (type === ElementTypeForwardRef) {
     if (hocDisplayNames === null) {
-      hocDisplayNames = [ "ForwardRef" ];
+      hocDisplayNames = ["ForwardRef"];
     } else {
       hocDisplayNames.unshift("ForwardRef");
     }
   }
 
-  return [ parsedDisplayName, hocDisplayNames ];
+  return [parsedDisplayName, hocDisplayNames];
 }
 
 let uidCounter = 0;
