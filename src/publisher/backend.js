@@ -34,7 +34,7 @@ import {
   UNSUPPORTED_VERSION_URL,
   REACT_DEVTOOLS_WORKPLACE_URL,
 } from "./constants.js";
-import { publisher } from "../../src/publisher";
+import { publisher } from "./rempl-publisher";
 
 const idToElement = new Map();
 const rootIDToRendererID = new Map();
