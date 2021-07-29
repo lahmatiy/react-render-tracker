@@ -17,7 +17,7 @@ import {
   SCOPE_NUMBER,
   SCOPE_SYMBOL_STRING,
   STRICT_MODE_NUMBER,
-  STRICT_MODE_SYMBOL_STRING,
+  STRICT_MODE_SYMBOL_STRING
 } from "./symbols.js";
 
 import {
@@ -40,7 +40,7 @@ import {
   TREE_OPERATION_REMOVE_ROOT,
   TREE_OPERATION_REORDER_CHILDREN,
   TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
-  TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
+  TREE_OPERATION_UPDATE_TREE_BASE_DURATION
 } from "./constants.js";
 
 import {
@@ -57,8 +57,8 @@ import {
   renamePathInObject,
   sessionStorageGetItem,
   setInObject,
-  utfEncodeString,
-} from "./utils.js";
+  utfEncodeString
+} from "./utils";
 
 const ComponentFilterElementType = 1;
 const ComponentFilterDisplayName = 2;
@@ -81,7 +81,7 @@ export function getInternalReactConstants(version) {
     NoFlags: 0b00,
     PerformedWork: 0b01,
     Placement: 0b10,
-    Incomplete: 0b10000000000000,
+    Incomplete: 0b10000000000000
   };
 
   // **********************************************************
@@ -97,7 +97,7 @@ export function getInternalReactConstants(version) {
     NormalPriority: 97,
     LowPriority: 96,
     IdlePriority: 95,
-    NoPriority: 90,
+    NoPriority: 90
   };
 
   if (gt(version, "17.0.2")) {
@@ -107,7 +107,7 @@ export function getInternalReactConstants(version) {
       NormalPriority: 3,
       LowPriority: 4,
       IdlePriority: 5,
-      NoPriority: 0,
+      NoPriority: 0
     };
   }
 
@@ -147,7 +147,7 @@ export function getInternalReactConstants(version) {
       SimpleMemoComponent: 15,
       SuspenseComponent: 13,
       SuspenseListComponent: 19, // Experimental
-      YieldComponent: -1, // Removed
+      YieldComponent: -1 // Removed
     };
   } else if (gte(version, "17.0.0-alpha")) {
     ReactTypeOfWork = {
@@ -177,7 +177,7 @@ export function getInternalReactConstants(version) {
       SimpleMemoComponent: 15,
       SuspenseComponent: 13,
       SuspenseListComponent: 19, // Experimental
-      YieldComponent: -1, // Removed
+      YieldComponent: -1 // Removed
     };
   } else if (gte(version, "16.6.0-beta.0")) {
     ReactTypeOfWork = {
@@ -207,7 +207,7 @@ export function getInternalReactConstants(version) {
       SimpleMemoComponent: 15,
       SuspenseComponent: 13,
       SuspenseListComponent: 19, // Experimental
-      YieldComponent: -1, // Removed
+      YieldComponent: -1 // Removed
     };
   } else if (gte(version, "16.4.3-alpha")) {
     ReactTypeOfWork = {
@@ -237,7 +237,7 @@ export function getInternalReactConstants(version) {
       SimpleMemoComponent: -1, // Doesn't exist yet
       SuspenseComponent: 16,
       SuspenseListComponent: -1, // Doesn't exist yet
-      YieldComponent: -1, // Removed
+      YieldComponent: -1 // Removed
     };
   } else {
     ReactTypeOfWork = {
@@ -267,7 +267,7 @@ export function getInternalReactConstants(version) {
       SimpleMemoComponent: -1, // Doesn't exist yet
       SuspenseComponent: 16,
       SuspenseListComponent: -1, // Doesn't exist yet
-      YieldComponent: 9,
+      YieldComponent: 9
     };
   }
   // **********************************************************
@@ -304,7 +304,7 @@ export function getInternalReactConstants(version) {
     ScopeComponent,
     SimpleMemoComponent,
     SuspenseComponent,
-    SuspenseListComponent,
+    SuspenseListComponent
   } = ReactTypeOfWork;
 
   function resolveFiberType(type) {
@@ -427,7 +427,7 @@ export function getInternalReactConstants(version) {
     getTypeSymbol,
     ReactPriorityLevels,
     ReactTypeOfWork,
-    ReactTypeOfSideEffect,
+    ReactTypeOfSideEffect
   };
 }
 
@@ -443,7 +443,7 @@ export function attach(hook, rendererID, renderer, global) {
     getTypeSymbol,
     ReactPriorityLevels,
     ReactTypeOfWork,
-    ReactTypeOfSideEffect,
+    ReactTypeOfSideEffect
   } = getInternalReactConstants(version);
 
   const { DidCapture, Incomplete, NoFlags, PerformedWork, Placement } =
@@ -468,7 +468,7 @@ export function attach(hook, rendererID, renderer, global) {
     OffscreenComponent,
     SimpleMemoComponent,
     SuspenseComponent,
-    SuspenseListComponent,
+    SuspenseListComponent
   } = ReactTypeOfWork;
 
   const {
@@ -477,7 +477,7 @@ export function attach(hook, rendererID, renderer, global) {
     NormalPriority,
     LowPriority,
     IdlePriority,
-    NoPriority,
+    NoPriority
   } = ReactPriorityLevels;
 
   const {
@@ -490,7 +490,7 @@ export function attach(hook, rendererID, renderer, global) {
     scheduleRefresh,
     setErrorHandler,
     setSuspenseHandler,
-    scheduleUpdate,
+    scheduleUpdate
   } = renderer;
 
   const supportsTogglingError =
@@ -666,7 +666,7 @@ export function attach(hook, rendererID, renderer, global) {
       patchConsole({
         appendComponentStack,
         breakOnConsoleErrors,
-        showInlineWarningsAndErrors,
+        showInlineWarningsAndErrors
       });
     }
   }
@@ -679,8 +679,8 @@ export function attach(hook, rendererID, renderer, global) {
       const maybeID = getFiberIDUnsafe(fiber) || "<no id>";
       const parentDisplayName = parentFiber
         ? parentFiber.tag +
-          ":" +
-          (getDisplayNameForFiber(parentFiber) || "null")
+        ":" +
+        (getDisplayNameForFiber(parentFiber) || "null")
         : "";
       const maybeParentID = parentFiber
         ? getFiberIDUnsafe(parentFiber) || "<no-id>"
@@ -763,8 +763,8 @@ export function attach(hook, rendererID, renderer, global) {
       {
         type: ComponentFilterElementType,
         value: ElementTypeHostComponent,
-        isEnabled: true,
-      },
+        isEnabled: true
+      }
     ]);
   }
 
@@ -874,6 +874,7 @@ export function attach(hook, rendererID, renderer, global) {
 
     return false;
   }
+
   // NOTICE Keep in sync with shouldFilterFiber() and other get*ForFiber methods
   function getElementTypeForFiber(fiber) {
     const { type, tag } = fiber;
@@ -1107,7 +1108,7 @@ export function attach(hook, rendererID, renderer, global) {
             didHooksChange: false,
             isFirstMount: true,
             props: null,
-            state: null,
+            state: null
           };
         } else {
           const data = {
@@ -1122,7 +1123,7 @@ export function attach(hook, rendererID, renderer, global) {
             state: getChangedKeys(
               prevFiber.memoizedState,
               nextFiber.memoizedState
-            ),
+            )
           };
 
           // Only traverse the hooks list once, depending on what info we're returning.
@@ -1329,27 +1330,16 @@ export function attach(hook, rendererID, renderer, global) {
       ) {
         while (next !== null) {
           if (didHookChange(prev, next)) {
-            const effect =
-              isEffect(prev.memoizedState) && isEffect(next.memoizedState);
-
             indices.push({
               index,
               prev: {
-                ...(!effect
-                  ? {
-                      value: prev.memoizedState,
-                    }
-                  : {}),
-                dependencies: prev.memoizedState.deps,
+                value: prev.memoizedState,
+                dependencies: prev.memoizedState.deps
               },
               next: {
-                ...(!effect
-                  ? {
-                      value: next.memoizedState,
-                    }
-                  : {}),
-                dependencies: next.memoizedState.deps,
-              },
+                value: next.memoizedState,
+                dependencies: next.memoizedState.deps
+              }
             });
           }
           next = next.next;
@@ -1387,7 +1377,7 @@ export function attach(hook, rendererID, renderer, global) {
         changedKeys.push({
           key,
           prev: prev[key],
-          next: next[key],
+          next: next[key]
         });
       }
     }
@@ -1447,7 +1437,7 @@ export function attach(hook, rendererID, renderer, global) {
       hook.emit("operations", {
         operations,
         getDisplayNameForFiberID,
-        getFiberByID,
+        getFiberByID
       });
     }
   }
@@ -1620,15 +1610,15 @@ export function attach(hook, rendererID, renderer, global) {
     const operations = new Array(
       // Identify which renderer this update is coming from.
       2 + // [rendererID, rootFiberID]
-        // How big is the string table?
-        1 + // [stringTableLength]
-        // Then goes the actual string table.
-        pendingStringTableLength +
-        // All unmounts are batched in a single message.
-        // [TREE_OPERATION_REMOVE, removedIDLength, ...ids]
-        (numUnmountIDs > 0 ? 2 + numUnmountIDs : 0) +
-        // Regular operations
-        pendingOperations.length
+      // How big is the string table?
+      1 + // [stringTableLength]
+      // Then goes the actual string table.
+      pendingStringTableLength +
+      // All unmounts are batched in a single message.
+      // [TREE_OPERATION_REMOVE, removedIDLength, ...ids]
+      (numUnmountIDs > 0 ? 2 + numUnmountIDs : 0) +
+      // Regular operations
+      pendingOperations.length
     );
 
     // Identify which renderer this update is coming from.
@@ -2355,7 +2345,7 @@ export function attach(hook, rendererID, renderer, global) {
         hook.emit("operations", {
           operations,
           getDisplayNameForFiberID,
-          getFiberByID,
+          getFiberByID
         });
       });
     } else {
@@ -2381,7 +2371,7 @@ export function attach(hook, rendererID, renderer, global) {
             priorityLevel: null,
             updaters: getUpdatersList(root),
             effectDuration: null,
-            passiveEffectDuration: null,
+            passiveEffectDuration: null
           };
         }
 
@@ -2456,7 +2446,7 @@ export function attach(hook, rendererID, renderer, global) {
         // Initialize to null; if new enough React version is running,
         // these values will be read during separate handlePostCommitFiberRoot() call.
         effectDuration: null,
-        passiveEffectDuration: null,
+        passiveEffectDuration: null
       };
     }
 
@@ -2492,7 +2482,7 @@ export function attach(hook, rendererID, renderer, global) {
         commitProfilingMetadata.push(currentCommitProfilingMetadata);
       } else {
         rootToCommitProfilingMetadataMap.set(currentRootID, [
-          currentCommitProfilingMetadata,
+          currentCommitProfilingMetadata
         ]);
       }
     }
@@ -2778,7 +2768,7 @@ export function attach(hook, rendererID, renderer, global) {
           if (!didFindChild) {
             throw Error(
               "Child was not found in either parent set. This indicates a bug " +
-                "in React related to the return pointer. Please file an issue."
+              "in React related to the return pointer. Please file an issue."
             );
           }
         }
@@ -2787,7 +2777,7 @@ export function attach(hook, rendererID, renderer, global) {
       if (a.alternate !== b) {
         throw Error(
           "Return fibers should always be each others' alternates. " +
-            "This error is likely caused by a bug in React. Please file an issue."
+          "This error is likely caused by a bug in React. Please file an issue."
         );
       }
     }
@@ -2803,6 +2793,7 @@ export function attach(hook, rendererID, renderer, global) {
     // Otherwise B has to be current branch.
     return alternate;
   }
+
   // END copied code
 
   function prepareViewAttributeSource(id, path) {
@@ -2848,7 +2839,7 @@ export function attach(hook, rendererID, renderer, global) {
       displayName: getDisplayNameForFiber(fiber) || "Anonymous",
       id: getFiberIDThrows(fiber),
       key: fiber.key,
-      type: getElementTypeForFiber(fiber),
+      type: getElementTypeForFiber(fiber)
     };
   }
 
@@ -2935,7 +2926,7 @@ export function attach(hook, rendererID, renderer, global) {
       memoizedState,
       dependencies,
       tag,
-      type,
+      type
     } = fiber;
 
     const elementType = getElementTypeForFiber(fiber);
@@ -3041,8 +3032,10 @@ export function attach(hook, rendererID, renderer, global) {
         try {
           originalConsoleMethods[method] = console[method];
           // $FlowFixMe property error|warn is not writable.
-          console[method] = () => {};
-        } catch (error) {}
+          console[method] = () => {
+          };
+        } catch (error) {
+        }
       }
 
       try {
@@ -3057,7 +3050,8 @@ export function attach(hook, rendererID, renderer, global) {
           try {
             // $FlowFixMe property error|warn is not writable.
             console[method] = originalConsoleMethods[method];
-          } catch (error) {}
+          } catch (error) {
+          }
         }
       }
     }
@@ -3148,7 +3142,7 @@ export function attach(hook, rendererID, renderer, global) {
 
       rootType,
       rendererPackageName: renderer.rendererPackageName,
-      rendererVersion: renderer.version,
+      rendererVersion: renderer.version
     };
   }
 
@@ -3252,14 +3246,14 @@ export function attach(hook, rendererID, renderer, global) {
         global.$r = {
           hooks,
           props,
-          type,
+          type
         };
         break;
       case ForwardRef:
         global.$r = {
           hooks,
           props,
-          type: type.render,
+          type: type.render
         };
         break;
       case MemoComponent:
@@ -3270,7 +3264,7 @@ export function attach(hook, rendererID, renderer, global) {
           type:
             elementType != null && elementType.type != null
               ? elementType.type
-              : type,
+              : type
         };
         break;
       default:
@@ -3326,7 +3320,7 @@ export function attach(hook, rendererID, renderer, global) {
               getInObject(mostRecentlyInspectedElement, path),
               createIsPathAllowed(null, secondaryCategory),
               path
-            ),
+            )
           };
         } else {
           // If this element has not been updated since it was last inspected, we don't need to return it.
@@ -3334,7 +3328,7 @@ export function attach(hook, rendererID, renderer, global) {
           return {
             id,
             responseID: requestID,
-            type: "no-change",
+            type: "no-change"
           };
         }
       }
@@ -3349,7 +3343,7 @@ export function attach(hook, rendererID, renderer, global) {
       return {
         id,
         responseID: requestID,
-        type: "not-found",
+        type: "not-found"
       };
     }
 
@@ -3383,7 +3377,7 @@ export function attach(hook, rendererID, renderer, global) {
       id,
       responseID: requestID,
       type: "full-data",
-      value: cleanedInspectedElement,
+      value: cleanedInspectedElement
     };
   }
 
@@ -3643,7 +3637,7 @@ export function attach(hook, rendererID, renderer, global) {
             passiveEffectDuration,
             priorityLevel,
             commitTime,
-            updaters,
+            updaters
           } = commitProfilingData;
 
           const fiberActualDurations = [];
@@ -3666,7 +3660,7 @@ export function attach(hook, rendererID, renderer, global) {
             passiveEffectDuration,
             priorityLevel,
             timestamp: commitTime,
-            updaters,
+            updaters
           });
         });
 
@@ -3674,14 +3668,14 @@ export function attach(hook, rendererID, renderer, global) {
           commitData,
           displayName,
           initialTreeBaseDurations,
-          rootID,
+          rootID
         });
       }
     );
 
     return {
       dataForRoots,
-      rendererID,
+      rendererID
     };
   }
 
@@ -3728,7 +3722,7 @@ export function attach(hook, rendererID, renderer, global) {
   ) {
     startProfiling(
       sessionStorageGetItem(SESSION_STORAGE_RECORD_CHANGE_DESCRIPTIONS_KEY) ===
-        "true"
+      "true"
     );
   }
 
@@ -3741,6 +3735,7 @@ export function attach(hook, rendererID, renderer, global) {
   // Map of id and its force error status: true (error), false (toggled off),
   // null (do nothing)
   const forceErrorForFiberIDs = new Map();
+
   function shouldErrorFiberAccordingToMap(fiber) {
     if (typeof setErrorHandler !== "function") {
       throw new Error(
@@ -3805,6 +3800,7 @@ export function attach(hook, rendererID, renderer, global) {
   }
 
   const forceFallbackForSuspenseIDs = new Set();
+
   function shouldSuspendFiberAccordingToSet(fiber) {
     const maybeID = getFiberIDUnsafe(fiber);
     return maybeID !== null && forceFallbackForSuspenseIDs.has(maybeID);
@@ -3999,7 +3995,7 @@ export function attach(hook, rendererID, renderer, global) {
     return {
       displayName,
       key,
-      index,
+      index
     };
   }
 
@@ -4040,7 +4036,7 @@ export function attach(hook, rendererID, renderer, global) {
     }
     return {
       id: getFiberIDThrows(fiber),
-      isFullMatch: trackedPathMatchDepth === trackedPath.length - 1,
+      isFullMatch: trackedPathMatchDepth === trackedPath.length - 1
     };
   }
 
@@ -4104,6 +4100,6 @@ export function attach(hook, rendererID, renderer, global) {
     stopProfiling,
     storeAsGlobal,
     updateComponentFilters,
-    getFiberByID,
+    getFiberByID
   };
 }
