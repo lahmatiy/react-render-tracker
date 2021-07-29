@@ -4,28 +4,29 @@ import Card from "../ui/Card";
 
 const ElementInfo = ({ data }) => {
   return (
-    <div>
-      <Card>
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Phase</th>
-              <th>Reason</th>
+    <Card>
+      <table>
+        <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Phase</th>
+          <th>Reason</th>
+        </tr>
+        </thead>
+        <tbody>
+        {Object.keys(data.changes || {}).map((timestamp) => {
+          const event = data.changes[timestamp];
+          return (
+            <tr key={timestamp}>
+              <td>{timestamp}</td>
+              <td>{event.phase}</td>
+              <td>{event.reason?. join(', ')}</td>
             </tr>
-          </thead>
-          <tbody>
-            {data.lifecycle?.map((event, i) => (
-              <tr key={event.timestamp + i}>
-                <td>{event.timestamp}</td>
-                <td>{event.phase}</td>
-                <td>{event.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-    </div>
+          );
+        })}
+        </tbody>
+      </table>
+    </Card>
   );
 };
 
