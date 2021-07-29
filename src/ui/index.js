@@ -28,7 +28,13 @@ function AppWithData() {
           }
 
           for (const change of changes) {
-            const { addedElements, removedElementIDs } = change;
+            const {
+              addedElements,
+              removedElementIDs,
+              latestCommitProfilingMetadata,
+            } = change;
+            const { changeDescriptions } = latestCommitProfilingMetadata;
+            const changedIDs = Object.keys(changeDescriptions);
 
             if (addedElements.length) {
               for (const element of addedElements) {
@@ -39,6 +45,34 @@ function AppWithData() {
             if (removedElementIDs.length) {
               for (const id of removedElementIDs) {
                 componentTree[id].isUnmounted = true;
+              }
+            }
+
+            if (changedIDs.length) {
+              for (const id of changedIDs) {
+                const {
+                  context,
+                  didHooksChange,
+                  isFirstMount,
+                  props,
+                  state,
+                  timestamp,
+                } = changeDescriptions[id];
+                const change = {
+                  timestamp,
+                };
+
+                if (isFirstMount) {
+                  change.phase = "Mount";
+                } else {
+                  change.phase = "Update";
+                }
+
+                if (!componentTree[id].changes) {
+                  componentTree[id].changes = {};
+                }
+
+                componentTree[id].changes[change.timestamp] = change;
               }
             }
           }
