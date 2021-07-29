@@ -341,13 +341,14 @@ export class Store {
 
       const payload = {
         addedElements: addedElementIDs.map(id => this.idToElement.get(id)),
-        removedElementIDs: Array.from(removedElementIDs).map(([ id ]) => id)
-        // latestCommitProfilingMetadata: {
-        //   ...latestCommitProfilingMetadata,
-        //   changeDescriptions: Object.fromEntries(
-        //     latestCommitProfilingMetadata.changeDescriptions
-        //   )
-        // }
+        removedElementIDs: Array.from(removedElementIDs).map(([ id ]) => id),
+        latestCommitProfilingMetadata: {
+          // ...latestCommitProfilingMetadata,
+          // changeDescriptions: Object.fromEntries(
+          //   latestCommitProfilingMetadata.changeDescriptions
+          // )
+          changeDescriptions: {}
+        }
       };
 
       // FIXME: figure out the need to aggregate actions here
