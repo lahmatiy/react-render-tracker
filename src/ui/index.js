@@ -51,21 +51,43 @@ function AppWithData() {
             if (changedIDs.length) {
               for (const id of changedIDs) {
                 const {
-                  context,
                   didHooksChange,
                   isFirstMount,
                   props,
                   state,
+                  hooks,
                   timestamp,
+                  parentUpdate,
                 } = changeDescriptions[id];
                 const change = {
                   timestamp,
+                  reason: [],
+                  details: {},
                 };
 
                 if (isFirstMount) {
                   change.phase = "Mount";
                 } else {
                   change.phase = "Update";
+                }
+
+                if (didHooksChange && hooks !== null && hooks.length > 0) {
+                  change.reason.push("Hooks Change");
+                  change.details.hooks = hooks;
+                }
+
+                if (props !== null && props.length > 0) {
+                  change.reason.push("Props Change");
+                  change.details.props = props;
+                }
+
+                if (state !== null && state.length > 0) {
+                  change.reason.push("State Change");
+                  change.details.state = state;
+                }
+
+                if (parentUpdate) {
+                  change.reason.push("Parent Update");
                 }
 
                 if (!componentTree[id].changes) {
