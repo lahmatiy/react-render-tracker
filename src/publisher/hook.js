@@ -1,6 +1,15 @@
+const THIS_TOOL = Symbol;
+
 export function installHook(target) {
+  let curHook = null;
+
   if (target.hasOwnProperty("__REACT_DEVTOOLS_GLOBAL_HOOK__")) {
-    return null;
+    curHook = target["__REACT_DEVTOOLS_GLOBAL_HOOK__"];
+
+    // avoid multiple attachments to global
+    if (curHook[THIS_TOOL]) {
+      return curHook;
+    }
   }
 
   function detectReactBuildType(renderer) {
@@ -283,6 +292,8 @@ export function installHook(target) {
   const renderers = new Map();
 
   const hook = {
+    [THIS_TOOL]: true,
+
     rendererInterfaces,
     listeners,
 
@@ -306,6 +317,14 @@ export function installHook(target) {
     onCommitFiberRoot,
     onPostCommitFiberRoot,
   };
+
+  if (curHook) {
+    // looks like React DevTools already added a hook
+    for (const key in curHook) {
+      delete curHook[key];
+    }
+    return Object.assign(curHook, hook);
+  }
 
   Object.defineProperty(target, "__REACT_DEVTOOLS_GLOBAL_HOOK__", {
     // This property needs to be configurable for the test environment,
