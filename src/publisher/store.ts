@@ -8,7 +8,7 @@ import {
   TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
   TREE_OPERATION_UPDATE_TREE_BASE_DURATION
 } from "./constants";
-import { publisher } from "../publisher.js";
+import { publisher } from "./rempl-publisher.js";
 
 export type Capabilities = {
   hasOwnerMetadata: boolean,

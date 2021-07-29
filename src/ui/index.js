@@ -23,6 +23,10 @@ function AppWithData() {
         .subscribe(changes => {
           const componentTree = {};
 
+          if (!changes) {
+            changes = [];
+          }
+
           for (const change of changes) {
             const { addedElements, removedElementIDs } = change;
 
