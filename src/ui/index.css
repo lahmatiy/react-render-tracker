@@ -4,9 +4,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Arial", "monospace";
+  font-size: 14px;
   color: var(--text);
 
   --text: #323334;
+  --text-muted: #a1a1a1;
   --icon: #999999;
   --primary: #0279c9;
   --brand: #61dbfb;
@@ -23,18 +25,18 @@ body {
 .tools-header {
   display: flex;
   flex-shrink: 0;
+  border-bottom: 1px var(--border) solid;
 }
 
 .tools-header > div {
   flex: 1;
-  border: 1px var(--border) solid;
-  padding: 10px 20px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
 }
 
 .tools-header > div + div {
-  border-left: none;
+  border-left: 1px var(--border) solid;
 }
 
 .tools-content {
@@ -46,14 +48,12 @@ body {
 
 .tools-content > div {
   flex: 1;
-  border-left: 1px var(--border) solid;
-  border-right: 1px var(--border) solid;
   flex-shrink: 0;
   overflow: auto;
 }
 
 .tools-content > div + div {
-  border-left: none;
+  border-left: 1px var(--border) solid;
 }
 
 .tree-element__container {
@@ -61,23 +61,8 @@ body {
   margin-left: 20px;
 }
 
-.tree-element__container:after {
-  position: absolute;
-  left: 5px;
-  top: 0;
-  height: 100%;
-  content: "";
-  background: var(--brand);
-  width: 1px;
-  display: none;
-}
-
-.tree-element__container:last-of-type:after {
-  height: calc(100% - 13px);
-}
-
-.tree-element__container.root:after {
-  display: none;
+.tree-element__container.root {
+  margin-left: 0;
 }
 
 .tree-element__name {
@@ -91,23 +76,17 @@ body {
   transition: 0.2s;
 }
 
+.tree-element__name .disabled {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
 .tree-element__name:hover {
   color: var(--brand);
 }
 
 .tree-element__name.selected {
   background: rgba(2, 121, 201, 0.1);
-}
-
-.tree-element__name:before {
-  position: absolute;
-  left: 5px;
-  top: 50%;
-  width: 15px;
-  height: 1px;
-  content: "";
-  background: var(--brand);
-  display: none;
 }
 
 .tree-element__bracket {
@@ -142,6 +121,12 @@ body {
   transform: rotate(0);
 }
 
+.tree-element__count {
+  color: var(--text-muted);
+  padding: 0 4px;
+  font-size: 10px;
+}
+
 ul {
   list-style-type: none;
   padding: 0;
@@ -149,7 +134,7 @@ ul {
 }
 
 .card {
-  padding: 20px;
+  padding: 10px;
 }
 
 table {

@@ -8,6 +8,7 @@ import {
   TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
   TREE_OPERATION_UPDATE_TREE_BASE_DURATION
 } from "./constants";
+import { publisher } from "../publisher.js";
 
 export type Capabilities = {
   hasOwnerMetadata: boolean,
@@ -314,6 +315,40 @@ export class Store {
         default:
           throw new Error(`Unsupported operation "${operation}"`);
       }
+    }
+
+    if (
+      addedElementIDs.length ||
+      // latestCommitProfilingMetadata ||
+      removedElementIDs.size
+    ) {
+      // if (latestCommitProfilingMetadata) {
+      //   for (const [
+      //     id,
+      //     { didHooksChange, hooks },
+      //   ] of latestCommitProfilingMetadata.changeDescriptions) {
+      //     if (didHooksChange && hooks && hooks.length) {
+      //       const { _debugHookTypes } = getFiberByID(id);
+      //
+      //       hooks.forEach(hook => {
+      //         hook.name = _debugHookTypes[hook.index];
+      //       });
+      //     }
+      //   }
+      // }
+
+      const payload = {
+        addedElements: addedElementIDs.map(id => this.idToElement.get(id)),
+        removedElementIDs: Array.from(removedElementIDs).map(([ id ]) => id)
+        // latestCommitProfilingMetadata: {
+        //   ...latestCommitProfilingMetadata,
+        //   changeDescriptions: Object.fromEntries(
+        //     latestCommitProfilingMetadata.changeDescriptions
+        //   )
+        // }
+      };
+
+      publisher.ns("tree-changes").publish([ payload ]);
     }
   }
 

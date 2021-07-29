@@ -22,18 +22,19 @@ function App({ data }) {
       <ToolsHeader
         setSearched={setSearched}
         searched={searched}
-        selected={selectedElement}
       />
       <div className="tools-content">
         <div>
           <Card>
-            {filteredData && (
-              <TreeElement
-                data={filteredData}
-                onSelect={setSelectedElement}
-                selectedId={selectedElement?.id}
-                root
-              />
+            {filteredData?.map(rootElement => (
+                <TreeElement
+                  data={rootElement}
+                  onSelect={setSelectedElement}
+                  selectedId={selectedElement?.id}
+                  key={rootElement.id}
+                  root
+                />
+              )
             )}
           </Card>
         </div>

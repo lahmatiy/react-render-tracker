@@ -47,7 +47,7 @@ exports.buildSubscriber = async function (config, configCSS) {
 
 exports.buildPublisher = async function (config) {
   const result = await esbuild.buildSync({
-    entryPoints: ["src/index.js"],
+    entryPoints: ["src/publisher.js"],
     bundle: true,
     sourcemap: true,
     format: "esm",
