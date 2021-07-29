@@ -1,9 +1,54 @@
-import {
-  ElementTypeClass,
-  ElementTypeForwardRef,
-  ElementTypeFunction,
-  ElementTypeMemo,
-} from "./constants";
+import { ElementType } from "../types";
+import { ElementTypeClass, ElementTypeForwardRef, ElementTypeFunction, ElementTypeMemo } from "../constants";
+
+export function utfDecodeString(array: Array<number>): string {
+  return String.fromCodePoint(...array);
+}
+
+export function separateDisplayNameAndHOCs(
+  displayName: string | null,
+  type: ElementType
+): [ string | null, Array<string> | null ] {
+  if (displayName === null) {
+    return [ null, null ];
+  }
+
+  let parsedDisplayName = displayName;
+  let hocDisplayNames = null;
+
+  switch (type) {
+    case ElementTypeClass:
+    case ElementTypeForwardRef:
+    case ElementTypeFunction:
+    case ElementTypeMemo:
+      if (parsedDisplayName.indexOf("(") >= 0) {
+        const matches = parsedDisplayName.match(/[^()]+/g);
+        if (matches != null) {
+          parsedDisplayName = matches.pop()!;
+          hocDisplayNames = matches;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (type === ElementTypeMemo) {
+    if (hocDisplayNames === null) {
+      hocDisplayNames = [ "Memo" ];
+    } else {
+      hocDisplayNames.unshift("Memo");
+    }
+  } else if (type === ElementTypeForwardRef) {
+    if (hocDisplayNames === null) {
+      hocDisplayNames = [ "ForwardRef" ];
+    } else {
+      hocDisplayNames.unshift("ForwardRef");
+    }
+  }
+
+  return [ parsedDisplayName, hocDisplayNames ];
+}
 
 let uidCounter = 0;
 
@@ -88,15 +133,11 @@ export function format(maybeMessage, ...inputArgs) {
   return "" + formatted;
 }
 
-export function utfDecodeString(array) {
-  return String.fromCodePoint(...array);
-}
+export function utfEncodeString(value: string) {
+  const encoded = new Array(value.length);
 
-export function utfEncodeString(string) {
-  const encoded = new Array(string.length);
-
-  for (let i = 0; i < string.length; i++) {
-    encoded[i] = string.codePointAt(i);
+  for (let i = 0; i < value.length; i++) {
+    encoded[i] = value.codePointAt(i);
   }
 
   return encoded;
@@ -104,9 +145,9 @@ export function utfEncodeString(string) {
 
 export function copyWithDelete(obj, path, index) {
   const key = path[index];
-  const updated = isArray(obj) ? obj.slice() : { ...obj };
+  const updated = Array.isArray(obj) ? obj.slice() : { ...obj };
   if (index + 1 === path.length) {
-    if (isArray(updated)) {
+    if (Array.isArray(updated)) {
       updated.splice(key, 1);
     } else {
       delete updated[key];
@@ -193,31 +234,31 @@ export function deletePathInObject(object, path) {
 
 export function cleanForBridge(data, isPathAllowed, path = []) {
   return;
-  if (data !== null) {
-    const cleanedPaths = [];
-    const unserializablePaths = [];
-    const cleanedData = dehydrate(
-      data,
-      cleanedPaths,
-      unserializablePaths,
-      path,
-      isPathAllowed
-    );
-
-    return {
-      data: cleanedData,
-      cleaned: cleanedPaths,
-      unserializable: unserializablePaths,
-    };
-  } else {
-    return null;
-  }
+  // if (data !== null) {
+  //   const cleanedPaths = [];
+  //   const unserializablePaths = [];
+  //   const cleanedData = dehydrate(
+  //     data,
+  //     cleanedPaths,
+  //     unserializablePaths,
+  //     path,
+  //     isPathAllowed
+  //   );
+  //
+  //   return {
+  //     data: cleanedData,
+  //     cleaned: cleanedPaths,
+  //     unserializable: unserializablePaths
+  //   };
+  // } else {
+  //   return null;
+  // }
 }
 
 export function getInObject(object, path) {
   return path.reduce((reduced, attr) => {
     if (reduced) {
-      if (hasOwnProperty.call(reduced, attr)) {
+      if (Object.hasOwnProperty.call(reduced, attr)) {
         return reduced[attr];
       }
       if (typeof reduced[Symbol.iterator] === "function") {
@@ -261,45 +302,4 @@ export function sessionStorageGetItem(key) {
   } catch (error) {
     return null;
   }
-}
-
-export function separateDisplayNameAndHOCs(displayName, type) {
-  if (displayName === null) {
-    return [null, null];
-  }
-
-  let hocDisplayNames = null;
-
-  switch (type) {
-    case ElementTypeClass:
-    case ElementTypeForwardRef:
-    case ElementTypeFunction:
-    case ElementTypeMemo:
-      if (displayName.indexOf("(") >= 0) {
-        const matches = displayName.match(/[^()]+/g);
-        if (matches != null) {
-          displayName = matches.pop();
-          hocDisplayNames = matches;
-        }
-      }
-      break;
-    default:
-      break;
-  }
-
-  if (type === ElementTypeMemo) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["Memo"];
-    } else {
-      hocDisplayNames.unshift("Memo");
-    }
-  } else if (type === ElementTypeForwardRef) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["ForwardRef"];
-    } else {
-      hocDisplayNames.unshift("ForwardRef");
-    }
-  }
-
-  return [displayName, hocDisplayNames];
 }
