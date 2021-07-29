@@ -42,6 +42,8 @@ export class Store {
 
   private collapseNodesByDefault = false;
 
+  private storedActions = [];
+
   /**
    * {@link packages/react-devtools-shared/src/devtools/store.js}
    */
@@ -348,7 +350,10 @@ export class Store {
         // }
       };
 
-      publisher.ns("tree-changes").publish([ payload ]);
+      // FIXME: figure out the need to aggregate actions here
+      this.storedActions.push(payload);
+
+      publisher.ns("tree-changes").publish(this.storedActions);
     }
   }
 
