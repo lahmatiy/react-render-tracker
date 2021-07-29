@@ -1,15 +1,13 @@
 export const handleFilterDataElement = (data, searched) => {
-  const result = JSON.parse(JSON.stringify(data));
+  const rootsArray = JSON.parse(JSON.stringify(data));
 
-  if (!result) {
-    return result;
-  }
+  rootsArray.forEach(rootNode => {
+    rootNode.children = rootNode.children.filter(element => {
+      return getHasElementMatch(element, searched);
+    });
+  })
 
-  result.children = result.children.filter(element => {
-    return getHasElementMatch(element, searched);
-  });
-
-  return result;
+  return rootsArray;
 };
 
 const getHasElementMatch = (element, searched) => {
@@ -31,7 +29,7 @@ const getHasElementMatch = (element, searched) => {
 };
 
 export const getTreeData = (data) => {
-  let highestDepth = -1;
+  let highestDepth = 0;
 
   const dataArray = Object.keys(data).map(id => {
     const element = data[id];
@@ -40,7 +38,7 @@ export const getTreeData = (data) => {
   })
 
   const result = {};
-  for (let i = highestDepth; i >= -1; i--) {
+  for (let i = highestDepth; i >= 0; i--) {
     const components = dataArray.filter(d => d.depth === i);
 
     components.forEach(component => {
@@ -57,8 +55,5 @@ export const getTreeData = (data) => {
     })
   }
 
-  const keys = Object.keys(result);
-  const firstId = keys[0];
-
-  return result[firstId];
+  return Object.keys(result).map(rootId => result[rootId]);
 }

@@ -1,10 +1,8 @@
 const treeData = {
   "1": {
-    "children": [
-      3
-    ],
-    "depth": -1,
-    "displayName": null,
+    "children": [],
+    "depth": 0,
+    "displayName": "App",
     "hocDisplayNames": null,
     "id": 1,
     "isCollapsed": false,
@@ -12,7 +10,20 @@ const treeData = {
     "ownerId": 0,
     "parentId": 0,
     "type": 11,
-    "weight": 0
+    "weight": 0,
+    "changes": {
+      "2021-29-07-WHATEVER": {
+        "phase": "mount"
+      },
+      "2021-29-07-WHATEVER2": {
+        "phase": "update",
+        "reason": ["setState", "props"]
+      },
+      "2021-29-07-WHATEVER3": {
+        "phase": "update",
+        "reason": ["props"]
+      }
+    }
   },
   "3": {
     "children": [
@@ -45,7 +56,8 @@ const treeData = {
     "ownerId": 3,
     "parentId": 3,
     "type": 5,
-    "weight": 1
+    "weight": 1,
+    "isUnmounted": true
   },
   "11": {
     "children": [],
@@ -99,7 +111,7 @@ const treeData = {
     "type": 5,
     "weight": 1
   }
-}
+};
 
 
 export default treeData;
