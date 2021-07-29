@@ -333,7 +333,7 @@ export class Store {
       //       const { _debugHookTypes } = getFiberByID(id);
       //
       //       hooks.forEach(hook => {
-      //         hook.name = _debugHookTypes[hook.index];
+      //         hook.name = _debugHookTypes[hook.index+1];
       //       });
       //     }
       //   }
