@@ -28,7 +28,13 @@ function AppWithData() {
           }
 
           for (const change of changes) {
-            const { addedElements, removedElementIDs } = change;
+            const {
+              addedElements,
+              removedElementIDs,
+              latestCommitProfilingMetadata,
+            } = change;
+            const { changeDescriptions } = latestCommitProfilingMetadata;
+            const changedIDs = Object.keys(changeDescriptions);
 
             if (addedElements.length) {
               for (const element of addedElements) {
@@ -39,6 +45,56 @@ function AppWithData() {
             if (removedElementIDs.length) {
               for (const id of removedElementIDs) {
                 componentTree[id].isUnmounted = true;
+              }
+            }
+
+            if (changedIDs.length) {
+              for (const id of changedIDs) {
+                const {
+                  didHooksChange,
+                  isFirstMount,
+                  props,
+                  state,
+                  hooks,
+                  timestamp,
+                  parentUpdate,
+                } = changeDescriptions[id];
+                const change = {
+                  timestamp,
+                  reason: [],
+                  details: {},
+                };
+
+                if (isFirstMount) {
+                  change.phase = "Mount";
+                } else {
+                  change.phase = "Update";
+                }
+
+                if (didHooksChange && hooks !== null && hooks.length > 0) {
+                  change.reason.push("Hooks Change");
+                  change.details.hooks = hooks;
+                }
+
+                if (props !== null && props.length > 0) {
+                  change.reason.push("Props Change");
+                  change.details.props = props;
+                }
+
+                if (state !== null && state.length > 0) {
+                  change.reason.push("State Change");
+                  change.details.state = state;
+                }
+
+                if (parentUpdate) {
+                  change.reason.push("Parent Update");
+                }
+
+                if (!componentTree[id].changes) {
+                  componentTree[id].changes = {};
+                }
+
+                componentTree[id].changes[change.timestamp] = change;
               }
             }
           }
