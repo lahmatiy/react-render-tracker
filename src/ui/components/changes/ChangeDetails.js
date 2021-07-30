@@ -1,32 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
 
-import ChangeRowsHooks from "./ChangeRowsHooks";
-
-const reasons = ["props", "state", "hooks"];
+import ChangeRowsReason from "./ChangeRowsReason";
 
 const ChangeDetails = ({ details }) => {
   return (
     <tr>
       <td colSpan={4}>
-        {reasons.map(reason => {
-          if (details[reason]?.length) {
-            const data = details[reason];
-
-            switch (reason) {
-              case "hooks": {
-                return <ChangeRowsHooks data={data} key={reason} />;
-              }
-              case "state": {
-                return <ChangeRowsHooks data={data} key={reason} />;
-              }
-              case "props": {
-                return <ChangeRowsHooks data={data} key={reason} />;
-              }
-              default:
-                return null;
-            }
-          }
-        })}
+        <table>
+          <thead>
+          <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Previous</th>
+            <th>Next</th>
+          </tr>
+          </thead>
+          <tbody>
+          {details.props && <ChangeRowsReason data={details.props} type="Props" />}
+          {details.state && <ChangeRowsReason data={details.state} type="State" />}
+          {details.hooks && <ChangeRowsReason data={details.hooks} type="Hooks" />}
+          </tbody>
+        </table>
       </td>
     </tr>
   );
