@@ -13,13 +13,11 @@ const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
   return (
     <span className={classes}>
       {children}
-      <span className={isDisabled ? "disabled" : ""}>
-        {name}
-      </span>
+      <span className={isDisabled ? "disabled" : ""}>{name}</span>
       <ElementId id={data.id} />
-      <span className="tree-element__count">
-        ({renderCount})
-      </span>
+      {renderCount > 0 && (
+        <span className="tree-element__count">({renderCount})</span>
+      )}
     </span>
   );
 };

@@ -6,6 +6,8 @@ import ButtonCollapse from "./ui/ButtonCollapse";
 const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
+  const hasChildren = data.children.length > 0;
+  const handleToggle = hasChildren && (() => setIsCollapsed(prev => !prev));
   const handleSelect = event => {
     event.stopPropagation();
     onSelect(data);
@@ -13,10 +15,6 @@ const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
 
   let classes = "tree-element__container";
   if (root) classes += " root";
-
-  const handleToggle = () => {
-    setIsCollapsed(prev => !prev);
-  };
 
   return (
     <div className={classes} onClick={handleSelect}>

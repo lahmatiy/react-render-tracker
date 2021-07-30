@@ -44,6 +44,6 @@ function Root() {
 }
 
 export default {
-  title: "Basic change of context (not finished)",
+  title: "Basic change of context",
   Root,
 } as TestCase;

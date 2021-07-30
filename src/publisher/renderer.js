@@ -1303,6 +1303,9 @@ export function attach(hook, rendererID, renderer, global) {
           const effect =
             isEffect(prev.memoizedState) && isEffect(next.memoizedState);
 
+          /**
+           * Fixes the problem with Rempl exploding on circular references in payload
+           */
           indices.push({
             index,
             prev: {
@@ -2043,6 +2046,15 @@ export function attach(hook, rendererID, renderer, global) {
           if (recordChangeDescriptions) {
             const changeDescription = getChangeDescription(alternate, fiber);
             if (changeDescription !== null) {
+              const { didHooksChange, hooks } = changeDescription;
+              if (didHooksChange && hooks && hooks.length) {
+                const { _debugHookTypes } = getFiberByID(id);
+
+                hooks.forEach(hook => {
+                  hook.name = _debugHookTypes[hook.index + 1];
+                });
+              }
+
               if (metadata.changeDescriptions !== null) {
                 metadata.changeDescriptions.set(id, changeDescription);
               }
