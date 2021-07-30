@@ -2,20 +2,23 @@ import { separateDisplayNameAndHOCs, utfDecodeString } from "./utils";
 import { Element, ElementType } from "./types";
 import {
   ElementTypeRoot,
-  TREE_OPERATION_ADD, TREE_OPERATION_REMOVE,
+  TREE_OPERATION_ADD,
+  TREE_OPERATION_REMOVE,
   TREE_OPERATION_REMOVE_ROOT,
   TREE_OPERATION_REORDER_CHILDREN,
   TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
-  TREE_OPERATION_UPDATE_TREE_BASE_DURATION
+  TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
 } from "./constants";
 import { publisher } from "./rempl-publisher.js";
 
 export type Capabilities = {
-  hasOwnerMetadata: boolean,
-  supportsProfiling: boolean,
+  hasOwnerMetadata: boolean;
+  supportsProfiling: boolean;
 };
 
 export class Store {
+  public latestCommitProfilingMetadata: any = null;
+
   /**
    * This Array must be treated as immutable!
    * Passive effects will check it for changes between render and mount.
@@ -47,7 +50,7 @@ export class Store {
   /**
    * {@link packages/react-devtools-shared/src/devtools/store.js}
    */
-  public parseOperations(operations: Array<number>) {
+  public parseOperations(operations: Array<number>, getFiberById: any) {
     let haveRootsChanged = false;
 
     // The first two values are always rendererID and rootID
@@ -62,7 +65,7 @@ export class Store {
 
     // Reassemble the string table.
     const stringTable: Array<null | string> = [
-      null // ID = 0 corresponds to the null string.
+      null, // ID = 0 corresponds to the null string.
     ];
     const stringTableSize = operations[i++];
     const stringTableEnd = i + stringTableSize;
@@ -102,7 +105,7 @@ export class Store {
             this.rootIdToRendererId.set(id, rendererID);
             this.rootIdToCapabilities.set(id, {
               hasOwnerMetadata,
-              supportsProfiling
+              supportsProfiling,
             });
 
             this.idToElement.set(id, {
@@ -116,7 +119,7 @@ export class Store {
               ownerId: 0,
               parentId: 0,
               type,
-              weight: 0
+              weight: 0,
             });
 
             haveRootsChanged = true;
@@ -144,10 +147,8 @@ export class Store {
             const parentElement = this.idToElement.get(parentId)!;
             parentElement.children.push(id);
 
-            const [
-              displayNameWithoutHOCs,
-              hocDisplayNames
-            ] = separateDisplayNameAndHOCs(displayName, type);
+            const [displayNameWithoutHOCs, hocDisplayNames] =
+              separateDisplayNameAndHOCs(displayName, type);
 
             const element: Element = {
               children: [],
@@ -160,7 +161,7 @@ export class Store {
               ownerId: ownerId,
               parentId: parentElement.id,
               type,
-              weight: 1
+              weight: 1,
             };
 
             this.idToElement.set(id, element);
@@ -202,7 +203,6 @@ export class Store {
 
             let parentElement = null;
             if (parentId === 0) {
-
               this.roots = this.roots.filter(rootId => rootId !== id);
               this.rootIdToRendererId.delete(id);
               this.rootIdToCapabilities.delete(id);
@@ -321,70 +321,38 @@ export class Store {
 
     if (
       addedElementIDs.length ||
-      // latestCommitProfilingMetadata ||
+      this.latestCommitProfilingMetadata ||
       removedElementIDs.size
     ) {
-      // if (latestCommitProfilingMetadata) {
-      //   for (const [
-      //     id,
-      //     { didHooksChange, hooks },
-      //   ] of latestCommitProfilingMetadata.changeDescriptions) {
-      //     if (didHooksChange && hooks && hooks.length) {
-      //       const { _debugHookTypes } = getFiberByID(id);
-      //
-      //       hooks.forEach(hook => {
-      //         hook.name = _debugHookTypes[hook.index+1];
-      //       });
-      //     }
-      //   }
-      // }
+      if (this.latestCommitProfilingMetadata) {
+        const changes = this.latestCommitProfilingMetadata.changeDescriptions;
+        for (const [id, { didHooksChange, hooks }] of changes) {
+          if (didHooksChange && hooks && hooks.length) {
+            const { _debugHookTypes } = getFiberById(id);
+
+            hooks.forEach(hook => {
+              hook.name = _debugHookTypes[hook.index + 1];
+            });
+          }
+        }
+      }
 
       const payload = {
         addedElements: addedElementIDs.map(id => this.idToElement.get(id)),
-        removedElementIDs: Array.from(removedElementIDs).map(([ id ]) => id),
-        latestCommitProfilingMetadata: {
-          // ...latestCommitProfilingMetadata,
-          // changeDescriptions: Object.fromEntries(
-          //   latestCommitProfilingMetadata.changeDescriptions
-          // )
-          changeDescriptions: {}
-        }
+        removedElementIDs: Array.from(removedElementIDs).map(([id]) => id),
+        latestCommitProfilingMetadata: this.latestCommitProfilingMetadata && {
+          ...this.latestCommitProfilingMetadata,
+          changeDescriptions: (Object as any).fromEntries(
+            this.latestCommitProfilingMetadata.changeDescriptions
+          ),
+        },
       };
 
       // FIXME: figure out the need to aggregate actions here
       this.storedActions.push(payload);
+      this.latestCommitProfilingMetadata = null;
 
       publisher.ns("tree-changes").publish(this.storedActions);
     }
   }
-
-  public printTree() {
-    const rootIndex = 1;
-
-    const buffer = this.serializeElement(rootIndex);
-    console.log(buffer.join("\n"));
-  }
-
-  private serializeElement(id: number, buffer: string[] = [], offset = 0) {
-    const elem = this.idToElement.get(id);
-    if (!elem) {
-      return [];
-    }
-
-    const hasDisplayName = !!elem.displayName;
-    if (hasDisplayName) {
-      let spaceOffset = "";
-      for (let i = 0; i < offset; i++) {
-        spaceOffset += " ";
-      }
-      buffer.push(spaceOffset + elem.displayName);
-    }
-
-    for (const childIndex of elem.children) {
-      this.serializeElement(childIndex, buffer, hasDisplayName ? offset + 2 : offset);
-    }
-
-    return buffer;
-  }
 }
-

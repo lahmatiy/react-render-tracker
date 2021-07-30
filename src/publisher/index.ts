@@ -4,12 +4,11 @@ import { RendererInterface } from "./types";
 import { attach } from "./renderer";
 
 interface RendererAttachedParams {
-  id: number
-  rendererInterface: RendererInterface
+  id: number;
+  rendererInterface: RendererInterface;
 }
 
 const win = window;
-
 
 function start() {
   const hook = installHook(win);
@@ -23,16 +22,20 @@ function start() {
       // Now that the Store and the renderer interface are connected,
       // it's time to flush the pending operation codes to the frontend.
       rendererInterface.flushInitialOperations();
+      rendererInterface.startProfiling(true);
     }
   );
 
-
-  hook.sub("operations", ({ operations }) => {
+  hook.sub("operations", ({ operations, getFiberByID }) => {
     try {
-      store.parseOperations(operations);
+      store.parseOperations(operations, getFiberByID);
     } catch (e) {
       console.warn(e.message);
     }
+  });
+
+  hook.sub("commit", commitProfilingMetadata => {
+    store.latestCommitProfilingMetadata = commitProfilingMetadata;
   });
 
   const attachRenderer = (id, renderer) => {
@@ -42,7 +45,12 @@ function start() {
     if (rendererInterface == null) {
       if (typeof renderer.findFiberByHostInstance === "function") {
         // react-reconciler v16+
-        rendererInterface = attach(hook, id, renderer, win) as RendererInterface;
+        rendererInterface = attach(
+          hook,
+          id,
+          renderer,
+          win
+        ) as RendererInterface;
       }
 
       if (rendererInterface != null) {
@@ -56,13 +64,12 @@ function start() {
       hook.emit("renderer-attached", {
         id,
         renderer,
-        rendererInterface
+        rendererInterface,
       });
     } else {
       hook.emit("unsupported-renderer-version", id);
     }
   };
-
 
   hook.on("renderer", ({ id, renderer }) => {
     attachRenderer(id, renderer);
