@@ -11,6 +11,7 @@ function App({ data }) {
   const [selectedElement, setSelectedElement] = useState(null);
   const [searched, setSearched] = useState("");
   const [showDisabled, setShowDisabled] = useState(true);
+  const [showChildChanges, setShowChildChanges] = useState(false);
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -25,24 +26,30 @@ function App({ data }) {
         searched={searched}
         onShowDisabled={setShowDisabled}
         showDisabled={showDisabled}
+        showChildChanges={showChildChanges}
+        onShowChildChanges={setShowChildChanges}
       />
       <div className="tools-content">
         <div>
           <Card>
             {filteredData?.map(rootElement => (
-                <TreeElement
-                  data={rootElement}
-                  onSelect={setSelectedElement}
-                  selectedId={selectedElement?.id}
-                  key={rootElement.id}
-                  highlight={searched}
-                  root
-                />
-              )
-            )}
+              <TreeElement
+                data={rootElement}
+                onSelect={setSelectedElement}
+                selectedId={selectedElement?.id}
+                key={rootElement.id}
+                highlight={searched}
+                root
+              />
+            ))}
           </Card>
         </div>
-        {selectedElement && <ElementInfo data={selectedElement} />}
+        {selectedElement && (
+          <ElementInfo
+            showChildChanges={showChildChanges}
+            data={selectedElement}
+          />
+        )}
       </div>
     </div>
   );

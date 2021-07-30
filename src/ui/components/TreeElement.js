@@ -20,7 +20,12 @@ const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
 
   return (
     <div className={classes} onClick={handleSelect}>
-      <ElementName data={data} isSelected={selectedId === data.id} isDisabled={data.isUnmounted} highlight={highlight}>
+      <ElementName
+        data={data}
+        isSelected={selectedId === data.id}
+        isDisabled={data.isUnmounted}
+        highlight={highlight}
+      >
         <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />
       </ElementName>
 

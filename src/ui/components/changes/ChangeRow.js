@@ -4,7 +4,7 @@ import dateFormat from "dateformat";
 import ButtonCollapse from "../ui/ButtonCollapse";
 import ChangeDetails from "./ChangeDetails";
 
-const ChangeRow = ({ event, timestamp }) => {
+const ChangeRow = ({ event, timestamp, displayName }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleToggle = () => {
@@ -17,6 +17,7 @@ const ChangeRow = ({ event, timestamp }) => {
         <td>
           <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />
         </td>
+        {displayName && <td>{displayName}</td>}
         <td>{dateFormat(timestamp, "h:MM:ss.l TT")}</td>
         <td>{event.phase}</td>
         <td>{event.reason?.join(", ")}</td>
