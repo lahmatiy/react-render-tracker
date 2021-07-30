@@ -33,9 +33,8 @@ export function parseOperations(operations: number[]) {
   const rendererId = operations[0];
 
   const addedElementIds: Array<number> = [];
-  // This is a mapping of removed ID -> parent ID:
-  const removedElementIds: Map<number, number> = new Map();
-  // We'll use the parent ID to adjust selection if it gets deleted.
+  // This is a set of removed ID:
+  const removedElementIds = new Set<number>();
 
   let i = 2;
 
@@ -125,7 +124,7 @@ export function parseOperations(operations: number[]) {
             hocDisplayNames,
             id,
             key,
-            ownerId: ownerId,
+            ownerId,
             parentId: parentElement.id,
             type,
             weight: 1,
@@ -182,7 +181,7 @@ export function parseOperations(operations: number[]) {
             parentElement.children.splice(index, 1);
           }
 
-          removedElementIds.set(id, parentId);
+          removedElementIds.add(id);
 
           ownersMap.delete(id);
           if (ownerId > 0) {
@@ -284,7 +283,7 @@ export function parseOperations(operations: number[]) {
     return {
       rendererId: rendererId,
       addedElements: addedElementIds.map(id => idToElement.get(id)),
-      removedElementIds: Array.from(removedElementIds).map(([id]) => id),
+      removedElementIds: Array.from(removedElementIds),
     };
   }
 }

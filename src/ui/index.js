@@ -65,19 +65,16 @@ function parseOperationMessages(messages) {
   const removedElements = new Set();
   for (const message of messages) {
     const { addedElements, removedElementIds } = message;
-    if (addedElements.length) {
-      for (const element of addedElements) {
-        componentMap[element.id] = element;
-      }
+
+    for (const element of addedElements) {
+      componentMap[element.id] = element;
     }
 
-    if (removedElementIds.length) {
-      for (const id of removedElementIds) {
-        const parentId = componentMap[id].parentId;
-        componentMap[id].isUnmounted = true;
-        componentMap[parentId].children.push(id);
-        removedElements.add(id);
-      }
+    for (const id of removedElementIds) {
+      const parentId = componentMap[id].parentId;
+      componentMap[id].isUnmounted = true;
+      componentMap[parentId].children.push(id);
+      removedElements.add(id);
     }
   }
 
@@ -89,7 +86,7 @@ function parseProfilingMessages(messages, componentTree, removedElements) {
     const { changeDescriptions, timestamp } = message;
 
     if (changeDescriptions) {
-      for (const [key, value] of changeDescriptions.entries()) {
+      for (const [key, value] of Object.entries(changeDescriptions)) {
         const {
           didHooksChange,
           isFirstMount,

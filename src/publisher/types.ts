@@ -31,20 +31,48 @@ export type OwnersList = {
   owners: Array<SerializedElement> | null;
 };
 
-export type ChangeDescription = {
+export type ReactChangeDescription = {
   context: Array<string> | boolean | null;
   didHooksChange: boolean;
   isFirstMount: boolean;
-  props: Array<string> | null;
-  state: Array<string> | null;
+  props: Array<{ name: string; prev: any; next: any }> | null;
+  state: Array<{ name: string; prev: any; next: any }> | null;
   // TODO: add proper hook type
   hooks?: Array<any> | null;
 };
 
-export type CommitData = {
+export type ReactCommitData = {
   commitTime: number;
   // Tuple of fiber ID and change description
-  changeDescriptions: Map<number, ChangeDescription> | null;
+  changeDescriptions: Map<number, ReactChangeDescription> | null;
+  duration: number;
+  // Only available in certain (newer) React builds,
+  effectDuration: number | null;
+  // Tuple of fiber ID and actual duration
+  fiberActualDurations: Array<[number, number]>;
+  // Tuple of fiber ID and computed "self" duration
+  fiberSelfDurations: Array<[number, number]>;
+  // Only available in certain (newer) React builds,
+  passiveEffectDuration: number | null;
+  priorityLevel: string | null;
+  timestamp: number;
+  updaters: Array<SerializedElement> | null;
+};
+
+export type TransferChangeDescription = {
+  context: Array<string> | boolean | null;
+  didHooksChange: boolean;
+  isFirstMount: boolean;
+  props: Array<{ name: string; changed: boolean }> | null;
+  state: Array<{ name: string; changed: boolean }> | null;
+  // TODO: add proper hook type
+  hooks?: Array<any> | null;
+};
+
+export type TransferCommitData = {
+  commitTime: number;
+  // Tuple of fiber ID and change description
+  changeDescriptions: { [key: number]: TransferChangeDescription } | null;
   duration: number;
   // Only available in certain (newer) React builds,
   effectDuration: number | null;
@@ -60,7 +88,7 @@ export type CommitData = {
 };
 
 export type ProfilingDataForRootBackend = {
-  commitData: Array<CommitData>;
+  commitData: Array<ReactCommitData>;
   displayName: string;
   // Tuple of Fiber ID and base duration
   initialTreeBaseDurations: Array<[number, number]>;

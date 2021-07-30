@@ -3,7 +3,8 @@ import {
   ReactRenderer,
   RendererInterface,
   Element,
-  CommitData,
+  ReactCommitData,
+  TransferCommitData,
 } from "../types";
 import { attach } from "../renderer";
 import { parseOperations } from "./parse-operations";
@@ -18,7 +19,7 @@ interface RendererAttachedParams {
 
 interface Publisher {
   ns(channel: string): {
-    publish(data: unknown);
+    publish(data: TransferCommitData[]);
   };
 }
 
@@ -31,7 +32,7 @@ interface OperationMessage {
   removedElementIds: number[];
 }
 
-interface ProfilingMessage extends CommitData {
+interface ProfilingMessage extends TransferCommitData {
   type: "profiling";
 }
 
@@ -67,12 +68,14 @@ export class Bridge {
               ...payload,
               type: "operations",
             });
+          } else {
+            console.log({ operations });
           }
         } catch (e) {
           console.warn(e.message);
         }
       }),
-      devtools.sub("commit", (data: CommitData) => {
+      devtools.sub("commit", (data: ReactCommitData) => {
         this.publishCommitData(data);
       }),
       devtools.sub("renderer", ({ id, renderer }) => {
@@ -87,10 +90,11 @@ export class Bridge {
     }
   }
 
-  private publishCommitData(data: CommitData) {
+  private publishCommitData(data: ReactCommitData) {
     /**
      * Keep the latest commit data
-     * TODO: figure out why hook triggers with multiple identical commits
+     * FIXME: devtools.sub("commit") emits mutated object with the same commitTime;
+     * need to update existing record instead of filtering messages
      */
     if (this.profilingCommitTimes.has(data.commitTime)) {
       this.messages = this.messages.filter(
@@ -101,13 +105,15 @@ export class Bridge {
     this.profilingCommitTimes.add(data.commitTime);
     this.publish({
       ...toSafeCommitData(data),
-      timestamp: data.timestamp ?? new Date().getTime(),
+      timestamp: data.timestamp ?? Date.now(),
       type: "profiling",
     });
   }
 
   private publish(message: Message) {
     this.messages.push(message);
+    // console.log("react-render-tracker", this.messages.length);
+    // window.__tool = this.messages;
     this.publisher.ns("tree-changes").publish(this.messages);
   }
 

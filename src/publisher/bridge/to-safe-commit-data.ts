@@ -1,38 +1,50 @@
-import { ChangeDescription, CommitData } from "../types";
+import {
+  ReactCommitData,
+  TransferChangeDescription,
+  TransferCommitData,
+} from "../types";
 
 /**
  * Fixes possible circular dependencies in component props
  * to allow data serialisation and sending over rempl.
  * @param data
  */
-export function toSafeCommitData(data: CommitData) {
-  const changeDescriptions = Array.from(
-    data.changeDescriptions.entries()
-  ).reduce((seed, [key, entry]) => {
-    const { didHooksChange, hooks, props } = entry;
-    const safeEntry = {
+export function toSafeCommitData(data: ReactCommitData) {
+  const changeDescriptions: { [key: number]: TransferChangeDescription } =
+    Object.create(null);
+
+  for (const [key, entry] of data.changeDescriptions) {
+    const { didHooksChange, hooks, props, state } = entry;
+    const safeEntry: TransferChangeDescription = {
       ...entry,
-      props: !props
-        ? []
-        : // FIXME: fix typings in commit data
-          props.map((p: any) => ({
-            name: p.name,
-            changed: p.prev !== p.next,
-          })),
+      props: null,
+      state: null,
     };
+
+    if (props) {
+      safeEntry.props = props.map(entry => ({
+        name: entry.name,
+        changed: entry.prev !== entry.next,
+      }));
+    }
+
+    if (state) {
+      safeEntry.state = state.map(entry => ({
+        name: entry.name,
+        changed: entry.prev !== entry.next,
+      }));
+    }
 
     if (didHooksChange && hooks?.length) {
       safeEntry.hooks = hooks.map(hook => ({
         name: hook.name,
-        prev: {},
-        next: {},
+        prev: {}, // FIXME
+        next: {}, // FIXME
       }));
     }
 
-    seed.set(key, safeEntry as unknown as ChangeDescription);
+    changeDescriptions[key] = safeEntry;
+  }
 
-    return seed;
-  }, new Map<number, ChangeDescription>());
-
-  return { ...data, changeDescriptions } as unknown as CommitData;
+  return { ...data, changeDescriptions } as TransferCommitData;
 }
