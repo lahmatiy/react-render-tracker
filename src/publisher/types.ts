@@ -44,7 +44,7 @@ export type ChangeDescription = {
 export type CommitData = {
   commitTime: number;
   // Tuple of fiber ID and change description
-  changeDescriptions: Array<[number, ChangeDescription]> | null;
+  changeDescriptions: Map<number, ChangeDescription> | null;
   duration: number;
   // Only available in certain (newer) React builds,
   effectDuration: number | null;

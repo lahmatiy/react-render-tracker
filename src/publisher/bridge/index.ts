@@ -7,6 +7,7 @@ import {
 } from "../types";
 import { attach } from "../renderer";
 import { parseOperations } from "./parse-operations";
+import { toSafeCommitData } from "./to-safe-commit-data";
 
 const __win__ = window;
 
@@ -88,15 +89,18 @@ export class Bridge {
 
   private publishCommitData(data: CommitData) {
     /**
-     * TODO: figure out why hook triggers with multiple identical commit messages
+     * Keep the latest commit data
+     * TODO: figure out why hook triggers with multiple identical commits
      */
     if (this.profilingCommitTimes.has(data.commitTime)) {
-      return;
+      this.messages = this.messages.filter(
+        m => m.type !== "profiling" || m.commitTime !== data.commitTime
+      );
     }
 
     this.profilingCommitTimes.add(data.commitTime);
     this.publish({
-      ...data,
+      ...toSafeCommitData(data),
       timestamp: data.timestamp ?? new Date().getTime(),
       type: "profiling",
     });

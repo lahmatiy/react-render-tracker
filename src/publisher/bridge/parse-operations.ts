@@ -261,7 +261,7 @@ export function parseOperations(operations: number[]) {
         // const errorCount = operations[i + 2];
         // const warningCount = operations[i + 3];
         //
-        // i += 4;
+        i += 4;
         //
         // if (errorCount > 0 || warningCount > 0) {
         //   this._errorsAndWarnings.set(id, { errorCount, warningCount });
