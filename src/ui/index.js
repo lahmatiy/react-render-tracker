@@ -30,8 +30,9 @@ function AppWithData() {
               removedElementIDs,
               latestCommitProfilingMetadata,
             } = change;
-            const { changeDescriptions } = latestCommitProfilingMetadata;
-            const changedIDs = Object.keys(changeDescriptions);
+
+            const { changeDescriptions, timestamp } =
+              latestCommitProfilingMetadata;
 
             if (addedElements.length) {
               for (const element of addedElements) {
@@ -44,18 +45,24 @@ function AppWithData() {
                 const parentId = componentTree[id].parentId;
                 componentTree[id].isUnmounted = true;
                 componentTree[parentId].children.push(id);
+
+                changeDescriptions[id] = {
+                  isUnmount: true,
+                };
               }
             }
+
+            const changedIDs = Object.keys(changeDescriptions);
 
             if (changedIDs.length) {
               for (const id of changedIDs) {
                 const {
                   didHooksChange,
+                  isUnmount,
                   isFirstMount,
                   props,
                   state,
                   hooks,
-                  timestamp,
                   parentUpdate,
                 } = changeDescriptions[id];
                 const change = {
@@ -64,23 +71,25 @@ function AppWithData() {
                   details: {},
                 };
 
-                if (isFirstMount) {
+                if (isUnmount) {
+                  change.phase = "Unmount";
+                } else if (isFirstMount) {
                   change.phase = "Mount";
                 } else {
                   change.phase = "Update";
                 }
 
-                if (didHooksChange && hooks !== null && hooks.length > 0) {
+                if (didHooksChange && hooks != null && hooks.length > 0) {
                   change.reason.push("Hooks Change");
                   change.details.hooks = hooks;
                 }
 
-                if (props !== null && props.length > 0) {
+                if (props != null && props.length > 0) {
                   change.reason.push("Props Change");
                   change.details.props = props;
                 }
 
-                if (state !== null && state.length > 0) {
+                if (state != null && state.length > 0) {
                   change.reason.push("State Change");
                   change.details.state = state;
                 }

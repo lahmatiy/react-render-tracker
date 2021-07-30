@@ -341,6 +341,7 @@ export class Store {
         addedElements: addedElementIDs.map(id => this.idToElement.get(id)),
         removedElementIDs: Array.from(removedElementIDs).map(([id]) => id),
         latestCommitProfilingMetadata: this.latestCommitProfilingMetadata && {
+          timestamp: new Date().toISOString(),
           ...this.latestCommitProfilingMetadata,
           changeDescriptions: (Object as any).fromEntries(
             this.latestCommitProfilingMetadata.changeDescriptions

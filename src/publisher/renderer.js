@@ -1103,7 +1103,6 @@ export function attach(hook, rendererID, renderer, global) {
       case ElementTypeForwardRef:
         if (prevFiber === null) {
           return {
-            timestamp: new Date().toISOString(),
             context: null,
             didHooksChange: false,
             isFirstMount: true,
@@ -1112,7 +1111,6 @@ export function attach(hook, rendererID, renderer, global) {
           };
         } else {
           const data = {
-            timestamp: new Date().toISOString(),
             context: getContextChangedKeys(nextFiber),
             didHooksChange: false,
             isFirstMount: false,
