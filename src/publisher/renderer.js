@@ -1407,7 +1407,7 @@ export function attach(hook, rendererID, renderer, global) {
     for (const key of keys) {
       if (prev[key] !== next[key]) {
         changedKeys.push({
-          key,
+          name: key,
           prev: prev[key],
           next: next[key],
         });
