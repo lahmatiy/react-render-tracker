@@ -275,38 +275,11 @@ export function parseOperations(operations: number[]) {
     }
   }
 
-  if (
-    addedElementIds.length ||
-    // latestCommitProfilingMetadata ||
-    removedElementIds.size
-  ) {
-    // if (latestCommitProfilingMetadata) {
-    //   for (const [
-    //     id,
-    //     { didHooksChange, hooks },
-    //   ] of latestCommitProfilingMetadata.changeDescriptions) {
-    //     if (didHooksChange && hooks && hooks.length) {
-    //       const { _debugHookTypes } = getFiberByID(id);
-    //
-    //       hooks.forEach(hook => {
-    //         hook.name = _debugHookTypes[hook.index+1];
-    //       });
-    //     }
-    //   }
-    // }
-
-    // FIXME: figure out the need to aggregate actions here
+  if (addedElementIds.length || removedElementIds.size) {
     return {
-      rendererID: rendererId,
+      rendererId: rendererId,
       addedElements: addedElementIds.map(id => idToElement.get(id)),
-      removedElementIDs: Array.from(removedElementIds).map(([id]) => id),
-      latestCommitProfilingMetadata: {
-        // ...latestCommitProfilingMetadata,
-        // changeDescriptions: Object.fromEntries(
-        //   latestCommitProfilingMetadata.changeDescriptions
-        // )
-        changeDescriptions: {},
-      },
+      removedElementIds: Array.from(removedElementIds).map(([id]) => id),
     };
   }
 }

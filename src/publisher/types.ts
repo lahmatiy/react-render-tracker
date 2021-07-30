@@ -37,10 +37,11 @@ export type ChangeDescription = {
   isFirstMount: boolean;
   props: Array<string> | null;
   state: Array<string> | null;
-  hooks?: Array<number> | null;
+  // TODO: add proper hook type
+  hooks?: Array<any> | null;
 };
 
-export type CommitDataBackend = {
+export type CommitData = {
   // Tuple of fiber ID and change description
   changeDescriptions: Array<[number, ChangeDescription]> | null;
   duration: number;
@@ -58,7 +59,7 @@ export type CommitDataBackend = {
 };
 
 export type ProfilingDataForRootBackend = {
-  commitData: Array<CommitDataBackend>;
+  commitData: Array<CommitData>;
   displayName: string;
   // Tuple of Fiber ID and base duration
   initialTreeBaseDurations: Array<[number, number]>;
