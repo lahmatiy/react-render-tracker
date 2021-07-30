@@ -3,6 +3,7 @@ import React from "react";
 import Card from "../ui/Card";
 import ChangeRow from "../changes/ChangeRow";
 
+// TODO dummy data remove after works
 const changes = {
   "2021-07-30T07:34:39.737Z": {
     "timestamp": "2021-07-30T07:34:39.737Z",
@@ -53,8 +54,6 @@ const changes = {
 };
 
 const ElementInfo = ({ data }) => {
-  data.changes = changes; // TODO remove
-
   return (
     <Card>
       <table>

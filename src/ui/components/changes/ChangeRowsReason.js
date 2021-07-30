@@ -8,8 +8,11 @@ const ChangeRowsReason = ({ data, type }) => {
           <tr key={row.index + index}>
             <td>{type}</td>
             <td>{row.name}</td>
-            <td>{JSON.stringify(row.prev)}</td>
-            <td>{JSON.stringify(row.next)}</td>
+            <td>
+              <code>{JSON.stringify(row.prev)}</code>
+              &nbsp;=>&nbsp;
+              <code>{JSON.stringify(row.next)}</code>
+            </td>
           </tr>
         );
       })}

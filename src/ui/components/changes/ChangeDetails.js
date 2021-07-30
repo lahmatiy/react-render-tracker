@@ -5,14 +5,14 @@ import ChangeRowsReason from "./ChangeRowsReason";
 const ChangeDetails = ({ details }) => {
   return (
     <tr>
-      <td colSpan={4}>
-        <table>
+      <td />
+      <td colSpan={3}>
+        <table className="table-change-details">
           <thead>
           <tr>
             <th>Type</th>
             <th>Name</th>
-            <th>Previous</th>
-            <th>Next</th>
+            <th>Previous => Next</th>
           </tr>
           </thead>
           <tbody>
