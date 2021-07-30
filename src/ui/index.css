@@ -166,6 +166,22 @@ table td {
   font-size: 13px;
 }
 
+.table-change-details {
+  border-bottom: 1px var(--border) solid;
+  background: #f7f7f7;
+  border-radius: 5px;
+}
+
+.table-change-details th:first-of-type,
+.table-change-details td:first-of-type {
+  padding-left: 10px;
+}
+
+.table-change-details th:last-of-type,
+.table-change-details td:last-of-type {
+  padding-right: 10px;
+}
+
 input {
   padding: 8px 14px;
   border: none;

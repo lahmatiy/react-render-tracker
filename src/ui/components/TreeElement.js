@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import ChevronDown from "react-feather/dist/icons/chevron-down";
 
 import ElementName from "./element/ElementName";
+import ButtonCollapse from "./ui/ButtonCollapse";
 
 const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -21,13 +21,9 @@ const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
   return (
     <div className={classes} onClick={handleSelect}>
       <ElementName data={data} isSelected={selectedId === data.id} isDisabled={data.isUnmounted} highlight={highlight}>
-        <button
-          className={`tree-element__toggle ${isCollapsed ? "open" : ""}`}
-          onClick={handleToggle}
-        >
-          <ChevronDown />
-        </button>
+        <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />
       </ElementName>
+
       {isCollapsed &&
         data.children.map(child => (
           <TreeElement
