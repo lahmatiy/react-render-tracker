@@ -54,7 +54,7 @@ export const getTreeData = data => {
 
       if (component.children) {
         component.children.forEach(childId => {
-          clonedData.children.push(result[childId] || { children: [] });
+          clonedData.children.push(result[childId]);
           delete result[childId];
         });
       }

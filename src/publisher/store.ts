@@ -305,7 +305,7 @@ export class Store {
           // const errorCount = operations[i + 2];
           // const warningCount = operations[i + 3];
           //
-          // i += 4;
+          i += 4;
           //
           // if (errorCount > 0 || warningCount > 0) {
           //   this._errorsAndWarnings.set(id, { errorCount, warningCount });
@@ -318,7 +318,6 @@ export class Store {
           throw new Error(`Unsupported operation "${operation}"`);
       }
     }
-
     if (
       addedElementIDs.length ||
       this.latestCommitProfilingMetadata ||
@@ -342,10 +341,14 @@ export class Store {
             }));
           }
 
-          entry.props = props.map(prop => ({
-            name: prop.name,
-            changed: prop.prev !== prop.next,
-          }));
+          if (props) {
+            entry.props = !props
+              ? []
+              : props.map(prop => ({
+                  name: prop.name,
+                  changed: prop.prev !== prop.next,
+                }));
+          }
         }
 
         latestCommitProfilingMetadata = {
