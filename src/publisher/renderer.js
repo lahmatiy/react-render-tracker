@@ -1303,6 +1303,9 @@ export function attach(hook, rendererID, renderer, global) {
           const effect =
             isEffect(prev.memoizedState) && isEffect(next.memoizedState);
 
+          /**
+           * Fixes the problem with Rempl exploding on circular references in payload
+           */
           indices.push({
             index,
             prev: {
