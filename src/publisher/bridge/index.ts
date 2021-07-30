@@ -44,6 +44,7 @@ export class Bridge {
   private readonly subscriptions: Unsubscribe[];
 
   private messages: Message[] = [];
+  private profilingCommitTimes = new Set<number>();
 
   constructor(private devtools: DevtoolsHook, private publisher: Publisher) {
     this.subscriptions = [
@@ -71,11 +72,7 @@ export class Bridge {
         }
       }),
       devtools.sub("commit", (data: CommitData) => {
-        this.publish({
-          ...data,
-          timestamp: data.timestamp ?? new Date().getTime(),
-          type: "profiling",
-        });
+        this.publishCommitData(data);
       }),
       devtools.sub("renderer", ({ id, renderer }) => {
         this.attachRenderer(id, renderer);
@@ -87,6 +84,22 @@ export class Bridge {
     for (const unsubscribe of this.subscriptions) {
       unsubscribe();
     }
+  }
+
+  private publishCommitData(data: CommitData) {
+    /**
+     * TODO: figure out why hook triggers with multiple identical commit messages
+     */
+    if (this.profilingCommitTimes.has(data.commitTime)) {
+      return;
+    }
+
+    this.profilingCommitTimes.add(data.commitTime);
+    this.publish({
+      ...data,
+      timestamp: data.timestamp ?? new Date().getTime(),
+      type: "profiling",
+    });
   }
 
   private publish(message: Message) {

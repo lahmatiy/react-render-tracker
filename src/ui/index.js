@@ -34,7 +34,6 @@ function AppWithData() {
                 console.warn(`unsupported message type "${message.type}"`);
             }
           }
-          console.log(componentTree);
           setData(componentTree);
         }),
     [setData]
