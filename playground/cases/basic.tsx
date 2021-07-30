@@ -10,17 +10,10 @@ function Child() {
 
 function Root() {
   useTrackRender();
-  const [ isVisible, setIsVisible ] = useState(false);
-
-  return (
-    <>
-      <button onClick={() => setIsVisible(!isVisible)}>{isVisible ? "Hide" : "Show"}</button>
-      {isVisible && <Child />}
-    </>
-  );
+  return <Child />;
 }
 
 export default {
   title: "Basic nested render",
-  Root
+  Root,
 } as TestCase;

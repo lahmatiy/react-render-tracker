@@ -35,7 +35,7 @@ const getHasElementMatch = (element, searched, showDisabled) => {
   return hasMatch;
 };
 
-export const getTreeData = (data) => {
+export const getTreeData = data => {
   let highestDepth = 0;
 
   const dataArray = Object.keys(data).map(id => {
@@ -75,15 +75,15 @@ export const getElementNameHighlight = (name, highlight) => {
 
   if (match) {
     const { index } = match;
-    result =
-      (<>
-          {name.slice(0, index)}
-          <span className="highlight">
-            {name.slice(index, index + highlight.length)}
-          </span>
-          {name.slice(index + highlight.length)}
-        </>
-      );
+    result = (
+      <>
+        {name.slice(0, index)}
+        <span className="highlight">
+          {name.slice(index, index + highlight.length)}
+        </span>
+        {name.slice(index + highlight.length)}
+      </>
+    );
   }
 
   return result;

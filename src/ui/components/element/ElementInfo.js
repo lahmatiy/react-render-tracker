@@ -153,7 +153,11 @@ const ElementInfo = ({ data }) => {
           {getChanges(data, showChildChanges).map(
             ({ elementId = "", ...change }) => {
               return (
-                <ChangeRow {...change} key={change.timestamp + elementId} />
+                <ChangeRow
+                  {...change}
+                  elementId={elementId}
+                  key={change.timestamp + elementId}
+                />
               );
             }
           )}
