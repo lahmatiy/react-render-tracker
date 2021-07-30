@@ -11,17 +11,22 @@ import {
 } from "../constants";
 
 /**
+ * FIXME: temporarily global as current operation processing requires knowledge of previous elements
+ */
+const idToElement = new Map<number, Element>();
+/**
+ * Map of element (id) to the set of elements (ids) it owns.
+ * This map enables getOwnersListForElement() to avoid traversing the entire tree.
+ *
+ * FIXME: temporarily global as current operation processing requires knowledge of previous elements
+ */
+const ownersMap = new Map<number, Set<number>>();
+
+/**
  * Decodes operations produced by react
  * {@link packages/react-devtools-shared/src/devtools/store.js#onBridgeOperations}
  */
 export function parseOperations(operations: number[]) {
-  const idToElement = new Map<number, Element>();
-  /**
-   * Map of element (id) to the set of elements (ids) it owns.
-   * This map enables getOwnersListForElement() to avoid traversing the entire tree.
-   */
-  const ownersMap = new Map<number, Set<number>>();
-
   let haveRootsChanged = false;
 
   // The first two values are always rendererID and rootID

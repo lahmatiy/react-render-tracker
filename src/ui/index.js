@@ -73,7 +73,7 @@ function parseOperationMessages(messages) {
 
     if (removedElementIds.length) {
       for (const id of removedElementIds) {
-        const parentId = componentTree[id].parentId;
+        const parentId = componentMap[id].parentId;
         componentMap[id].isUnmounted = true;
         componentMap[parentId].children.push(id);
         removedElements.add(id);
