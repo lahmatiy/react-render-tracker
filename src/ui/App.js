@@ -11,7 +11,6 @@ function App({ data }) {
   const [selectedElement, setSelectedElement] = useState(null);
   const [searched, setSearched] = useState("");
   const [showDisabled, setShowDisabled] = useState(true);
-  const [showChildChanges, setShowChildChanges] = useState(false);
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -26,8 +25,6 @@ function App({ data }) {
         searched={searched}
         onShowDisabled={setShowDisabled}
         showDisabled={showDisabled}
-        showChildChanges={showChildChanges}
-        onShowChildChanges={setShowChildChanges}
       />
       <div className="tools-content">
         <div>
@@ -44,12 +41,7 @@ function App({ data }) {
             ))}
           </Card>
         </div>
-        {selectedElement && (
-          <ElementInfo
-            showChildChanges={showChildChanges}
-            data={selectedElement}
-          />
-        )}
+        {selectedElement && <ElementInfo data={selectedElement} />}
       </div>
     </div>
   );

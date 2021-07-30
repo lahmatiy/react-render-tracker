@@ -137,6 +137,11 @@ body {
   font-size: 10px;
 }
 
+.element-info__controls {
+  display: flex;
+  justify-content: flex-end;
+}
+
 ul {
   list-style-type: none;
   padding: 0;

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import List from "react-feather/dist/icons/list";
 
 import Card from "../ui/Card";
 import ChangeRow from "../changes/ChangeRow";
+import ButtonToggle from "../ui/ButtonToggle";
 
 // TODO dummy data remove after works
 const changes = {
@@ -123,9 +125,20 @@ function getChanges(data, showChildChanges) {
   }
 }
 
-const ElementInfo = ({ data, showChildChanges }) => {
+const ElementInfo = ({ data }) => {
+  const [showChildChanges, setShowChildChanges] = useState(false);
+
   return (
     <Card>
+      <div className="element-info__controls">
+        <ButtonToggle
+          Icon={List}
+          isActive={showChildChanges}
+          onChange={setShowChildChanges}
+          tooltip="Show child changes"
+        />
+      </div>
+
       <table>
         <thead>
           <tr>
