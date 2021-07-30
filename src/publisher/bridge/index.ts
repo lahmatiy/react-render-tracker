@@ -73,6 +73,7 @@ export class Bridge {
       devtools.sub("commit", (data: CommitData) => {
         this.publish({
           ...data,
+          timestamp: data.timestamp ?? new Date().getTime(),
           type: "profiling",
         });
       }),

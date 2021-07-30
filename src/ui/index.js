@@ -58,7 +58,7 @@ function applyProfilingMessage(message, componentTree) {
         parentUpdate,
       } = value;
       const change = {
-        timestamp,
+        timestamp: new Date(timestamp).toISOString(),
         reason: [],
         details: {},
       };
