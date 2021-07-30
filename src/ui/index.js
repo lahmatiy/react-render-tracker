@@ -98,11 +98,19 @@ function AppWithData() {
                   change.reason.push("Parent Update");
                 }
 
-                if (!componentTree[id].changes) {
-                  componentTree[id].changes = {};
-                }
+                if (componentTree[id]) {
+                  if (!componentTree[id].changes) {
+                    componentTree[id].changes = {};
+                  }
 
-                componentTree[id].changes[change.timestamp] = change;
+                  componentTree[id].changes[change.timestamp] = change;
+                } else {
+                  console.error(
+                    "No component in componentTree",
+                    id,
+                    componentTree
+                  );
+                }
               }
             }
           }

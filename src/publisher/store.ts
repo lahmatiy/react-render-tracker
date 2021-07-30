@@ -324,34 +324,49 @@ export class Store {
       this.latestCommitProfilingMetadata ||
       removedElementIDs.size
     ) {
+      let latestCommitProfilingMetadata = null;
+
       if (this.latestCommitProfilingMetadata) {
         const changes = this.latestCommitProfilingMetadata.changeDescriptions;
-        for (const [id, { didHooksChange, hooks }] of changes) {
+
+        for (const [id, entry] of changes) {
+          const { didHooksChange, hooks, props } = entry;
+
           if (didHooksChange && hooks && hooks.length) {
             const { _debugHookTypes } = getFiberById(id);
 
-            hooks.forEach(hook => {
-              hook.name = _debugHookTypes[hook.index + 1];
-            });
+            entry.hooks = hooks.map(hook => ({
+              name: _debugHookTypes[hook.index + 1],
+              prev: {},
+              next: {},
+            }));
           }
+
+          entry.props = props.map(prop => ({
+            name: prop.name,
+            changed: prop.prev !== prop.next,
+          }));
         }
+
+        latestCommitProfilingMetadata = {
+          timestamp: new Date().toISOString(),
+          ...this.latestCommitProfilingMetadata,
+          changeDescriptions: Object.fromEntries(changes),
+        };
       }
 
       const payload = {
         addedElements: addedElementIDs.map(id => this.idToElement.get(id)),
         removedElementIDs: Array.from(removedElementIDs).map(([id]) => id),
-        latestCommitProfilingMetadata: this.latestCommitProfilingMetadata && {
-          timestamp: new Date().toISOString(),
-          ...this.latestCommitProfilingMetadata,
-          changeDescriptions: (Object as any).fromEntries(
-            this.latestCommitProfilingMetadata.changeDescriptions
-          ),
-        },
+        latestCommitProfilingMetadata,
       };
 
       // FIXME: figure out the need to aggregate actions here
       this.storedActions.push(payload);
       this.latestCommitProfilingMetadata = null;
+
+      // window.reactRenderTracker = this.storedActions;
+      // console.log("react-render-tracker", this.storedActions);
 
       publisher.ns("tree-changes").publish(this.storedActions);
     }
