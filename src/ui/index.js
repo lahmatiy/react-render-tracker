@@ -20,20 +20,18 @@ function AppWithData() {
       getSubscriber()
         .ns("tree-changes")
         .subscribe((messages = []) => {
-          const componentTree = {};
+          const [operationMessages, profilingMessages] =
+            splitMessages(messages);
 
-          for (const message of messages) {
-            switch (message.type) {
-              case "operations":
-                applyOperationMessage(message, componentTree);
-                continue;
-              case "profiling":
-                applyProfilingMessage(message, componentTree);
-                continue;
-              default:
-                console.warn(`unsupported message type "${message.type}"`);
-            }
-          }
+          const [componentTree, removedElements] =
+            parseOperationMessages(operationMessages);
+
+          parseProfilingMessages(
+            profilingMessages,
+            componentTree,
+            removedElements
+          );
+
           setData(componentTree);
         }),
     [setData]
@@ -42,87 +40,107 @@ function AppWithData() {
   return <App data={data} />;
 }
 
-function applyProfilingMessage(message, componentTree) {
-  const { changeDescriptions, timestamp } = message;
+function splitMessages(messages) {
+  const operationMessages = [];
+  const profilingMessages = [];
 
-  if (changeDescriptions) {
-    for (const [key, value] of changeDescriptions.entries()) {
-      const {
-        didHooksChange,
-        isUnmount,
-        isFirstMount,
-        props,
-        state,
-        hooks,
-        parentUpdate,
-      } = value;
-      const change = {
-        timestamp: new Date(timestamp).toISOString(),
-        reason: [],
-        details: {},
-      };
-
-      if (isUnmount) {
-        change.phase = "Unmount";
-      } else if (isFirstMount) {
-        change.phase = "Mount";
-      } else {
-        change.phase = "Update";
-      }
-
-      if (didHooksChange && hooks != null && hooks.length > 0) {
-        change.reason.push("Hooks Change");
-        change.details.hooks = hooks;
-      }
-
-      if (props != null && props.length > 0) {
-        change.reason.push("Props Change");
-        change.details.props = props;
-      }
-
-      if (state != null && state.length > 0) {
-        change.reason.push("State Change");
-        change.details.state = state;
-      }
-
-      if (parentUpdate) {
-        change.reason.push("Parent Update");
-      }
-
-      if (!componentTree[key]) {
-        componentTree[key] = {};
-      }
-
-      if (!componentTree[key].changes) {
-        componentTree[key].changes = {};
-      }
-
-      componentTree[key].changes[change.timestamp] = change;
+  for (const message of messages) {
+    switch (message.type) {
+      case "operations":
+        operationMessages.push(message);
+        continue;
+      case "profiling":
+        profilingMessages.push(message);
+        continue;
+      default:
+        console.warn(`unsupported message type "${message.type}"`);
     }
   }
+
+  return [operationMessages, profilingMessages];
 }
 
-function applyOperationMessage(message, componentTree) {
-  const { addedElements, removedElementIds } = message;
+function parseOperationMessages(messages) {
+  const componentMap = {};
+  const removedElements = new Set();
+  for (const message of messages) {
+    const { addedElements, removedElementIds } = message;
+    if (addedElements.length) {
+      for (const element of addedElements) {
+        componentMap[element.id] = element;
+      }
+    }
 
-  if (addedElements.length) {
-    for (const element of addedElements) {
-      const existingElement = componentTree[element.id];
-
-      componentTree[element.id] = { ...existingElement, ...element };
+    if (removedElementIds.length) {
+      for (const id of removedElementIds) {
+        const parentId = componentTree[id].parentId;
+        componentMap[id].isUnmounted = true;
+        componentMap[parentId].children.push(id);
+        removedElements.add(id);
+      }
     }
   }
 
-  if (removedElementIds.length) {
-    for (const id of removedElementIds) {
-      const parentId = componentTree[id].parentId;
-      componentTree[id].isUnmounted = true;
-      componentTree[parentId].children.push(id);
+  return [componentMap, removedElements];
+}
 
-      // FIXME
-      // changeDescriptions[id] = {
-      //   isUnmount: true,
-      // };
+function parseProfilingMessages(messages, componentTree, removedElements) {
+  for (const message of messages) {
+    const { changeDescriptions, timestamp } = message;
+
+    if (changeDescriptions) {
+      for (const [key, value] of changeDescriptions.entries()) {
+        const {
+          didHooksChange,
+          isFirstMount,
+          props,
+          state,
+          hooks,
+          parentUpdate,
+        } = value;
+        const change = {
+          timestamp: new Date(timestamp).toISOString(),
+          reason: [],
+          details: {},
+        };
+
+        if (removedElements.has(key)) {
+          change.phase = "Unmount";
+        } else if (isFirstMount) {
+          change.phase = "Mount";
+        } else {
+          change.phase = "Update";
+        }
+
+        if (didHooksChange && hooks != null && hooks.length > 0) {
+          change.reason.push("Hooks Change");
+          change.details.hooks = hooks;
+        }
+
+        if (props != null && props.length > 0) {
+          change.reason.push("Props Change");
+          change.details.props = props;
+        }
+
+        if (state != null && state.length > 0) {
+          change.reason.push("State Change");
+          change.details.state = state;
+        }
+
+        if (parentUpdate) {
+          change.reason.push("Parent Update");
+        }
+
+        if (!componentTree[key]) {
+          componentTree[key] = {};
+        }
+
+        if (!componentTree[key].changes) {
+          componentTree[key].changes = {};
+        }
+
+        componentTree[key].changes[change.timestamp] = change;
+      }
     }
   }
 }
