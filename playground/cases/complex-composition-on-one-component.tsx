@@ -13,6 +13,8 @@ function Bar({ children = null }) {
   return <>{children}</>;
 }
 
+const BarMemo = React.memo(Baz);
+
 function Baz({ children }) {
   useTrackRender();
   return <>{children}</>;
@@ -20,7 +22,7 @@ function Baz({ children }) {
 
 function Qux() {
   useTrackRender();
-  return <>OK</>;
+  return <>O</>;
 }
 
 function Root() {
@@ -33,6 +35,7 @@ function Root() {
           <Qux />
         </Bar>
       </Baz>
+      <BarMemo>K</BarMemo>
     </Foo>
   );
 }
