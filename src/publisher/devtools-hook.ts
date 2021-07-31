@@ -4,7 +4,7 @@ import { detectReactBuildType } from "./utils/detect-react-build-type";
 type Fiber = any;
 type FiberRoot = any;
 
-type EventHandler<TData = unknown> = (data: TData) => void;
+type EventHandler<TData = any> = (data: TData) => void;
 
 /**
  * {@link packages/react-devtools-shared/src/hook.js}
