@@ -2,6 +2,7 @@ import { TestCase } from "../types";
 
 export default [
   getDefault(import("./mount-unmount")),
+  getDefault(import("./complex-composition-on-one-component")),
   getDefault(import("./basic")),
   getDefault(import("./basic-nested-set-state")),
   getDefault(import("./basic-nested-props-change")),
