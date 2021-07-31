@@ -25,7 +25,7 @@ const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
       <ElementName
         data={data}
         isSelected={selectedId === data.id}
-        isDisabled={data.isUnmounted}
+        isDisabled={!data.mounted}
         highlight={highlight}
       >
         <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />

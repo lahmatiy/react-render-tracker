@@ -5,33 +5,24 @@ import Card from "../ui/Card";
 import ChangeRow from "../changes/ChangeRow";
 import ButtonToggle from "../ui/ButtonToggle";
 
-function getChanges(data, showChildChanges) {
-  const { changes } = data;
-
+function getChanges(component, showChildChanges) {
   if (showChildChanges) {
-    const stack = [data];
+    const queue = new Set([component]);
     const combinedChanges = [];
 
-    while (stack.length) {
-      const { changes, id, children, displayName } = stack.pop();
-
-      const changesForCurrentNode = Object.keys(changes || {}).map(
-        timestamp => {
-          const event = changes[timestamp];
-
-          return {
-            event,
-            timestamp,
-            elementId: id,
-            displayName,
-          };
-        }
-      );
+    for (const { updates, id, children, displayName } of queue) {
+      const changesForCurrentNode = updates.map(update => ({
+        ...update,
+        elementId: id,
+        displayName,
+      }));
 
       combinedChanges.push(...changesForCurrentNode);
 
-      if (children && children.length) {
-        stack.push(...children);
+      if (children) {
+        for (const child of children) {
+          queue.add(child);
+        }
       }
     }
 
@@ -39,23 +30,12 @@ function getChanges(data, showChildChanges) {
       const dateA = a.timestamp;
       const dateB = b.timestamp;
 
-      if (dateA === dateB) {
-        return a.elementId - b.elementId;
-      } else {
-        return dateA - dateB;
-      }
+      return dateA === dateB ? a.elementId - b.elementId : dateA - dateB;
     });
 
     return combinedChanges;
   } else {
-    return Object.keys(changes || {}).map(timestamp => {
-      const event = data.changes[timestamp];
-
-      return {
-        event,
-        timestamp,
-      };
-    });
+    return component.updates;
   }
 }
 
@@ -85,14 +65,8 @@ const ElementInfo = ({ data }) => {
         </thead>
         <tbody>
           {getChanges(data, showChildChanges).map(
-            ({ elementId = "", ...change }) => {
-              return (
-                <ChangeRow
-                  {...change}
-                  elementId={elementId}
-                  key={change.timestamp + elementId}
-                />
-              );
+            ({ elementId = "", ...change }, idx) => {
+              return <ChangeRow {...change} elementId={elementId} key={idx} />;
             }
           )}
         </tbody>

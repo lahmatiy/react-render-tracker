@@ -1,7 +1,9 @@
 import {
+  ReactChangeDescription,
   ReactCommitData,
   TransferChangeDescription,
   TransferCommitData,
+  UpdateElementMessage,
 } from "../types";
 
 /**
@@ -9,11 +11,18 @@ import {
  * to allow data serialisation and sending over rempl.
  * @param data
  */
-export function toSafeCommitData(data: ReactCommitData) {
-  const changeDescriptions: { [key: number]: TransferChangeDescription } =
-    Object.create(null);
+export function parseCommitChanges(
+  data: ReactCommitData,
+  seen: WeakSet<ReactChangeDescription> = new Set()
+) {
+  const output: UpdateElementMessage[] = [];
+  const timestamp = data.timestamp ?? Date.now();
 
-  for (const [key, entry] of data.changeDescriptions) {
+  for (const [id, entry] of data.changeDescriptions) {
+    if (seen.has(entry)) {
+      continue;
+    }
+
     const { didHooksChange, hooks, props, state } = entry;
     const safeEntry: TransferChangeDescription = {
       ...entry,
@@ -43,8 +52,9 @@ export function toSafeCommitData(data: ReactCommitData) {
       }));
     }
 
-    changeDescriptions[key] = safeEntry;
+    output.push({ op: "update", id, timestamp, changes: safeEntry });
+    seen.add(entry);
   }
 
-  return { ...data, changeDescriptions } as TransferCommitData;
+  return output;
 }

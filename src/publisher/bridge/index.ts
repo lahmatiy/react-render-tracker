@@ -2,13 +2,12 @@ import { DevtoolsHook } from "../devtools-hook";
 import {
   ReactRenderer,
   RendererInterface,
-  Element,
+  Message,
   ReactCommitData,
-  TransferCommitData,
 } from "../types";
 import { attach } from "../renderer";
 import { parseOperations } from "./parse-operations";
-import { toSafeCommitData } from "./to-safe-commit-data";
+import { parseCommitChanges } from "./parse-commit-changes";
 
 const __win__ = window;
 
@@ -25,19 +24,6 @@ interface Publisher {
 
 type Unsubscribe = () => void;
 
-interface OperationMessage {
-  type: "operations";
-  rendererId: number;
-  addedElements: Element[];
-  removedElementIds: number[];
-}
-
-interface ProfilingMessage extends TransferCommitData {
-  type: "profiling";
-}
-
-type Message = ProfilingMessage | OperationMessage;
-
 /**
  * A bridge between devtools hook and tracker tool ui.
  * Transfers profiling data and react tree changes to the tracker tool ui.
@@ -46,9 +32,9 @@ export class Bridge {
   private readonly subscriptions: Unsubscribe[];
 
   private messages: Message[] = [];
-  private profilingCommitTimes = new Set<number>();
 
   constructor(private devtools: DevtoolsHook, private publisher: Publisher) {
+    const seenChanges = new WeakSet();
     this.subscriptions = [
       devtools.sub(
         "renderer-attached",
@@ -61,20 +47,10 @@ export class Bridge {
         }
       ),
       devtools.sub("operations", ({ operations }) => {
-        try {
-          const payload = parseOperations(operations);
-          if (payload) {
-            this.publish({
-              ...payload,
-              type: "operations",
-            });
-          }
-        } catch (e) {
-          console.warn(e.message);
-        }
+        this.publish(parseOperations(operations));
       }),
       devtools.sub("commit", (data: ReactCommitData) => {
-        this.publishCommitData(data);
+        this.publish(parseCommitChanges(data, seenChanges));
       }),
       devtools.sub("renderer", ({ id, renderer }) => {
         this.attachRenderer(id, renderer);
@@ -88,28 +64,12 @@ export class Bridge {
     }
   }
 
-  private publishCommitData(data: ReactCommitData) {
-    /**
-     * Keep the latest commit data
-     * FIXME: devtools.sub("commit") emits mutated object with the same commitTime;
-     * need to update existing record instead of filtering messages
-     */
-    if (this.profilingCommitTimes.has(data.commitTime)) {
-      this.messages = this.messages.filter(
-        m => m.type !== "profiling" || m.commitTime !== data.commitTime
-      );
+  private publish(messages: Message[]) {
+    if (!messages || !messages.length) {
+      return;
     }
 
-    this.profilingCommitTimes.add(data.commitTime);
-    this.publish({
-      ...toSafeCommitData(data),
-      timestamp: data.timestamp ?? Date.now(),
-      type: "profiling",
-    });
-  }
-
-  private publish(message: Message) {
-    this.messages.push(message);
+    this.messages.push(...messages);
     // console.log("react-render-tracker", this.messages.length);
     // window.__tool = this.messages;
     this.publisher.ns("tree-changes").publish(this.messages);

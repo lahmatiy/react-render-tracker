@@ -1,4 +1,9 @@
-import { Element, ElementType } from "../types";
+import {
+  AddElementMessage,
+  Element,
+  ElementType,
+  RemoveElementMessage,
+} from "../types";
 import { separateDisplayNameAndHOCs, utfDecodeString } from "../utils";
 import {
   ElementTypeRoot,
@@ -30,10 +35,6 @@ export function parseOperations(operations: number[]) {
   // The first two values are always rendererID and rootID
   const rendererId = operations[0];
 
-  const addedElementIds: Array<number> = [];
-  // This is a set of removed ID:
-  const removedElementIds = new Set<number>();
-
   let i = 2;
 
   // Reassemble the string table.
@@ -49,6 +50,8 @@ export function parseOperations(operations: number[]) {
     stringTable.push(nextString);
     i += nextLength;
   }
+
+  const output: (AddElementMessage | RemoveElementMessage)[] = [];
 
   while (i < operations.length) {
     const operation = operations[i];
@@ -84,11 +87,10 @@ export function parseOperations(operations: number[]) {
             ownerId: 0,
             parentId: 0,
             type,
-            weight: 0,
           };
 
-          addedElementIds.push(id);
           idToElement.set(id, element);
+          output.push({ op: "add", id, element });
         } else {
           parentId = operations[i];
           i++;
@@ -130,11 +132,10 @@ export function parseOperations(operations: number[]) {
             ownerId,
             parentId: parentElement.id,
             type,
-            weight: 1,
           };
 
           idToElement.set(id, element);
-          addedElementIds.push(id);
+          output.push({ op: "add", id, element });
 
           if (ownerId > 0) {
             let set = ownersMap.get(ownerId);
@@ -164,13 +165,14 @@ export function parseOperations(operations: number[]) {
 
           const element = idToElement.get(id)!;
           const { children, ownerId, parentId } = element;
+          let parentElement = null;
+
           if (children.length > 0) {
             throw new Error(`Node "${id}" was removed before its children.`);
           }
 
           idToElement.delete(id);
 
-          let parentElement = null;
           if (parentId !== 0) {
             parentElement = idToElement.get(parentId);
             if (parentElement === undefined) {
@@ -182,7 +184,7 @@ export function parseOperations(operations: number[]) {
             parentElement.children.splice(index, 1);
           }
 
-          removedElementIds.add(id);
+          output.push({ op: "remove", id });
 
           ownersMap.delete(id);
           if (ownerId > 0) {
@@ -206,6 +208,7 @@ export function parseOperations(operations: number[]) {
           }
 
           idToElement.delete(elementId);
+          output.push({ op: "remove", id: elementId });
 
           for (let index = 0; index < element.children.length; index++) {
             recursivelyDeleteElements(element.children[index]);
@@ -280,11 +283,5 @@ export function parseOperations(operations: number[]) {
     }
   }
 
-  if (addedElementIds.length || removedElementIds.size) {
-    return {
-      rendererId: rendererId,
-      addedElements: addedElementIds.map(id => idToElement.get(id)),
-      removedElementIds: Array.from(removedElementIds),
-    };
-  }
+  return output;
 }

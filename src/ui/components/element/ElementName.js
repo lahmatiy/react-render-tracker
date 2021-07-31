@@ -26,8 +26,12 @@ function getElementNameHighlight(name, pattern) {
 }
 
 const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
-  const renderCount = Object.keys(data.changes || {}).length;
-  const isRenderRoot = data.ownerId === 0;
+  const { ownerId, updates } = data;
+  const isRenderRoot = ownerId === 0;
+  const updatesCount = updates?.reduce(
+    (count, { phase }) => count + (phase === "Update"),
+    0
+  );
   const classes = `tree-element__name ${isSelected ? "selected" : ""} ${
     isRenderRoot ? "render-root" : ""
   } ${isDisabled ? "disabled" : ""}`;
@@ -38,12 +42,12 @@ const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
     <span className={classes}>
       {children}
       <span className="tree-element__name-text">
-        {name || (!data.ownerId && "Render root") || "Unknown"}
+        {name || (!ownerId && "Render root") || "Unknown"}
       </span>
       <ElementId id={data.id} />
       <ElementHocNames names={data.hocDisplayNames} />
-      {renderCount > 0 && (
-        <span className="tree-element__count">{renderCount}</span>
+      {updatesCount > 0 && (
+        <span className="tree-element__count">{updatesCount}</span>
       )}
     </span>
   );

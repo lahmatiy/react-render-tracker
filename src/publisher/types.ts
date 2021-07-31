@@ -277,14 +277,32 @@ export type Element = {
   // How many levels deep within the tree is this element?
   // This determines how much indentation (left padding) should be used in the Elements tree.
   depth: number;
-
-  // How many nodes (including itself) are below this Element within the tree.
-  // This property is used to quickly determine the total number of Elements,
-  // and the Element at any given index (for windowing purposes).
-  weight: number;
 };
 
 // Different types of elements displayed in the Elements tree.
 // These types may be used to visually distinguish types,
 // or to enable/disable certain functionality.
 export type ElementType = 1 | 2 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+
+export interface AddElementMessage {
+  op: "add";
+  id: number;
+  element: Element;
+}
+
+export interface RemoveElementMessage {
+  op: "remove";
+  id: number;
+}
+
+export interface UpdateElementMessage {
+  op: "update";
+  id: number;
+  timestamp: number;
+  changes: TransferChangeDescription;
+}
+
+export type Message =
+  | AddElementMessage
+  | RemoveElementMessage
+  | UpdateElementMessage;
