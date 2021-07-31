@@ -13,7 +13,7 @@ ReactDOM.render(<AppWithData />, rootEl);
 
 // subscribe to data and pass it to app
 function AppWithData() {
-  const [data, setData] = React.useState({});
+  const [data, setData] = React.useState([]);
 
   useEffect(
     () =>
@@ -32,7 +32,7 @@ function AppWithData() {
             removedComponentIds
           );
 
-          setData(componentById);
+          setData(Object.values(componentById));
         }),
     [setData]
   );
@@ -63,6 +63,7 @@ function splitMessages(messages) {
 function parseOperationMessages(messages) {
   const componentById = {};
   const removedComponentIds = new Set();
+
   for (const message of messages) {
     const { addedElements, removedElementIds } = message;
 

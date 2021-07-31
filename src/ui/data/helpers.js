@@ -35,40 +35,38 @@ const getHasElementMatch = (element, searched, showDisabled) => {
   return hasMatch;
 };
 
-export const getTreeData = data => {
-  let highestDepth = 0;
-
-  const dataArray = Object.keys(data).map(id => {
-    const element = data[id];
-    if (element.depth > highestDepth) highestDepth = element.depth;
-    return element;
-  });
-
-  const result = new Map();
+export const getTreeData = (components, groupKey = "parentId") => {
+  const groupedComponents = new Map();
   const componentById = new Map();
-  for (let i = highestDepth; i >= 0; i--) {
-    const components = dataArray.filter(d => d.depth === i);
+  const roots = [];
 
-    components.forEach(component => {
-      const clonedData = {
-        ...component,
-        children: [],
-      };
+  for (const component of components) {
+    const groupId = component[groupKey];
+    const clonedComponent = {
+      ...component,
+      children: null,
+    };
 
-      if (component.children) {
-        component.children.forEach(childId => {
-          clonedData.children.push(result.get(childId));
-          result.delete(childId);
-        });
-      }
-      componentById.set(component.id, clonedData);
-      result.set(component.id, clonedData);
-    });
+    componentById.set(component.id, clonedComponent);
+
+    if (groupedComponents.has(groupId)) {
+      groupedComponents.get(groupId).push(clonedComponent);
+    } else {
+      groupedComponents.set(groupId, [clonedComponent]);
+    }
+  }
+
+  for (const [id, children] of groupedComponents) {
+    if (componentById.has(id)) {
+      componentById.get(id).children = children;
+    } else {
+      roots.push(...children);
+    }
   }
 
   return {
     componentById,
-    roots: [...result.values()],
+    roots,
   };
 };
 

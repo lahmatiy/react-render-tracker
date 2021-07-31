@@ -10,7 +10,7 @@ function byId(a, b) {
 const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  const hasChildren = data.children.length > 0;
+  const hasChildren = data.children?.length > 0;
   const handleToggle = hasChildren ? () => setIsCollapsed(prev => !prev) : null;
   const handleSelect = event => {
     event.stopPropagation();
@@ -32,6 +32,7 @@ const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
       </ElementName>
 
       {isCollapsed &&
+        hasChildren &&
         data.children
           .sort(byId)
           .map(child => (

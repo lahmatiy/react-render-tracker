@@ -13,7 +13,7 @@ function App({ data }) {
   const [showDisabled, setShowDisabled] = useState(true);
 
   const { componentById, roots } = useMemo(
-    () => (data ? getTreeData(data) : [new Map(), []]),
+    () => getTreeData(data || []),
     [data, searched, showDisabled]
   );
   const filteredData = useMemo(
