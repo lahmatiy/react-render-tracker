@@ -9,7 +9,7 @@ import ToolsHeader from "./components/layout/ToolsHeader";
 
 function App({ data }) {
   const [selectedId, setSelectedId] = useState(null);
-  const [searched, setSearched] = useState("");
+  const [filterPattern, setFilterPattern] = useState("");
   const [groupByParent, setGroupByParent] = useState(false);
   const [showUnmounted, setShowUnmounted] = useState(true);
 
@@ -18,16 +18,16 @@ function App({ data }) {
     [data, groupByParent]
   );
   const filteredData = useMemo(
-    () => handleFilterDataElement(roots, searched, showUnmounted),
-    [roots, searched, showUnmounted]
+    () => handleFilterDataElement(roots, filterPattern, showUnmounted),
+    [roots, filterPattern, showUnmounted]
   );
   const selectedComponent = componentById.get(selectedId) || null;
 
   return (
     <div className="App">
       <ToolsHeader
-        setSearched={setSearched}
-        searched={searched}
+        onFilterPatternChange={setFilterPattern}
+        filterPattern={filterPattern}
         onGroupingChange={setGroupByParent}
         groupByParent={groupByParent}
         onShowUnmounted={setShowUnmounted}
@@ -42,7 +42,7 @@ function App({ data }) {
                 onSelect={setSelectedId}
                 selectedId={selectedId}
                 key={rootElement.id}
-                highlight={searched}
+                highlight={filterPattern.toLowerCase()}
                 root
               />
             ))}

@@ -65,6 +65,11 @@ body {
   margin-left: 0;
 }
 
+.tree-element__container.root + .tree-element__container.root {
+  margin-top: 5px;
+  border-top: 1px solid #ddd;
+}
+
 .tree-element__name {
   position: relative;
   display: flex;
@@ -76,11 +81,6 @@ body {
   transition: 0.2s;
 }
 
-.tree-element__name .disabled {
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-
 .tree-element__name:hover {
   color: var(--brand);
 }
@@ -89,12 +89,20 @@ body {
   background: rgba(2, 121, 201, 0.1);
 }
 
+.tree-element__name.disabled .tree-element__name-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.tree-element__name.render-root .tree-element__name-text {
+  color: var(--text-muted);
+  font-size: 90%;
+}
+
 .tree-element__name .highlight {
-  background: var(--brand);
-  color: #ffffff;
-  padding: 0 2px;
-  margin: 0 -2px;
-  border-radius: 2px;
+  margin: 0 0 -2px;
+  border-radius: 0 0 2px 2px;
+  border-bottom: 2px solid #e0bf08;
 }
 
 .tree-element__bracket {

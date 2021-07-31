@@ -7,8 +7,8 @@ import FilterComponents from "../form/FilterComponents";
 import ButtonToggle from "../ui/ButtonToggle";
 
 const ToolsHeader = ({
-  setSearched,
-  searched,
+  onFilterPatternChange,
+  filterPattern,
   groupByParent,
   onGroupingChange,
   onShowUnmounted,
@@ -17,7 +17,10 @@ const ToolsHeader = ({
   return (
     <div className="tools-header">
       <div>
-        <FilterComponents onChange={setSearched} value={searched} />
+        <FilterComponents
+          onChange={onFilterPatternChange}
+          value={filterPattern}
+        />
         <ButtonToggle
           Icon={ToggleGrouping}
           isActive={groupByParent}
