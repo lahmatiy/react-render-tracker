@@ -27,8 +27,6 @@ const ownersMap = new Map<number, Set<number>>();
  * {@link packages/react-devtools-shared/src/devtools/store.js#onBridgeOperations}
  */
 export function parseOperations(operations: number[]) {
-  let haveRootsChanged = false;
-
   // The first two values are always rendererID and rootID
   const rendererId = operations[0];
 
@@ -76,7 +74,7 @@ export function parseOperations(operations: number[]) {
           // const hasOwnerMetadata = operations[i] > 0;
           i++;
 
-          idToElement.set(id, {
+          const element: Element = {
             children: [],
             depth: -1,
             displayName: null,
@@ -87,9 +85,10 @@ export function parseOperations(operations: number[]) {
             parentId: 0,
             type,
             weight: 0,
-          });
+          };
 
-          haveRootsChanged = true;
+          addedElementIds.push(id);
+          idToElement.set(id, element);
         } else {
           parentId = operations[i];
           i++;
@@ -113,6 +112,10 @@ export function parseOperations(operations: number[]) {
 
           const parentElement = idToElement.get(parentId)!;
           parentElement.children.push(id);
+
+          if (ownerId === 0) {
+            ownerId = parentElement.ownerId || parentElement.id;
+          }
 
           const [displayNameWithoutHOCs, hocDisplayNames] =
             separateDisplayNameAndHOCs(displayName, type);
@@ -168,9 +171,7 @@ export function parseOperations(operations: number[]) {
           idToElement.delete(id);
 
           let parentElement = null;
-          if (parentId === 0) {
-            haveRootsChanged = true;
-          } else {
+          if (parentId !== 0) {
             parentElement = idToElement.get(parentId);
             if (parentElement === undefined) {
               throw new Error(
