@@ -3,6 +3,7 @@ import React from "react";
 import { getElementNameHighlight } from "../../data/helpers";
 
 import ElementId from "./ElementId";
+import ElementHocNames from "./ElementHocNames";
 
 const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
   const renderCount = Object.keys(data.changes || {}).length;
@@ -15,8 +16,9 @@ const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
       {children}
       <span className={isDisabled ? "disabled" : ""}>{name}</span>
       <ElementId id={data.id} />
+      <ElementHocNames names={data.hocDisplayNames} />
       {renderCount > 0 && (
-        <span className="tree-element__count">({renderCount})</span>
+        <span className="tree-element__count">{renderCount}</span>
       )}
     </span>
   );

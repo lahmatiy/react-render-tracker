@@ -108,6 +108,22 @@ body {
   margin-left: 5px;
 }
 
+.tree-element-hoc-names {
+  margin-left: 3px;
+  font-size: 85%;
+  color: white;
+}
+.tree-element-hoc-name {
+  background: #d0eac6;
+  border-radius: 3px;
+  color: #6c9c1e;
+  padding: 1px 4px;
+  vertical-align: sub;
+}
+.tree-element-hoc-name + .tree-element-hoc-name {
+  margin-left: 2px;
+}
+
 .tree-element__toggle {
   border: none;
   background: none;
@@ -138,9 +154,16 @@ body {
 }
 
 .tree-element__count {
-  color: var(--text-muted);
-  padding: 0 4px;
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 4px;
   font-size: 10px;
+  min-width: 16px;
+  background: #eaeac7;
+  border-radius: 4px;
+  color: #949c35;
+  vertical-align: sub;
+  text-align: center;
 }
 
 .element-info__controls {
