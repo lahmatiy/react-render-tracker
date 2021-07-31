@@ -35,7 +35,8 @@ const getHasElementMatch = (element, searched, showDisabled) => {
   return hasMatch;
 };
 
-export const getTreeData = (components, groupKey = "parentId") => {
+export const getTreeData = (components, groupByParent = false) => {
+  const groupKey = groupByParent ? "parentId" : "ownerId";
   const groupedComponents = new Map();
   const componentById = new Map();
   const roots = [];

@@ -10,11 +10,12 @@ import ToolsHeader from "./components/layout/ToolsHeader";
 function App({ data }) {
   const [selectedId, setSelectedId] = useState(null);
   const [searched, setSearched] = useState("");
+  const [groupByParent, setGroupByParent] = useState(false);
   const [showUnmounted, setShowUnmounted] = useState(true);
 
   const { componentById, roots } = useMemo(
-    () => getTreeData(data || []),
-    [data, searched, showUnmounted]
+    () => getTreeData(data || [], groupByParent),
+    [data, groupByParent]
   );
   const filteredData = useMemo(
     () => handleFilterDataElement(roots, searched, showUnmounted),
@@ -27,6 +28,8 @@ function App({ data }) {
       <ToolsHeader
         setSearched={setSearched}
         searched={searched}
+        onGroupingChange={setGroupByParent}
+        groupByParent={groupByParent}
         onShowUnmounted={setShowUnmounted}
         showUnmounted={showUnmounted}
       />
