@@ -8,15 +8,19 @@ import Card from "./components/ui/Card";
 import ToolsHeader from "./components/layout/ToolsHeader";
 
 function App({ data }) {
-  const [selectedElement, setSelectedElement] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [searched, setSearched] = useState("");
   const [showDisabled, setShowDisabled] = useState(true);
 
-  const filteredData = useMemo(() => {
-    if (!data) return null;
-    const parsedData = getTreeData(data);
-    return handleFilterDataElement(parsedData, searched, showDisabled);
-  }, [data, searched, showDisabled]);
+  const { componentById, roots } = useMemo(
+    () => (data ? getTreeData(data) : [new Map(), []]),
+    [data, searched, showDisabled]
+  );
+  const filteredData = useMemo(
+    () => handleFilterDataElement(roots, searched, showDisabled),
+    [roots, searched, showDisabled]
+  );
+  const selectedComponent = componentById.get(selectedId) || null;
 
   return (
     <div className="App">
@@ -32,8 +36,8 @@ function App({ data }) {
             {filteredData?.map(rootElement => (
               <TreeElement
                 data={rootElement}
-                onSelect={setSelectedElement}
-                selectedId={selectedElement?.id}
+                onSelect={setSelectedId}
+                selectedId={selectedId}
                 key={rootElement.id}
                 highlight={searched}
                 root
@@ -41,7 +45,7 @@ function App({ data }) {
             ))}
           </Card>
         </div>
-        {selectedElement && <ElementInfo data={selectedElement} />}
+        {selectedComponent && <ElementInfo data={selectedComponent} />}
       </div>
     </div>
   );

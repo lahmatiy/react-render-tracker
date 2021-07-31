@@ -44,25 +44,32 @@ export const getTreeData = data => {
     return element;
   });
 
-  const result = {};
+  const result = new Map();
+  const componentById = new Map();
   for (let i = highestDepth; i >= 0; i--) {
     const components = dataArray.filter(d => d.depth === i);
 
     components.forEach(component => {
-      const clonedData = JSON.parse(JSON.stringify(component));
-      clonedData.children = [];
+      const clonedData = {
+        ...component,
+        children: [],
+      };
 
       if (component.children) {
         component.children.forEach(childId => {
-          clonedData.children.push(result[childId]);
-          delete result[childId];
+          clonedData.children.push(result.get(childId));
+          result.delete(childId);
         });
       }
-      result[component.id] = clonedData;
+      componentById.set(component.id, clonedData);
+      result.set(component.id, clonedData);
     });
   }
 
-  return Object.keys(result).map(rootId => result[rootId]);
+  return {
+    componentById,
+    roots: [...result.values()],
+  };
 };
 
 export const getElementNameHighlight = (name, highlight) => {

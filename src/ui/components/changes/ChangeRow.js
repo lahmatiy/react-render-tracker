@@ -23,7 +23,7 @@ const ChangeRow = ({ event, timestamp, displayName, elementId }) => {
             {displayName} <ElementId id={elementId} />
           </td>
         )}
-        <td>{dateFormat(timestamp, "h:MM:ss.l TT")}</td>
+        <td>{dateFormat(Number(timestamp), "h:MM:ss.l TT")}</td>
         <td>{event.phase}</td>
         <td>{event.reason?.join(", ")}</td>
       </tr>

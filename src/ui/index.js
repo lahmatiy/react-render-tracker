@@ -13,7 +13,7 @@ ReactDOM.render(<AppWithData />, rootEl);
 
 // subscribe to data and pass it to app
 function AppWithData() {
-  const [data, setData] = React.useState(null);
+  const [data, setData] = React.useState({});
 
   useEffect(
     () =>
@@ -23,16 +23,16 @@ function AppWithData() {
           const [operationMessages, profilingMessages] =
             splitMessages(messages);
 
-          const [componentTree, removedElements] =
+          const [componentById, removedComponentIds] =
             parseOperationMessages(operationMessages);
 
           parseProfilingMessages(
             profilingMessages,
-            componentTree,
-            removedElements
+            componentById,
+            removedComponentIds
           );
 
-          setData(componentTree);
+          setData(componentById);
         }),
     [setData]
   );
@@ -61,27 +61,27 @@ function splitMessages(messages) {
 }
 
 function parseOperationMessages(messages) {
-  const componentMap = {};
-  const removedElements = new Set();
+  const componentById = {};
+  const removedComponentIds = new Set();
   for (const message of messages) {
     const { addedElements, removedElementIds } = message;
 
     for (const element of addedElements) {
-      componentMap[element.id] = element;
+      componentById[element.id] = element;
     }
 
     for (const id of removedElementIds) {
-      const parentId = componentMap[id].parentId;
-      componentMap[id].isUnmounted = true;
-      componentMap[parentId].children.push(id);
-      removedElements.add(id);
+      const parentId = componentById[id].parentId;
+      componentById[id].isUnmounted = true;
+      componentById[parentId].children.push(id);
+      removedComponentIds.add(id);
     }
   }
 
-  return [componentMap, removedElements];
+  return [componentById, removedComponentIds];
 }
 
-function parseProfilingMessages(messages, componentTree, removedElements) {
+function parseProfilingMessages(messages, componentById, removedComponentIds) {
   for (const message of messages) {
     const { changeDescriptions, timestamp } = message;
 
@@ -96,12 +96,12 @@ function parseProfilingMessages(messages, componentTree, removedElements) {
           parentUpdate,
         } = value;
         const change = {
-          timestamp: new Date(timestamp).toISOString(),
+          timestamp,
           reason: [],
           details: {},
         };
 
-        if (removedElements.has(key)) {
+        if (removedComponentIds.has(key)) {
           change.phase = "Unmount";
         } else if (isFirstMount) {
           change.phase = "Mount";
@@ -128,15 +128,15 @@ function parseProfilingMessages(messages, componentTree, removedElements) {
           change.reason.push("Parent Update");
         }
 
-        if (!componentTree[key]) {
-          componentTree[key] = {};
+        if (!componentById[key]) {
+          componentById[key] = {};
         }
 
-        if (!componentTree[key].changes) {
-          componentTree[key].changes = {};
+        if (!componentById[key].changes) {
+          componentById[key].changes = {};
         }
 
-        componentTree[key].changes[change.timestamp] = change;
+        componentById[key].changes[change.timestamp] = change;
       }
     }
   }

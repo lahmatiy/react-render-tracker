@@ -36,8 +36,8 @@ function getChanges(data, showChildChanges) {
     }
 
     combinedChanges.sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
+      const dateA = a.timestamp;
+      const dateB = b.timestamp;
 
       if (dateA === dateB) {
         return a.elementId - b.elementId;
