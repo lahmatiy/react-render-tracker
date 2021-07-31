@@ -1,6 +1,6 @@
 import React from "react";
 
-import Code from "react-feather/dist/icons/code";
+import ToggleUnmounted from "react-feather/dist/icons/eye-off";
 
 import FilterComponents from "../form/FilterComponents";
 import ButtonToggle from "../ui/ButtonToggle";
@@ -8,18 +8,18 @@ import ButtonToggle from "../ui/ButtonToggle";
 const ToolsHeader = ({
   setSearched,
   searched,
-  onShowDisabled,
-  showDisabled,
+  onShowUnmounted,
+  showUnmounted,
 }) => {
   return (
     <div className="tools-header">
       <div>
         <FilterComponents onChange={setSearched} value={searched} />
         <ButtonToggle
-          Icon={Code}
-          isActive={showDisabled}
-          onChange={onShowDisabled}
-          tooltip="Toggle unmounted elements"
+          Icon={ToggleUnmounted}
+          isActive={showUnmounted}
+          onChange={onShowUnmounted}
+          tooltip={"Toggle unmounted components visibility"}
         />
       </div>
     </div>

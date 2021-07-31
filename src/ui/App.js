@@ -10,15 +10,15 @@ import ToolsHeader from "./components/layout/ToolsHeader";
 function App({ data }) {
   const [selectedId, setSelectedId] = useState(null);
   const [searched, setSearched] = useState("");
-  const [showDisabled, setShowDisabled] = useState(true);
+  const [showUnmounted, setShowUnmounted] = useState(true);
 
   const { componentById, roots } = useMemo(
     () => getTreeData(data || []),
-    [data, searched, showDisabled]
+    [data, searched, showUnmounted]
   );
   const filteredData = useMemo(
-    () => handleFilterDataElement(roots, searched, showDisabled),
-    [roots, searched, showDisabled]
+    () => handleFilterDataElement(roots, searched, showUnmounted),
+    [roots, searched, showUnmounted]
   );
   const selectedComponent = componentById.get(selectedId) || null;
 
@@ -27,8 +27,8 @@ function App({ data }) {
       <ToolsHeader
         setSearched={setSearched}
         searched={searched}
-        onShowDisabled={setShowDisabled}
-        showDisabled={showDisabled}
+        onShowUnmounted={setShowUnmounted}
+        showUnmounted={showUnmounted}
       />
       <div className="tools-content">
         <div>
