@@ -19,7 +19,7 @@ interface RendererAttachedParams {
 
 interface Publisher {
   ns(channel: string): {
-    publish(data: TransferCommitData[]);
+    publish(data: Message[]);
   };
 }
 
@@ -68,8 +68,6 @@ export class Bridge {
               ...payload,
               type: "operations",
             });
-          } else {
-            console.log({ operations });
           }
         } catch (e) {
           console.warn(e.message);
