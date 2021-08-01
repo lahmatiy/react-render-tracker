@@ -1,6 +1,11 @@
 import React from "react";
 
-const ChangeRowsReason = ({ data, type }) => {
+interface IChangeRowsReason {
+  type: "Props" | "State" | "Hooks";
+  data: any[];
+}
+
+const ChangeRowsReason = ({ type, data }: IChangeRowsReason) => {
   return (
     <>
       {data.map((row, index) => {
@@ -10,7 +15,7 @@ const ChangeRowsReason = ({ data, type }) => {
             <td>{row.name}</td>
             <td>
               <code>{JSON.stringify(row.prev)}</code>
-              &nbsp;=>&nbsp;
+              &nbsp;=&gt;&nbsp;
               <code>{JSON.stringify(row.next)}</code>
             </td>
           </tr>

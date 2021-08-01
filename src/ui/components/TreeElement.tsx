@@ -1,13 +1,27 @@
 import React, { useState } from "react";
-
+import { TreeElement } from "../types";
 import ElementName from "./element/ElementName";
 import ButtonCollapse from "./ui/ButtonCollapse";
 
-function byId(a, b) {
+interface ITreeElement {
+  data: TreeElement;
+  root?: boolean;
+  onSelect: (id: number) => void;
+  selectedId: number | null;
+  highlight: string;
+}
+
+function byId(a: TreeElement, b: TreeElement) {
   return a.id - b.id;
 }
 
-const TreeElement = ({ data, onSelect, root, selectedId, highlight }) => {
+const TreeElement = ({
+  data,
+  onSelect,
+  root = false,
+  selectedId,
+  highlight,
+}: ITreeElement) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const hasChildren = data.children?.length > 0;

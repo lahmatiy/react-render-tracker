@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from "react";
 
 import { getTreeData, handleFilterDataElement } from "./data/helpers";
+import { MessageElement } from "./types";
 
 import TreeElement from "./components/TreeElement";
 import ElementInfo from "./components/element/ElementInfo";
 import Card from "./components/ui/Card";
 import ToolsHeader from "./components/layout/ToolsHeader";
 
-function App({ data }) {
-  const [selectedId, setSelectedId] = useState(null);
+function App({ data }: { data: MessageElement[] }) {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [filterPattern, setFilterPattern] = useState("");
   const [groupByParent, setGroupByParent] = useState(false);
   const [showUnmounted, setShowUnmounted] = useState(true);

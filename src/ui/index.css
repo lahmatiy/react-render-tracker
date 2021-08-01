@@ -67,6 +67,7 @@ body {
 
 .tree-element__container.root + .tree-element__container.root {
   margin-top: 5px;
+  padding-top: 5px;
   border-top: 1px solid #ddd;
 }
 
@@ -139,11 +140,12 @@ body {
   transition: 0.2s;
   transition-property: color, transform;
   transform: rotate(-90deg);
-  margin-right: 5px;
+  margin-right: 2px;
 }
 
 .tree-element__toggle svg {
   width: 15px;
+  height: 13px;
   color: var(--icon);
   transition: 0.2s;
   transition-property: color;
@@ -200,12 +202,23 @@ table thead {
 
 table th,
 table td {
-  text-align: left;
   padding: 5px;
+  text-align: left;
+  vertical-align: top;
 }
 
 table td {
   font-size: 13px;
+}
+
+.element-info-table td:not(:last-child) {
+  white-space: nowrap;
+}
+.element-info-table td:last-child {
+  width: 100%;
+}
+.element-info-table td {
+  padding: 0 5px;
 }
 
 .table-change-details {

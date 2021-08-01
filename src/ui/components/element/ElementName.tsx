@@ -1,9 +1,17 @@
 import React from "react";
-
 import ElementId from "./ElementId";
 import ElementHocNames from "./ElementHocNames";
+import { TreeElement } from "../../types";
 
-function getElementNameHighlight(name, pattern) {
+interface IElementName {
+  data: TreeElement;
+  children: JSX.Element;
+  isSelected: boolean;
+  isDisabled: boolean;
+  highlight: string;
+}
+
+function getElementNameHighlight(name: string, pattern: string) {
   if (!pattern || !name) {
     return name;
   }
@@ -25,11 +33,17 @@ function getElementNameHighlight(name, pattern) {
   return name;
 }
 
-const ElementName = ({ data, children, isSelected, isDisabled, highlight }) => {
+const ElementName = ({
+  data,
+  children,
+  isSelected,
+  isDisabled,
+  highlight,
+}: IElementName) => {
   const { ownerId, updates } = data;
   const isRenderRoot = ownerId === 0;
   const updatesCount = updates?.reduce(
-    (count, { phase }) => count + (phase === "Update"),
+    (count, { phase }) => (phase === "Update" ? count + 1 : count),
     0
   );
   const classes = `tree-element__name ${isSelected ? "selected" : ""} ${

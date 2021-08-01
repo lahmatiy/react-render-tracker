@@ -1,8 +1,12 @@
 import React from "react";
-
 import ChevronDown from "react-feather/dist/icons/chevron-down";
 
-const ButtonCollapse = ({ isCollapsed, onToggle }) => {
+interface IButtonCollapse {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}
+
+const ButtonCollapse = ({ isCollapsed, onToggle }: IButtonCollapse) => {
   const collapsedCls = isCollapsed ? "open" : "";
   const disabledCls = typeof onToggle === "function" ? "" : "disabled";
 

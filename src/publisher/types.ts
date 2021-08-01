@@ -1,3 +1,6 @@
+import { ElementType } from "../comon-types";
+export * from "../comon-types";
+
 // FIXME
 export type ReactRenderer = any;
 
@@ -45,34 +48,6 @@ export type ReactCommitData = {
   commitTime: number;
   // Tuple of fiber ID and change description
   changeDescriptions: Map<number, ReactChangeDescription> | null;
-  duration: number;
-  // Only available in certain (newer) React builds,
-  effectDuration: number | null;
-  // Tuple of fiber ID and actual duration
-  fiberActualDurations: Array<[number, number]>;
-  // Tuple of fiber ID and computed "self" duration
-  fiberSelfDurations: Array<[number, number]>;
-  // Only available in certain (newer) React builds,
-  passiveEffectDuration: number | null;
-  priorityLevel: string | null;
-  timestamp: number;
-  updaters: Array<SerializedElement> | null;
-};
-
-export type TransferChangeDescription = {
-  context: Array<string> | boolean | null;
-  didHooksChange: boolean;
-  isFirstMount: boolean;
-  props: Array<{ name: string; changed: boolean }> | null;
-  state: Array<{ name: string; changed: boolean }> | null;
-  // TODO: add proper hook type
-  hooks?: Array<any> | null;
-};
-
-export type TransferCommitData = {
-  commitTime: number;
-  // Tuple of fiber ID and change description
-  changeDescriptions: { [key: number]: TransferChangeDescription } | null;
   duration: number;
   // Only available in certain (newer) React builds,
   effectDuration: number | null;
@@ -260,49 +235,3 @@ export type RendererInterface = {
   ) => void;
   updateComponentFilters: (componentFilters: Array<ComponentFilter>) => void;
 };
-
-export type Element = {
-  id: number;
-  parentId: number;
-  children: Array<number>;
-  type: ElementType;
-  displayName: string | null;
-  key: number | string | null;
-
-  hocDisplayNames: null | Array<string>;
-
-  // Owner (if available)
-  ownerId: number;
-
-  // How many levels deep within the tree is this element?
-  // This determines how much indentation (left padding) should be used in the Elements tree.
-  depth: number;
-};
-
-// Different types of elements displayed in the Elements tree.
-// These types may be used to visually distinguish types,
-// or to enable/disable certain functionality.
-export type ElementType = 1 | 2 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
-
-export interface AddElementMessage {
-  op: "add";
-  id: number;
-  element: Element;
-}
-
-export interface RemoveElementMessage {
-  op: "remove";
-  id: number;
-}
-
-export interface UpdateElementMessage {
-  op: "update";
-  id: number;
-  timestamp: number;
-  changes: TransferChangeDescription;
-}
-
-export type Message =
-  | AddElementMessage
-  | RemoveElementMessage
-  | UpdateElementMessage;

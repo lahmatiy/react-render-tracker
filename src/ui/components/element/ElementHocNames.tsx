@@ -1,6 +1,10 @@
 import React from "react";
 
-export default function ElementHocNames({ names }: { names: string[] }) {
+interface IElementHocNames {
+  names: string[];
+}
+
+export default function ElementHocNames({ names }: IElementHocNames) {
   if (!names || !names.length) {
     return null;
   }

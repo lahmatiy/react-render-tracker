@@ -30,7 +30,7 @@ exports.buildSubscriber = async function (config, configCSS) {
     write: false,
   });
   const result = await esbuild.buildSync({
-    entryPoints: ["src/ui/index.js"],
+    entryPoints: ["src/ui/index.tsx"],
     bundle: true,
     sourcemap: true,
     format: "esm",

@@ -1,8 +1,13 @@
 import React from "react";
 import Search from "react-feather/dist/icons/search";
 
-const FilterComponents = ({ onChange, value }) => {
-  const handleChange = e => {
+interface IFilterComponents {
+  onChange: (pattern: string) => void;
+  value: string;
+}
+
+const FilterComponents = ({ onChange, value }: IFilterComponents) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
 

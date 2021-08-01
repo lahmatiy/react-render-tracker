@@ -1,11 +1,15 @@
+/* globals __CSS__ */
+
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { getSubscriber } from "rempl";
 import App from "./App";
+import { MessageElement, Message, ElementUpdate } from "./types";
 
 // bootstrap HTML document
-document.head.appendChild(document.createElement("style")).append(__CSS__);
+declare var __CSS__: string;
 const rootEl = document.createElement("div");
+document.head.appendChild(document.createElement("style")).append(__CSS__);
 document.body.appendChild(rootEl);
 
 // render React app
@@ -13,13 +17,13 @@ ReactDOM.render(<AppWithData />, rootEl);
 
 // subscribe to data and pass it to app
 function AppWithData() {
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState<MessageElement[]>([]);
 
   useEffect(
     () =>
       getSubscriber()
         .ns("tree-changes")
-        .subscribe((messages = []) => {
+        .subscribe((messages: Message[] = []) => {
           setData(processMessages(messages));
         }),
     [setData]
@@ -28,13 +32,14 @@ function AppWithData() {
   return <App data={data} />;
 }
 
-function processMessages(messages) {
-  const componentById = new Map();
+function processMessages(messages: Message[]) {
+  const componentById: Map<number, MessageElement> = new Map();
   const updatesByComponentId = new Map();
 
   for (const message of messages) {
     switch (message.op) {
       case "add":
+        message.element;
         componentById.set(message.id, {
           ...message.element,
           mounted: true,
@@ -77,7 +82,8 @@ function processMessages(messages) {
 function processChange(value, timestamp, component) {
   const { didHooksChange, isFirstMount, props, state, hooks, parentUpdate } =
     value;
-  const change = {
+  const change: ElementUpdate = {
+    phase: "Update",
     timestamp,
     reason: [],
     details: {},
@@ -88,8 +94,6 @@ function processChange(value, timestamp, component) {
     change.phase = "Unmount";
   } else if (isFirstMount) {
     change.phase = "Mount";
-  } else {
-    change.phase = "Update";
   }
 
   if (didHooksChange && hooks?.length > 0) {

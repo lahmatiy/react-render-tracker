@@ -2,7 +2,6 @@ import {
   ReactChangeDescription,
   ReactCommitData,
   TransferChangeDescription,
-  TransferCommitData,
   UpdateElementMessage,
 } from "../types";
 
