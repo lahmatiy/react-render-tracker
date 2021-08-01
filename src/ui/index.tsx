@@ -4,7 +4,12 @@ import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { getSubscriber } from "rempl";
 import App from "./App";
-import { MessageElement, Message, ElementUpdate } from "./types";
+import {
+  TransferChangeDescription,
+  MessageElement,
+  Message,
+  ElementUpdate,
+} from "./types";
 
 // bootstrap HTML document
 declare var __CSS__: string;
@@ -79,7 +84,11 @@ function processMessages(messages: Message[]) {
   return [...componentById.values()];
 }
 
-function processChange(value, timestamp, component) {
+function processChange(
+  value: TransferChangeDescription,
+  timestamp: number,
+  component: MessageElement
+) {
   const { didHooksChange, isFirstMount, props, state, hooks, parentUpdate } =
     value;
   const change: ElementUpdate = {

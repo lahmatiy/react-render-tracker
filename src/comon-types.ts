@@ -25,6 +25,7 @@ export type TransferChangeDescription = {
   context: Array<string> | boolean | null;
   didHooksChange: boolean;
   isFirstMount: boolean;
+  parentUpdate: boolean;
   props: Array<{ name: string; changed: boolean }> | null;
   state: Array<{ name: string; changed: boolean }> | null;
   // TODO: add proper hook type
