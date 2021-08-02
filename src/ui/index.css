@@ -73,13 +73,14 @@ body {
 
 .tree-element__name {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: inline-block;
+  white-space: nowrap;
   color: var(--primary);
   border-radius: 5px;
   cursor: pointer;
   padding: 3px 15px 3px 5px;
   transition: 0.2s;
+  transition-property: color, background-color;
 }
 
 .tree-element__name:hover {
@@ -87,7 +88,7 @@ body {
 }
 
 .tree-element__name.selected {
-  background: rgba(2, 121, 201, 0.1);
+  background-color: rgba(2, 121, 201, 0.1);
 }
 
 .tree-element__name.disabled .tree-element__name-text {
@@ -106,11 +107,6 @@ body {
   border-bottom: 2px solid #e0bf08;
 }
 
-.tree-element__bracket {
-  color: #a1a1a1;
-  padding: 0 2px;
-}
-
 .tree-element__id {
   color: #a1a1a1;
   font-size: 10px;
@@ -127,7 +123,6 @@ body {
   border-radius: 3px;
   color: #6c9c1e;
   padding: 1px 4px;
-  vertical-align: sub;
 }
 .tree-element-hoc-name + .tree-element-hoc-name {
   margin-left: 2px;
@@ -141,6 +136,8 @@ body {
   transition-property: color, transform;
   transform: rotate(-90deg);
   margin-right: 2px;
+  margin-bottom: 2px;
+  vertical-align: middle;
 }
 
 .tree-element__toggle svg {
@@ -172,7 +169,6 @@ body {
   background: #eaeac7;
   border-radius: 4px;
   color: #949c35;
-  vertical-align: sub;
   text-align: center;
 }
 
