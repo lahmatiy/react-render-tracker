@@ -1280,7 +1280,7 @@ export function attach(hook, rendererID, renderer, global) {
     if (isEffect(prevMemoizedState) && isEffect(nextMemoizedState)) {
       return (
         prevMemoizedState !== nextMemoizedState &&
-        !areHookInputsEqual(nextMemoizedState.deps, prevMemoizedState.deps)
+        !areHookInputsEqual(nextMemoizedState?.deps, prevMemoizedState?.deps)
       );
     }
     return nextMemoizedState !== prevMemoizedState;
@@ -1314,7 +1314,7 @@ export function attach(hook, rendererID, renderer, global) {
                     value: prev.memoizedState,
                   }
                 : {}),
-              dependencies: prev.memoizedState.deps,
+              dependencies: prev.memoizedState?.deps,
             },
             next: {
               ...(!effect
@@ -1322,7 +1322,7 @@ export function attach(hook, rendererID, renderer, global) {
                     value: next.memoizedState,
                   }
                 : {}),
-              dependencies: next.memoizedState.deps,
+              dependencies: next.memoizedState?.deps,
             },
           });
         }
@@ -1363,7 +1363,7 @@ export function attach(hook, rendererID, renderer, global) {
                       value: prev.memoizedState,
                     }
                   : {}),
-                dependencies: prev.memoizedState.deps,
+                dependencies: prev.memoizedState?.deps,
               },
               next: {
                 ...(!effect
@@ -1371,7 +1371,7 @@ export function attach(hook, rendererID, renderer, global) {
                       value: next.memoizedState,
                     }
                   : {}),
-                dependencies: next.memoizedState.deps,
+                dependencies: next.memoizedState?.deps,
               },
             });
           }
@@ -1718,7 +1718,7 @@ export function attach(hook, rendererID, renderer, global) {
   }
 
   function getStringID(str) {
-    if (str === null) {
+    if (str === null || str === undefined) {
       return 0;
     }
     const existingID = pendingStringTable.get(str);
