@@ -10,32 +10,58 @@ export const ElementTypeRoot = 11;
 export const ElementTypeSuspense = 12;
 export const ElementTypeSuspenseList = 13;
 
-export const __DEBUG__ = false;
-
 export const TREE_OPERATION_MOUNT = 1;
 export const TREE_OPERATION_UNMOUNT = 2;
-export const TREE_OPERATION_REORDER_CHILDREN = 3;
-export const TREE_OPERATION_UPDATE_TREE_BASE_DURATION = 4;
-export const TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS = 5;
-export const TREE_OPERATION_REMOVE_ROOT = 6;
+export const TREE_OPERATION_UPDATE_TREE_BASE_DURATION = 3;
+export const TREE_OPERATION_REMOVE_ROOT = 4;
 
-export const LOCAL_STORAGE_FILTER_PREFERENCES_KEY =
-  "React::DevTools::componentFilters";
+export const CONCURRENT_MODE_NUMBER = 0xeacf;
+export const CONCURRENT_MODE_SYMBOL_STRING = "Symbol(react.concurrent_mode)";
 
-export const SESSION_STORAGE_LAST_SELECTION_KEY =
-  "React::DevTools::lastSelection";
+export const CONTEXT_NUMBER = 0xeace;
+export const CONTEXT_SYMBOL_STRING = "Symbol(react.context)";
 
-export const LOCAL_STORAGE_PARSE_HOOK_NAMES_KEY =
-  "React::DevTools::parseHookNames";
+export const DEPRECATED_ASYNC_MODE_SYMBOL_STRING = "Symbol(react.async_mode)";
 
-export const LOCAL_STORAGE_SHOULD_BREAK_ON_CONSOLE_ERRORS =
-  "React::DevTools::breakOnConsoleErrors";
+export const ELEMENT_NUMBER = 0xeac7;
+export const ELEMENT_SYMBOL_STRING = "Symbol(react.element)";
 
-export const LOCAL_STORAGE_SHOULD_PATCH_CONSOLE_KEY =
-  "React::DevTools::appendComponentStack";
+export const DEBUG_TRACING_MODE_NUMBER = 0xeae1;
+export const DEBUG_TRACING_MODE_SYMBOL_STRING =
+  "Symbol(react.debug_trace_mode)";
 
-export const LOCAL_STORAGE_SHOW_INLINE_WARNINGS_AND_ERRORS_KEY =
-  "React::DevTools::showInlineWarningsAndErrors";
+export const FORWARD_REF_NUMBER = 0xead0;
+export const FORWARD_REF_SYMBOL_STRING = "Symbol(react.forward_ref)";
 
-export const LOCAL_STORAGE_TRACE_UPDATES_ENABLED_KEY =
-  "React::DevTools::traceUpdatesEnabled";
+export const FRAGMENT_NUMBER = 0xeacb;
+export const FRAGMENT_SYMBOL_STRING = "Symbol(react.fragment)";
+
+export const LAZY_NUMBER = 0xead4;
+export const LAZY_SYMBOL_STRING = "Symbol(react.lazy)";
+
+export const MEMO_NUMBER = 0xead3;
+export const MEMO_SYMBOL_STRING = "Symbol(react.memo)";
+
+export const OPAQUE_ID_NUMBER = 0xeae0;
+export const OPAQUE_ID_SYMBOL_STRING = "Symbol(react.opaque.id)";
+
+export const PORTAL_NUMBER = 0xeaca;
+export const PORTAL_SYMBOL_STRING = "Symbol(react.portal)";
+
+export const PROFILER_NUMBER = 0xead2;
+export const PROFILER_SYMBOL_STRING = "Symbol(react.profiler)";
+
+export const PROVIDER_NUMBER = 0xeacd;
+export const PROVIDER_SYMBOL_STRING = "Symbol(react.provider)";
+
+export const SCOPE_NUMBER = 0xead7;
+export const SCOPE_SYMBOL_STRING = "Symbol(react.scope)";
+
+export const STRICT_MODE_NUMBER = 0xeacc;
+export const STRICT_MODE_SYMBOL_STRING = "Symbol(react.strict_mode)";
+
+export const SUSPENSE_NUMBER = 0xead1;
+export const SUSPENSE_SYMBOL_STRING = "Symbol(react.suspense)";
+
+export const SUSPENSE_LIST_NUMBER = 0xead8;
+export const SUSPENSE_LIST_SYMBOL_STRING = "Symbol(react.suspense_list)";

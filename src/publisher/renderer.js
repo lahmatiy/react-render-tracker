@@ -1,6 +1,21 @@
 import { gt, gte } from "semver";
 // import { inspectHooksOfFiber } from "react-debug-tools";
+
 import {
+  ElementTypeClass,
+  ElementTypeContext,
+  ElementTypeForwardRef,
+  ElementTypeFunction,
+  ElementTypeHostComponent,
+  ElementTypeMemo,
+  ElementTypeOtherOrUnknown,
+  ElementTypeProfiler,
+  ElementTypeRoot,
+  ElementTypeSuspense,
+  ElementTypeSuspenseList,
+  TREE_OPERATION_MOUNT,
+  TREE_OPERATION_UNMOUNT,
+  TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
   CONCURRENT_MODE_NUMBER,
   CONCURRENT_MODE_SYMBOL_STRING,
   CONTEXT_NUMBER,
@@ -18,40 +33,18 @@ import {
   SCOPE_SYMBOL_STRING,
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
-} from "./symbols.js";
-
-import {
-  __DEBUG__,
-  ElementTypeClass,
-  ElementTypeContext,
-  ElementTypeForwardRef,
-  ElementTypeFunction,
-  ElementTypeHostComponent,
-  ElementTypeMemo,
-  ElementTypeOtherOrUnknown,
-  ElementTypeProfiler,
-  ElementTypeRoot,
-  ElementTypeSuspense,
-  ElementTypeSuspenseList,
-  TREE_OPERATION_MOUNT,
-  TREE_OPERATION_UNMOUNT,
-  TREE_OPERATION_REORDER_CHILDREN,
-  TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
-  TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
 } from "./constants.js";
 
 import {
   cleanForBridge,
   copyWithDelete,
   copyWithRename,
-  copyWithSet,
   deletePathInObject,
   getDisplayName,
   getEffectDurations,
   getInObject,
   getUID,
   renamePathInObject,
-  setInObject,
   utfEncodeString,
 } from "./utils";
 
@@ -436,7 +429,7 @@ export function attach(hook, rendererID, renderer) {
     ReactTypeOfSideEffect,
   } = getInternalReactConstants(version);
 
-  const { DidCapture, Incomplete, NoFlags, PerformedWork, Placement } =
+  const { Incomplete, NoFlags, PerformedWork, Placement } =
     ReactTypeOfSideEffect;
 
   const {
@@ -477,7 +470,6 @@ export function attach(hook, rendererID, renderer) {
     overrideProps,
     overridePropsDeletePath,
     overridePropsRenamePath,
-    scheduleRefresh,
     setErrorHandler,
     setSuspenseHandler,
     scheduleUpdate,
@@ -490,67 +482,9 @@ export function attach(hook, rendererID, renderer) {
     typeof setSuspenseHandler === "function" &&
     typeof scheduleUpdate === "function";
 
-  if (typeof scheduleRefresh === "function") {
-    // When Fast Refresh updates a component, the frontend may need to purge cached information.
-    // For example, ASTs cached for the component (for named hooks) may no longer be valid.
-    // Send a signal to the frontend to purge this cached information.
-    // The "fastRefreshScheduled" dispatched is global (not Fiber or even Renderer specific).
-    // This is less effecient since it means the front-end will need to purge the entire cache,
-    // but this is probably an okay trade off in order to reduce coupling between the DevTools and Fast Refresh.
-    renderer.scheduleRefresh = (...args) => {
-      try {
-        hook.emit("fastRefreshScheduled");
-      } finally {
-        return scheduleRefresh(...args);
-      }
-    };
-  }
-
-  // Tracks Fibers with recently changed number of error/warning messages.
-  // These collections store the Fiber rather than the ID,
-  // in order to avoid generating an ID for Fibers that never get mounted
-  // (due to e.g. Suspense or error boundaries).
-  // onErrorOrWarning() adds Fibers and recordPendingErrorsAndWarnings() later clears them.
-  const fibersWithChangedErrorOrWarningCounts = new Set();
-  const pendingFiberToErrorsMap = new Map();
-  const pendingFiberToWarningsMap = new Map();
-
   // Mapping of fiber IDs to error/warning messages and counts.
   const fiberIDToErrorsMap = new Map();
   const fiberIDToWarningsMap = new Map();
-
-  const debug = (name, fiber, parentFiber, extraString) => {
-    if (true) {
-      const displayName =
-        fiber.tag + ":" + (getDisplayNameForFiber(fiber) || "null");
-
-      const maybeID = getFiberIDUnsafe(fiber) || "<no id>";
-      const parentDisplayName = parentFiber
-        ? parentFiber.tag +
-          ":" +
-          (getDisplayNameForFiber(parentFiber) || "null")
-        : "";
-      const maybeParentID = parentFiber
-        ? getFiberIDUnsafe(parentFiber) || "<no-id>"
-        : "";
-
-      console.groupCollapsed(
-        `[renderer] %c${name} %c${displayName} (${maybeID}) %c${
-          parentFiber ? `${parentDisplayName} (${maybeParentID})` : ""
-        } %c${extraString}`,
-        "color: red; font-weight: bold;",
-        "color: blue;",
-        "color: purple;",
-        "color: black;"
-      );
-      console.log(new Error().stack.split("\n").slice(1).join("\n"));
-      console.groupEnd();
-    }
-  };
-
-  // Highlight updates
-  let traceUpdatesEnabled = false;
-  const traceUpdatesForNodes = new Set();
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber) {
@@ -563,6 +497,7 @@ export function attach(hook, rendererID, renderer) {
         // https://github.com/bvaughn/react-devtools-experimental/issues/197
         return true;
       case HostPortal:
+      case HostComponent:
       case HostText:
       case Fragment:
       case LegacyHiddenComponent:
@@ -678,9 +613,7 @@ export function attach(hook, rendererID, renderer) {
       }
     }
 
-    let didGenerateID = false;
     if (id === null) {
-      didGenerateID = true;
       id = getUID();
     }
 
@@ -700,17 +633,6 @@ export function attach(hook, rendererID, renderer) {
     if (alternate !== null) {
       if (!fiberToIDMap.has(alternate)) {
         fiberToIDMap.set(alternate, refinedID);
-      }
-    }
-
-    if (__DEBUG__) {
-      if (didGenerateID) {
-        debug(
-          "getOrGenerateFiberID()",
-          fiber,
-          fiber.return,
-          "Generated a new UID"
-        );
       }
     }
 
@@ -745,10 +667,6 @@ export function attach(hook, rendererID, renderer) {
   // Removes a Fiber (and its alternate) from the Maps used to track their id.
   // This method should always be called when a Fiber is unmounting.
   function untrackFiberID(fiber) {
-    if (__DEBUG__) {
-      debug("untrackFiberID()", fiber, fiber.return, "schedule after delay");
-    }
-
     // Untrack Fibers after a slight delay in order to support a Fast Refresh edge case:
     // 1. Component type is updated and Fast Refresh schedules an update+remount.
     // 2. flushPendingErrorsAndWarningsAfterDelay() runs, sees the old Fiber is no longer mounted
@@ -791,13 +709,6 @@ export function attach(hook, rendererID, renderer) {
       const { alternate } = fiber;
       if (alternate !== null) {
         fiberToIDMap.delete(alternate);
-      }
-
-      if (forceErrorForFiberIDs.has(fiberID)) {
-        forceErrorForFiberIDs.delete(fiberID);
-        if (forceErrorForFiberIDs.size === 0 && setErrorHandler != null) {
-          setErrorHandler(shouldErrorFiberAlwaysNull);
-        }
       }
     });
     untrackFibersSet.clear();
@@ -1102,7 +1013,6 @@ export function attach(hook, rendererID, renderer) {
     return changedKeys;
   }
 
-  // eslint-disable-next-line no-unused-vars
   function didFiberRender(prevFiber, nextFiber) {
     switch (nextFiber.tag) {
       case ClassComponent:
@@ -1112,7 +1022,6 @@ export function attach(hook, rendererID, renderer) {
       case SimpleMemoComponent:
         // For types that execute user code, we check PerformedWork effect.
         // We don't reflect bailouts (either referential or sCU) in DevTools.
-        // eslint-disable-next-line no-bitwise
         return (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork;
       // Note: ContextConsumer only gets PerformedWork effect in 16.3.3+
       // so it won't get highlighted with React 16.3.0 to 16.3.2.
@@ -1130,7 +1039,6 @@ export function attach(hook, rendererID, renderer) {
   const pendingOperations = [];
   const pendingRealUnmountedIDs = [];
   const pendingSimulatedUnmountedIDs = [];
-  let pendingOperationsQueue = [];
   const pendingStringTable = new Map();
   let pendingStringTableLength = 0;
   let pendingUnmountedRootID = null;
@@ -1139,121 +1047,7 @@ export function attach(hook, rendererID, renderer) {
     pendingOperations.push(op);
   }
 
-  function flushOrQueueOperations(operations) {
-    if (pendingOperationsQueue !== null) {
-      pendingOperationsQueue.push(operations);
-    } else {
-      hook.emit("operations", operations);
-    }
-  }
-
-  let flushPendingErrorsAndWarningsAfterDelayTimeoutID = null;
-
-  function clearPendingErrorsAndWarningsAfterDelay() {
-    if (flushPendingErrorsAndWarningsAfterDelayTimeoutID !== null) {
-      clearTimeout(flushPendingErrorsAndWarningsAfterDelayTimeoutID);
-      flushPendingErrorsAndWarningsAfterDelayTimeoutID = null;
-    }
-  }
-
-  function mergeMapsAndGetCountHelper(
-    fiber,
-    fiberID,
-    pendingFiberToMessageCountMap,
-    fiberIDToMessageCountMap
-  ) {
-    let newCount = 0;
-
-    let messageCountMap = fiberIDToMessageCountMap.get(fiberID);
-
-    const pendingMessageCountMap = pendingFiberToMessageCountMap.get(fiber);
-    if (pendingMessageCountMap != null) {
-      if (messageCountMap == null) {
-        messageCountMap = pendingMessageCountMap;
-
-        fiberIDToMessageCountMap.set(fiberID, pendingMessageCountMap);
-      } else {
-        // This Flow refinement should not be necessary and yet...
-        const refinedMessageCountMap = messageCountMap;
-
-        pendingMessageCountMap.forEach((pendingCount, message) => {
-          const previousCount = refinedMessageCountMap.get(message) || 0;
-          refinedMessageCountMap.set(message, previousCount + pendingCount);
-        });
-      }
-    }
-
-    if (!shouldFilterFiber(fiber)) {
-      if (messageCountMap != null) {
-        messageCountMap.forEach(count => {
-          newCount += count;
-        });
-      }
-    }
-
-    pendingFiberToMessageCountMap.delete(fiber);
-
-    return newCount;
-  }
-
-  function recordPendingErrorsAndWarnings() {
-    clearPendingErrorsAndWarningsAfterDelay();
-
-    fibersWithChangedErrorOrWarningCounts.forEach(fiber => {
-      const fiberID = getFiberIDUnsafe(fiber);
-      if (fiberID === null) {
-        // Don't send updates for Fibers that didn't mount due to e.g. Suspense or an error boundary.
-      } else {
-        const errorCount = mergeMapsAndGetCountHelper(
-          fiber,
-          fiberID,
-          pendingFiberToErrorsMap,
-          fiberIDToErrorsMap
-        );
-        const warningCount = mergeMapsAndGetCountHelper(
-          fiber,
-          fiberID,
-          pendingFiberToWarningsMap,
-          fiberIDToWarningsMap
-        );
-
-        pushOperation(TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS);
-        pushOperation(fiberID);
-        pushOperation(errorCount);
-        pushOperation(warningCount);
-      }
-
-      // Always clean up so that we don't leak.
-      pendingFiberToErrorsMap.delete(fiber);
-      pendingFiberToWarningsMap.delete(fiber);
-    });
-    fibersWithChangedErrorOrWarningCounts.clear();
-  }
-
   function flushPendingEvents() {
-    // Add any pending errors and warnings to the operations array.
-    // We do this just before flushing, so we can ignore errors for no-longer-mounted Fibers.
-    recordPendingErrorsAndWarnings();
-
-    if (
-      pendingOperations.length === 0 &&
-      pendingRealUnmountedIDs.length === 0 &&
-      pendingSimulatedUnmountedIDs.length === 0 &&
-      pendingUnmountedRootID === null
-    ) {
-      // If we aren't profiling, we can just bail out here.
-      // No use sending an empty update over the bridge.
-      //
-      // The Profiler stores metadata for each commit and reconstructs the app tree per commit using:
-      // (1) an initial tree snapshot and
-      // (2) the operations array for each commit
-      // Because of this, it's important that the operations and metadata arrays align,
-      // So it's important not to omit even empty operations while profiling is active.
-      if (!isProfiling) {
-        return;
-      }
-    }
-
     const numUnmountIDs =
       pendingRealUnmountedIDs.length +
       pendingSimulatedUnmountedIDs.length +
@@ -1325,7 +1119,7 @@ export function attach(hook, rendererID, renderer) {
     i += pendingOperations.length;
 
     // Let the frontend know about tree operations.
-    flushOrQueueOperations(operations);
+    hook.emit("operations", operations);
 
     // Reset all of the pending state now that we've told the frontend about it.
     pendingOperations.length = 0;
@@ -1356,11 +1150,6 @@ export function attach(hook, rendererID, renderer) {
   function recordMount(fiber, parentFiber) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberID(fiber);
-
-    if (__DEBUG__) {
-      debug("recordMount()", fiber, parentFiber);
-    }
-
     const hasOwnerMetadata = fiber.hasOwnProperty("_debugOwner");
     const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
 
@@ -1371,10 +1160,8 @@ export function attach(hook, rendererID, renderer) {
       pushOperation(isProfilingSupported ? 1 : 0);
       pushOperation(hasOwnerMetadata ? 1 : 0);
 
-      if (isProfiling) {
-        if (displayNamesByRootID !== null) {
-          displayNamesByRootID.set(id, getDisplayNameForRoot(fiber));
-        }
+      if (displayNamesByRootID !== null) {
+        displayNamesByRootID.set(id, getDisplayNameForRoot(fiber));
       }
     } else {
       const { key } = fiber;
@@ -1415,27 +1202,6 @@ export function attach(hook, rendererID, renderer) {
   }
 
   function recordUnmount(fiber, isSimulated) {
-    if (__DEBUG__) {
-      debug(
-        "recordUnmount()",
-        fiber,
-        null,
-        isSimulated ? "unmount is simulated" : ""
-      );
-    }
-
-    if (trackedPathMatchFiber !== null) {
-      // We're in the process of trying to restore previous selection.
-      // If this fiber matched but is being unmounted, there's no use trying.
-      // Reset the state so we don't keep holding onto it.
-      if (
-        fiber === trackedPathMatchFiber ||
-        fiber === trackedPathMatchFiber.alternate
-      ) {
-        setTrackedPath(null);
-      }
-    }
-
     const unsafeID = getFiberIDUnsafe(fiber);
     if (unsafeID === null) {
       // If we've never seen this Fiber, it might be inside of a legacy render Suspense fragment (so the store is not even aware of it).
@@ -1490,32 +1256,9 @@ export function attach(hook, rendererID, renderer) {
       // Generate an ID even for filtered Fibers, in case it's needed later (e.g. for Profiling).
       getOrGenerateFiberID(fiber);
 
-      if (__DEBUG__) {
-        debug("mountFiberRecursively()", fiber, parentFiber);
-      }
-
-      // If we have the tree selection from previous reload, try to match this Fiber.
-      // Also remember whether to do the same for siblings.
-      const mightSiblingsBeOnTrackedPath =
-        updateTrackedPathStateBeforeMount(fiber);
-
       const shouldIncludeInTree = !shouldFilterFiber(fiber);
       if (shouldIncludeInTree) {
         recordMount(fiber, parentFiber);
-      }
-
-      if (traceUpdatesEnabled) {
-        if (traceNearestHostComponentUpdate) {
-          const elementType = getElementTypeForFiber(fiber);
-          // If an ancestor updated, we should mark the nearest host nodes for highlighting.
-          if (elementType === ElementTypeHostComponent) {
-            traceUpdatesForNodes.add(fiber.stateNode);
-            traceNearestHostComponentUpdate = false;
-          }
-        }
-
-        // We intentionally do not re-enable the traceNearestHostComponentUpdate flag in this branch,
-        // because we don't want to highlight every host node inside of a newly mounted subtree.
       }
 
       const isSuspense = fiber.tag === ReactTypeOfWork.SuspenseComponent;
@@ -1569,10 +1312,6 @@ export function attach(hook, rendererID, renderer) {
         }
       }
 
-      // We're exiting this Fiber now, and entering its siblings.
-      // If we have selection to restore, we might need to re-activate tracking.
-      updateTrackedPathStateAfterMount(mightSiblingsBeOnTrackedPath);
-
       fiber = traverseSiblings ? fiber.sibling : null;
     }
   }
@@ -1580,10 +1319,6 @@ export function attach(hook, rendererID, renderer) {
   // We use this to simulate unmounting for Suspense trees
   // when we switch from primary to fallback.
   function unmountFiberChildrenRecursively(fiber) {
-    if (__DEBUG__) {
-      debug("unmountFiberChildrenRecursively()", fiber);
-    }
-
     // We might meet a nested Suspense on our way.
     const isTimedOutSuspense =
       fiber.tag === ReactTypeOfWork.SuspenseComponent &&
@@ -1617,132 +1352,68 @@ export function attach(hook, rendererID, renderer) {
 
     idToTreeBaseDurationMap.set(id, treeBaseDuration || 0);
 
-    if (isProfiling) {
-      const { alternate } = fiber;
+    const { alternate } = fiber;
 
-      // It's important to update treeBaseDuration even if the current Fiber did not render,
-      // because it's possible that one of its descendants did.
-      if (
-        alternate == null ||
-        treeBaseDuration !== alternate.treeBaseDuration
-      ) {
-        // Tree base duration updates are included in the operations typed array.
-        // So we have to convert them from milliseconds to microseconds so we can send them as ints.
-        const convertedTreeBaseDuration = Math.floor(
-          (treeBaseDuration || 0) * 1000
+    // It's important to update treeBaseDuration even if the current Fiber did not render,
+    // because it's possible that one of its descendants did.
+    if (alternate == null || treeBaseDuration !== alternate.treeBaseDuration) {
+      // Tree base duration updates are included in the operations typed array.
+      // So we have to convert them from milliseconds to microseconds so we can send them as ints.
+      const convertedTreeBaseDuration = Math.floor(
+        (treeBaseDuration || 0) * 1000
+      );
+      pushOperation(TREE_OPERATION_UPDATE_TREE_BASE_DURATION);
+      pushOperation(id);
+      pushOperation(convertedTreeBaseDuration);
+    }
+
+    if (alternate == null || didFiberRender(alternate, fiber)) {
+      if (actualDuration != null) {
+        // The actual duration reported by React includes time spent working on children.
+        // This is useful information, but it's also useful to be able to exclude child durations.
+        // The frontend can't compute this, since the immediate children may have been filtered out.
+        // So we need to do this on the backend.
+        // Note that this calculated self duration is not the same thing as the base duration.
+        // The two are calculated differently (tree duration does not accumulate).
+        let selfDuration = actualDuration;
+        let child = fiber.child;
+        while (child !== null) {
+          selfDuration -= child.actualDuration || 0;
+          child = child.sibling;
+        }
+
+        // If profiling is active, store durations for elements that were rendered during the commit.
+        // Note that we should do this for any fiber we performed work on, regardless of its actualDuration value.
+        // In some cases actualDuration might be 0 for fibers we worked on (particularly if we're using Date.now)
+        // In other cases (e.g. Memo) actualDuration might be greater than 0 even if we "bailed out".
+        const metadata = currentCommitProfilingMetadata;
+        metadata.durations.push(id, actualDuration, selfDuration);
+        metadata.maxActualDuration = Math.max(
+          metadata.maxActualDuration,
+          actualDuration
         );
-        pushOperation(TREE_OPERATION_UPDATE_TREE_BASE_DURATION);
-        pushOperation(id);
-        pushOperation(convertedTreeBaseDuration);
-      }
 
-      if (alternate == null || didFiberRender(alternate, fiber)) {
-        if (actualDuration != null) {
-          // The actual duration reported by React includes time spent working on children.
-          // This is useful information, but it's also useful to be able to exclude child durations.
-          // The frontend can't compute this, since the immediate children may have been filtered out.
-          // So we need to do this on the backend.
-          // Note that this calculated self duration is not the same thing as the base duration.
-          // The two are calculated differently (tree duration does not accumulate).
-          let selfDuration = actualDuration;
-          let child = fiber.child;
-          while (child !== null) {
-            selfDuration -= child.actualDuration || 0;
-            child = child.sibling;
-          }
+        if (recordChangeDescriptions) {
+          const changeDescription = getChangeDescription(alternate, fiber);
+          if (changeDescription !== null) {
+            const { didHooksChange, hooks } = changeDescription;
+            if (didHooksChange && hooks && hooks.length) {
+              const { _debugHookTypes } = getFiberByID(id);
 
-          // If profiling is active, store durations for elements that were rendered during the commit.
-          // Note that we should do this for any fiber we performed work on, regardless of its actualDuration value.
-          // In some cases actualDuration might be 0 for fibers we worked on (particularly if we're using Date.now)
-          // In other cases (e.g. Memo) actualDuration might be greater than 0 even if we "bailed out".
-          const metadata = currentCommitProfilingMetadata;
-          metadata.durations.push(id, actualDuration, selfDuration);
-          metadata.maxActualDuration = Math.max(
-            metadata.maxActualDuration,
-            actualDuration
-          );
-
-          if (recordChangeDescriptions) {
-            const changeDescription = getChangeDescription(alternate, fiber);
-            if (changeDescription !== null) {
-              const { didHooksChange, hooks } = changeDescription;
-              if (didHooksChange && hooks && hooks.length) {
-                const { _debugHookTypes } = getFiberByID(id);
-
-                hooks.forEach(hook => {
-                  hook.name = _debugHookTypes[hook.index + 1];
-                });
-              }
-
-              if (metadata.changeDescriptions !== null) {
-                metadata.changeDescriptions.set(id, changeDescription);
-              }
+              hooks.forEach(hook => {
+                hook.name = _debugHookTypes[hook.index + 1];
+              });
             }
 
-            updateContextsForFiber(fiber);
+            if (metadata.changeDescriptions !== null) {
+              metadata.changeDescriptions.set(id, changeDescription);
+            }
           }
 
-          hook.emit("commit", currentCommitProfilingMetadata);
+          updateContextsForFiber(fiber);
         }
-      }
-    }
-  }
 
-  function recordResetChildren(fiber, childSet) {
-    if (__DEBUG__) {
-      debug("recordResetChildren()", childSet, fiber);
-    }
-    // The frontend only really cares about the displayName, key, and children.
-    // The first two don't really change, so we are only concerned with the order of children here.
-    // This is trickier than a simple comparison though, since certain types of fibers are filtered.
-    const nextChildren = [];
-
-    // This is a naive implementation that shallowly recourses children.
-    // We might want to revisit this if it proves to be too inefficient.
-    let child = childSet;
-    while (child !== null) {
-      findReorderedChildrenRecursively(child, nextChildren);
-      child = child.sibling;
-    }
-
-    const numChildren = nextChildren.length;
-    if (numChildren < 2) {
-      // No need to reorder.
-      return;
-    }
-    pushOperation(TREE_OPERATION_REORDER_CHILDREN);
-    pushOperation(getFiberIDThrows(fiber));
-    pushOperation(numChildren);
-    for (let i = 0; i < nextChildren.length; i++) {
-      pushOperation(nextChildren[i]);
-    }
-  }
-
-  function findReorderedChildrenRecursively(fiber, nextChildren) {
-    if (!shouldFilterFiber(fiber)) {
-      nextChildren.push(getFiberIDThrows(fiber));
-    } else {
-      let child = fiber.child;
-      const isTimedOutSuspense =
-        fiber.tag === SuspenseComponent && fiber.memoizedState !== null;
-      if (isTimedOutSuspense) {
-        // Special case: if Suspense mounts in a timed-out state,
-        // get the fallback child from the inner fragment,
-        // and skip over the primary child.
-        const primaryChildFragment = fiber.child;
-        const fallbackChildFragment = primaryChildFragment
-          ? primaryChildFragment.sibling
-          : null;
-        const fallbackChild = fallbackChildFragment
-          ? fallbackChildFragment.child
-          : null;
-        if (fallbackChild !== null) {
-          child = fallbackChild;
-        }
-      }
-      while (child !== null) {
-        findReorderedChildrenRecursively(child, nextChildren);
-        child = child.sibling;
+        hook.emit("commit", currentCommitProfilingMetadata);
       }
     }
   }
@@ -1755,33 +1426,6 @@ export function attach(hook, rendererID, renderer) {
     traceNearestHostComponentUpdate
   ) {
     const id = getOrGenerateFiberID(nextFiber);
-
-    if (__DEBUG__) {
-      debug("updateFiberRecursively()", nextFiber, parentFiber);
-    }
-
-    if (traceUpdatesEnabled) {
-      const elementType = getElementTypeForFiber(nextFiber);
-      if (traceNearestHostComponentUpdate) {
-        // If an ancestor updated, we should mark the nearest host nodes for highlighting.
-        if (elementType === ElementTypeHostComponent) {
-          traceUpdatesForNodes.add(nextFiber.stateNode);
-          traceNearestHostComponentUpdate = false;
-        }
-      } else {
-        if (
-          elementType === ElementTypeFunction ||
-          elementType === ElementTypeClass ||
-          elementType === ElementTypeContext
-        ) {
-          // Otherwise if this is a traced ancestor, flag for the nearest host descendant(s).
-          traceNearestHostComponentUpdate = didFiberRender(
-            prevFiber,
-            nextFiber
-          );
-        }
-      }
-    }
 
     if (
       mostRecentlyInspectedElement !== null &&
@@ -1923,19 +1567,6 @@ export function attach(hook, rendererID, renderer) {
         if (prevChildAtSameIndex !== null) {
           shouldResetChildren = true;
         }
-      } else {
-        if (traceUpdatesEnabled) {
-          // If we're tracing updates and we've bailed out before reaching a host node,
-          // we should fall back to recursively marking the nearest host descendants for highlight.
-          if (traceNearestHostComponentUpdate) {
-            const hostFibers = findAllCurrentHostFibers(
-              getFiberIDThrows(nextFiber)
-            );
-            hostFibers.forEach(hostFiber => {
-              traceUpdatesForNodes.add(hostFiber.stateNode);
-            });
-          }
-        }
       }
     }
 
@@ -1949,16 +1580,6 @@ export function attach(hook, rendererID, renderer) {
       // We need to crawl the subtree for closest non-filtered Fibers
       // so that we can display them in a flat children set.
       if (shouldIncludeInTree) {
-        // Normally, search for children from the rendered child.
-        let nextChildSet = nextFiber.child;
-        if (nextDidTimeOut) {
-          // Special case: timed-out Suspense renders the fallback set.
-          const nextFiberChild = nextFiber.child;
-          nextChildSet = nextFiberChild ? nextFiberChild.sibling : null;
-        }
-        if (nextChildSet != null) {
-          recordResetChildren(nextFiber, nextChildSet);
-        }
         // We've handled the child order change for this Fiber.
         // Since it's included, there's no need to invalidate parent child order.
         return false;
@@ -1987,54 +1608,6 @@ export function attach(hook, rendererID, renderer) {
     }
   }
 
-  function flushInitialOperations() {
-    const localPendingOperationsQueue = pendingOperationsQueue;
-
-    pendingOperationsQueue = null;
-
-    if (
-      localPendingOperationsQueue !== null &&
-      localPendingOperationsQueue.length > 0
-    ) {
-      // We may have already queued up some operations before the frontend connected
-      // If so, let the frontend know about them.
-      localPendingOperationsQueue.forEach(operations => {
-        hook.emit("operations", operations);
-      });
-    } else {
-      // Before the traversals, remember to start tracking
-      // our path in case we have selection to restore.
-      if (trackedPath !== null) {
-        mightBeOnTrackedPath = true;
-      }
-      // If we have not been profiling, then we can just walk the tree and build up its current state as-is.
-      hook.getFiberRoots(rendererID).forEach(root => {
-        currentRootID = getOrGenerateFiberID(root.current);
-        setRootPseudoKey(currentRootID, root.current);
-
-        // Handle multi-renderer edge-case where only some v16 renderers support profiling.
-        if (isProfiling && rootSupportsProfiling(root)) {
-          // If profiling is active, store commit time and duration.
-          // The frontend may request this information after profiling has stopped.
-          currentCommitProfilingMetadata = {
-            changeDescriptions: recordChangeDescriptions ? new Map() : null,
-            durations: [],
-            commitTime: getCurrentTime() - profilingStartTime,
-            maxActualDuration: 0,
-            priorityLevel: null,
-            updaters: getUpdatersList(root),
-            effectDuration: null,
-            passiveEffectDuration: null,
-          };
-        }
-
-        mountFiberRecursively(root.current, null, false, false);
-        flushPendingEvents(root);
-        currentRootID = -1;
-      });
-    }
-  }
-
   function getUpdatersList(root) {
     return root.memoizedUpdaters != null
       ? Array.from(root.memoizedUpdaters).map(fiberToSerializedElement)
@@ -2049,7 +1622,7 @@ export function attach(hook, rendererID, renderer) {
   }
 
   function handlePostCommitFiberRoot(root) {
-    if (isProfiling && rootSupportsProfiling(root)) {
+    if (rootSupportsProfiling(root)) {
       if (currentCommitProfilingMetadata !== null) {
         const { effectDuration, passiveEffectDuration } =
           getEffectDurations(root);
@@ -2070,20 +1643,10 @@ export function attach(hook, rendererID, renderer) {
 
     currentRootID = getOrGenerateFiberID(current);
 
-    // Before the traversals, remember to start tracking
-    // our path in case we have selection to restore.
-    if (trackedPath !== null) {
-      mightBeOnTrackedPath = true;
-    }
-
-    if (traceUpdatesEnabled) {
-      traceUpdatesForNodes.clear();
-    }
-
     // Handle multi-renderer edge-case where only some v16 renderers support profiling.
     const isProfilingSupported = rootSupportsProfiling(root);
 
-    if (isProfiling && isProfilingSupported) {
+    if (isProfilingSupported) {
       // If profiling is active, store commit time and duration.
       // The frontend may request this information after profiling has stopped.
       currentCommitProfilingMetadata = {
@@ -2128,7 +1691,7 @@ export function attach(hook, rendererID, renderer) {
       mountFiberRecursively(current, null, false, false);
     }
 
-    if (isProfiling && isProfilingSupported) {
+    if (isProfilingSupported) {
       const commitProfilingMetadata =
         rootToCommitProfilingMetadataMap.get(currentRootID);
       if (commitProfilingMetadata != null) {
@@ -2142,10 +1705,6 @@ export function attach(hook, rendererID, renderer) {
 
     // We're done here.
     flushPendingEvents(root);
-
-    if (traceUpdatesEnabled) {
-      hook.emit("traceUpdates", traceUpdatesForNodes);
-    }
 
     currentRootID = -1;
   }
@@ -2179,9 +1738,6 @@ export function attach(hook, rendererID, renderer) {
       node.sibling.return = node.return;
       node = node.sibling;
     }
-    // Flow needs the return here, but ESLint complains about it.
-    // eslint-disable-next-line no-unreachable
-    return fibers;
   }
 
   function findNativeNodesForFiberID(id) {
@@ -2479,25 +2035,6 @@ export function attach(hook, rendererID, renderer) {
     return owners;
   }
 
-  // Fast path props lookup for React Native style editor.
-  // Could use inspectElementRaw() but that would require shallow rendering hooks components,
-  // and could also mess with memoization.
-  function getInstanceAndStyle(id) {
-    let instance = null;
-    let style = null;
-
-    const fiber = findCurrentFiberUsingSlowPathById(id);
-    if (fiber !== null) {
-      instance = fiber.stateNode;
-
-      if (fiber.memoizedProps !== null) {
-        style = fiber.memoizedProps.style;
-      }
-    }
-
-    return { instance, style };
-  }
-
   function isErrorBoundary(fiber) {
     const { tag, type } = fiber;
 
@@ -2681,20 +2218,7 @@ export function attach(hook, rendererID, renderer) {
     const errors = fiberIDToErrorsMap.get(id) || new Map();
     const warnings = fiberIDToWarningsMap.get(id) || new Map();
 
-    const isErrored =
-      (fiber.flags & DidCapture) !== NoFlags ||
-      forceErrorForFiberIDs.get(id) === true;
-
-    let targetErrorBoundaryID;
-    if (isErrorBoundary(fiber)) {
-      // if the current inspected element is an error boundary,
-      // either that we want to use it to toggle off error state
-      // or that we allow to force error state on it if it's within another
-      // error boundary
-      targetErrorBoundaryID = isErrored ? id : getNearestErrorBoundaryID(fiber);
-    } else {
-      targetErrorBoundaryID = getNearestErrorBoundaryID(fiber);
-    }
+    let targetErrorBoundaryID = getNearestErrorBoundaryID(fiber);
 
     return {
       id,
@@ -2715,16 +2239,12 @@ export function attach(hook, rendererID, renderer) {
 
       canToggleError: supportsTogglingError && targetErrorBoundaryID != null,
       // Is this error boundary in error state.
-      isErrored,
       targetErrorBoundaryID,
 
       canToggleSuspense:
         supportsTogglingSuspense &&
         // If it's showing the real content, we can always flip fallback.
-        (!isTimedOutSuspense ||
-          // If it's showing fallback because we previously forced it to,
-          // allow toggling it back to remove the fallback override.
-          forceFallbackForSuspenseIDs.has(id)),
+        !isTimedOutSuspense,
 
       // Can view component source location.
       canViewSource,
@@ -3016,70 +2536,11 @@ export function attach(hook, rendererID, renderer) {
     }
   }
 
-  function overrideValueAtPath(type, id, hookID, path, value) {
-    const fiber = findCurrentFiberUsingSlowPathById(id);
-    if (fiber !== null) {
-      const instance = fiber.stateNode;
-
-      switch (type) {
-        case "context":
-          // To simplify hydration and display of primitive context values (e.g. number, string)
-          // the inspectElement() method wraps context in a {value: ...} object.
-          // We need to remove the first part of the path (the "value") before continuing.
-          path = path.slice(1);
-
-          switch (fiber.tag) {
-            case ClassComponent:
-              if (path.length === 0) {
-                // Simple context value
-                instance.context = value;
-              } else {
-                setInObject(instance.context, path, value);
-              }
-              instance.forceUpdate();
-              break;
-            case FunctionComponent:
-              // Function components using legacy context are not editable
-              // because there's no instance on which to create a cloned, mutated context.
-              break;
-          }
-          break;
-        case "hooks":
-          if (typeof overrideHookState === "function") {
-            overrideHookState(fiber, hookID, path, value);
-          }
-          break;
-        case "props":
-          switch (fiber.tag) {
-            case ClassComponent:
-              fiber.pendingProps = copyWithSet(instance.props, path, value);
-              instance.forceUpdate();
-              break;
-            default:
-              if (typeof overrideProps === "function") {
-                overrideProps(fiber, path, value);
-              }
-              break;
-          }
-          break;
-        case "state":
-          switch (fiber.tag) {
-            case ClassComponent:
-              setInObject(instance.state, path, value);
-              instance.forceUpdate();
-              break;
-          }
-          break;
-      }
-    }
-  }
-
   let currentCommitProfilingMetadata = null;
   let displayNamesByRootID = null;
   let idToContextsMap = null;
   let initialTreeBaseDurationsMap = null;
   let initialIDToRootMap = null;
-  let isProfiling = false;
   let profilingStartTime = 0;
   let recordChangeDescriptions = true;
   let rootToCommitProfilingMetadataMap = null;
@@ -3167,10 +2628,6 @@ export function attach(hook, rendererID, renderer) {
   }
 
   function startProfiling(shouldRecordChangeDescriptions) {
-    if (isProfiling) {
-      return;
-    }
-
     recordChangeDescriptions = shouldRecordChangeDescriptions;
 
     // Capture initial values as of the time profiling starts.
@@ -3194,199 +2651,12 @@ export function attach(hook, rendererID, renderer) {
       }
     });
 
-    isProfiling = true;
     profilingStartTime = getCurrentTime();
     rootToCommitProfilingMetadataMap = new Map();
   }
 
-  function stopProfiling() {
-    isProfiling = false;
-  }
-
   // Automatically start profiling so that we don't miss timing info from initial "mount".
   startProfiling(true);
-
-  // React will switch between these implementations depending on whether
-  // we have any manually suspended/errored-out Fibers or not.
-  function shouldErrorFiberAlwaysNull() {
-    return null;
-  }
-
-  // Map of id and its force error status: true (error), false (toggled off),
-  // null (do nothing)
-  const forceErrorForFiberIDs = new Map();
-
-  function shouldErrorFiberAccordingToMap(fiber) {
-    if (typeof setErrorHandler !== "function") {
-      throw new Error(
-        "Expected overrideError() to not get called for earlier React versions."
-      );
-    }
-
-    const id = getFiberIDUnsafe(fiber);
-    if (id === null) {
-      return null;
-    }
-
-    let status = null;
-    if (forceErrorForFiberIDs.has(id)) {
-      status = forceErrorForFiberIDs.get(id);
-      if (status === false) {
-        // TRICKY overrideError adds entries to this Map,
-        // so ideally it would be the method that clears them too,
-        // but that would break the functionality of the feature,
-        // since DevTools needs to tell React to act differently than it normally would
-        // (don't just re-render the failed boundary, but reset its errored state too).
-        // So we can only clear it after telling React to reset the state.
-        // Technically this is premature and we should schedule it for later,
-        // since the render could always fail without committing the updated error boundary,
-        // but since this is a DEV-only feature, the simplicity is worth the trade off.
-        forceErrorForFiberIDs.delete(id);
-
-        if (forceErrorForFiberIDs.size === 0) {
-          // Last override is gone. Switch React back to fast path.
-          setErrorHandler(shouldErrorFiberAlwaysNull);
-        }
-      }
-    }
-    return status;
-  }
-
-  function overrideError(id, forceError) {
-    if (
-      typeof setErrorHandler !== "function" ||
-      typeof scheduleUpdate !== "function"
-    ) {
-      throw new Error(
-        "Expected overrideError() to not get called for earlier React versions."
-      );
-    }
-
-    forceErrorForFiberIDs.set(id, forceError);
-
-    if (forceErrorForFiberIDs.size === 1) {
-      // First override is added. Switch React to slower path.
-      setErrorHandler(shouldErrorFiberAccordingToMap);
-    }
-
-    const fiber = idToArbitraryFiberMap.get(id);
-    if (fiber != null) {
-      scheduleUpdate(fiber);
-    }
-  }
-
-  function shouldSuspendFiberAlwaysFalse() {
-    return false;
-  }
-
-  const forceFallbackForSuspenseIDs = new Set();
-
-  function shouldSuspendFiberAccordingToSet(fiber) {
-    const maybeID = getFiberIDUnsafe(fiber);
-    return maybeID !== null && forceFallbackForSuspenseIDs.has(maybeID);
-  }
-
-  function overrideSuspense(id, forceFallback) {
-    if (
-      typeof setSuspenseHandler !== "function" ||
-      typeof scheduleUpdate !== "function"
-    ) {
-      throw new Error(
-        "Expected overrideSuspense() to not get called for earlier React versions."
-      );
-    }
-    if (forceFallback) {
-      forceFallbackForSuspenseIDs.add(id);
-      if (forceFallbackForSuspenseIDs.size === 1) {
-        // First override is added. Switch React to slower path.
-        setSuspenseHandler(shouldSuspendFiberAccordingToSet);
-      }
-    } else {
-      forceFallbackForSuspenseIDs.delete(id);
-      if (forceFallbackForSuspenseIDs.size === 0) {
-        // Last override is gone. Switch React back to fast path.
-        setSuspenseHandler(shouldSuspendFiberAlwaysFalse);
-      }
-    }
-    const fiber = idToArbitraryFiberMap.get(id);
-    if (fiber != null) {
-      scheduleUpdate(fiber);
-    }
-  }
-
-  // Remember if we're trying to restore the selection after reload.
-  // In that case, we'll do some extra checks for matching mounts.
-  let trackedPath = null;
-  let trackedPathMatchFiber = null;
-  let trackedPathMatchDepth = -1;
-  let mightBeOnTrackedPath = false;
-
-  function setTrackedPath(path) {
-    if (path === null) {
-      trackedPathMatchFiber = null;
-      trackedPathMatchDepth = -1;
-      mightBeOnTrackedPath = false;
-    }
-    trackedPath = path;
-  }
-
-  // We call this before traversing a new mount.
-  // It remembers whether this Fiber is the next best match for tracked path.
-  // The return value signals whether we should keep matching siblings or not.
-  function updateTrackedPathStateBeforeMount(fiber) {
-    if (trackedPath === null || !mightBeOnTrackedPath) {
-      // Fast path: there's nothing to track so do nothing and ignore siblings.
-      return false;
-    }
-    const returnFiber = fiber.return;
-    const returnAlternate = returnFiber !== null ? returnFiber.alternate : null;
-    // By now we know there's some selection to restore, and this is a new Fiber.
-    // Is this newly mounted Fiber a direct child of the current best match?
-    // (This will also be true for new roots if we haven't matched anything yet.)
-    if (
-      trackedPathMatchFiber === returnFiber ||
-      (trackedPathMatchFiber === returnAlternate && returnAlternate !== null)
-    ) {
-      // Is this the next Fiber we should select? Let's compare the frames.
-      const actualFrame = getPathFrame(fiber);
-      const expectedFrame = trackedPath[trackedPathMatchDepth + 1];
-      if (expectedFrame === undefined) {
-        throw new Error("Expected to see a frame at the next depth.");
-      }
-      if (
-        actualFrame.index === expectedFrame.index &&
-        actualFrame.key === expectedFrame.key &&
-        actualFrame.displayName === expectedFrame.displayName
-      ) {
-        // We have our next match.
-        trackedPathMatchFiber = fiber;
-        trackedPathMatchDepth++;
-        // Are we out of frames to match?
-        if (trackedPathMatchDepth === trackedPath.length - 1) {
-          // There's nothing that can possibly match afterwards.
-          // Don't check the children.
-          mightBeOnTrackedPath = false;
-        } else {
-          // Check the children, as they might reveal the next match.
-          mightBeOnTrackedPath = true;
-        }
-        // In either case, since we have a match, we don't need
-        // to check the siblings. They'll never match.
-        return false;
-      }
-    }
-    // This Fiber's parent is on the path, but this Fiber itself isn't.
-    // There's no need to check its children--they won't be on the path either.
-    mightBeOnTrackedPath = false;
-    // However, one of its siblings may be on the path so keep searching.
-    return true;
-  }
-
-  function updateTrackedPathStateAfterMount(mightSiblingsBeOnTrackedPath) {
-    // updateTrackedPathStateBeforeMount() told us whether to match siblings.
-    // Now that we're entering siblings, let's use that information.
-    mightBeOnTrackedPath = mightSiblingsBeOnTrackedPath;
-  }
 
   // Roots don't have a real persistent identity.
   // A root's "pseudo key" is "childDisplayName:indexWithThatName".
@@ -3497,29 +2767,6 @@ export function attach(hook, rendererID, renderer) {
     return keyPath;
   }
 
-  function getBestMatchForTrackedPath() {
-    if (trackedPath === null) {
-      // Nothing to match.
-      return null;
-    }
-    if (trackedPathMatchFiber === null) {
-      // We didn't find anything.
-      return null;
-    }
-    // Find the closest Fiber store is aware of.
-    let fiber = trackedPathMatchFiber;
-    while (fiber !== null && shouldFilterFiber(fiber)) {
-      fiber = fiber.return;
-    }
-    if (fiber === null) {
-      return null;
-    }
-    return {
-      id: getFiberIDThrows(fiber),
-      isFullMatch: trackedPathMatchDepth === trackedPath.length - 1,
-    };
-  }
-
   const formatPriorityLevel = priorityLevel => {
     if (priorityLevel == null) {
       return "Unknown";
@@ -3542,35 +2789,21 @@ export function attach(hook, rendererID, renderer) {
     }
   };
 
-  function setTraceUpdatesEnabled(isEnabled) {
-    traceUpdatesEnabled = isEnabled;
-  }
-
   return {
     handleCommitFiberRoot,
     handleCommitFiberUnmount,
     handlePostCommitFiberRoot,
-    flushInitialOperations,
-    startProfiling,
 
     deletePath,
     findNativeNodesForFiberID,
-    getBestMatchForTrackedPath,
     getDisplayNameForFiberID,
     getFiberIDForNative,
-    getInstanceAndStyle,
     getOwnersList,
     getPathForElement,
     getProfilingData,
     inspectElement,
-    overrideError,
-    overrideSuspense,
-    overrideValueAtPath,
     renamePath,
-    setTraceUpdatesEnabled,
-    setTrackedPath,
 
-    stopProfiling,
     getFiberByID,
   };
 }

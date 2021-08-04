@@ -10,8 +10,6 @@ import {
   TREE_OPERATION_MOUNT,
   TREE_OPERATION_UNMOUNT,
   TREE_OPERATION_REMOVE_ROOT,
-  TREE_OPERATION_REORDER_CHILDREN,
-  TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
   TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
 } from "../constants";
 
@@ -192,65 +190,11 @@ export function parseOperations(
         recursivelyDeleteElements(id);
         break;
       }
-      case TREE_OPERATION_REORDER_CHILDREN: {
-        const id = operations[i + 1];
-        const numChildren = operations[i + 2];
-        i += 3;
-
-        if (!idToElement.has(id)) {
-          throw new Error(
-            `Cannot reorder children for node "${id}" because no matching node was found in the Store.`
-          );
-        }
-
-        const element = idToElement.get(id)!;
-        const children = element.children;
-        if (children.length !== numChildren) {
-          throw new Error(
-            `Children cannot be added or removed during a reorder operation.`
-          );
-        }
-
-        for (let j = 0; j < numChildren; j++) {
-          const childID = operations[i + j];
-          children[j] = childID;
-
-          // FIXME
-          const __DEV__ = true;
-          if (__DEV__) {
-            // This check is more expensive so it's gated by __DEV__.
-            const childElement = idToElement.get(childID);
-            if (childElement == null || childElement.parentId !== id) {
-              console.error(
-                `Children cannot be added or removed during a reorder operation.`
-              );
-            }
-          }
-        }
-        i += numChildren;
-
-        break;
-      }
       case TREE_OPERATION_UPDATE_TREE_BASE_DURATION:
         // Base duration updates are only sent while profiling is in progress.
         // We can ignore them at this point.
         // The profiler UI uses them lazily in order to generate the tree.
         i += 3;
-        break;
-      case TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS:
-        // FIXME: no idea
-        // const id = operations[i + 1];
-        // const errorCount = operations[i + 2];
-        // const warningCount = operations[i + 3];
-        //
-        i += 4;
-        //
-        // if (errorCount > 0 || warningCount > 0) {
-        //   this._errorsAndWarnings.set(id, { errorCount, warningCount });
-        // } else if (this._errorsAndWarnings.has(id)) {
-        //   this._errorsAndWarnings.delete(id);
-        // }
-        // haveErrorsOrWarningsChanged = true;
         break;
       default:
         throw new Error(`Unsupported operation "${operation}"`);

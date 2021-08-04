@@ -69,10 +69,10 @@ export class Bridge {
   }
 
   private attachRenderer(id: number, renderer: ReactRenderer) {
-    let rendererInterface = this.devtools.rendererInterfaces.get(id);
+    let rendererInterface = this.devtools.rendererInterfaces.get(id) || null;
 
     // Inject any not-yet-injected renderers (if we didn't reload-and-profile)
-    if (rendererInterface == null) {
+    if (rendererInterface === null) {
       if (typeof renderer.findFiberByHostInstance === "function") {
         // react-reconciler v16+
         rendererInterface = attach(
@@ -80,22 +80,12 @@ export class Bridge {
           id,
           renderer
         ) as RendererInterface;
-      }
 
-      if (rendererInterface != null) {
         this.devtools.rendererInterfaces.set(id, rendererInterface);
       }
     }
 
-    // Notify the DevTools frontend about new renderers.
-    // This includes any that were attached early (via __REACT_DEVTOOLS_ATTACH__).
-    if (rendererInterface != null) {
-      // Now that the Store and the renderer interface are connected,
-      // it's time to flush the pending operation codes to the frontend.
-      rendererInterface.flushInitialOperations();
-      // TODO: add method to disable/enable
-      rendererInterface.startProfiling(true);
-    } else {
+    if (rendererInterface === null) {
       this.devtools.emit("unsupported-renderer-version", id);
     }
   }

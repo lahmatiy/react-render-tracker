@@ -1,5 +1,4 @@
 import { RendererInterface, ReactRenderer } from "./types";
-import { detectReactBuildType } from "./utils/detect-react-build-type";
 
 type Fiber = any;
 type FiberRoot = any;

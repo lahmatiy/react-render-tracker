@@ -147,28 +147,6 @@ export function copyWithRename(obj, oldPath, newPath, index = 0) {
   return updated;
 }
 
-export function copyWithSet(obj, path, value, index = 0) {
-  if (index >= path.length) {
-    return value;
-  }
-  const key = path[index];
-  const updated = Array.isArray(obj) ? obj.slice() : { ...obj };
-  // $FlowFixMe number or string is fine here
-  updated[key] = copyWithSet(obj[key], path, value, index + 1);
-  return updated;
-}
-
-export function setInObject(object, path, value) {
-  const length = path.length;
-  const last = path[length - 1];
-  if (object != null) {
-    const parent = getInObject(object, path.slice(0, length - 1));
-    if (parent) {
-      parent[last] = value;
-    }
-  }
-}
-
 export function deletePathInObject(object, path) {
   const length = path.length;
   const last = path[length - 1];

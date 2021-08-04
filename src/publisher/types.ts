@@ -76,11 +76,6 @@ export type ProfilingDataBackend = {
   rendererID: number;
 };
 
-export type InstanceAndStyle = {
-  instance: Object | null;
-  style: Object | null;
-};
-
 export type Source = {
   fileName: string;
   lineNumber: number;
@@ -181,11 +176,8 @@ export type RendererInterface = {
     path: Array<string | number>
   ) => void;
   findNativeNodesForFiberID: FindNativeNodesForFiberID;
-  flushInitialOperations: () => void;
-  getBestMatchForTrackedPath: () => PathMatch | null;
   getFiberIDForNative: GetFiberIDForNative;
   getDisplayNameForFiberID: GetDisplayNameForFiberID;
-  getInstanceAndStyle(id: number): InstanceAndStyle;
   getProfilingData(): ProfilingDataBackend;
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
@@ -197,15 +189,6 @@ export type RendererInterface = {
     id: number,
     inspectedPaths: Object
   ) => InspectedElementPayload;
-  overrideError: (id: number, forceError: boolean) => void;
-  overrideSuspense: (id: number, forceFallback: boolean) => void;
-  overrideValueAtPath: (
-    type: Type,
-    id: number,
-    hook: number | undefined,
-    path: Array<string | number>,
-    value: any
-  ) => void;
   renamePath: (
     type: Type,
     id: number,
@@ -213,8 +196,4 @@ export type RendererInterface = {
     oldPath: Array<string | number>,
     newPath: Array<string | number>
   ) => void;
-  setTraceUpdatesEnabled: (enabled: boolean) => void;
-  setTrackedPath: (path: Array<PathFrame> | null) => void;
-  startProfiling: (recordChangeDescriptions: boolean) => void;
-  stopProfiling: () => void;
 };
