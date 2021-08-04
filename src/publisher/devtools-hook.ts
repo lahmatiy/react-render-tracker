@@ -20,7 +20,6 @@ export class DevtoolsHook {
    * Fast Refresh for web relies on this
    */
   public renderers = new Map<number, ReactRenderer>();
-
   public rendererInterfaces = new Map<number, RendererInterface>();
 
   private hasDetectedBadDCE = false;
@@ -69,21 +68,7 @@ export class DevtoolsHook {
     const id = ++this.uidCounter;
     this.renderers.set(id, renderer);
 
-    const reactBuildType = this.hasDetectedBadDCE
-      ? "deadcode"
-      : detectReactBuildType(renderer);
-
-    /**
-     * TODO: add support for reaload and profile
-     * @see {@link packages/react-devtools-extensions/src/renderer.js}
-     */
-    // const attach = target.__REACT_DEVTOOLS_ATTACH__;
-    // if (typeof attach === "function") {
-    //   const rendererInterface = attach(hook, id, renderer, target);
-    //   this.rendererInterfaces.set(id, rendererInterface);
-    // }
-
-    this.emit("renderer", { id, renderer, reactBuildType });
+    this.emit("renderer", { id, renderer });
 
     return id;
   };
@@ -95,37 +80,6 @@ export class DevtoolsHook {
     }
 
     return roots[rendererID];
-  };
-
-  /**
-   * React calls this method
-   */
-  public checkDCE = (fn: any) => {
-    // This runs for production versions of React.
-    // Needs to be super safe.
-    try {
-      const toString = Function.prototype.toString;
-      const code = toString.call(fn);
-
-      // This is a string embedded in the passed function under DEV-only
-      // condition. However the function executes only in PROD. Therefore,
-      // if we see it, dead code elimination did not work.
-      if (code.indexOf("^_^") > -1) {
-        // Remember to report during next injection.
-        this.hasDetectedBadDCE = true;
-
-        // Bonus: throw an exception hoping that it gets picked up by a reporting system.
-        // Not synchronously so that it doesn't break the calling code.
-        setTimeout(function () {
-          throw new Error(
-            "React is running in production mode, but dead code " +
-              "elimination has not been applied. Read how to correctly " +
-              "configure React for production: " +
-              "https://reactjs.org/link/perf-use-production-build"
-          );
-        });
-      }
-    } catch (err) {}
   };
 
   /**

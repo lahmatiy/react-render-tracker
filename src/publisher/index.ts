@@ -6,9 +6,8 @@ const __win__ = window;
 
 function start() {
   const hook = installHook(__win__);
-  const bridge = new Bridge(hook, publisher);
 
-  __win__["__reactRenderTrackerBridge__"] = bridge;
+  new Bridge(hook, publisher);
 }
 
 start();

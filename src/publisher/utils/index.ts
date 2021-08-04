@@ -85,59 +85,6 @@ export function getDisplayName(type, fallbackName) {
   return displayName;
 }
 
-export function format(maybeMessage, ...inputArgs) {
-  const args = inputArgs.slice();
-
-  // Symbols cannot be concatenated with Strings.
-  let formatted =
-    typeof maybeMessage === "symbol"
-      ? maybeMessage.toString()
-      : "" + maybeMessage;
-
-  // If the first argument is a string, check for substitutions.
-  if (typeof maybeMessage === "string") {
-    if (args.length) {
-      const REGEXP = /(%?)(%([jds]))/g;
-
-      formatted = formatted.replace(REGEXP, (match, escaped, ptn, flag) => {
-        let arg = args.shift();
-        switch (flag) {
-          case "s":
-            arg += "";
-            break;
-          case "d":
-          case "i":
-            arg = parseInt(arg, 10).toString();
-            break;
-          case "f":
-            arg = parseFloat(arg).toString();
-            break;
-        }
-        if (!escaped) {
-          return arg;
-        }
-        args.unshift(arg);
-        return match;
-      });
-    }
-  }
-
-  // Arguments that remain after formatting.
-  if (args.length) {
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-
-      // Symbols cannot be concatenated with Strings.
-      formatted += " " + (typeof arg === "symbol" ? arg.toString() : arg);
-    }
-  }
-
-  // Update escaped %% values.
-  formatted = formatted.replace(/%{2,2}/g, "%");
-
-  return "" + formatted;
-}
-
 export function utfEncodeString(value: string) {
   const encoded = new Array(value.length);
 
@@ -299,12 +246,4 @@ export function getEffectDurations(root) {
     }
   }
   return { effectDuration, passiveEffectDuration };
-}
-
-export function sessionStorageGetItem(key) {
-  try {
-    return sessionStorage.getItem(key);
-  } catch (error) {
-    return null;
-  }
 }

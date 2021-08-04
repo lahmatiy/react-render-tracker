@@ -2,8 +2,8 @@ import {
   Element,
   ElementType,
   TransferChangeDescription,
-} from "../comon-types";
-export * from "../comon-types";
+} from "../common/types";
+export * from "../common/types";
 
 export interface MessageElement extends Element {
   mounted: boolean;

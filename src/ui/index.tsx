@@ -52,9 +52,21 @@ function processMessages(messages: Message[]) {
         });
         break;
 
-      case "remove":
+      case "remove": {
         componentById.get(message.id).mounted = false;
+        const update = {
+          phase: "Unmount",
+          timestamp: message.timestamp,
+          reason: [],
+          details: {},
+        };
+        if (updatesByComponentId.has(message.id)) {
+          updatesByComponentId.get(message.id).push(update);
+        } else {
+          updatesByComponentId.set(message.id, [update]);
+        }
         break;
+      }
 
       case "update":
         const update = processChange(

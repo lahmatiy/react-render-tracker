@@ -1,5 +1,6 @@
 import { DevtoolsHook } from "../devtools-hook";
 import {
+  Element,
   ReactRenderer,
   RendererInterface,
   Message,
@@ -35,19 +36,11 @@ export class Bridge {
 
   constructor(private devtools: DevtoolsHook, private publisher: Publisher) {
     const seenChanges = new WeakSet();
+    const idToElement = new Map<number, Element>();
+
     this.subscriptions = [
-      devtools.sub(
-        "renderer-attached",
-        ({ rendererInterface }: RendererAttachedParams) => {
-          // Now that the Store and the renderer interface are connected,
-          // it's time to flush the pending operation codes to the frontend.
-          rendererInterface.flushInitialOperations();
-          // TODO: add method to disable/enable
-          rendererInterface.startProfiling(true);
-        }
-      ),
-      devtools.sub("operations", ({ operations }) => {
-        this.publish(parseOperations(operations));
+      devtools.sub("operations", operations => {
+        this.publish(parseOperations(operations, idToElement));
       }),
       devtools.sub("commit", (data: ReactCommitData) => {
         this.publish(parseCommitChanges(data, seenChanges));
@@ -85,8 +78,7 @@ export class Bridge {
         rendererInterface = attach(
           this.devtools,
           id,
-          renderer,
-          __win__
+          renderer
         ) as RendererInterface;
       }
 
@@ -98,11 +90,11 @@ export class Bridge {
     // Notify the DevTools frontend about new renderers.
     // This includes any that were attached early (via __REACT_DEVTOOLS_ATTACH__).
     if (rendererInterface != null) {
-      this.devtools.emit("renderer-attached", {
-        id,
-        renderer,
-        rendererInterface,
-      });
+      // Now that the Store and the renderer interface are connected,
+      // it's time to flush the pending operation codes to the frontend.
+      rendererInterface.flushInitialOperations();
+      // TODO: add method to disable/enable
+      rendererInterface.startProfiling(true);
     } else {
       this.devtools.emit("unsupported-renderer-version", id);
     }

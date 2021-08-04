@@ -41,6 +41,7 @@ export interface AddElementMessage {
 export interface RemoveElementMessage {
   op: "remove";
   id: number;
+  timestamp: number;
 }
 
 export interface UpdateElementMessage {

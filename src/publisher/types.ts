@@ -1,5 +1,5 @@
-import { ElementType } from "../comon-types";
-export * from "../comon-types";
+import { ElementType } from "../common/types";
+export * from "../common/types";
 
 // FIXME
 export type ReactRenderer = any;
@@ -174,11 +174,6 @@ export type InspectedElementPayload =
   | InspectElementNotFound;
 
 export type RendererInterface = {
-  cleanup: () => void;
-  clearErrorsAndWarnings: () => void;
-  clearErrorsForFiberID: (id: number) => void;
-  clearWarningsForFiberID: (id: number) => void;
-  copyElementPath: (id: number, path: Array<string | number>) => void;
   deletePath: (
     type: Type,
     id: number,
@@ -202,7 +197,6 @@ export type RendererInterface = {
     id: number,
     inspectedPaths: Object
   ) => InspectedElementPayload;
-  logElementToConsole: (id: number) => void;
   overrideError: (id: number, forceError: boolean) => void;
   overrideSuspense: (id: number, forceFallback: boolean) => void;
   overrideValueAtPath: (
@@ -212,11 +206,6 @@ export type RendererInterface = {
     path: Array<string | number>,
     value: any
   ) => void;
-  prepareViewAttributeSource: (
-    id: number,
-    path: Array<string | number>
-  ) => void;
-  prepareViewElementSource: (id: number) => void;
   renamePath: (
     type: Type,
     id: number,
@@ -224,15 +213,8 @@ export type RendererInterface = {
     oldPath: Array<string | number>,
     newPath: Array<string | number>
   ) => void;
-  renderer: ReactRenderer | null;
   setTraceUpdatesEnabled: (enabled: boolean) => void;
   setTrackedPath: (path: Array<PathFrame> | null) => void;
   startProfiling: (recordChangeDescriptions: boolean) => void;
   stopProfiling: () => void;
-  storeAsGlobal: (
-    id: number,
-    path: Array<string | number>,
-    count: number
-  ) => void;
-  updateComponentFilters: (componentFilters: Array<ComponentFilter>) => void;
 };

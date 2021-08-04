@@ -7,8 +7,8 @@ import {
 import { separateDisplayNameAndHOCs, utfDecodeString } from "../utils";
 import {
   ElementTypeRoot,
-  TREE_OPERATION_ADD,
-  TREE_OPERATION_REMOVE,
+  TREE_OPERATION_MOUNT,
+  TREE_OPERATION_UNMOUNT,
   TREE_OPERATION_REMOVE_ROOT,
   TREE_OPERATION_REORDER_CHILDREN,
   TREE_OPERATION_UPDATE_ERRORS_OR_WARNINGS,
@@ -16,22 +16,13 @@ import {
 } from "../constants";
 
 /**
- * FIXME: temporarily global as current operation processing requires knowledge of previous elements
- */
-const idToElement = new Map<number, Element>();
-/**
- * Map of element (id) to the set of elements (ids) it owns.
- * This map enables getOwnersListForElement() to avoid traversing the entire tree.
- *
- * FIXME: temporarily global as current operation processing requires knowledge of previous elements
- */
-const ownersMap = new Map<number, Set<number>>();
-
-/**
- * Decodes operations produced by react
+ * Decodes operations produced by renderer
  * {@link packages/react-devtools-shared/src/devtools/store.js#onBridgeOperations}
  */
-export function parseOperations(operations: number[]) {
+export function parseOperations(
+  operations: number[],
+  idToElement: Map<number, Element>
+) {
   // The first two values are always rendererID and rootID
   const rendererId = operations[0];
 
@@ -56,7 +47,7 @@ export function parseOperations(operations: number[]) {
   while (i < operations.length) {
     const operation = operations[i];
     switch (operation) {
-      case TREE_OPERATION_ADD: {
+      case TREE_OPERATION_MOUNT: {
         const id = operations[i + 1];
         const type = operations[i + 2] as ElementType;
 
@@ -136,19 +127,10 @@ export function parseOperations(operations: number[]) {
 
           idToElement.set(id, element);
           output.push({ op: "add", id, element });
-
-          if (ownerId > 0) {
-            let set = ownersMap.get(ownerId);
-            if (set === undefined) {
-              set = new Set();
-              ownersMap.set(ownerId, set);
-            }
-            set.add(id);
-          }
         }
         break;
       }
-      case TREE_OPERATION_REMOVE: {
+      case TREE_OPERATION_UNMOUNT: {
         const removeLength = operations[i + 1];
         i += 2;
 
@@ -164,7 +146,7 @@ export function parseOperations(operations: number[]) {
           i += 1;
 
           const element = idToElement.get(id)!;
-          const { children, ownerId, parentId } = element;
+          const { children, parentId } = element;
           let parentElement = null;
 
           if (children.length > 0) {
@@ -184,15 +166,7 @@ export function parseOperations(operations: number[]) {
             parentElement.children.splice(index, 1);
           }
 
-          output.push({ op: "remove", id });
-
-          ownersMap.delete(id);
-          if (ownerId > 0) {
-            const set = ownersMap.get(ownerId);
-            if (set !== undefined) {
-              set.delete(id);
-            }
-          }
+          output.push({ op: "remove", id, timestamp: Date.now() });
         }
         break;
       }
@@ -208,7 +182,7 @@ export function parseOperations(operations: number[]) {
           }
 
           idToElement.delete(elementId);
-          output.push({ op: "remove", id: elementId });
+          output.push({ op: "remove", id: elementId, timestamp: Date.now() });
 
           for (let index = 0; index < element.children.length; index++) {
             recursivelyDeleteElements(element.children[index]);
