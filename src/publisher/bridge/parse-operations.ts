@@ -4,7 +4,7 @@ import {
   ElementType,
   RemoveElementMessage,
 } from "../types";
-import { separateDisplayNameAndHOCs, utfDecodeString } from "../utils";
+import { separateDisplayNameAndHOCs, utfDecodeString } from "./utils";
 import {
   ElementTypeRoot,
   TREE_OPERATION_MOUNT,
