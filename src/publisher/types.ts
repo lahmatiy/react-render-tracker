@@ -3,8 +3,6 @@ export * from "../common/types";
 
 // FIXME
 export type ReactRenderer = any;
-
-type ComponentFilter = any;
 type FindNativeNodesForFiberID = any;
 type GetDisplayNameForFiberID = any;
 type GetFiberIDForNative = any;
@@ -61,19 +59,6 @@ export type ReactCommitData = {
   priorityLevel: string | null;
   timestamp: number;
   updaters: Array<SerializedElement> | null;
-};
-
-export type ProfilingDataForRootBackend = {
-  commitData: Array<ReactCommitData>;
-  displayName: string;
-  // Tuple of Fiber ID and base duration
-  initialTreeBaseDurations: Array<[number, number]>;
-  rootID: number;
-};
-
-export type ProfilingDataBackend = {
-  dataForRoots: Array<ProfilingDataForRootBackend>;
-  rendererID: number;
 };
 
 export type Source = {
@@ -169,31 +154,18 @@ export type InspectedElementPayload =
   | InspectElementNotFound;
 
 export type RendererInterface = {
-  deletePath: (
-    type: Type,
-    id: number,
-    hookID: number | undefined,
-    path: Array<string | number>
-  ) => void;
-  findNativeNodesForFiberID: FindNativeNodesForFiberID;
-  getFiberIDForNative: GetFiberIDForNative;
-  getDisplayNameForFiberID: GetDisplayNameForFiberID;
-  getProfilingData(): ProfilingDataBackend;
-  getOwnersList: (id: number) => Array<SerializedElement> | null;
-  getPathForElement: (id: number) => Array<PathFrame> | null;
   handleCommitFiberRoot: (fiber: Object, commitPriority?: number) => void;
   handleCommitFiberUnmount: (fiber: Object) => void;
   handlePostCommitFiberRoot: (fiber: Object) => void;
+
+  findNativeNodesForFiberID: FindNativeNodesForFiberID;
+  getFiberIDForNative: GetFiberIDForNative;
+  getDisplayNameForFiberID: GetDisplayNameForFiberID;
+  getOwnersList: (id: number) => Array<SerializedElement> | null;
+  getPathForElement: (id: number) => Array<PathFrame> | null;
   inspectElement: (
     requestID: number,
     id: number,
     inspectedPaths: Object
   ) => InspectedElementPayload;
-  renamePath: (
-    type: Type,
-    id: number,
-    hookID: number | undefined,
-    oldPath: Array<string | number>,
-    newPath: Array<string | number>
-  ) => void;
 };

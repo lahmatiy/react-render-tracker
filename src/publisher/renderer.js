@@ -37,14 +37,10 @@ import {
 
 import {
   cleanForBridge,
-  copyWithDelete,
-  copyWithRename,
-  deletePathInObject,
   getDisplayName,
   getEffectDurations,
   getInObject,
   getUID,
-  renamePathInObject,
   utfEncodeString,
 } from "./utils";
 
@@ -744,27 +740,19 @@ export function attach(hook, rendererID, renderer) {
           };
 
           // Only traverse the hooks list once, depending on what info we're returning.
-          if (true) {
-            const indices = getChangedHooksIndices(
-              prevFiber.memoizedState,
-              nextFiber.memoizedState
-            );
-            const didHooksChange = indices !== null && indices.length > 0;
-            data.hooks = indices;
-            data.didHooksChange = didHooksChange;
-          } else {
-            data.didHooksChange = didHooksChange(
-              prevFiber.memoizedState,
-              nextFiber.memoizedState
-            );
-          }
+          const indices = getChangedHooksIndices(
+            prevFiber.memoizedState,
+            nextFiber.memoizedState
+          );
+          const didHooksChange = indices !== null && indices.length > 0;
+          data.hooks = indices;
+          data.didHooksChange = didHooksChange;
 
           if (
             !data.didHooksChange &&
-            (data.state === null || !data.state.length) &&
-            (data.props === null || !data.props.length) &&
-            (data.context === null ||
-              (Array.isArray(data.context) && !data.context.length))
+            !data.state &&
+            !data.props &&
+            !data.context
           ) {
             data.parentUpdate = true;
           }
@@ -856,8 +844,6 @@ export function attach(hook, rendererID, renderer) {
           }
         }
         break;
-      default:
-        break;
     }
     return null;
   }
@@ -903,31 +889,6 @@ export function attach(hook, rendererID, renderer) {
       );
     }
     return nextMemoizedState !== prevMemoizedState;
-  }
-
-  function didHooksChange(prev, next) {
-    if (prev == null || next == null) {
-      return false;
-    }
-
-    // We can't report anything meaningful for hooks changes.
-    if (
-      next.hasOwnProperty("baseState") &&
-      next.hasOwnProperty("memoizedState") &&
-      next.hasOwnProperty("next") &&
-      next.hasOwnProperty("queue")
-    ) {
-      while (next !== null) {
-        if (didHookChange(prev, next)) {
-          return true;
-        } else {
-          next = next.next;
-          prev = prev.next;
-        }
-      }
-    }
-
-    return false;
   }
 
   function getChangedHooksIndices(prev, next) {
@@ -1008,6 +969,10 @@ export function attach(hook, rendererID, renderer) {
           next: next[key],
         });
       }
+    }
+
+    if (changedKeys.length === 0) {
+      return null;
     }
 
     return changedKeys;
@@ -1393,25 +1358,23 @@ export function attach(hook, rendererID, renderer) {
           actualDuration
         );
 
-        if (recordChangeDescriptions) {
-          const changeDescription = getChangeDescription(alternate, fiber);
-          if (changeDescription !== null) {
-            const { didHooksChange, hooks } = changeDescription;
-            if (didHooksChange && hooks && hooks.length) {
-              const { _debugHookTypes } = getFiberByID(id);
+        const changeDescription = getChangeDescription(alternate, fiber);
+        if (changeDescription !== null) {
+          const { didHooksChange, hooks } = changeDescription;
+          if (didHooksChange && hooks && hooks.length) {
+            const { _debugHookTypes } = getFiberByID(id);
 
-              hooks.forEach(hook => {
-                hook.name = _debugHookTypes[hook.index + 1];
-              });
-            }
-
-            if (metadata.changeDescriptions !== null) {
-              metadata.changeDescriptions.set(id, changeDescription);
-            }
+            hooks.forEach(hook => {
+              hook.name = _debugHookTypes[hook.index + 1];
+            });
           }
 
-          updateContextsForFiber(fiber);
+          if (metadata.changeDescriptions !== null) {
+            metadata.changeDescriptions.set(id, changeDescription);
+          }
         }
+
+        updateContextsForFiber(fiber);
 
         hook.emit("commit", currentCommitProfilingMetadata);
       }
@@ -1689,18 +1652,6 @@ export function attach(hook, rendererID, renderer) {
       // Mount a new root.
       setRootPseudoKey(currentRootID, current);
       mountFiberRecursively(current, null, false, false);
-    }
-
-    if (isProfilingSupported) {
-      const commitProfilingMetadata =
-        rootToCommitProfilingMetadataMap.get(currentRootID);
-      if (commitProfilingMetadata != null) {
-        commitProfilingMetadata.push(currentCommitProfilingMetadata);
-      } else {
-        rootToCommitProfilingMetadataMap.set(currentRootID, [
-          currentCommitProfilingMetadata,
-        ]);
-      }
     }
 
     // We're done here.
@@ -2431,228 +2382,31 @@ export function attach(hook, rendererID, renderer) {
     };
   }
 
-  function deletePath(type, id, hookID, path) {
-    const fiber = findCurrentFiberUsingSlowPathById(id);
-    if (fiber !== null) {
-      const instance = fiber.stateNode;
-
-      switch (type) {
-        case "context":
-          // To simplify hydration and display of primitive context values (e.g. number, string)
-          // the inspectElement() method wraps context in a {value: ...} object.
-          // We need to remove the first part of the path (the "value") before continuing.
-          path = path.slice(1);
-
-          switch (fiber.tag) {
-            case ClassComponent:
-              if (path.length === 0) {
-                // Simple context value (noop)
-              } else {
-                deletePathInObject(instance.context, path);
-              }
-              instance.forceUpdate();
-              break;
-            case FunctionComponent:
-              // Function components using legacy context are not editable
-              // because there's no instance on which to create a cloned, mutated context.
-              break;
-          }
-          break;
-        case "hooks":
-          if (typeof overrideHookStateDeletePath === "function") {
-            overrideHookStateDeletePath(fiber, hookID, path);
-          }
-          break;
-        case "props":
-          if (instance === null) {
-            if (typeof overridePropsDeletePath === "function") {
-              overridePropsDeletePath(fiber, path);
-            }
-          } else {
-            fiber.pendingProps = copyWithDelete(instance.props, path);
-            instance.forceUpdate();
-          }
-          break;
-        case "state":
-          deletePathInObject(instance.state, path);
-          instance.forceUpdate();
-          break;
-      }
-    }
-  }
-
-  function renamePath(type, id, hookID, oldPath, newPath) {
-    const fiber = findCurrentFiberUsingSlowPathById(id);
-    if (fiber !== null) {
-      const instance = fiber.stateNode;
-
-      switch (type) {
-        case "context":
-          // To simplify hydration and display of primitive context values (e.g. number, string)
-          // the inspectElement() method wraps context in a {value: ...} object.
-          // We need to remove the first part of the path (the "value") before continuing.
-          oldPath = oldPath.slice(1);
-          newPath = newPath.slice(1);
-
-          switch (fiber.tag) {
-            case ClassComponent:
-              if (oldPath.length === 0) {
-                // Simple context value (noop)
-              } else {
-                renamePathInObject(instance.context, oldPath, newPath);
-              }
-              instance.forceUpdate();
-              break;
-            case FunctionComponent:
-              // Function components using legacy context are not editable
-              // because there's no instance on which to create a cloned, mutated context.
-              break;
-          }
-          break;
-        case "hooks":
-          if (typeof overrideHookStateRenamePath === "function") {
-            overrideHookStateRenamePath(fiber, hookID, oldPath, newPath);
-          }
-          break;
-        case "props":
-          if (instance === null) {
-            if (typeof overridePropsRenamePath === "function") {
-              overridePropsRenamePath(fiber, oldPath, newPath);
-            }
-          } else {
-            fiber.pendingProps = copyWithRename(
-              instance.props,
-              oldPath,
-              newPath
-            );
-            instance.forceUpdate();
-          }
-          break;
-        case "state":
-          renamePathInObject(instance.state, oldPath, newPath);
-          instance.forceUpdate();
-          break;
-      }
-    }
-  }
-
   let currentCommitProfilingMetadata = null;
   let displayNamesByRootID = null;
   let idToContextsMap = null;
-  let initialTreeBaseDurationsMap = null;
-  let initialIDToRootMap = null;
   let profilingStartTime = 0;
   let recordChangeDescriptions = true;
-  let rootToCommitProfilingMetadataMap = null;
 
-  function getProfilingData() {
-    const dataForRoots = [];
-
-    if (rootToCommitProfilingMetadataMap === null) {
-      throw Error(
-        "getProfilingData() called before any profiling data was recorded"
-      );
-    }
-
-    rootToCommitProfilingMetadataMap.forEach(
-      (commitProfilingMetadata, rootID) => {
-        const commitData = [];
-        const initialTreeBaseDurations = [];
-
-        const displayName =
-          (displayNamesByRootID !== null && displayNamesByRootID.get(rootID)) ||
-          "Unknown";
-
-        if (initialTreeBaseDurationsMap != null) {
-          initialTreeBaseDurationsMap.forEach((treeBaseDuration, id) => {
-            if (
-              initialIDToRootMap != null &&
-              initialIDToRootMap.get(id) === rootID
-            ) {
-              // We don't need to convert milliseconds to microseconds in this case,
-              // because the profiling summary is JSON serialized.
-              initialTreeBaseDurations.push([id, treeBaseDuration]);
-            }
-          });
-        }
-
-        commitProfilingMetadata.forEach(commitProfilingData => {
-          const {
-            changeDescriptions,
-            durations,
-            effectDuration,
-            maxActualDuration,
-            passiveEffectDuration,
-            priorityLevel,
-            commitTime,
-            updaters,
-          } = commitProfilingData;
-
-          const fiberActualDurations = [];
-          const fiberSelfDurations = [];
-          for (let i = 0; i < durations.length; i += 3) {
-            const fiberID = durations[i];
-            fiberActualDurations.push([fiberID, durations[i + 1]]);
-            fiberSelfDurations.push([fiberID, durations[i + 2]]);
-          }
-
-          commitData.push({
-            changeDescriptions:
-              changeDescriptions !== null
-                ? Array.from(changeDescriptions.entries())
-                : null,
-            duration: maxActualDuration,
-            effectDuration,
-            fiberActualDurations,
-            fiberSelfDurations,
-            passiveEffectDuration,
-            priorityLevel,
-            timestamp: commitTime,
-            updaters,
-          });
-        });
-
-        dataForRoots.push({
-          commitData,
-          displayName,
-          initialTreeBaseDurations,
-          rootID,
-        });
-      }
-    );
-
-    return {
-      dataForRoots,
-      rendererID,
-    };
-  }
-
-  function startProfiling(shouldRecordChangeDescriptions) {
-    recordChangeDescriptions = shouldRecordChangeDescriptions;
-
+  function startProfiling() {
     // Capture initial values as of the time profiling starts.
     // It's important we snapshot both the durations and the id-to-root map,
     // since either of these may change during the profiling session
     // (e.g. when a fiber is re-rendered or when a fiber gets removed).
     displayNamesByRootID = new Map();
-    initialTreeBaseDurationsMap = new Map(idToTreeBaseDurationMap);
-    initialIDToRootMap = new Map(idToRootMap);
     idToContextsMap = new Map();
 
     hook.getFiberRoots(rendererID).forEach(root => {
       const rootID = getFiberIDThrows(root.current);
       displayNamesByRootID.set(rootID, getDisplayNameForRoot(root.current));
 
-      if (shouldRecordChangeDescriptions) {
-        // Record all contexts at the time profiling is started.
-        // Fibers only store the current context value,
-        // so we need to track them separately in order to determine changed keys.
-        crawlToInitializeContextsMap(root.current);
-      }
+      // Record all contexts at the time profiling is started.
+      // Fibers only store the current context value,
+      // so we need to track them separately in order to determine changed keys.
+      crawlToInitializeContextsMap(root.current);
     });
 
     profilingStartTime = getCurrentTime();
-    rootToCommitProfilingMetadataMap = new Map();
   }
 
   // Automatically start profiling so that we don't miss timing info from initial "mount".
@@ -2794,15 +2548,12 @@ export function attach(hook, rendererID, renderer) {
     handleCommitFiberUnmount,
     handlePostCommitFiberRoot,
 
-    deletePath,
     findNativeNodesForFiberID,
     getDisplayNameForFiberID,
     getFiberIDForNative,
     getOwnersList,
     getPathForElement,
-    getProfilingData,
     inspectElement,
-    renamePath,
 
     getFiberByID,
   };
