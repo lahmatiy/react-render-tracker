@@ -18,6 +18,7 @@ import {
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
 } from "../constants.js";
+import { Fiber } from "../types.js";
 
 const cachedDisplayNames = new WeakMap();
 
@@ -72,51 +73,7 @@ export function utfEncodeString(value: string) {
   return encoded;
 }
 
-export function cleanForBridge(data, isPathAllowed, path = []) {
-  return;
-  // if (data !== null) {
-  //   const cleanedPaths = [];
-  //   const unserializablePaths = [];
-  //   const cleanedData = dehydrate(
-  //     data,
-  //     cleanedPaths,
-  //     unserializablePaths,
-  //     path,
-  //     isPathAllowed
-  //   );
-  //
-  //   return {
-  //     data: cleanedData,
-  //     cleaned: cleanedPaths,
-  //     unserializable: unserializablePaths
-  //   };
-  // } else {
-  //   return null;
-  // }
-}
-
-export function getInObject(object, path) {
-  return path.reduce((reduced, attr) => {
-    if (reduced) {
-      if (Object.hasOwnProperty.call(reduced, attr)) {
-        return reduced[attr];
-      }
-      if (typeof reduced[Symbol.iterator] === "function") {
-        // Convert iterable to array and return array[index]
-        //
-        // TRICKY
-        // Don't use [...spread] syntax for this purpose.
-        // This project uses @babel/plugin-transform-spread in "loose" mode which only works with Array values.
-        // Other types (e.g. typed arrays, Sets) will not spread correctly.
-        return Array.from(reduced)[attr];
-      }
-    }
-
-    return null;
-  }, object);
-}
-
-export function getInternalReactConstants(version) {
+export function getInternalReactConstants(version: string) {
   const ReactTypeOfSideEffect = {
     DidCapture: 0b10000000,
     NoFlags: 0b00,
@@ -315,7 +272,7 @@ export function getInternalReactConstants(version) {
   // End of copied code.
   // **********************************************************
 
-  function getTypeSymbol(type) {
+  function getTypeSymbol(type: any): string | number {
     const symbolOrNumber =
       typeof type === "object" && type !== null ? type.$$typeof : type;
 
@@ -364,7 +321,7 @@ export function getInternalReactConstants(version) {
   }
 
   // NOTICE Keep in sync with shouldFilterFiber() and other get*ForFiber methods
-  function getDisplayNameForFiber(fiber) {
+  function getDisplayNameForFiber(fiber: Fiber): string | null {
     const { elementType, type, tag } = fiber;
 
     let resolvedType = type;

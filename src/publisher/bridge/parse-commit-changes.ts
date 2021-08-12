@@ -22,7 +22,7 @@ export function parseCommitChanges(
       continue;
     }
 
-    const { didHooksChange, hooks, props, state } = entry;
+    const { hooks, props, state } = entry;
     const safeEntry: TransferChangeDescription = {
       ...entry,
       props: null,
@@ -40,14 +40,6 @@ export function parseCommitChanges(
       safeEntry.state = state.map(entry => ({
         name: entry.name,
         changed: entry.prev !== entry.next,
-      }));
-    }
-
-    if (didHooksChange && hooks?.length) {
-      safeEntry.hooks = hooks.map(hook => ({
-        name: hook.name,
-        prev: {}, // FIXME
-        next: {}, // FIXME
       }));
     }
 
