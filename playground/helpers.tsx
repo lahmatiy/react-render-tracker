@@ -6,7 +6,7 @@ type IRenderTrigger = {
 };
 type IRenderInstance = {
   id: string;
-  log: (string) => void;
+  log: (string: string) => void;
   flushTriggers: () => IRenderTrigger[];
   useState: typeof React.useState;
   useContext: typeof React.useContext;
@@ -66,10 +66,8 @@ export function RenderContextProvider({ log, children }) {
 
           return [state, hookWrapper.get(setState)];
         },
-        useContext(
-          ...args: Parameters<typeof React.useContext>
-        ): ReturnType<typeof React.useContext> {
-          const value = React.useContext(...args);
+        useContext<T>(context: React.Context<T>) {
+          const value = React.useContext<T>(context);
 
           contexts.add(value);
 
@@ -101,6 +99,7 @@ export function useTrackRender(reason: string = "unknown") {
   }
 
   instance.current.log(`[render] ${reason}`);
+  console.log(`[render] ${instance.current.id} ${reason}`);
 
   React.useEffect(() => {
     instance.current.log("[mount]");

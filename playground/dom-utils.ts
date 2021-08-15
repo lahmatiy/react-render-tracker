@@ -1,4 +1,10 @@
-export function createElement(tag, attrs, children) {
+const { hasOwnProperty } = Object.prototype;
+
+export function createElement(
+  tag: string,
+  attrs: string | {},
+  children?: string | any[]
+) {
   const el = document.createElement(tag);
 
   if (typeof attrs === "string") {
@@ -32,11 +38,11 @@ export function createElement(tag, attrs, children) {
   return el;
 }
 
-export function createText(text) {
+export function createText(text: any) {
   return document.createTextNode(String(text));
 }
 
-export function createFragment(...children) {
+export function createFragment(...children: any[]) {
   const fragment = document.createDocumentFragment();
 
   children.forEach(child =>

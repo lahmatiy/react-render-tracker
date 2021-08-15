@@ -17,9 +17,9 @@ function emulateEvent(target: HTMLElement) {
 }
 
 export default function (testcase: TestCase) {
-  let contentEl;
-  let instrumentedEl;
-  let reactEl;
+  let contentEl: HTMLElement;
+  let instrumentedEl: HTMLElement;
+  let reactEl: HTMLElement;
   const el = createElement("div", "case-wrapper", [
     createElement("h2", null, testcase.title),
     (contentEl = createElement("div", "content")),
@@ -66,10 +66,10 @@ export default function (testcase: TestCase) {
 
   return {
     container: contentEl,
-    instrumentedLog(msg) {
+    instrumentedLog(msg: any) {
       instrumentedEl.append(createElement("div", "log-entry", String(msg)));
     },
-    reactLog(msg) {
+    reactLog(msg: any) {
       reactEl.append(createElement("div", "log-entry", String(msg)));
     },
   };

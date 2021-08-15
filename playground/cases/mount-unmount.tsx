@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import * as React from "react";
+import { useEffect } from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
@@ -9,13 +9,13 @@ function Child() {
 }
 
 function Root() {
-  useTrackRender();
+  const { useState } = useTrackRender();
   const [isVisible, setIsVisible] = useState(false);
   const [isFirstRender, setIsFirstRender] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => mounted && setIsFirstRender(false));
     let mounted = true;
+    const timer = setTimeout(() => mounted && setIsFirstRender(false), 1);
 
     return () => {
       mounted = false;
