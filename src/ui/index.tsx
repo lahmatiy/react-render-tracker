@@ -43,14 +43,26 @@ function processMessages(messages: Message[]) {
 
   for (const message of messages) {
     switch (message.op) {
-      case "add":
+      case "add": {
         message.element;
         componentById.set(message.id, {
           ...message.element,
           mounted: true,
           updates: [],
         });
+        const update = {
+          phase: "Mount",
+          timestamp: message.timestamp,
+          reason: [],
+          details: {},
+        };
+        if (updatesByComponentId.has(message.id)) {
+          updatesByComponentId.get(message.id).push(update);
+        } else {
+          updatesByComponentId.set(message.id, [update]);
+        }
         break;
+      }
 
       case "remove": {
         componentById.get(message.id).mounted = false;
@@ -101,10 +113,10 @@ function processChange(
   timestamp: number,
   component: MessageElement
 ) {
-  const { didHooksChange, isFirstMount, props, state, hooks, parentUpdate } =
-    value;
+  const { isFirstMount, context, hooks, props, state, parentUpdate } =
+    value || {};
   const change: ElementUpdate = {
-    phase: "Update",
+    phase: "Rerender",
     timestamp,
     reason: [],
     details: {},
@@ -114,10 +126,10 @@ function processChange(
   if (component && !component.mounted) {
     change.phase = "Unmount";
   } else if (isFirstMount) {
-    change.phase = "Mount";
+    change.phase = "Render";
   }
 
-  if (didHooksChange && hooks?.length > 0) {
+  if (hooks?.length > 0) {
     change.reason.push("Hooks Change");
     change.details.hooks = hooks;
   }

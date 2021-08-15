@@ -1,21 +1,6 @@
 import { DevtoolsHook } from "../devtools-hook";
-import {
-  Element,
-  ReactRenderer,
-  RendererInterface,
-  Message,
-  ReactCommitData,
-} from "../types";
+import { ReactRenderer, RendererInterface, Message } from "../types";
 import { attach } from "../renderer";
-import { parseOperations } from "./parse-operations";
-import { parseCommitChanges } from "./parse-commit-changes";
-
-const __win__ = window;
-
-interface RendererAttachedParams {
-  id: number;
-  rendererInterface: RendererInterface;
-}
 
 interface Publisher {
   ns(channel: string): {
@@ -35,16 +20,7 @@ export class Bridge {
   private messages: Message[] = [];
 
   constructor(private devtools: DevtoolsHook, private publisher: Publisher) {
-    const seenChanges = new WeakSet();
-    const idToElement = new Map<number, Element>();
-
     this.subscriptions = [
-      devtools.sub("operations", operations => {
-        this.publish(parseOperations(operations, idToElement));
-      }),
-      devtools.sub("commit", (data: ReactCommitData) => {
-        this.publish(parseCommitChanges(data, seenChanges));
-      }),
       devtools.sub("renderer", ({ id, renderer }) => {
         this.attachRenderer(id, renderer);
       }),
@@ -55,6 +31,11 @@ export class Bridge {
     for (const unsubscribe of this.subscriptions) {
       unsubscribe();
     }
+  }
+
+  public message(message: Message) {
+    this.messages.push(message);
+    this.publisher.ns("tree-changes").publish(this.messages);
   }
 
   private publish(messages: Message[]) {
@@ -76,6 +57,7 @@ export class Bridge {
       if (typeof renderer.findFiberByHostInstance === "function") {
         // react-reconciler v16+
         rendererInterface = attach(
+          this,
           this.devtools,
           id,
           renderer

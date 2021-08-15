@@ -35,11 +35,6 @@ export const OffscreenComponent = 22;
 export const LegacyHiddenComponent = 23;
 export const CacheComponent = 24;
 
-export const TREE_OPERATION_MOUNT = 1;
-export const TREE_OPERATION_UNMOUNT = 2;
-export const TREE_OPERATION_UPDATE_TREE_BASE_DURATION = 3;
-export const TREE_OPERATION_REMOVE_ROOT = 4;
-
 export const CONCURRENT_MODE_NUMBER = 0xeacf;
 export const CONCURRENT_MODE_SYMBOL_STRING = "Symbol(react.concurrent_mode)";
 

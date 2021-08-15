@@ -3,7 +3,7 @@
 // or to enable/disable certain functionality.
 export type ElementType = 1 | 2 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
-export type Element = {
+export type TransferElement = {
   id: number;
   parentId: number;
   children: Array<number>;
@@ -22,20 +22,19 @@ export type Element = {
 };
 
 export type TransferChangeDescription = {
-  context: Array<string> | boolean | null;
-  didHooksChange: boolean;
   isFirstMount: boolean;
   parentUpdate: boolean;
+  context: Array<string> | boolean | null;
+  hooks?: Array<any> | null;
   props: Array<{ name: string; changed: boolean }> | null;
   state: Array<{ name: string; changed: boolean }> | null;
-  // TODO: add proper hook type
-  hooks?: Array<any> | null;
 };
 
 export interface AddElementMessage {
   op: "add";
   id: number;
-  element: Element;
+  timestamp: number;
+  element: TransferElement;
 }
 
 export interface RemoveElementMessage {
@@ -51,7 +50,14 @@ export interface UpdateElementMessage {
   changes: TransferChangeDescription;
 }
 
+export interface BaseDurationMessage {
+  op: "basedur";
+  id: number;
+  base: number;
+}
+
 export type Message =
   | AddElementMessage
   | RemoveElementMessage
-  | UpdateElementMessage;
+  | UpdateElementMessage
+  | BaseDurationMessage;

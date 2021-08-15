@@ -1,5 +1,10 @@
 import { gt, gte } from "semver";
+import { ElementType } from "../types";
 import {
+  ElementTypeClass,
+  ElementTypeForwardRef,
+  ElementTypeFunction,
+  ElementTypeMemo,
   CONCURRENT_MODE_NUMBER,
   CONCURRENT_MODE_SYMBOL_STRING,
   CONTEXT_NUMBER,
@@ -17,8 +22,8 @@ import {
   SCOPE_SYMBOL_STRING,
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
-} from "../constants.js";
-import { Fiber } from "../types.js";
+} from "../constants";
+import { Fiber } from "../types";
 
 const cachedDisplayNames = new WeakMap();
 
@@ -63,14 +68,49 @@ export function getEffectDurations(root) {
   return { effectDuration, passiveEffectDuration };
 }
 
-export function utfEncodeString(value: string) {
-  const encoded = new Array(value.length);
-
-  for (let i = 0; i < value.length; i++) {
-    encoded[i] = value.codePointAt(i);
+export function separateDisplayNameAndHOCs(
+  displayName: string | null,
+  type: ElementType
+): [string | null, Array<string> | null] {
+  if (displayName === null) {
+    return [null, null];
   }
 
-  return encoded;
+  let parsedDisplayName = displayName;
+  let hocDisplayNames = null;
+
+  switch (type) {
+    case ElementTypeClass:
+    case ElementTypeForwardRef:
+    case ElementTypeFunction:
+    case ElementTypeMemo:
+      if (parsedDisplayName.indexOf("(") >= 0) {
+        const matches = parsedDisplayName.match(/[^()]+/g);
+        if (matches != null) {
+          parsedDisplayName = matches.pop()!;
+          hocDisplayNames = matches;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (type === ElementTypeMemo) {
+    if (hocDisplayNames === null) {
+      hocDisplayNames = ["Memo"];
+    } else {
+      hocDisplayNames.unshift("Memo");
+    }
+  } else if (type === ElementTypeForwardRef) {
+    if (hocDisplayNames === null) {
+      hocDisplayNames = ["ForwardRef"];
+    } else {
+      hocDisplayNames.unshift("ForwardRef");
+    }
+  }
+
+  return [parsedDisplayName, hocDisplayNames];
 }
 
 export function getInternalReactConstants(version: string) {
@@ -329,8 +369,6 @@ export function getInternalReactConstants(version: string) {
       resolvedType = resolveFiberType(type);
     }
 
-    let resolvedContext;
-
     switch (tag) {
       case CacheComponent:
         return "Cache";
@@ -387,22 +425,24 @@ export function getInternalReactConstants(version: string) {
           case DEPRECATED_ASYNC_MODE_SYMBOL_STRING:
             return null;
           case PROVIDER_NUMBER:
-          case PROVIDER_SYMBOL_STRING:
+          case PROVIDER_SYMBOL_STRING: {
             // 16.3.0 exposed the context object as "context"
             // PR #12501 changed it to "_context" for 16.3.1+
             // NOTE Keep in sync with inspectElementRaw()
-            resolvedContext = fiber.type._context || fiber.type.context;
+            const resolvedContext = fiber.type._context || fiber.type.context;
             return `${resolvedContext.displayName || "Context"}.Provider`;
+          }
           case CONTEXT_NUMBER:
-          case CONTEXT_SYMBOL_STRING:
+          case CONTEXT_SYMBOL_STRING: {
             // 16.3-16.5 read from "type" because the Consumer is the actual context object.
             // 16.6+ should read from "type._context" because Consumer can be different (in DEV).
             // NOTE Keep in sync with inspectElementRaw()
-            resolvedContext = fiber.type._context || fiber.type;
+            const resolvedContext = fiber.type._context || fiber.type;
 
             // NOTE: TraceUpdatesBackendManager depends on the name ending in '.Consumer'
             // If you change the name, figure out a more resilient way to detect it.
             return `${resolvedContext.displayName || "Context"}.Consumer`;
+          }
           case STRICT_MODE_NUMBER:
           case STRICT_MODE_SYMBOL_STRING:
             return null;

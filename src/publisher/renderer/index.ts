@@ -1,7 +1,7 @@
 import {
-  utfEncodeString,
   getEffectDurations,
   getInternalReactConstants,
+  separateDisplayNameAndHOCs,
 } from "./utils";
 // import { inspectHooksOfFiber } from "react-debug-tools";
 
@@ -17,9 +17,6 @@ import {
   ElementTypeRoot,
   ElementTypeSuspense,
   ElementTypeSuspenseList,
-  TREE_OPERATION_MOUNT,
-  TREE_OPERATION_UNMOUNT,
-  TREE_OPERATION_UPDATE_TREE_BASE_DURATION,
   CONCURRENT_MODE_NUMBER,
   CONCURRENT_MODE_SYMBOL_STRING,
   CONTEXT_NUMBER,
@@ -32,12 +29,21 @@ import {
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
 } from "../constants.js";
-import { ReactRenderer, Fiber } from "../types";
+import {
+  ReactRenderer,
+  Fiber,
+  TransferElement,
+  ReactChangeDescription,
+} from "../types";
 import { DevtoolsHook } from "../devtools-hook";
+import { Bridge } from "../bridge";
+import { TransferChangeDescription } from "../../common/types";
 
-function getFiberFlags(fiber: Fiber) {
+function getFiberFlags(fiber: Fiber): number {
   // The name of this field changed from "effectTag" to "flags"
-  return fiber.flags !== undefined ? fiber.flags : (fiber as any).effectTag;
+  return (
+    (fiber.flags !== undefined ? fiber.flags : (fiber as any).effectTag) ?? 0
+  );
 }
 
 const getCurrentTime =
@@ -45,8 +51,16 @@ const getCurrentTime =
     ? () => performance.now()
     : () => Date.now();
 
+const getTimestamp =
+  typeof performance === "object" &&
+  typeof performance.now === "function" &&
+  typeof performance.timeOrigin === "number"
+    ? () => performance.timeOrigin + performance.now()
+    : () => Date.now();
+
 export function attach(
-  hook: DevtoolsHook,
+  bridge: Bridge,
+  devtoolsHook: DevtoolsHook,
   rendererID: number,
   renderer: ReactRenderer
 ) {
@@ -68,7 +82,6 @@ export function attach(
     ReactTypeOfSideEffect;
 
   const {
-    CacheComponent,
     ClassComponent,
     ContextConsumer,
     DehydratedSuspenseComponent,
@@ -213,6 +226,9 @@ export function attach(
   // When a mount or update is in progress, this value tracks the root that is being operated on.
   let currentRootID = -1;
 
+  // Transfer elements
+  const idToTransferElement = new Map<number, TransferElement>();
+
   // Returns the unique ID for a Fiber or generates and caches a new one if the Fiber hasn't been seen before.
   // Once this method has been called for a Fiber, untrackFiberID() should always be called later to avoid leaking.
   function getOrGenerateFiberID(fiber: Fiber) {
@@ -244,10 +260,8 @@ export function attach(
     // Also make sure we're tracking its alternate,
     // e.g. in case this is the first update after mount.
     const { alternate } = fiber;
-    if (alternate !== null) {
-      if (!fiberToIDMap.has(alternate)) {
-        fiberToIDMap.set(alternate, refinedID);
-      }
+    if (alternate !== null && !fiberToIDMap.has(alternate)) {
+      fiberToIDMap.set(alternate, refinedID);
     }
 
     return refinedID;
@@ -255,13 +269,13 @@ export function attach(
 
   // Returns an ID if one has already been generated for the Fiber or throws.
   function getFiberIDThrows(fiber: Fiber) {
-    const maybeID = getFiberIDUnsafe(fiber);
-    if (maybeID !== null) {
-      return maybeID;
+    const id = getFiberIDUnsafe(fiber);
+    if (id === null) {
+      throw Error(
+        `Could not find ID for Fiber "${getDisplayNameForFiber(fiber) || ""}"`
+      );
     }
-    throw Error(
-      `Could not find ID for Fiber "${getDisplayNameForFiber(fiber) || ""}"`
-    );
+    return id;
   }
 
   // Returns an ID if one has already been generated for the Fiber or null if one has not been generated.
@@ -269,12 +283,13 @@ export function attach(
   function getFiberIDUnsafe(fiber: Fiber) {
     if (fiberToIDMap.has(fiber)) {
       return fiberToIDMap.get(fiber);
-    } else {
-      const { alternate } = fiber;
-      if (alternate !== null && fiberToIDMap.has(alternate)) {
-        return fiberToIDMap.get(alternate);
-      }
     }
+
+    const { alternate } = fiber;
+    if (alternate !== null && fiberToIDMap.has(alternate)) {
+      return fiberToIDMap.get(alternate);
+    }
+
     return null;
   }
 
@@ -328,7 +343,10 @@ export function attach(
     untrackFibersSet.clear();
   }
 
-  function getChangeDescription(prevFiber: Fiber, nextFiber: Fiber) {
+  function getChangeDescription(
+    prevFiber: Fiber,
+    nextFiber: Fiber
+  ): ReactChangeDescription {
     switch (getElementTypeForFiber(nextFiber)) {
       case ElementTypeClass:
       case ElementTypeFunction:
@@ -337,14 +355,15 @@ export function attach(
         if (prevFiber === null) {
           return {
             isFirstMount: true,
+            parentUpdate: false,
             context: null,
             hooks: null,
             props: null,
             state: null,
-          };
+          } as ReactChangeDescription;
         } else {
           const { _debugHookTypes } = nextFiber;
-          const data = {
+          const data: ReactChangeDescription = {
             isFirstMount: false,
             parentUpdate: false,
             context: getContextChangedKeys(nextFiber),
@@ -375,18 +394,13 @@ export function attach(
   }
 
   function updateContextsForFiber(fiber: Fiber) {
-    switch (getElementTypeForFiber(fiber)) {
-      case ElementTypeClass:
-        if (idToContextsMap !== null) {
-          const id = getFiberIDThrows(fiber);
-          const contexts = getContextsForFiber(fiber);
-          if (contexts !== null) {
-            idToContextsMap.set(id, contexts);
-          }
-        }
-        break;
-      default:
-        break;
+    if (getElementTypeForFiber(fiber) === ElementTypeClass) {
+      const id = getFiberIDThrows(fiber);
+      const contexts = getContextsForFiber(fiber);
+
+      if (contexts !== null) {
+        idToContextsMap.set(id, contexts);
+      }
     }
   }
 
@@ -394,30 +408,26 @@ export function attach(
   const NO_CONTEXT = {};
 
   function getContextsForFiber(fiber: Fiber) {
-    switch (getElementTypeForFiber(fiber)) {
-      case ElementTypeClass:
-        const instance = fiber.stateNode;
-        let legacyContext = NO_CONTEXT;
-        let modernContext = NO_CONTEXT;
-
-        if (instance != null) {
-          if (
-            instance.constructor &&
-            instance.constructor.contextType != null
-          ) {
-            modernContext = instance.context;
-          } else {
-            legacyContext = instance.context;
-            if (legacyContext && Object.keys(legacyContext).length === 0) {
-              legacyContext = NO_CONTEXT;
-            }
-          }
-        }
-
-        return [legacyContext, modernContext];
-      default:
-        return null;
+    if (getElementTypeForFiber(fiber) !== ElementTypeClass) {
+      return null;
     }
+
+    const instance = fiber.stateNode;
+    let legacyContext = NO_CONTEXT;
+    let modernContext = NO_CONTEXT;
+
+    if (instance != null) {
+      if (instance.constructor && instance.constructor.contextType != null) {
+        modernContext = instance.context;
+      } else {
+        legacyContext = instance.context;
+        if (legacyContext && Object.keys(legacyContext).length === 0) {
+          legacyContext = NO_CONTEXT;
+        }
+      }
+    }
+
+    return [legacyContext, modernContext];
   }
 
   // Record all contexts at the time profiling is started.
@@ -433,45 +443,24 @@ export function attach(
   }
 
   function getContextChangedKeys(fiber: Fiber) {
-    switch (getElementTypeForFiber(fiber)) {
-      case ElementTypeClass:
-        if (idToContextsMap !== null) {
-          const id = getFiberIDThrows(fiber);
-          const prevContexts = idToContextsMap.has(id)
-            ? idToContextsMap.get(id)
-            : null;
-          const nextContexts = getContextsForFiber(fiber);
+    if (getElementTypeForFiber(fiber) === ElementTypeClass) {
+      const id = getFiberIDThrows(fiber);
+      const prevContexts = idToContextsMap.get(id) || null;
+      const nextContexts = getContextsForFiber(fiber);
 
-          if (prevContexts == null || nextContexts == null) {
-            return null;
-          }
+      if (prevContexts !== null && nextContexts !== null) {
+        const [prevLegacyContext, prevModernContext] = prevContexts;
+        const [nextLegacyContext, nextModernContext] = nextContexts;
 
-          const [prevLegacyContext, prevModernContext] = prevContexts;
-          const [nextLegacyContext, nextModernContext] = nextContexts;
-
-          if (nextLegacyContext !== NO_CONTEXT) {
-            return getChangedKeys(prevLegacyContext, nextLegacyContext);
-          } else if (nextModernContext !== NO_CONTEXT) {
-            return prevModernContext !== nextModernContext;
-          }
+        if (nextLegacyContext !== NO_CONTEXT) {
+          return getChangedKeys(prevLegacyContext, nextLegacyContext);
+        } else if (nextModernContext !== NO_CONTEXT) {
+          return prevModernContext !== nextModernContext;
         }
-        break;
-    }
-    return null;
-  }
-
-  function areHookInputsEqual(nextDeps, prevDeps) {
-    if (prevDeps === null) {
-      return false;
-    }
-
-    for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
-      if (Object.is(nextDeps[i], prevDeps[i])) {
-        continue;
       }
-      return false;
     }
-    return true;
+
+    return null;
   }
 
   function isEffect(memoizedState) {
@@ -497,7 +486,7 @@ export function attach(
 
     const changes: number[] = [];
     for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
-      if (nextDeps[i] !== prevDeps[i]) {
+      if (Object.is(nextDeps[i], prevDeps[i])) {
         changes.push(i);
       }
     }
@@ -589,185 +578,159 @@ export function attach(
   }
 
   function didFiberRender(prevFiber: Fiber, nextFiber: Fiber) {
-    switch (nextFiber.tag) {
-      case ClassComponent:
-      case FunctionComponent:
-      case ContextConsumer:
-      case MemoComponent:
-      case SimpleMemoComponent:
-        // For types that execute user code, we check PerformedWork effect.
-        // We don't reflect bailouts (either referential or sCU) in DevTools.
-        return (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork;
-      // Note: ContextConsumer only gets PerformedWork effect in 16.3.3+
-      // so it won't get highlighted with React 16.3.0 to 16.3.2.
-      default:
-        // For host components and other types, we compare inputs
-        // to determine whether something is an update.
-        return (
-          prevFiber.memoizedProps !== nextFiber.memoizedProps ||
-          prevFiber.memoizedState !== nextFiber.memoizedState ||
-          prevFiber.ref !== nextFiber.ref
-        );
-    }
+    // For types that execute user code, we check PerformedWork effect.
+    // For other types compare inputs to determine whether something is an update.
+    return (
+      (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork ||
+      prevFiber.memoizedProps !== nextFiber.memoizedProps ||
+      prevFiber.memoizedState !== nextFiber.memoizedState ||
+      prevFiber.ref !== nextFiber.ref
+    );
   }
 
   const pendingOperations = [];
   const pendingRealUnmountedIDs = [];
   const pendingSimulatedUnmountedIDs = [];
-  const pendingStringTable = new Map();
-  let pendingStringTableLength = 0;
   let pendingUnmountedRootID = null;
 
-  function pushOperation(op) {
-    pendingOperations.push(op);
-  }
-
   function flushPendingEvents() {
-    const numUnmountIDs =
-      pendingRealUnmountedIDs.length +
-      pendingSimulatedUnmountedIDs.length +
-      (pendingUnmountedRootID === null ? 0 : 1);
+    const unmountIds = new Set<number>();
 
-    const operations = new Array(
-      // Identify which renderer this update is coming from.
-      2 + // [rendererID, rootFiberID]
-        // How big is the string table?
-        1 + // [stringTableLength]
-        // Then goes the actual string table.
-        pendingStringTableLength +
-        // All unmounts are batched in a single message.
-        // [TREE_OPERATION_REMOVE, removedIDLength, ...ids]
-        (numUnmountIDs > 0 ? 2 + numUnmountIDs : 0) +
-        // Regular operations
-        pendingOperations.length
-    );
-
-    // Identify which renderer this update is coming from.
-    // This enables roots to be mapped to renderers,
-    // Which in turn enables fiber props, states, and hooks to be inspected.
-    let i = 0;
-    operations[i++] = rendererID;
-    operations[i++] = currentRootID;
-
-    // Now fill in the string table.
-    // [stringTableLength, str1Length, ...str1, str2Length, ...str2, ...]
-    operations[i++] = pendingStringTableLength;
-    pendingStringTable.forEach((value, key) => {
-      operations[i++] = key.length;
-      const encodedKey = utfEncodeString(key);
-      for (let j = 0; j < encodedKey.length; j++) {
-        operations[i + j] = encodedKey[j];
-      }
-      i += key.length;
-    });
-
-    if (numUnmountIDs > 0) {
-      // All unmounts except roots are batched in a single message.
-      operations[i++] = TREE_OPERATION_UNMOUNT;
-      // The first number is how many unmounted IDs we're gonna send.
-      operations[i++] = numUnmountIDs;
-      // Fill in the real unmounts in the reverse order.
-      // They were inserted parents-first by React, but we want children-first.
-      // So we traverse our array backwards.
-      for (let j = pendingRealUnmountedIDs.length - 1; j >= 0; j--) {
-        operations[i++] = pendingRealUnmountedIDs[j];
-      }
-      // Fill in the simulated unmounts (hidden Suspense subtrees) in their order.
-      // (We want children to go before parents.)
-      // They go *after* the real unmounts because we know for sure they won't be
-      // children of already pushed "real" IDs. If they were, we wouldn't be able
-      // to discover them during the traversal, as they would have been deleted.
-      for (let j = 0; j < pendingSimulatedUnmountedIDs.length; j++) {
-        operations[i + j] = pendingSimulatedUnmountedIDs[j];
-      }
-      i += pendingSimulatedUnmountedIDs.length;
-      // The root ID should always be unmounted last.
-      if (pendingUnmountedRootID !== null) {
-        operations[i] = pendingUnmountedRootID;
-        i++;
-      }
+    // Fill in the real unmounts in the reverse order.
+    // They were inserted parents-first by React, but we want children-first.
+    // So we traverse our array backwards.
+    for (let j = pendingRealUnmountedIDs.length - 1; j >= 0; j--) {
+      unmountIds.add(pendingRealUnmountedIDs[j]);
     }
-    // Fill in the rest of the operations.
-    for (let j = 0; j < pendingOperations.length; j++) {
-      operations[i + j] = pendingOperations[j];
+    // Fill in the simulated unmounts (hidden Suspense subtrees) in their order.
+    // (We want children to go before parents.)
+    // They go *after* the real unmounts because we know for sure they won't be
+    // children of already pushed "real" IDs. If they were, we wouldn't be able
+    // to discover them during the traversal, as they would have been deleted.
+    for (let j = 0; j < pendingSimulatedUnmountedIDs.length; j++) {
+      unmountIds.add(pendingSimulatedUnmountedIDs[j]);
     }
-    i += pendingOperations.length;
 
-    // Let the frontend know about tree operations.
-    hook.emit("operations", operations);
+    // The root ID should always be unmounted last.
+    if (pendingUnmountedRootID !== null) {
+      unmountIds.add(pendingUnmountedRootID);
+    }
+
+    for (const id of unmountIds) {
+      if (!idToTransferElement.has(id)) {
+        throw new Error(
+          `Cannot remove node "${id}" because no matching node was found in the Store.`
+        );
+      }
+
+      const element = idToTransferElement.get(id)!;
+      const { children, parentId } = element;
+      let parentElement = null;
+
+      if (children.length > 0) {
+        throw new Error(`Node "${id}" was removed before its children.`);
+      }
+
+      idToTransferElement.delete(id);
+
+      if (parentId !== 0) {
+        parentElement = idToTransferElement.get(parentId);
+        if (parentElement === undefined) {
+          throw new Error(
+            `Cannot remove node "${id}" from parent "${parentId}" because no matching node was found in the Store.`
+          );
+        }
+        const index = parentElement.children.indexOf(id);
+        parentElement.children.splice(index, 1);
+      }
+
+      bridge.message({
+        op: "remove",
+        id,
+        timestamp: getTimestamp(),
+      });
+    }
 
     // Reset all of the pending state now that we've told the frontend about it.
     pendingOperations.length = 0;
     pendingRealUnmountedIDs.length = 0;
     pendingSimulatedUnmountedIDs.length = 0;
     pendingUnmountedRootID = null;
-    pendingStringTable.clear();
-    pendingStringTableLength = 0;
-  }
-
-  function getStringID(str: string) {
-    if (str === null || str === undefined) {
-      return 0;
-    }
-    const existingID = pendingStringTable.get(str);
-    if (existingID !== undefined) {
-      return existingID;
-    }
-    const stringID = pendingStringTable.size + 1;
-    pendingStringTable.set(str, stringID);
-    // The string table total length needs to account
-    // both for the string length, and for the array item
-    // that contains the length itself. Hence + 1.
-    pendingStringTableLength += str.length + 1;
-    return stringID;
   }
 
   function recordMount(fiber: Fiber, parentFiber: Fiber) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberID(fiber);
-    const hasOwnerMetadata = fiber.hasOwnProperty("_debugOwner");
     const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
+    let element: TransferElement;
 
     if (isRoot) {
-      pushOperation(TREE_OPERATION_MOUNT);
-      pushOperation(id);
-      pushOperation(ElementTypeRoot);
-      pushOperation(isProfilingSupported ? 1 : 0);
-      pushOperation(hasOwnerMetadata ? 1 : 0);
+      element = {
+        id,
+        type: ElementTypeRoot,
+        key: null,
+        ownerId: 0,
+        parentId: 0,
+        children: [],
+        depth: -1,
+        displayName: null,
+        hocDisplayNames: null,
+      };
 
       if (displayNamesByRootID !== null) {
         displayNamesByRootID.set(id, getDisplayNameForRoot(fiber));
       }
     } else {
-      const { key } = fiber;
+      const { key, _debugOwner } = fiber;
       const displayName = getDisplayNameForFiber(fiber);
       const elementType = getElementTypeForFiber(fiber);
-      const { _debugOwner } = fiber;
 
-      // Ideally we should call getFiberIDThrows() for _debugOwner,
-      // since owners are almost always higher in the tree (and so have already been processed),
-      // but in some (rare) instances reported in open source, a descendant mounts before an owner.
-      // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
-      // See https://github.com/facebook/react/issues/21445
-      const ownerID =
-        _debugOwner != null ? getOrGenerateFiberID(_debugOwner) : 0;
-      const parentID = parentFiber ? getFiberIDThrows(parentFiber) : 0;
+      let ownerId = _debugOwner != null ? getOrGenerateFiberID(_debugOwner) : 0;
+      const parentId = parentFiber ? getFiberIDThrows(parentFiber) : 0;
 
-      const displayNameStringID = getStringID(displayName);
+      if (!idToTransferElement.has(parentId)) {
+        throw new Error(
+          `Cannot add child "${id}" to parent "${parentId}" because parent node was not found in the Store.`
+        );
+      }
 
-      // This check is a guard to handle a React element that has been modified
-      // in such a way as to bypass the default stringification of the "key" property.
-      const keyString = key === null ? null : "" + key;
-      const keyStringID = getStringID(keyString);
+      const parentElement = idToTransferElement.get(parentId)!;
+      parentElement.children.push(id);
 
-      pushOperation(TREE_OPERATION_MOUNT);
-      pushOperation(id);
-      pushOperation(elementType);
-      pushOperation(parentID);
-      pushOperation(ownerID);
-      pushOperation(displayNameStringID);
-      pushOperation(keyStringID);
+      if (_debugOwner == null || ownerId === 0) {
+        ownerId = parentElement.ownerId || parentElement.id || 0;
+      } else {
+        // Ideally we should call getFiberIDThrows() for _debugOwner,
+        // since owners are almost always higher in the tree (and so have already been processed),
+        // but in some (rare) instances reported in open source, a descendant mounts before an owner.
+        // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
+        // See https://github.com/facebook/react/issues/21445
+        ownerId = getOrGenerateFiberID(_debugOwner);
+      }
+
+      const [displayNameWithoutHOCs, hocDisplayNames] =
+        separateDisplayNameAndHOCs(displayName, elementType);
+
+      element = {
+        id,
+        type: elementType,
+        key: key === null ? null : "" + key,
+        ownerId,
+        parentId,
+        children: [],
+        depth: parentElement.depth + 1,
+        displayName: displayNameWithoutHOCs,
+        hocDisplayNames,
+      };
     }
+
+    idToTransferElement.set(id, element);
+    bridge.message({
+      op: "add",
+      id,
+      timestamp: getTimestamp(),
+      element,
+    });
 
     if (isProfilingSupported) {
       idToRootMap.set(id, currentRootID);
@@ -792,6 +755,7 @@ export function attach(
     // Flow refinement.
     const id = unsafeID;
     const isRoot = fiber.tag === HostRoot;
+
     if (isRoot) {
       // Roots must be removed only after all children (pending and simulated) have been removed.
       // So we track it separately.
@@ -921,64 +885,77 @@ export function attach(
     }
   }
 
+  /**
+   * Fixes possible circular dependencies in component props
+   * to allow data serialisation and sending over rempl.
+   */
+  function parseCommitChanges(entry: ReactChangeDescription) {
+    const { props, state } = entry;
+    const safeEntry: TransferChangeDescription = {
+      ...entry,
+      props: null,
+      state: null,
+    };
+
+    if (props) {
+      safeEntry.props = props.map(entry => ({
+        name: entry.name,
+        changed: entry.prev !== entry.next,
+      }));
+    }
+
+    if (state) {
+      safeEntry.state = state.map(entry => ({
+        name: entry.name,
+        changed: entry.prev !== entry.next,
+      }));
+    }
+
+    return safeEntry;
+  }
+
   function recordProfilingDurations(fiber: Fiber) {
     const id = getFiberIDThrows(fiber);
-    const { actualDuration, treeBaseDuration } = fiber;
+    const { treeBaseDuration, alternate } = fiber;
+    let actualDuration = fiber.actualDuration ?? 0;
+    let selfDuration = actualDuration;
 
     idToTreeBaseDurationMap.set(id, treeBaseDuration || 0);
-
-    const { alternate } = fiber;
 
     // It's important to update treeBaseDuration even if the current Fiber did not render,
     // because it's possible that one of its descendants did.
     if (alternate == null || treeBaseDuration !== alternate.treeBaseDuration) {
       // Tree base duration updates are included in the operations typed array.
       // So we have to convert them from milliseconds to microseconds so we can send them as ints.
-      const convertedTreeBaseDuration = Math.floor(
-        (treeBaseDuration || 0) * 1000
-      );
-      pushOperation(TREE_OPERATION_UPDATE_TREE_BASE_DURATION);
-      pushOperation(id);
-      pushOperation(convertedTreeBaseDuration);
+      bridge.message({
+        op: "basedur",
+        id,
+        base: Math.floor((treeBaseDuration || 0) * 1000),
+      });
     }
 
     if (alternate == null || didFiberRender(alternate, fiber)) {
-      if (actualDuration != null) {
-        // The actual duration reported by React includes time spent working on children.
-        // This is useful information, but it's also useful to be able to exclude child durations.
-        // The frontend can't compute this, since the immediate children may have been filtered out.
-        // So we need to do this on the backend.
-        // Note that this calculated self duration is not the same thing as the base duration.
-        // The two are calculated differently (tree duration does not accumulate).
-        let selfDuration = actualDuration;
-        let child = fiber.child;
-        while (child !== null) {
-          selfDuration -= child.actualDuration || 0;
-          child = child.sibling;
-        }
-
-        // If profiling is active, store durations for elements that were rendered during the commit.
-        // Note that we should do this for any fiber we performed work on, regardless of its actualDuration value.
-        // In some cases actualDuration might be 0 for fibers we worked on (particularly if we're using Date.now)
-        // In other cases (e.g. Memo) actualDuration might be greater than 0 even if we "bailed out".
-        const metadata = currentCommitProfilingMetadata;
-        metadata.durations.push(id, actualDuration, selfDuration);
-        metadata.maxActualDuration = Math.max(
-          metadata.maxActualDuration,
-          actualDuration
-        );
-
-        const changeDescription = getChangeDescription(alternate, fiber);
-        if (changeDescription !== null) {
-          if (metadata.changeDescriptions !== null) {
-            metadata.changeDescriptions.set(id, changeDescription);
-          }
-        }
-
-        updateContextsForFiber(fiber);
-
-        hook.emit("commit", currentCommitProfilingMetadata);
+      // The actual duration reported by React includes time spent working on children.
+      // This is useful information, but it's also useful to be able to exclude child durations.
+      // The frontend can't compute this, since the immediate children may have been filtered out.
+      // So we need to do this on the backend.
+      // Note that this calculated self duration is not the same thing as the base duration.
+      // The two are calculated differently (tree duration does not accumulate).
+      let child = fiber.child;
+      while (child !== null) {
+        selfDuration -= child.actualDuration || 0;
+        child = child.sibling;
       }
+
+      const changes = getChangeDescription(alternate, fiber);
+      bridge.message({
+        op: "update",
+        id,
+        timestamp: getTimestamp(),
+        changes: changes && parseCommitChanges(changes),
+      });
+
+      updateContextsForFiber(fiber);
     }
   }
 
@@ -1598,34 +1575,22 @@ export function attach(
   }
 
   let currentCommitProfilingMetadata = null;
-  let displayNamesByRootID = null;
-  let idToContextsMap = null;
-  let profilingStartTime = 0;
+  let displayNamesByRootID = new Map();
+  let idToContextsMap = new Map();
   let recordChangeDescriptions = true;
 
-  function startProfiling() {
-    // Capture initial values as of the time profiling starts.
-    // It's important we snapshot both the durations and the id-to-root map,
-    // since either of these may change during the profiling session
-    // (e.g. when a fiber is re-rendered or when a fiber gets removed).
-    displayNamesByRootID = new Map();
-    idToContextsMap = new Map();
-
-    hook.getFiberRoots(rendererID).forEach(root => {
-      const rootID = getFiberIDThrows(root.current);
-      displayNamesByRootID.set(rootID, getDisplayNameForRoot(root.current));
-
-      // Record all contexts at the time profiling is started.
-      // Fibers only store the current context value,
-      // so we need to track them separately in order to determine changed keys.
-      crawlToInitializeContextsMap(root.current);
-    });
-
-    profilingStartTime = getCurrentTime();
-  }
-
   // Automatically start profiling so that we don't miss timing info from initial "mount".
-  startProfiling();
+  devtoolsHook.getFiberRoots(rendererID).forEach(root => {
+    const rootID = getFiberIDThrows(root.current);
+    displayNamesByRootID.set(rootID, getDisplayNameForRoot(root.current));
+
+    // Record all contexts at the time profiling is started.
+    // Fibers only store the current context value,
+    // so we need to track them separately in order to determine changed keys.
+    crawlToInitializeContextsMap(root.current);
+  });
+
+  const profilingStartTime = getCurrentTime();
 
   // Roots don't have a real persistent identity.
   // A root's "pseudo key" is "childDisplayName:indexWithThatName".

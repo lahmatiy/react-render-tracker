@@ -1,11 +1,11 @@
 import {
-  Element,
+  TransferElement,
   ElementType,
   TransferChangeDescription,
 } from "../common/types";
 export * from "../common/types";
 
-export interface MessageElement extends Element {
+export interface MessageElement extends TransferElement {
   mounted: boolean;
   updates: any[];
 }
@@ -24,7 +24,7 @@ export type TreeElement = {
 };
 
 export interface ElementUpdate {
-  phase: "Mount" | "Update" | "Unmount";
+  phase: "Render" | "Rerender" | "Unmount";
   timestamp: number;
   reason: string[];
   details: {

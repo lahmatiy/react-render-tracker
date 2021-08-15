@@ -299,7 +299,6 @@ export type OwnersList = {
 
 export type ReactChangeDescription = {
   context: Array<string> | boolean | null;
-  didHooksChange: boolean;
   isFirstMount: boolean;
   parentUpdate: boolean;
   props: Array<{ name: string; prev: any; next: any }> | null;

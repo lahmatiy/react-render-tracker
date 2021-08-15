@@ -43,7 +43,7 @@ const ElementName = ({
   const { ownerId, updates } = data;
   const isRenderRoot = ownerId === 0;
   const updatesCount = updates?.reduce(
-    (count, { phase }) => (phase === "Update" ? count + 1 : count),
+    (count, { phase }) => (phase === "Rerender" ? count + 1 : count),
     0
   );
   const classes = `tree-element__name ${isSelected ? "selected" : ""} ${
