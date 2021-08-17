@@ -1,11 +1,11 @@
 import React from "react";
 
-interface IChangeRowsReason {
+interface EventRenderReasonProps {
   type: "Props" | "State" | "Hooks";
   data: any[];
 }
 
-const ChangeRowsReason = ({ type, data }: IChangeRowsReason) => {
+const EventRenderReason = ({ type, data }: EventRenderReasonProps) => {
   return (
     <>
       {data.map((row, index) => {
@@ -25,4 +25,4 @@ const ChangeRowsReason = ({ type, data }: IChangeRowsReason) => {
   );
 };
 
-export default ChangeRowsReason;
+export default EventRenderReason;

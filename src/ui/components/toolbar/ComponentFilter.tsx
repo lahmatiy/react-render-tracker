@@ -1,12 +1,12 @@
 import React from "react";
 import Search from "react-feather/dist/icons/search";
 
-interface IFilterComponents {
+interface ComponentFilterProps {
   onChange: (pattern: string) => void;
   value: string;
 }
 
-const FilterComponents = ({ onChange, value }: IFilterComponents) => {
+const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
@@ -24,4 +24,4 @@ const FilterComponents = ({ onChange, value }: IFilterComponents) => {
   );
 };
 
-export default FilterComponents;
+export default ComponentFilter;

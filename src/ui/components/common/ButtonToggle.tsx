@@ -1,13 +1,18 @@
 import React from "react";
 
-interface IButtonToggle {
+interface ButtonToggleProps {
   icon: JSX.Element;
   isActive: boolean;
   onChange: (fn: (state: boolean) => boolean) => void;
   tooltip: string;
 }
 
-const ButtonToggle = ({ icon, isActive, onChange, tooltip }: IButtonToggle) => {
+const ButtonToggle = ({
+  icon,
+  isActive,
+  onChange,
+  tooltip,
+}: ButtonToggleProps) => {
   const handleClick = () => {
     onChange((prev: boolean) => !prev);
   };

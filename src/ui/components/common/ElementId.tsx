@@ -1,10 +1,10 @@
 import React from "react";
 
-interface ElementId {
+interface ElementIdProps {
   id: number;
 }
 
-const ElementId = ({ id }) => {
+const ElementId = ({ id }: ElementIdProps) => {
   return <span className="tree-element__id">#{id}</span>;
 };
 

@@ -1,9 +1,9 @@
 import React from "react";
-import ElementId from "./ElementId";
+import ElementId from "../common/ElementId";
 import ElementHocNames from "./ElementHocNames";
 import { TreeElement } from "../../types";
 
-interface IElementName {
+interface ElementNameProps {
   data: TreeElement;
   children: JSX.Element;
   isSelected: boolean;
@@ -39,12 +39,12 @@ const ElementName = ({
   isSelected,
   isDisabled,
   highlight,
-}: IElementName) => {
+}: ElementNameProps) => {
   const { ownerId, events } = data;
   const isRenderRoot = ownerId === 0;
   const rerendersCount = events?.reduce(
-    (count, { op, initial }) =>
-      op === "render" && !initial ? count + 1 : count,
+    (count, event) =>
+      event.op === "render" && !event.initial ? count + 1 : count,
     0
   );
   const classes = `tree-element__name ${isSelected ? "selected" : ""} ${

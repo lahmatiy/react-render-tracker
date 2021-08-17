@@ -1,12 +1,12 @@
-import * as React from "react";
-import ChangeRow from "./ChangeRow";
+import React from "react";
 import { ElementEvent } from "../../types";
+import EventListItem from "./EventListItem";
 
-interface IEventList {
+interface EventListProps {
   records: ElementEvent[];
 }
 
-const EventList = ({ records }: IEventList) => {
+const EventList = ({ records }: EventListProps) => {
   return (
     <table className="element-info-table">
       <thead>
@@ -19,7 +19,7 @@ const EventList = ({ records }: IEventList) => {
       </thead>
       <tbody>
         {records.map(({ component, event }) => (
-          <ChangeRow key={event.id} component={component} event={event} />
+          <EventListItem key={event.id} component={component} event={event} />
         ))}
       </tbody>
     </table>

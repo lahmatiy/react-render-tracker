@@ -3,10 +3,10 @@ import React, { useState, useMemo } from "react";
 import { getTreeData, handleFilterDataElement } from "./data/helpers";
 import { MessageElement } from "./types";
 
-import TreeElement from "./components/TreeElement";
-import ElementInfo from "./components/element/ElementInfo";
-import Card from "./components/ui/Card";
-import ToolsHeader from "./components/layout/ToolsHeader";
+import Toolbar from "./components/toolbar/Toolbar";
+import Details from "./components/details/Details";
+import Card from "./components/common/Card";
+import Tree from "./components/tree/Tree";
 
 function App({ data }: { data: MessageElement[] }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -26,7 +26,7 @@ function App({ data }: { data: MessageElement[] }) {
 
   return (
     <div className="App">
-      <ToolsHeader
+      <Toolbar
         onFilterPatternChange={setFilterPattern}
         filterPattern={filterPattern}
         onGroupingChange={setGroupByParent}
@@ -37,19 +37,15 @@ function App({ data }: { data: MessageElement[] }) {
       <div className="tools-content">
         <div>
           <Card>
-            {filteredData?.map(rootElement => (
-              <TreeElement
-                data={rootElement}
-                onSelect={setSelectedId}
-                selectedId={selectedId}
-                key={rootElement.id}
-                highlight={filterPattern.toLowerCase()}
-                root
-              />
-            ))}
+            <Tree
+              roots={filteredData}
+              onSelect={setSelectedId}
+              selectedId={selectedId}
+              highlight={filterPattern.toLowerCase()}
+            />
           </Card>
         </div>
-        {selectedComponent && <ElementInfo data={selectedComponent} />}
+        {selectedComponent && <Details data={selectedComponent} />}
       </div>
     </div>
   );

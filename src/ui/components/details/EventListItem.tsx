@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import dateFormat from "dateformat";
-import ButtonCollapse from "../ui/ButtonCollapse";
-import ChangeDetails from "./ChangeDetails";
-import ElementId from "../element/ElementId";
+import ButtonCollapse from "../common/ButtonCollapse";
+import ChangeDetails from "./EventRenderReasonDetails";
+import ElementId from "../common/ElementId";
 import { TreeElement, Event } from "../../types";
 
-interface IChangeRow {
+interface EventListItemProps {
   component: TreeElement;
   event: Event;
 }
@@ -40,7 +40,7 @@ function getReasons(event: Event) {
   return reasons;
 }
 
-const ChangeRow = ({ component, event }: IChangeRow) => {
+const EventListItem = ({ component, event }: EventListItemProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const hasDetails =
     event.op === "render" &&
@@ -77,4 +77,4 @@ const ChangeRow = ({ component, event }: IChangeRow) => {
   );
 };
 
-export default ChangeRow;
+export default EventListItem;

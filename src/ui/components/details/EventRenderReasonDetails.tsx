@@ -1,12 +1,14 @@
 import React from "react";
 import { RenderElementMessage } from "../../types";
-import ChangeRowsReason from "./ChangeRowsReason";
+import ChangeRowsReason from "./EventRenderReason";
 
-interface IChangeDetails {
+interface EventRenderReasonDetailsProps {
   changes: RenderElementMessage["changes"];
 }
 
-const ChangeDetails = ({ changes }: IChangeDetails) => {
+const EventRenderReasonDetails = ({
+  changes,
+}: EventRenderReasonDetailsProps) => {
   return (
     <tr>
       <td />
@@ -36,4 +38,4 @@ const ChangeDetails = ({ changes }: IChangeDetails) => {
   );
 };
 
-export default ChangeDetails;
+export default EventRenderReasonDetails;

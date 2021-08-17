@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import List from "react-feather/dist/icons/list";
-import Card from "../ui/Card";
-import ButtonToggle from "../ui/ButtonToggle";
-import EventList from "../changes/EventList";
+import Card from "../common/Card";
+import ButtonToggle from "../common/ButtonToggle";
 import { TreeElement, ElementEvent } from "../../types";
+import EventList from "./EventList";
 
-interface IElementInfo {
+interface DetailsProps {
   data: TreeElement;
 }
 
@@ -38,7 +38,7 @@ function getEventLog(component: TreeElement, showChildChanges = false) {
   }
 }
 
-const ElementInfo = ({ data }: IElementInfo) => {
+const Details = ({ data }: DetailsProps) => {
   const [showChildChanges, setShowChildChanges] = useState(true);
   const records = getEventLog(data, showChildChanges);
   let content = null;
@@ -64,4 +64,4 @@ const ElementInfo = ({ data }: IElementInfo) => {
   );
 };
 
-export default ElementInfo;
+export default Details;
