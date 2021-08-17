@@ -1,13 +1,20 @@
 import {
   TransferElement,
   ElementType,
-  TransferChangeDescription,
+  MountElementMessage,
+  UnmountElementMessage,
+  RenderElementMessage,
 } from "../common/types";
 export * from "../common/types";
 
+export type Event =
+  | MountElementMessage
+  | UnmountElementMessage
+  | RenderElementMessage;
+
 export interface MessageElement extends TransferElement {
   mounted: boolean;
-  updates: any[];
+  events: any[];
 }
 // FIXME: a hack to override children
 export type TreeElement = {
@@ -20,22 +27,10 @@ export type TreeElement = {
   displayName: string | null;
   hocDisplayNames: null | Array<string>;
   mounted: boolean;
-  updates: ElementUpdate[];
+  events: Event[];
 };
-
-export interface ElementUpdate {
-  phase: "Render" | "Rerender" | "Unmount";
-  timestamp: number;
-  reason: string[];
-  details: {
-    hooks?: TransferChangeDescription["hooks"];
-    props?: TransferChangeDescription["props"];
-    state?: TransferChangeDescription["state"];
-  };
-  __orig: TransferChangeDescription;
-}
 
 export interface ElementEvent {
   component: TreeElement;
-  event: ElementUpdate;
+  event: Event;
 }

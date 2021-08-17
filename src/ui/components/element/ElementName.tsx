@@ -40,10 +40,11 @@ const ElementName = ({
   isDisabled,
   highlight,
 }: IElementName) => {
-  const { ownerId, updates } = data;
+  const { ownerId, events } = data;
   const isRenderRoot = ownerId === 0;
-  const updatesCount = updates?.reduce(
-    (count, { phase }) => (phase === "Rerender" ? count + 1 : count),
+  const rerendersCount = events?.reduce(
+    (count, { op, initial }) =>
+      op === "render" && !initial ? count + 1 : count,
     0
   );
   const classes = `tree-element__name ${isSelected ? "selected" : ""} ${
@@ -60,8 +61,8 @@ const ElementName = ({
       </span>
       <ElementId id={data.id} />
       <ElementHocNames names={data.hocDisplayNames} />
-      {updatesCount > 0 && (
-        <span className="tree-element__count">{updatesCount}</span>
+      {rerendersCount > 0 && (
+        <span className="tree-element__count">{rerendersCount}</span>
       )}
     </span>
   );

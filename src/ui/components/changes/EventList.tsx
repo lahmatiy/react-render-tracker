@@ -18,9 +18,9 @@ const EventList = ({ records }: IEventList) => {
         </tr>
       </thead>
       <tbody>
-        {records.map(({ component, event }, idx) => {
-          return <ChangeRow key={idx} component={component} event={event} />;
-        })}
+        {records.map(({ component, event }) => (
+          <ChangeRow key={event.id} component={component} event={event} />
+        ))}
       </tbody>
     </table>
   );

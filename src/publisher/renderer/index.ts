@@ -214,12 +214,6 @@ export function attach(
   const idToArbitraryFiberMap = new Map<number, Fiber>();
 
   // When profiling is supported, we store the latest tree base durations for each Fiber.
-  // This is so that we can quickly capture a snapshot of those values if profiling starts.
-  // If we didn't store these values, we'd have to crawl the tree when profiling started,
-  // and use a slow path to find each of the current Fibers.
-  const idToTreeBaseDurationMap = new Map<number, number>();
-
-  // When profiling is supported, we store the latest tree base durations for each Fiber.
   // This map enables us to filter these times by root when sending them to the frontend.
   const idToRootMap = new Map<number, number>();
 
@@ -644,10 +638,9 @@ export function attach(
         parentElement.children.splice(index, 1);
       }
 
-      bridge.message({
-        op: "remove",
-        id,
-        timestamp: getTimestamp(),
+      bridge.recordEvent({
+        op: "unmount",
+        elementId: id,
       });
     }
 
@@ -725,10 +718,9 @@ export function attach(
     }
 
     idToTransferElement.set(id, element);
-    bridge.message({
-      op: "add",
-      id,
-      timestamp: getTimestamp(),
+    bridge.recordEvent({
+      op: "mount",
+      elementId: id,
       element,
     });
 
@@ -777,7 +769,6 @@ export function attach(
       const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
       if (isProfilingSupported) {
         idToRootMap.delete(id);
-        idToTreeBaseDurationMap.delete(id);
       }
     }
   }
@@ -916,23 +907,9 @@ export function attach(
 
   function recordProfilingDurations(fiber: Fiber) {
     const id = getFiberIDThrows(fiber);
-    const { treeBaseDuration, alternate } = fiber;
+    const { alternate } = fiber;
     let actualDuration = fiber.actualDuration ?? 0;
     let selfDuration = actualDuration;
-
-    idToTreeBaseDurationMap.set(id, treeBaseDuration || 0);
-
-    // It's important to update treeBaseDuration even if the current Fiber did not render,
-    // because it's possible that one of its descendants did.
-    if (alternate == null || treeBaseDuration !== alternate.treeBaseDuration) {
-      // Tree base duration updates are included in the operations typed array.
-      // So we have to convert them from milliseconds to microseconds so we can send them as ints.
-      bridge.message({
-        op: "basedur",
-        id,
-        base: Math.floor((treeBaseDuration || 0) * 1000),
-      });
-    }
 
     if (alternate == null || didFiberRender(alternate, fiber)) {
       // The actual duration reported by React includes time spent working on children.
@@ -948,10 +925,12 @@ export function attach(
       }
 
       const changes = getChangeDescription(alternate, fiber);
-      bridge.message({
-        op: "update",
-        id,
-        timestamp: getTimestamp(),
+      bridge.recordEvent({
+        op: "render",
+        elementId: id,
+        initial: !idToTransferElement.has(id),
+        actualDuration,
+        selfDuration,
         changes: changes && parseCommitChanges(changes),
       });
 
@@ -969,6 +948,7 @@ export function attach(
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
     let shouldResetChildren = false;
+
     // The behavior of timed-out Suspense trees is unique.
     // Rather than unmount the timed out content (and possibly lose important state),
     // React re-parents this content within a hidden Fragment while the fallback is showing.
@@ -1105,6 +1085,7 @@ export function attach(
         recordProfilingDurations(nextFiber);
       }
     }
+
     if (shouldResetChildren) {
       // We need to crawl the subtree for closest non-filtered Fibers
       // so that we can display them in a flat children set.

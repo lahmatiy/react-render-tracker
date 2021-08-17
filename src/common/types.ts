@@ -30,34 +30,31 @@ export type TransferChangeDescription = {
   state: Array<{ name: string; changed: boolean }> | null;
 };
 
-export interface AddElementMessage {
-  op: "add";
+export interface BaseMessage {
+  op: string;
   id: number;
   timestamp: number;
+  elementId: number;
+}
+
+export interface MountElementMessage extends BaseMessage {
+  op: "mount";
   element: TransferElement;
 }
 
-export interface RemoveElementMessage {
-  op: "remove";
-  id: number;
-  timestamp: number;
+export interface UnmountElementMessage extends BaseMessage {
+  op: "unmount";
 }
 
-export interface UpdateElementMessage {
-  op: "update";
-  id: number;
-  timestamp: number;
+export interface RenderElementMessage extends BaseMessage {
+  op: "render";
+  initial?: boolean;
+  actualDuration: number;
+  selfDuration: number;
   changes: TransferChangeDescription;
 }
 
-export interface BaseDurationMessage {
-  op: "basedur";
-  id: number;
-  base: number;
-}
-
 export type Message =
-  | AddElementMessage
-  | RemoveElementMessage
-  | UpdateElementMessage
-  | BaseDurationMessage;
+  | MountElementMessage
+  | UnmountElementMessage
+  | RenderElementMessage;

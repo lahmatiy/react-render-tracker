@@ -1,12 +1,12 @@
 import React from "react";
-import { ElementUpdate } from "../../types";
+import { RenderElementMessage } from "../../types";
 import ChangeRowsReason from "./ChangeRowsReason";
 
 interface IChangeDetails {
-  details: ElementUpdate["details"];
+  changes: RenderElementMessage["changes"];
 }
 
-const ChangeDetails = ({ details }) => {
+const ChangeDetails = ({ changes }: IChangeDetails) => {
   return (
     <tr>
       <td />
@@ -20,14 +20,14 @@ const ChangeDetails = ({ details }) => {
             </tr>
           </thead>
           <tbody>
-            {details.props && (
-              <ChangeRowsReason data={details.props} type="Props" />
+            {changes.props && (
+              <ChangeRowsReason data={changes.props} type="Props" />
             )}
-            {details.state && (
-              <ChangeRowsReason data={details.state} type="State" />
+            {changes.state && (
+              <ChangeRowsReason data={changes.state} type="State" />
             )}
-            {details.hooks && (
-              <ChangeRowsReason data={details.hooks} type="Hooks" />
+            {changes.hooks && (
+              <ChangeRowsReason data={changes.hooks} type="Hooks" />
             )}
           </tbody>
         </table>

@@ -15,7 +15,7 @@ function getEventLog(component: TreeElement, showChildChanges = false) {
     const combinedChanges: ElementEvent[] = [];
 
     for (const component of queue) {
-      for (const event of component.updates) {
+      for (const event of component.events) {
         combinedChanges.push({
           component,
           event,
@@ -29,14 +29,9 @@ function getEventLog(component: TreeElement, showChildChanges = false) {
       }
     }
 
-    combinedChanges.sort(
-      (a, b) =>
-        a.event.timestamp - b.event.timestamp || a.component.id - b.component.id
-    );
-
-    return combinedChanges;
+    return combinedChanges.sort((a, b) => a.event.id - b.event.id);
   } else {
-    return component.updates.map(event => ({
+    return component.events.map(event => ({
       component,
       event,
     }));

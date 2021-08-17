@@ -4,12 +4,7 @@ import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { getSubscriber } from "rempl";
 import App from "./App";
-import {
-  TransferChangeDescription,
-  MessageElement,
-  Message,
-  ElementUpdate,
-} from "./types";
+import { MessageElement, Message } from "./types";
 
 // bootstrap HTML document
 declare var __CSS__: string;
@@ -28,8 +23,8 @@ function AppWithData() {
     () =>
       getSubscriber()
         .ns("tree-changes")
-        .subscribe((messages: Message[] = []) => {
-          setData(processMessages(messages));
+        .subscribe((events: Message[] = []) => {
+          setData(processEvents(events));
         }),
     [setData]
   );
@@ -37,116 +32,41 @@ function AppWithData() {
   return <App data={data} />;
 }
 
-function processMessages(messages: Message[]) {
+function processEvents(events: Message[]) {
   const componentById: Map<number, MessageElement> = new Map();
-  const updatesByComponentId = new Map();
+  const eventsByComponentId = new Map();
 
-  for (const message of messages) {
-    switch (message.op) {
-      case "add": {
-        message.element;
-        componentById.set(message.id, {
-          ...message.element,
+  for (const event of events) {
+    switch (event.op) {
+      case "mount": {
+        componentById.set(event.elementId, {
+          ...event.element,
           mounted: true,
-          updates: [],
+          events: [],
         });
-        const update = {
-          phase: "Mount",
-          timestamp: message.timestamp,
-          reason: [],
-          details: {},
-        };
-        if (updatesByComponentId.has(message.id)) {
-          updatesByComponentId.get(message.id).push(update);
-        } else {
-          updatesByComponentId.set(message.id, [update]);
-        }
         break;
       }
 
-      case "remove": {
-        componentById.get(message.id).mounted = false;
-        const update = {
-          phase: "Unmount",
-          timestamp: message.timestamp,
-          reason: [],
-          details: {},
-        };
-        if (updatesByComponentId.has(message.id)) {
-          updatesByComponentId.get(message.id).push(update);
-        } else {
-          updatesByComponentId.set(message.id, [update]);
-        }
+      case "unmount": {
+        componentById.get(event.elementId).mounted = false;
         break;
       }
+    }
 
-      case "update":
-        const update = processChange(
-          message.changes,
-          message.timestamp,
-          componentById.get(message.id)
-        );
-
-        if (updatesByComponentId.has(message.id)) {
-          updatesByComponentId.get(message.id).push(update);
-        } else {
-          updatesByComponentId.set(message.id, [update]);
-        }
-
-        break;
+    if (eventsByComponentId.has(event.elementId)) {
+      eventsByComponentId.get(event.elementId).push(event);
+    } else {
+      eventsByComponentId.set(event.elementId, [event]);
     }
   }
 
-  for (const [id, updates] of updatesByComponentId) {
+  for (const [id, updates] of eventsByComponentId) {
     if (componentById.has(id)) {
-      componentById.get(id).updates = updates;
+      componentById.get(id).events = updates;
     } else {
       console.warn(`Component ${id} not found but there are a changes`);
     }
   }
 
   return [...componentById.values()];
-}
-
-function processChange(
-  value: TransferChangeDescription,
-  timestamp: number,
-  component: MessageElement
-) {
-  const { isFirstMount, context, hooks, props, state, parentUpdate } =
-    value || {};
-  const change: ElementUpdate = {
-    phase: "Rerender",
-    timestamp,
-    reason: [],
-    details: {},
-    __orig: value,
-  };
-
-  if (component && !component.mounted) {
-    change.phase = "Unmount";
-  } else if (isFirstMount) {
-    change.phase = "Render";
-  }
-
-  if (hooks?.length > 0) {
-    change.reason.push("Hooks Change");
-    change.details.hooks = hooks;
-  }
-
-  if (props != null && props.length > 0) {
-    change.reason.push("Props Change");
-    change.details.props = props;
-  }
-
-  if (state != null && state.length > 0) {
-    change.reason.push("State Change");
-    change.details.state = state;
-  }
-
-  if (parentUpdate) {
-    change.reason.push("Parent Update");
-  }
-
-  return change;
 }
