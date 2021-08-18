@@ -6,7 +6,6 @@ export type ElementType = 1 | 2 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 export type TransferElement = {
   id: number;
   parentId: number;
-  children: Array<number>;
   type: ElementType;
   displayName: string | null;
   key: number | string | null;
@@ -15,10 +14,6 @@ export type TransferElement = {
 
   // Owner (if available)
   ownerId: number;
-
-  // How many levels deep within the tree is this element?
-  // This determines how much indentation (left padding) should be used in the Elements tree.
-  depth: number;
 };
 
 export type TransferChangeDescription = {

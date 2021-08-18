@@ -51,13 +51,6 @@ const getCurrentTime =
     ? () => performance.now()
     : () => Date.now();
 
-const getTimestamp =
-  typeof performance === "object" &&
-  typeof performance.now === "function" &&
-  typeof performance.timeOrigin === "number"
-    ? () => performance.timeOrigin + performance.now()
-    : () => Date.now();
-
 export function attach(
   bridge: Bridge,
   devtoolsHook: DevtoolsHook,
@@ -222,6 +215,7 @@ export function attach(
 
   // Transfer elements
   const idToTransferElement = new Map<number, TransferElement>();
+  const mountedElements = new Set<number>();
 
   // Returns the unique ID for a Fiber or generates and caches a new one if the Fiber hasn't been seen before.
   // Once this method has been called for a Fiber, untrackFiberID() should always be called later to avoid leaking.
@@ -617,27 +611,7 @@ export function attach(
         );
       }
 
-      const element = idToTransferElement.get(id)!;
-      const { children, parentId } = element;
-      let parentElement = null;
-
-      if (children.length > 0) {
-        throw new Error(`Node "${id}" was removed before its children.`);
-      }
-
       idToTransferElement.delete(id);
-
-      if (parentId !== 0) {
-        parentElement = idToTransferElement.get(parentId);
-        if (parentElement === undefined) {
-          throw new Error(
-            `Cannot remove node "${id}" from parent "${parentId}" because no matching node was found in the Store.`
-          );
-        }
-        const index = parentElement.children.indexOf(id);
-        parentElement.children.splice(index, 1);
-      }
-
       bridge.recordEvent({
         op: "unmount",
         elementId: id,
@@ -664,8 +638,6 @@ export function attach(
         key: null,
         ownerId: 0,
         parentId: 0,
-        children: [],
-        depth: -1,
         displayName: null,
         hocDisplayNames: null,
       };
@@ -688,7 +660,6 @@ export function attach(
       }
 
       const parentElement = idToTransferElement.get(parentId)!;
-      parentElement.children.push(id);
 
       if (_debugOwner == null || ownerId === 0) {
         ownerId = parentElement.ownerId || parentElement.id || 0;
@@ -710,24 +681,18 @@ export function attach(
         key: key === null ? null : "" + key,
         ownerId,
         parentId,
-        children: [],
-        depth: parentElement.depth + 1,
         displayName: displayNameWithoutHOCs,
         hocDisplayNames,
       };
     }
 
     idToTransferElement.set(id, element);
-    bridge.recordEvent({
-      op: "mount",
-      elementId: id,
-      element,
-    });
+    mountedElements.add(id);
 
     if (isProfilingSupported) {
       idToRootMap.set(id, currentRootID);
 
-      recordProfilingDurations(fiber);
+      recordRender(fiber);
     }
   }
 
@@ -905,7 +870,7 @@ export function attach(
     return safeEntry;
   }
 
-  function recordProfilingDurations(fiber: Fiber) {
+  function recordRender(fiber: Fiber) {
     const id = getFiberIDThrows(fiber);
     const { alternate } = fiber;
     let actualDuration = fiber.actualDuration ?? 0;
@@ -1082,7 +1047,7 @@ export function attach(
     if (shouldIncludeInTree) {
       const isProfilingSupported = nextFiber.hasOwnProperty("treeBaseDuration");
       if (isProfilingSupported) {
-        recordProfilingDurations(nextFiber);
+        recordRender(nextFiber);
       }
     }
 
@@ -1197,6 +1162,14 @@ export function attach(
 
     // We're done here.
     flushPendingEvents();
+    for (const id of mountedElements) {
+      mountedElements.delete(id);
+      bridge.recordEvent({
+        op: "mount",
+        elementId: id,
+        element: idToTransferElement.get(id),
+      });
+    }
 
     currentRootID = -1;
   }
