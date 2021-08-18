@@ -14,10 +14,18 @@ type IRenderInstance = {
 type IRenderContext = {
   initInstance: () => IRenderInstance;
 };
+type RenderContextProviderProps = {
+  log: (msg: string) => void;
+  children: JSX.Element;
+};
+
 const RenderContext = React.createContext<IRenderContext>({} as IRenderContext);
 
 export const useRenderContext = () => React.useContext(RenderContext);
-export function RenderContextProvider({ log, children }) {
+export function RenderContextProvider({
+  log,
+  children,
+}: RenderContextProviderProps) {
   let seed = 1;
   const hookWrapper = new WeakMap();
   const value: IRenderContext = {
@@ -77,10 +85,12 @@ export function RenderContextProvider({ log, children }) {
     },
   };
 
-  return <RenderContext.Provider value={value} children={children} />;
+  return (
+    <RenderContext.Provider value={value}>{children}</RenderContext.Provider>
+  );
 }
 
-export function useTrackRender(reason: string = "unknown") {
+export function useTrackRender(reason = "unknown") {
   const context = useRenderContext();
   const instance = React.useRef<IRenderInstance>();
 

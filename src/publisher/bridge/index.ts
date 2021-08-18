@@ -1,12 +1,6 @@
 import { DevtoolsHook } from "../devtools-hook";
 import { ReactRenderer, RendererInterface, Message } from "../types";
 import { attach } from "../renderer";
-import {
-  BaseMessage,
-  UnmountElementMessage,
-  MountElementMessage,
-  RenderElementMessage,
-} from "../../common/types";
 
 interface Publisher {
   ns(channel: string): {
@@ -35,7 +29,7 @@ export class Bridge {
   private readonly subscriptions: Unsubscribe[];
 
   private events: Message[] = [];
-  private eventIdSeed: number = 0;
+  private eventIdSeed = 0;
 
   constructor(private devtools: DevtoolsHook, private publisher: Publisher) {
     this.subscriptions = [
@@ -79,7 +73,7 @@ export class Bridge {
     }
 
     if (rendererInterface === null) {
-      this.devtools.emit("unsupported-renderer-version", id);
+      console.warn("Unsupported renderer version", id);
     }
   }
 }

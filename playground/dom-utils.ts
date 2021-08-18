@@ -1,9 +1,17 @@
 const { hasOwnProperty } = Object.prototype;
 
+type Attrs =
+  | {
+      [key in keyof AddEventListenerOptions]: (evt: Event) => void;
+    }
+  | {
+      [key: string]: string;
+    };
+
 export function createElement(
   tag: string,
-  attrs: string | {},
-  children?: string | any[]
+  attrs: Attrs | string,
+  children?: (Node | string)[] | string
 ) {
   const el = document.createElement(tag);
 
@@ -13,7 +21,7 @@ export function createElement(
     };
   }
 
-  for (let attrName in attrs) {
+  for (const attrName in attrs) {
     if (hasOwnProperty.call(attrs, attrName)) {
       if (attrs[attrName] === undefined) {
         continue;
@@ -42,7 +50,7 @@ export function createText(text: any) {
   return document.createTextNode(String(text));
 }
 
-export function createFragment(...children: any[]) {
+export function createFragment(...children: (Node | string)[]) {
   const fragment = document.createDocumentFragment();
 
   children.forEach(child =>

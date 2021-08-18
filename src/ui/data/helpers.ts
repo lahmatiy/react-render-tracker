@@ -1,4 +1,3 @@
-import React from "react";
 import { MessageElement, TreeElement } from "../types";
 
 export const handleFilterDataElement = (
@@ -8,9 +7,7 @@ export const handleFilterDataElement = (
 ) => {
   let rootsArray: TreeElement[] = JSON.parse(JSON.stringify(data));
 
-  rootsArray = rootsArray.filter(
-    rootNode => !(!showDisabled && !rootNode.mounted)
-  );
+  rootsArray = rootsArray.filter(rootNode => showDisabled || rootNode.mounted);
 
   for (const rootNode of rootsArray) {
     rootNode.children = rootNode.children.filter(element =>
@@ -26,14 +23,14 @@ const getHasElementMatch = (
   displayNameFilter: string,
   showDisabled = false
 ) => {
-  let isDisabled = !showDisabled && !element.mounted;
-  let hasNameMatch = !displayNameFilter
+  const isDisabled = !showDisabled && !element.mounted;
+  const hasNameMatch = !displayNameFilter
     ? true
     : (element.displayName || "")
         .toLowerCase()
         .includes(displayNameFilter.toLowerCase());
+  const hasChildren = element.children && element.children.length;
   let hasChildMatch = false;
-  let hasChildren = element.children && element.children.length;
 
   if (hasChildren) {
     element.children = element.children.filter(child => {
@@ -41,6 +38,7 @@ const getHasElementMatch = (
     });
     hasChildMatch = element.children.length > 0;
   }
+
   const hasMatch = !isDisabled && (hasChildMatch || hasNameMatch);
 
   return hasMatch;

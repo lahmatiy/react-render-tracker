@@ -7,7 +7,7 @@ import { DevtoolsHook } from "./devtools-hook";
 const hookName = "__REACT_DEVTOOLS_GLOBAL_HOOK__";
 const MARKER = Symbol();
 
-export function installHook(target: Object) {
+export function installHook(target: any) {
   const existingHook = target[hookName];
 
   if (target.hasOwnProperty(hookName)) {

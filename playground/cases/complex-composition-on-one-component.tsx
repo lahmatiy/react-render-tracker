@@ -1,21 +1,20 @@
-import { useCallback, useState } from "react";
 import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
-function Foo({ children }) {
+function Foo({ children }: { children: JSX.Element }) {
   useTrackRender();
   return <>{children}</>;
 }
 
-function Bar({ children = null }) {
+function Bar({ children }: { children: JSX.Element }) {
   useTrackRender();
   return <>{children}</>;
 }
 
 const BarMemo = React.memo(Baz);
 
-function Baz({ children }) {
+function Baz({ children }: { children: JSX.Element }) {
   useTrackRender();
   return <>{children}</>;
 }

@@ -20,7 +20,12 @@ export type TransferChangeDescription = {
   isFirstMount: boolean;
   parentUpdate: boolean;
   context: Array<string> | boolean | null;
-  hooks?: Array<any> | null;
+  hooks: Array<{
+    index: number;
+    name: string;
+    changed: boolean;
+    computed?: boolean;
+  }> | null;
   props: Array<{ name: string; changed: boolean }> | null;
   state: Array<{ name: string; changed: boolean }> | null;
 };

@@ -76,7 +76,6 @@ export function attach(
 
   const {
     ClassComponent,
-    ContextConsumer,
     DehydratedSuspenseComponent,
     ForwardRef,
     Fragment,
@@ -221,11 +220,11 @@ export function attach(
   // Once this method has been called for a Fiber, untrackFiberID() should always be called later to avoid leaking.
   function getOrGenerateFiberID(fiber: Fiber) {
     let id: number | null = null;
+    const { alternate } = fiber;
 
     if (fiberToIDMap.has(fiber)) {
       id = fiberToIDMap.get(fiber);
     } else {
-      const { alternate } = fiber;
       if (alternate !== null && fiberToIDMap.has(alternate)) {
         id = fiberToIDMap.get(alternate);
       }
@@ -235,34 +234,32 @@ export function attach(
       id = ++fiberIdSeed;
     }
 
-    // This refinement is for Flow purposes only.
-    const refinedID = id;
-
     // Make sure we're tracking this Fiber
     // e.g. if it just mounted or an error was logged during initial render.
     if (!fiberToIDMap.has(fiber)) {
-      fiberToIDMap.set(fiber, refinedID);
-      idToArbitraryFiberMap.set(refinedID, fiber);
+      fiberToIDMap.set(fiber, id);
+      idToArbitraryFiberMap.set(id, fiber);
     }
 
     // Also make sure we're tracking its alternate,
     // e.g. in case this is the first update after mount.
-    const { alternate } = fiber;
     if (alternate !== null && !fiberToIDMap.has(alternate)) {
-      fiberToIDMap.set(alternate, refinedID);
+      fiberToIDMap.set(alternate, id);
     }
 
-    return refinedID;
+    return id;
   }
 
   // Returns an ID if one has already been generated for the Fiber or throws.
   function getFiberIDThrows(fiber: Fiber) {
     const id = getFiberIDUnsafe(fiber);
+
     if (id === null) {
       throw Error(
         `Could not find ID for Fiber "${getDisplayNameForFiber(fiber) || ""}"`
       );
     }
+
     return id;
   }
 
@@ -659,7 +656,7 @@ export function attach(
         );
       }
 
-      const parentElement = idToTransferElement.get(parentId)!;
+      const parentElement = idToTransferElement.get(parentId);
 
       if (_debugOwner == null || ownerId === 0) {
         ownerId = parentElement.ownerId || parentElement.id || 0;
@@ -873,7 +870,7 @@ export function attach(
   function recordRender(fiber: Fiber) {
     const id = getFiberIDThrows(fiber);
     const { alternate } = fiber;
-    let actualDuration = fiber.actualDuration ?? 0;
+    const actualDuration = fiber.actualDuration ?? 0;
     let selfDuration = actualDuration;
 
     if (alternate == null || didFiberRender(alternate, fiber)) {
@@ -1500,38 +1497,10 @@ export function attach(
     return owners;
   }
 
-  function isErrorBoundary(fiber: Fiber) {
-    const { tag, type } = fiber;
-
-    switch (tag) {
-      case ClassComponent:
-      case IncompleteClassComponent:
-        const instance = fiber.stateNode;
-        return (
-          typeof type.getDerivedStateFromError === "function" ||
-          (instance !== null &&
-            typeof instance.componentDidCatch === "function")
-        );
-      default:
-        return false;
-    }
-  }
-
-  function getNearestErrorBoundaryID(fiber: Fiber) {
-    let parent = fiber.return;
-    while (parent !== null) {
-      if (isErrorBoundary(parent)) {
-        return getFiberIDUnsafe(parent);
-      }
-      parent = parent.return;
-    }
-    return null;
-  }
-
   let currentCommitProfilingMetadata = null;
-  let displayNamesByRootID = new Map();
-  let idToContextsMap = new Map();
-  let recordChangeDescriptions = true;
+  const displayNamesByRootID = new Map();
+  const idToContextsMap = new Map();
+  const recordChangeDescriptions = true;
 
   // Automatically start profiling so that we don't miss timing info from initial "mount".
   devtoolsHook.getFiberRoots(rendererID).forEach(root => {

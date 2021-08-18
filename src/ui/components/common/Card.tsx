@@ -1,6 +1,10 @@
 import React from "react";
 
-const Card = ({ children }) => {
+type CardProps = {
+  children: JSX.Element;
+};
+
+const Card = ({ children }: CardProps) => {
   return <div className="card">{children}</div>;
 };
 

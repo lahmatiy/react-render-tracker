@@ -79,21 +79,20 @@ export function separateDisplayNameAndHOCs(
   let parsedDisplayName = displayName;
   let hocDisplayNames = null;
 
-  switch (type) {
-    case ElementTypeClass:
-    case ElementTypeForwardRef:
-    case ElementTypeFunction:
-    case ElementTypeMemo:
-      if (parsedDisplayName.indexOf("(") >= 0) {
-        const matches = parsedDisplayName.match(/[^()]+/g);
-        if (matches != null) {
-          parsedDisplayName = matches.pop()!;
-          hocDisplayNames = matches;
-        }
+  if (
+    type === ElementTypeClass ||
+    type === ElementTypeFunction ||
+    type === ElementTypeForwardRef ||
+    type === ElementTypeMemo
+  ) {
+    if (parsedDisplayName.includes("(")) {
+      const matches = parsedDisplayName.match(/[^()]+/g);
+
+      if (matches != null) {
+        parsedDisplayName = matches.pop();
+        hocDisplayNames = matches;
       }
-      break;
-    default:
-      break;
+    }
   }
 
   if (type === ElementTypeMemo) {

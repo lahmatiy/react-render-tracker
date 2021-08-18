@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";

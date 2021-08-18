@@ -8,7 +8,7 @@ export type ReactRenderer = {
   findFiberByHostInstance: (hostInstance: NativeType) => Fiber | null;
 };
 
-type NativeType = Object;
+type NativeType = Record<string, unknown>;
 type FindNativeNodesForFiberID = any;
 type GetDisplayNameForFiberID = any;
 type GetFiberIDForNative = any;
@@ -77,11 +77,11 @@ export type ReactNodeList = ReactEmpty | ReactNode[];
 export type ReactText = string | number;
 
 export type ReactElement = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   type: any;
   key: null | string;
   ref: any;
-  props: Object;
+  props: Record<string, unknown>;
   // ReactFiber
   _owner: Fiber;
 
@@ -93,7 +93,7 @@ export type ReactElement = {
 };
 
 export type ReactProvider<T> = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   type: ReactProviderType<T>;
   key: null | string;
   ref: null;
@@ -104,12 +104,12 @@ export type ReactProvider<T> = {
 };
 
 export type ReactProviderType<T> = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   _context: ReactContext<T>;
 };
 
 export type ReactConsumer<T> = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   type: ReactContext<T>;
   key: null | string;
   ref: null;
@@ -119,22 +119,22 @@ export type ReactConsumer<T> = {
 };
 
 export type ReactContext<T> = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   Consumer: ReactContext<T>;
   Provider: ReactProviderType<T>;
   _currentValue: T;
   _currentValue2: T;
   _threadCount: number;
   // DEV only
-  _currentRenderer?: Object | null;
-  _currentRenderer2?: Object | null;
+  _currentRenderer?: Record<string, unknown> | null;
+  _currentRenderer2?: Record<string, unknown> | null;
   // This value may be added by application code
   // to improve DEV tooling display names
   displayName?: string;
 };
 
 export type ReactPortal = {
-  $$typeof: Symbol | number;
+  $$typeof: symbol | number;
   key: null | string;
   containerInfo: any;
   children: ReactNodeList;
@@ -303,8 +303,12 @@ export type ReactChangeDescription = {
   parentUpdate: boolean;
   props: Array<{ name: string; prev: any; next: any }> | null;
   state: Array<{ name: string; prev: any; next: any }> | null;
-  // TODO: add proper hook type
-  hooks?: Array<any> | null;
+  hooks: Array<{
+    index: number;
+    name: string;
+    changed: boolean;
+    computed?: boolean;
+  }> | null;
 };
 
 export type ReactCommitData = {
@@ -360,10 +364,10 @@ export type InspectedElement = {
   hasLegacyContext: boolean;
 
   // Inspectable properties.
-  context: Object | null;
-  hooks: Object | null;
-  props: Object | null;
-  state: Object | null;
+  context: Record<string, unknown> | null;
+  hooks: Record<string, unknown> | null;
+  props: Record<string, unknown> | null;
+  state: Record<string, unknown> | null;
   key: number | string | null;
   errors: Array<[string, number]>;
   warnings: Array<[string, number]>;

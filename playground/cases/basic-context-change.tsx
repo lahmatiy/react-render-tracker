@@ -11,7 +11,7 @@ function Child() {
   return <>{context}</>;
 }
 
-function MyContextProvider({ children }) {
+function MyContextProvider({ children }: { children: JSX.Element }) {
   const { useState } = useTrackRender();
   const [value, setValue] = useState(0);
 
