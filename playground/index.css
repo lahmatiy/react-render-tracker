@@ -7,6 +7,34 @@ body {
   text-size-adjust: none;
 }
 
+.playground {
+  display: flex;
+  flex-direction: row;
+}
+.playground__toc {
+  position: sticky;
+  top: 0;
+  width: 250px;
+  margin: 0;
+  padding: 0;
+  padding-right: 8px;
+  list-style: none;
+}
+.playground__toc a {
+  padding: 4px;
+  display: block;
+  color: #09d;
+}
+.playground__toc a:hover {
+  background-color: #f4f4f4;
+}
+.playground__toc a:target {
+  background-color: #e0f0f8;
+}
+.playground__content {
+  flex: 1;
+}
+
 .case-wrapper {
   border-left: 4px solid #ccc;
   display: grid;
@@ -24,7 +52,7 @@ body {
   padding: 4px 10px;
   font-size: 18px;
   font-weight: normal;
-  color: #09d;
+  color: #06a;
   background-color: #e0e0e0;
 }
 

@@ -10,8 +10,8 @@ export default [
   getDefault(import("./basic-parent-element-change")),
   getDefault(import("./basic-context-change")),
   getDefault(import("./set-state-by-event-handler")),
-] as Promise<TestCase>[];
+];
 
-function getDefault(dynImport) {
+function getDefault(dynImport: Promise<{ default: TestCase }>) {
   return dynImport.then(exports => exports.default);
 }

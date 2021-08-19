@@ -1,3 +1,4 @@
+import ReactDOM from "react-dom";
 import { createElement } from "./dom-utils.js";
 import { TestCase } from "./types.js";
 
@@ -5,6 +6,7 @@ const emulateEventAttribute = "data-send-event";
 
 function emulateEvent(target: HTMLElement) {
   const value = target.getAttribute(emulateEventAttribute);
+
   switch (value) {
     case "click":
       target.click();
@@ -17,24 +19,23 @@ function emulateEvent(target: HTMLElement) {
 }
 
 export default function (testcase: TestCase) {
-  let contentEl: HTMLElement;
-  let instrumentedEl: HTMLElement;
-  let reactEl: HTMLElement;
-  const el = createElement("div", "case-wrapper", [
+  let reactRootEl: HTMLElement;
+  let instrumentedLogEl: HTMLElement;
+  let reactLogEl: HTMLElement;
+  const rootEl = createElement("div", "case-wrapper", [
     createElement("h2", null, testcase.title),
-    (contentEl = createElement("div", "content")),
+    (reactRootEl = createElement("div", "content")),
     createElement("div", "instrumented-log", [
       createElement("h3", null, "Instrumented log"),
-      (instrumentedEl = createElement("div", "log")),
+      (instrumentedLogEl = createElement("div", "log")),
     ]),
     createElement("div", "react-log", [
       createElement("h3", null, "React log"),
-      (reactEl = createElement("div", "log")),
+      (reactLogEl = createElement("div", "log")),
     ]),
   ]);
 
-  document.body.append(el);
-
+  let observing = false;
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       switch (mutation.type) {
@@ -57,20 +58,40 @@ export default function (testcase: TestCase) {
       }
     }
   });
-  observer.observe(contentEl, {
-    subtree: true,
-    childList: true,
-    attributes: true,
-    attributeFilter: [emulateEventAttribute],
-  });
 
   return {
-    container: contentEl,
+    id: encodeURIComponent(testcase.title.replace(/\s+/g, "-")),
+    testcase,
     instrumentedLog(msg: any) {
-      instrumentedEl.append(createElement("div", "log-entry", String(msg)));
+      instrumentedLogEl.append(createElement("div", "log-entry", String(msg)));
     },
     reactLog(msg: any) {
-      reactEl.append(createElement("div", "log-entry", String(msg)));
+      reactLogEl.append(createElement("div", "log-entry", String(msg)));
+    },
+    render(containerEl: HTMLElement, element: JSX.Element) {
+      if (!containerEl.contains(rootEl)) {
+        containerEl.append(rootEl);
+      }
+
+      if (!observing) {
+        observing = true;
+        observer.observe(reactRootEl, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: [emulateEventAttribute],
+        });
+      }
+
+      ReactDOM.render(element, reactRootEl);
+    },
+    dispose() {
+      observing = false;
+      observer.disconnect();
+      ReactDOM.unmountComponentAtNode(reactRootEl);
+      rootEl.remove();
+      instrumentedLogEl.innerHTML = "";
+      reactLogEl.innerHTML = "";
     },
   };
 }

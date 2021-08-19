@@ -109,7 +109,7 @@ export function useTrackRender(reason = "unknown") {
   }
 
   instance.current.log(`[render] ${reason}`);
-  console.log(`[render] ${instance.current.id} ${reason}`);
+  // console.log(`[render] ${instance.current.id} ${reason}`);
 
   React.useEffect(() => {
     instance.current.log("[mount]");

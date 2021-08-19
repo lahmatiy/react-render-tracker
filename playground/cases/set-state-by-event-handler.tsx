@@ -22,6 +22,6 @@ function Root() {
 }
 
 export default {
-  title: "Basic nested render",
+  title: "Set state by event handler",
   Root,
 } as TestCase;
