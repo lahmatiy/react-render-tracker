@@ -689,7 +689,7 @@ export function attach(
     if (isProfilingSupported) {
       idToRootMap.set(id, currentRootID);
 
-      recordRender(fiber);
+      recordRender(fiber, true);
     }
   }
 
@@ -867,7 +867,7 @@ export function attach(
     return safeEntry;
   }
 
-  function recordRender(fiber: Fiber) {
+  function recordRender(fiber: Fiber, initial = false) {
     const id = getFiberIDThrows(fiber);
     const { alternate } = fiber;
     const actualDuration = fiber.actualDuration ?? 0;
@@ -890,7 +890,7 @@ export function attach(
       bridge.recordEvent({
         op: "render",
         elementId: id,
-        initial: !idToTransferElement.has(id),
+        initial,
         actualDuration,
         selfDuration,
         changes: changes && parseCommitChanges(changes),
