@@ -1,0 +1,13 @@
+.tree-leaf {
+  position: relative;
+}
+
+.tree-leaf.root {
+  margin-left: 0;
+}
+
+.tree-leaf.root + .tree-leaf.root {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid #ddd;
+}

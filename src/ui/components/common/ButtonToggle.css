@@ -1,12 +1,18 @@
 .button-toggle {
-  padding: 4px;
+  display: block;
+  background: none;
+  border: none;
+  padding: 6px;
   cursor: pointer;
+  line-height: 0;
 }
 
 .button-toggle svg {
-  height: 15px;
-  transition: 0.2s;
+  height: 16px;
+  width: 16px;
+  vertical-align: middle;
   color: var(--text-muted);
+  transition: 0.2s;
 }
 
 .button-toggle.active svg,

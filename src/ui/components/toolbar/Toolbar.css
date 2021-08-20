@@ -1,16 +1,18 @@
-.tools-header {
+.toolbar {
+  grid-area: toolbar;
   display: flex;
   flex-shrink: 0;
   border-bottom: 1px var(--border) solid;
+  line-height: 22px;
 }
 
-.tools-header > div {
+.toolbar > div {
   flex: 1;
   padding: 0 10px;
   display: flex;
   align-items: center;
 }
 
-.tools-header > div + div {
+.toolbar > div + div {
   border-left: 1px var(--border) solid;
 }

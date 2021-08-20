@@ -5,8 +5,7 @@ import { MessageElement } from "./types";
 
 import Toolbar from "./components/toolbar/Toolbar";
 import Details from "./components/details/Details";
-import Card from "./components/common/Card";
-import Tree from "./components/tree/Tree";
+import RenderTree from "./components/render-tree/Tree";
 
 function App({ data }: { data: MessageElement[] }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -25,7 +24,10 @@ function App({ data }: { data: MessageElement[] }) {
   const selectedComponent = componentById.get(selectedId) || null;
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      data-has-selected={selectedComponent !== null || undefined}
+    >
       <Toolbar
         onFilterPatternChange={setFilterPattern}
         filterPattern={filterPattern}
@@ -34,19 +36,13 @@ function App({ data }: { data: MessageElement[] }) {
         onShowUnmounted={setShowUnmounted}
         showUnmounted={showUnmounted}
       />
-      <div className="app__content">
-        <div>
-          <Card>
-            <Tree
-              roots={filteredData}
-              onSelect={setSelectedId}
-              selectedId={selectedId}
-              highlight={filterPattern.toLowerCase()}
-            />
-          </Card>
-        </div>
-        {selectedComponent && <Details data={selectedComponent} />}
-      </div>
+      <RenderTree
+        roots={filteredData}
+        onSelect={setSelectedId}
+        selectedId={selectedId}
+        highlight={filterPattern.toLowerCase()}
+      />
+      {selectedComponent && <Details data={selectedComponent} />}
     </div>
   );
 }

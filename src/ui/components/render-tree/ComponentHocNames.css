@@ -1,14 +1,14 @@
-.tree-element-hoc-names {
+.component-hoc-names {
   margin-left: 3px;
   font-size: 85%;
   color: white;
 }
-.tree-element-hoc-name {
+.component-hoc-name {
   background: #d0eac6;
   border-radius: 3px;
   color: #6c9c1e;
   padding: 1px 4px;
 }
-.tree-element-hoc-name + .tree-element-hoc-name {
+.component-hoc-name + .component-hoc-name {
   margin-left: 2px;
 }

@@ -2,14 +2,16 @@ import React from "react";
 import { TreeElement as ITreeElement } from "../../types";
 import TreeElement, { TreeElementProps } from "./TreeLeaf";
 
-interface TreeProps
-  extends Pick<TreeElementProps, "onSelect" | "selectedId" | "highlight"> {
+const Tree = ({
+  roots,
+  onSelect,
+  selectedId,
+  highlight,
+}: Pick<TreeElementProps, "onSelect" | "selectedId" | "highlight"> & {
   roots: ITreeElement[];
-}
-
-const Tree = ({ roots, onSelect, selectedId, highlight }: TreeProps) => {
+}) => {
   return (
-    <>
+    <div className="render-tree">
       {roots?.map(root => (
         <TreeElement
           key={root.id}
@@ -20,7 +22,7 @@ const Tree = ({ roots, onSelect, selectedId, highlight }: TreeProps) => {
           root
         />
       ))}
-    </>
+    </div>
   );
 };
 

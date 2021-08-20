@@ -1,63 +1,60 @@
 import React, { useState } from "react";
 import { TreeElement } from "../../types";
 import TreeElementCaption from "./TreeLeafCaption";
-import ButtonCollapse from "../common/ButtonCollapse";
 
 export interface TreeElementProps {
   data: TreeElement;
   root?: boolean;
+  depth?: number;
   onSelect: (id: number) => void;
   selectedId: number | null;
   highlight: string;
 }
 
-function byId(a: TreeElement, b: TreeElement) {
-  return a.id - b.id;
-}
-
 const TreeElement = ({
   data,
+  depth = 0,
   root = false,
   onSelect,
   selectedId,
   highlight,
 }: TreeElementProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [expanded, setExpanded] = useState(true);
 
   const hasChildren = data.children?.length > 0;
-  const handleToggle = hasChildren ? () => setIsCollapsed(prev => !prev) : null;
+  const handleSetExpanded = hasChildren ? setExpanded : null;
   const handleSelect = (event: React.MouseEvent) => {
     event.stopPropagation();
     onSelect(data.id);
   };
 
-  let classes = "tree-element__container";
+  let classes = "tree-leaf";
   if (root) classes += " root";
 
   return (
     <div className={classes} onClick={handleSelect}>
       <TreeElementCaption
+        depth={depth}
         data={data}
-        isSelected={selectedId === data.id}
-        isDisabled={!data.mounted}
+        selected={selectedId === data.id}
+        unmounted={!data.mounted}
+        expanded={expanded}
+        setExpanded={handleSetExpanded}
         highlight={highlight}
-      >
-        <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />
-      </TreeElementCaption>
+      />
 
-      {isCollapsed &&
+      {expanded &&
         hasChildren &&
-        data.children
-          .sort(byId)
-          .map(child => (
-            <TreeElement
-              data={child}
-              key={child.id}
-              onSelect={onSelect}
-              selectedId={selectedId}
-              highlight={highlight}
-            />
-          ))}
+        data.children.map(child => (
+          <TreeElement
+            key={child.id}
+            data={child}
+            depth={depth + 1}
+            onSelect={onSelect}
+            selectedId={selectedId}
+            highlight={highlight}
+          />
+        ))}
     </div>
   );
 };

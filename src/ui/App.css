@@ -1,23 +1,15 @@
 .app {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template:
+    "toolbar" auto
+    "render-tree" 1fr;
   height: 100vh;
   overflow: hidden;
 }
 
-.app__content {
-  flex: 1;
-  display: flex;
-  width: 100%;
-  overflow: hidden;
-}
-
-.app__content > div {
-  flex: 1;
-  flex-shrink: 0;
-  overflow: auto;
-}
-
-.app__content > div + div {
-  border-left: 1px var(--border) solid;
+.app[data-has-selected] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "toolbar toolbar"
+    "render-tree details";
 }

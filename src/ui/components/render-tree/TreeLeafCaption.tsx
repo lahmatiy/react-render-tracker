@@ -1,13 +1,16 @@
 import React from "react";
+import ButtonExpand from "../common/ButtonExpand";
 import ElementId from "../common/ElementId";
-import ElementHocNames from "./ElementHocNames";
+import ElementHocNames from "./ComponentHocNames";
 import { TreeElement } from "../../types";
 
 interface ElementNameProps {
+  depth?: number;
   data: TreeElement;
-  children: JSX.Element;
-  isSelected: boolean;
-  isDisabled: boolean;
+  selected: boolean;
+  unmounted: boolean;
+  expanded: boolean;
+  setExpanded: (value: boolean) => void;
   highlight: string;
 }
 
@@ -34,10 +37,12 @@ function getElementNameHighlight(name: string, pattern: string) {
 }
 
 const ElementName = ({
+  depth = 0,
   data,
-  children,
-  isSelected,
-  isDisabled,
+  selected,
+  unmounted,
+  expanded,
+  setExpanded,
   highlight,
 }: ElementNameProps) => {
   const { ownerId, events } = data;
@@ -56,34 +61,44 @@ const ElementName = ({
       event.op === "render" ? time + event.actualDuration : time,
     0
   );
-  const classes = `tree-element__name ${isSelected ? "selected" : ""} ${
-    isRenderRoot ? "render-root" : ""
-  } ${isDisabled ? "disabled" : ""}`;
+  const classes = ["tree-leaf-caption"];
+  for (const [cls, add] of Object.entries({
+    selected,
+    unmounted,
+    "render-root": isRenderRoot,
+  })) {
+    if (add) {
+      classes.push(cls);
+    }
+  }
 
   const name = getElementNameHighlight(data.displayName, highlight);
 
   return (
-    <span className={classes}>
-      {children}
-      <span className="tree-element__name-text">
+    <div
+      className={classes.join(" ")}
+      style={{ "--depth": depth } as React.CSSProperties}
+    >
+      <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+      <span className="tree-leaf-caption__text">
         {name || (!ownerId && "Render root") || "Unknown"}
       </span>
       <ElementId id={data.id} />
       <ElementHocNames names={data.hocDisplayNames} />
       {rerendersCount > 0 && (
-        <span className="tree-element__count">{rerendersCount}</span>
+        <span className="tree-leaf-caption__count">{rerendersCount}</span>
       )}
       {rerendersDuration > 0 && (
-        <span className="tree-element__count">
+        <span className="tree-leaf-caption__count">
           {rerendersDuration.toFixed(1)}
         </span>
       )}
       {rerendersDuration2 > 0 && (
-        <span className="tree-element__count">
+        <span className="tree-leaf-caption__count">
           {rerendersDuration2.toFixed(1)}
         </span>
       )}
-    </span>
+    </div>
   );
 };
 

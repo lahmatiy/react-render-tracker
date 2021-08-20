@@ -1,4 +1,9 @@
-.element-info__controls {
+.details {
+  grid-area: details;
+  overflow: auto;
+  border-left: 1px var(--border) solid;
+}
+.details__controls {
   display: flex;
   justify-content: flex-end;
 }

@@ -3,7 +3,6 @@
 }
 
 .element-event-list thead {
-  font-size: 13px;
   color: var(--icon);
 }
 
@@ -12,10 +11,11 @@
   padding: 5px;
   text-align: left;
   vertical-align: top;
+  font-size: 13px;
+  line-height: 15px;
 }
 .element-event-list td {
   padding: 0 5px;
-  font-size: 13px;
 }
 .element-event-list td:not(:last-child) {
   white-space: nowrap;

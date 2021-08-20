@@ -1,0 +1,4 @@
+.render-tree {
+  grid-area: render-tree;
+  overflow: auto;
+}

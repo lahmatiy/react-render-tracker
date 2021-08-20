@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import List from "react-feather/dist/icons/list";
-import Card from "../common/Card";
 import ButtonToggle from "../common/ButtonToggle";
 import { TreeElement, ElementEvent } from "../../types";
 import EventList from "./EventList";
@@ -44,14 +43,14 @@ const Details = ({ data }: DetailsProps) => {
   let content = null;
 
   if (!records.length) {
-    content = <Card>No events found</Card>;
+    content = "No events found";
   } else {
     content = <EventList records={records} />;
   }
 
   return (
-    <Card>
-      <div className="element-info__controls">
+    <div className="details">
+      <div className="details__controls">
         <ButtonToggle
           icon={<List />}
           isActive={showChildChanges}
@@ -60,7 +59,7 @@ const Details = ({ data }: DetailsProps) => {
         />
       </div>
       {content}
-    </Card>
+    </div>
   );
 };
 

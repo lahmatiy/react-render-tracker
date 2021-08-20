@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dateFormat from "dateformat";
-import ButtonCollapse from "../common/ButtonCollapse";
+import ButtonCollapse from "../common/ButtonExpand";
 import EventRenderReason from "./EventRenderReasonDetails";
 import ElementId from "../common/ElementId";
 import { TreeElement, Event } from "../../types";
@@ -41,38 +41,35 @@ function getReasons(event: Event) {
 }
 
 const EventListItem = ({ component, event }: EventListItemProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expanded, setIsCollapsed] = useState(false);
   const hasDetails =
     event.op === "render" &&
     (event.changes?.props || event.changes?.state || event.changes?.hooks);
 
   return (
     <>
-      <tr>
+      <tr className="event-list-item">
         <td>
           {hasDetails && (
-            <ButtonCollapse
-              isCollapsed={isCollapsed}
-              onToggle={() => setIsCollapsed(prev => !prev)}
-            />
+            <ButtonCollapse expanded={expanded} setExpanded={setIsCollapsed} />
           )}
         </td>
-        <td className="timestamp">
-          <span className="timestamp-label">
+        <td className="event-list-item__timestamp">
+          <span className="event-list-item__timestamp-label">
             {dateFormat(Number(event.timestamp), "HH:MM:ss.l")}
           </span>
         </td>
-        <td className="event">
-          <span className="event-type-label">{event.op}</span>
+        <td className="event-list-item__event-type">
+          <span className="event-list-item__event-type-label">{event.op}</span>
         </td>
-        <td className="details">
+        <td className="event-list-item__details">
           {component.displayName || "Unknown"}
           <ElementId id={component.id} /> {getReasons(event).join(", ")}{" "}
           {event.op === "render" && event.selfDuration.toFixed(1)}ms{" "}
           {event.op === "render" && event.actualDuration.toFixed(1)}ms
         </td>
       </tr>
-      {event.op === "render" && isCollapsed && (
+      {event.op === "render" && expanded && (
         <EventRenderReason changes={event.changes} />
       )}
     </>

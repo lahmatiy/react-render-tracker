@@ -7,6 +7,7 @@
 .component-filter svg {
   color: var(--icon);
   width: 15px;
+  vertical-align: middle;
 }
 
 .component-filter input {
@@ -15,4 +16,7 @@
   width: 100%;
   box-sizing: border-box;
   outline: none;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
 }

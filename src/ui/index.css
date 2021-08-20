@@ -1,23 +1,24 @@
-@import "./styles/tailwind.css";
 @import url("./App.css");
 @import url("./components/toolbar/ComponentFilter.css");
 @import url("./components/toolbar/Toolbar.css");
-@import url("./components/common/ButtonCollapse.css");
+@import url("./components/common/ButtonExpand.css");
 @import url("./components/common/ButtonToggle.css");
-@import url("./components/common/Card.css");
 @import url("./components/common/ElementId.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventList.css");
+@import url("./components/details/EventListItem.css");
 @import url("./components/details/EventRenderReasonDetails.css");
-@import url("./components/tree/TreeLeaf.css");
-@import url("./components/tree/TreeLeafCaption.css");
-@import url("./components/tree/ElementHocNames.css");
+@import url("./components/render-tree/Tree.css");
+@import url("./components/render-tree/TreeLeaf.css");
+@import url("./components/render-tree/TreeLeafCaption.css");
+@import url("./components/render-tree/ComponentHocNames.css");
 
 body {
   margin: 0;
   padding: 0;
   font-family: "Arial", "monospace";
   font-size: 14px;
+  line-height: 21px;
   color: var(--text);
 
   --text: #323334;
