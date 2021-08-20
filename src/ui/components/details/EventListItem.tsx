@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import dateFormat from "dateformat";
 import ButtonCollapse from "../common/ButtonCollapse";
-import ChangeDetails from "./EventRenderReasonDetails";
+import EventRenderReason from "./EventRenderReasonDetails";
 import ElementId from "../common/ElementId";
 import { TreeElement, Event } from "../../types";
 
@@ -67,11 +67,13 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
         </td>
         <td className="details">
           {component.displayName || "Unknown"}
-          <ElementId id={component.id} /> {getReasons(event).join(", ")}
+          <ElementId id={component.id} /> {getReasons(event).join(", ")}{" "}
+          {event.op === "render" && event.selfDuration.toFixed(1)}ms{" "}
+          {event.op === "render" && event.actualDuration.toFixed(1)}ms
         </td>
       </tr>
       {event.op === "render" && isCollapsed && (
-        <ChangeDetails changes={event.changes} />
+        <EventRenderReason changes={event.changes} />
       )}
     </>
   );

@@ -25,7 +25,7 @@ function App({ data }: { data: MessageElement[] }) {
   const selectedComponent = componentById.get(selectedId) || null;
 
   return (
-    <div className="App">
+    <div className="app">
       <Toolbar
         onFilterPatternChange={setFilterPattern}
         filterPattern={filterPattern}
@@ -34,7 +34,7 @@ function App({ data }: { data: MessageElement[] }) {
         onShowUnmounted={setShowUnmounted}
         showUnmounted={showUnmounted}
       />
-      <div className="tools-content">
+      <div className="app__content">
         <div>
           <Card>
             <Tree

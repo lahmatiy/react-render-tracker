@@ -19,7 +19,7 @@ const ButtonToggle = ({
 
   return (
     <button
-      className={`icon-toggle ${isActive ? "active" : ""}`}
+      className={`button-toggle ${isActive ? "active" : ""}`}
       onClick={handleClick}
       title={tooltip}
     >

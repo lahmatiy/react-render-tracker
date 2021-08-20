@@ -1,0 +1,16 @@
+.tools-header {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px var(--border) solid;
+}
+
+.tools-header > div {
+  flex: 1;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.tools-header > div + div {
+  border-left: 1px var(--border) solid;
+}

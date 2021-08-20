@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TreeElement } from "../../types";
-import ElementName from "./ElementName";
+import TreeElementCaption from "./TreeLeafCaption";
 import ButtonCollapse from "../common/ButtonCollapse";
 
 export interface TreeElementProps {
@@ -26,7 +26,7 @@ const TreeElement = ({
 
   const hasChildren = data.children?.length > 0;
   const handleToggle = hasChildren ? () => setIsCollapsed(prev => !prev) : null;
-  const handleSelect = event => {
+  const handleSelect = (event: React.MouseEvent) => {
     event.stopPropagation();
     onSelect(data.id);
   };
@@ -36,14 +36,14 @@ const TreeElement = ({
 
   return (
     <div className={classes} onClick={handleSelect}>
-      <ElementName
+      <TreeElementCaption
         data={data}
         isSelected={selectedId === data.id}
         isDisabled={!data.mounted}
         highlight={highlight}
       >
         <ButtonCollapse isCollapsed={isCollapsed} onToggle={handleToggle} />
-      </ElementName>
+      </TreeElementCaption>
 
       {isCollapsed &&
         hasChildren &&

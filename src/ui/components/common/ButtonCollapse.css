@@ -1,0 +1,31 @@
+.button-collapse {
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: 0.2s;
+  transition-property: color, transform;
+  transform: rotate(-90deg);
+  margin-right: 2px;
+  margin-bottom: 2px;
+  vertical-align: middle;
+}
+
+.button-collapse svg {
+  width: 15px;
+  height: 13px;
+  color: var(--icon);
+  transition: 0.2s;
+  transition-property: color;
+}
+
+.button-collapse:hover svg {
+  color: black;
+}
+
+.button-collapse.open {
+  transform: rotate(0);
+}
+
+.button-collapse.disabled {
+  visibility: hidden;
+}

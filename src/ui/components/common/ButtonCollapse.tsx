@@ -12,7 +12,7 @@ const ButtonCollapse = ({ isCollapsed, onToggle }: ButtonCollapseProps) => {
 
   return (
     <button
-      className={`tree-element__toggle ${collapsedCls} ${disabledCls}`}
+      className={`button-collapse ${collapsedCls} ${disabledCls}`}
       onClick={onToggle}
     >
       <ChevronDown />

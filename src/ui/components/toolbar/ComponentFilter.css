@@ -1,0 +1,18 @@
+.component-filter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.component-filter svg {
+  color: var(--icon);
+  width: 15px;
+}
+
+.component-filter input {
+  padding: 5px 10px;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}

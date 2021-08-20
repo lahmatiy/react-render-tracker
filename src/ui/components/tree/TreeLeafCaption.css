@@ -1,0 +1,42 @@
+.tree-element__name {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--primary);
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 3px 15px 3px 5px;
+  transition: 0.2s;
+  transition-property: color, background-color;
+}
+.tree-element__name:hover {
+  color: var(--brand);
+}
+.tree-element__name.selected {
+  background-color: rgba(2, 121, 201, 0.1);
+}
+.tree-element__name.disabled .tree-element__name-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.tree-element__name.render-root .tree-element__name-text {
+  color: var(--text-muted);
+  font-size: 90%;
+}
+.tree-element__name .highlight {
+  margin: 0 0 -2px;
+  border-radius: 0 0 2px 2px;
+  border-bottom: 2px solid #e0bf08;
+}
+
+.tree-element__count {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 4px;
+  font-size: 10px;
+  min-width: 16px;
+  background: #eaeac7;
+  border-radius: 4px;
+  color: #949c35;
+  text-align: center;
+}

@@ -8,7 +8,7 @@ interface EventListProps {
 
 const EventList = ({ records }: EventListProps) => {
   return (
-    <table className="element-info-table">
+    <table className="element-event-list">
       <thead>
         <tr>
           <th />

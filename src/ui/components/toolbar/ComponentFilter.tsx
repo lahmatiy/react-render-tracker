@@ -12,7 +12,7 @@ const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
   };
 
   return (
-    <div className="search-components">
+    <div className="component-filter">
       <Search />
       <input
         type="text"

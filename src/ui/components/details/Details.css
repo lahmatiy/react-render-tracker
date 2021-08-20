@@ -1,0 +1,4 @@
+.element-info__controls {
+  display: flex;
+  justify-content: flex-end;
+}

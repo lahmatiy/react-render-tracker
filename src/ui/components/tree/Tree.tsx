@@ -1,6 +1,6 @@
 import React from "react";
 import { TreeElement as ITreeElement } from "../../types";
-import TreeElement, { TreeElementProps } from "./TreeElement";
+import TreeElement, { TreeElementProps } from "./TreeLeaf";
 
 interface TreeProps
   extends Pick<TreeElementProps, "onSelect" | "selectedId" | "highlight"> {

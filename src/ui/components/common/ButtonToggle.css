@@ -1,0 +1,15 @@
+.button-toggle {
+  padding: 4px;
+  cursor: pointer;
+}
+
+.button-toggle svg {
+  height: 15px;
+  transition: 0.2s;
+  color: var(--text-muted);
+}
+
+.button-toggle.active svg,
+.button-toggle:hover svg {
+  color: var(--brand);
+}
