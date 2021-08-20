@@ -33,14 +33,14 @@
 .tree-leaf-caption.selected {
   background-color: rgba(2, 121, 201, 0.15);
 }
-.tree-leaf-caption.disabled .tree-leaf-caption__name {
+.tree-leaf-caption.unmounted .tree-leaf-caption__name {
   color: var(--text-muted);
   text-decoration: line-through;
 }
 
 .tree-leaf-caption__time {
-  min-width: 30px;
-  max-width: 30px;
+  width: 36px;
+  flex-basis: 36px;
   padding: 2px 4px 1px;
   text-align: right;
   border-right: 1px solid #ddd;

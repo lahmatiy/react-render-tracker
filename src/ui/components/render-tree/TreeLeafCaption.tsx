@@ -37,6 +37,22 @@ function getElementNameHighlight(name: string, pattern: string) {
   return name;
 }
 
+function formatDuration(duration: number) {
+  let unit = "ms";
+
+  if (duration >= 100) {
+    duration /= 100;
+    unit = "s";
+  }
+
+  if (duration >= 100) {
+    duration /= 100;
+    unit = "m";
+  }
+
+  return duration.toFixed(1) + unit;
+}
+
 const ElementName = ({
   depth = 0,
   data,
@@ -63,6 +79,7 @@ const ElementName = ({
       event.op === "render" ? time + event.actualDuration : time,
     0
   );
+
   const classes = ["tree-leaf-caption"];
   for (const [cls, add] of Object.entries({
     selected,
@@ -87,10 +104,10 @@ const ElementName = ({
       onClick={handleSelect}
     >
       <span className="tree-leaf-caption__time">
-        {rerendersDuration.toFixed(1)}
+        {formatDuration(rerendersDuration)}
       </span>
       <span className="tree-leaf-caption__time">
-        {rerendersDuration2.toFixed(1)}
+        {formatDuration(rerendersDuration2)}
       </span>
       <div className="tree-leaf-caption__main">
         <ButtonExpand expanded={expanded} setExpanded={setExpanded} />

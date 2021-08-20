@@ -24,7 +24,7 @@ const TreeElement = ({
   return (
     <div>
       <TreeElementCaption
-        depth={depth}
+        depth={Math.max(depth - 1, 0)}
         data={data}
         selected={selectedId === data.id}
         onSelect={onSelect}
