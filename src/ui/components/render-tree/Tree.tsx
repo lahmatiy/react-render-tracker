@@ -12,16 +12,17 @@ const Tree = ({
 }) => {
   return (
     <div className="render-tree">
-      {roots?.map(root => (
-        <TreeElement
-          key={root.id}
-          data={root}
-          onSelect={onSelect}
-          selectedId={selectedId}
-          highlight={highlight}
-          root
-        />
-      ))}
+      <div className="render-tree__content">
+        {roots?.map(root => (
+          <TreeElement
+            key={root.id}
+            data={root}
+            onSelect={onSelect}
+            selectedId={selectedId}
+            highlight={highlight}
+          />
+        ))}
+      </div>
     </div>
   );
 };

@@ -75,3 +75,13 @@ body {
   margin-bottom: 8px;
   font-size: 16px;
 }
+
+/* temporary */
+body > div[side] {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  opacity: 1;
+}
+body > div[side] iframe {
+  background-color: transparent;
+}

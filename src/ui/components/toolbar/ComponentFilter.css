@@ -11,12 +11,13 @@
 }
 
 .component-filter input {
+  box-sizing: border-box;
+  width: 100%;
   padding: 5px 10px;
   border: none;
-  width: 100%;
-  box-sizing: border-box;
   outline: none;
   font: inherit;
   line-height: inherit;
+  background-color: transparent;
   color: inherit;
 }

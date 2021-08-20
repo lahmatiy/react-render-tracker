@@ -1,4 +1,9 @@
 .render-tree {
   grid-area: render-tree;
   overflow: auto;
+  overscroll-behavior: contain;
+  position: relative;
+}
+.render-tree__content {
+  margin-top: -1px;
 }

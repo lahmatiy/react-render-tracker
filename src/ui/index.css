@@ -13,6 +13,7 @@
 @import url("./components/render-tree/TreeLeafCaption.css");
 @import url("./components/render-tree/ComponentHocNames.css");
 
+html,
 body {
   margin: 0;
   padding: 0;
@@ -20,7 +21,10 @@ body {
   font-size: 14px;
   line-height: 21px;
   color: var(--text);
+  background-color: transparent;
+}
 
+:root {
   --text: #323334;
   --text-muted: #a1a1a1;
   --icon: #999999;

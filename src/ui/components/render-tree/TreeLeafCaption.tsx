@@ -8,6 +8,7 @@ interface ElementNameProps {
   depth?: number;
   data: TreeElement;
   selected: boolean;
+  onSelect: (id: number) => void;
   unmounted: boolean;
   expanded: boolean;
   setExpanded: (value: boolean) => void;
@@ -40,6 +41,7 @@ const ElementName = ({
   depth = 0,
   data,
   selected,
+  onSelect,
   unmounted,
   expanded,
   setExpanded,
@@ -73,31 +75,34 @@ const ElementName = ({
   }
 
   const name = getElementNameHighlight(data.displayName, highlight);
+  const handleSelect = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onSelect(data.id);
+  };
 
   return (
     <div
       className={classes.join(" ")}
       style={{ "--depth": depth } as React.CSSProperties}
+      onClick={handleSelect}
     >
-      <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
-      <span className="tree-leaf-caption__text">
-        {name || (!ownerId && "Render root") || "Unknown"}
+      <span className="tree-leaf-caption__time">
+        {rerendersDuration.toFixed(1)}
       </span>
-      <ElementId id={data.id} />
-      <ElementHocNames names={data.hocDisplayNames} />
-      {rerendersCount > 0 && (
-        <span className="tree-leaf-caption__count">{rerendersCount}</span>
-      )}
-      {rerendersDuration > 0 && (
-        <span className="tree-leaf-caption__count">
-          {rerendersDuration.toFixed(1)}
+      <span className="tree-leaf-caption__time">
+        {rerendersDuration2.toFixed(1)}
+      </span>
+      <div className="tree-leaf-caption__main">
+        <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+        <span className="tree-leaf-caption__name">
+          {name || (!ownerId && "Render root") || "Unknown"}
         </span>
-      )}
-      {rerendersDuration2 > 0 && (
-        <span className="tree-leaf-caption__count">
-          {rerendersDuration2.toFixed(1)}
-        </span>
-      )}
+        <ElementId id={data.id} />
+        <ElementHocNames names={data.hocDisplayNames} />
+        {rerendersCount > 0 && (
+          <span className="tree-leaf-caption__count">{rerendersCount}</span>
+        )}
+      </div>
     </div>
   );
 };

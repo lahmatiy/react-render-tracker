@@ -1,8 +1,7 @@
 .tree-leaf-caption {
-  display: block;
+  display: flex;
+  box-sizing: border-box;
   white-space: nowrap;
-  padding: 1px 5px;
-  padding-left: calc(5px + var(--depth, 0) * 15px);
   font-size: 12px;
   line-height: 20px;
   color: var(--primary);
@@ -10,20 +9,50 @@
   transition: 0.2s;
   transition-property: color;
 }
-.tree-leaf-caption:hover {
+
+.tree-leaf-caption.render-root {
+  position: sticky;
+  top: -1px;
+  margin-top: -1px;
+  z-index: 1;
   background-color: #f4f4f4;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
-.tree-leaf-caption.selected {
-  background-color: rgba(2, 121, 201, 0.1);
-}
-.tree-leaf-caption.disabled .tree-leaf-caption__text {
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-.tree-leaf-caption.render-root .tree-leaf-caption__text {
+.tree-leaf-caption.render-root .tree-leaf-caption__name {
   color: var(--text-muted);
   font-size: 10px;
 }
+
+.tree-leaf-caption:hover {
+  background-color: #eee;
+}
+.tree-leaf-caption:hover:not(.render-root):not(.selected) {
+  box-shadow: -1px 0 0 1px #e6e6e6 inset;
+}
+.tree-leaf-caption.selected {
+  background-color: rgba(2, 121, 201, 0.15);
+}
+.tree-leaf-caption.disabled .tree-leaf-caption__name {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.tree-leaf-caption__time {
+  min-width: 30px;
+  max-width: 30px;
+  padding: 2px 4px 1px;
+  text-align: right;
+  border-right: 1px solid #ddd;
+  font-size: 10px;
+  color: #888;
+}
+.tree-leaf-caption__main {
+  flex: 1;
+  padding: 1px 5px;
+  padding-left: calc(5px + var(--depth, 0) * 15px);
+}
+
 .tree-leaf-caption .highlight {
   margin: 0 0 -2px;
   border-radius: 0 0 2px 2px;

@@ -1,6 +1,7 @@
 .details {
   grid-area: details;
   overflow: auto;
+  overscroll-behavior: contain;
   border-left: 1px var(--border) solid;
 }
 .details__controls {

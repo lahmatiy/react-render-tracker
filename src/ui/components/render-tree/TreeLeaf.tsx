@@ -4,39 +4,30 @@ import TreeElementCaption from "./TreeLeafCaption";
 
 export interface TreeElementProps {
   data: TreeElement;
-  root?: boolean;
   depth?: number;
-  onSelect: (id: number) => void;
   selectedId: number | null;
+  onSelect: (id: number) => void;
   highlight: string;
 }
 
 const TreeElement = ({
   data,
   depth = 0,
-  root = false,
-  onSelect,
   selectedId,
+  onSelect,
   highlight,
 }: TreeElementProps) => {
   const [expanded, setExpanded] = useState(true);
-
   const hasChildren = data.children?.length > 0;
   const handleSetExpanded = hasChildren ? setExpanded : null;
-  const handleSelect = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onSelect(data.id);
-  };
-
-  let classes = "tree-leaf";
-  if (root) classes += " root";
 
   return (
-    <div className={classes} onClick={handleSelect}>
+    <div>
       <TreeElementCaption
         depth={depth}
         data={data}
         selected={selectedId === data.id}
+        onSelect={onSelect}
         unmounted={!data.mounted}
         expanded={expanded}
         setExpanded={handleSetExpanded}
