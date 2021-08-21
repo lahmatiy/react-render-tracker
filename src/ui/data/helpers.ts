@@ -10,7 +10,7 @@ export const handleFilterDataElement = (
   rootsArray = rootsArray.filter(rootNode => showDisabled || rootNode.mounted);
 
   for (const rootNode of rootsArray) {
-    rootNode.children = rootNode.children.filter(element =>
+    rootNode.children = (rootNode.children || []).filter(element =>
       getHasElementMatch(element, searched, showDisabled)
     );
   }
