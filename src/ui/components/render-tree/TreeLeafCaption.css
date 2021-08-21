@@ -1,4 +1,7 @@
 .tree-leaf-caption {
+  --padding-time: 2px 4px 1px;
+  --padding-main: 1px 5px;
+
   display: flex;
   box-sizing: border-box;
   white-space: nowrap;
@@ -11,6 +14,9 @@
 }
 
 .tree-leaf-caption.render-root {
+  --padding-time: 1px 4px 0px;
+  --padding-main: 0px 5px;
+
   position: sticky;
   top: -1px;
   margin-top: -1px;
@@ -21,7 +27,7 @@
 }
 .tree-leaf-caption.render-root .tree-leaf-caption__name {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .tree-leaf-caption:hover {
@@ -33,15 +39,18 @@
 .tree-leaf-caption.selected {
   background-color: rgba(2, 121, 201, 0.15);
 }
+.tree-leaf-caption.selected.render-root {
+  background-color: #deebf7;
+}
 .tree-leaf-caption.unmounted .tree-leaf-caption__name {
   color: var(--text-muted);
   text-decoration: line-through;
 }
 
 .tree-leaf-caption__time {
-  width: 36px;
+  min-width: 36px;
   flex-basis: 36px;
-  padding: 2px 4px 1px;
+  padding: var(--padding-time);
   text-align: right;
   border-right: 1px solid #ddd;
   font-size: 10px;
@@ -49,8 +58,11 @@
 }
 .tree-leaf-caption__main {
   flex: 1;
-  padding: 1px 5px;
+  padding: var(--padding-main);
   padding-left: calc(5px + var(--depth, 0) * 15px);
+}
+.tree-leaf-caption:last-child .tree-leaf-caption__main {
+  padding-bottom: 2px;
 }
 
 .tree-leaf-caption .highlight {

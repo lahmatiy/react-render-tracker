@@ -2,9 +2,26 @@
   grid-area: details;
   overflow: auto;
   overscroll-behavior: contain;
-  border-left: 1px var(--border) solid;
+  border-left: 1px solid #ddd;
 }
 .details__controls {
+  position: sticky;
+  top: 0;
   display: flex;
   justify-content: flex-end;
+  border-bottom: 1px solid #ddd;
+  background-color: #f4f4f4;
+}
+.details__controls::before {
+  content: "Event log";
+  display: block;
+  flex: 1;
+  padding-left: 4px;
+  text-align: left;
+  font-size: 11px;
+  color: #888;
+}
+.details__controls .button-toggle {
+  padding-top: 2px;
+  padding-bottom: 3px;
 }

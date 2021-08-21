@@ -85,3 +85,8 @@ body > div[side] {
 body > div[side] iframe {
   background-color: transparent;
 }
+@supports not (backdrop-filter: blur(8px)) {
+  body > div[side] {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}

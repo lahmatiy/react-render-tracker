@@ -11,8 +11,7 @@ const EventRenderReasonDetails = ({
 }: EventRenderReasonDetailsProps) => {
   return (
     <tr>
-      <td />
-      <td colSpan={3}>
+      <td colSpan={4}>
         <table className="table-change-details">
           <thead>
             <tr>

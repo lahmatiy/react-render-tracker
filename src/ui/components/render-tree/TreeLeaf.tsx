@@ -21,8 +21,12 @@ const TreeElement = ({
   const hasChildren = data.children?.length > 0;
   const handleSetExpanded = hasChildren ? setExpanded : null;
 
+  // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
+  const isRenderRoot = data.ownerId === 0;
+  const Wrapper = isRenderRoot ? "div" : React.Fragment;
+
   return (
-    <div>
+    <Wrapper>
       <TreeElementCaption
         depth={Math.max(depth - 1, 0)}
         data={data}
@@ -46,7 +50,7 @@ const TreeElement = ({
             highlight={highlight}
           />
         ))}
-    </div>
+    </Wrapper>
   );
 };
 

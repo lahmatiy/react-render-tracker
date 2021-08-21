@@ -1,7 +1,7 @@
 .table-change-details {
+  width: 100%;
   border-bottom: 1px var(--border) solid;
   background: #f7f7f7;
-  border-radius: 5px;
 }
 
 .table-change-details th:first-of-type,

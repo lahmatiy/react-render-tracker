@@ -1,25 +1,4 @@
-.element-event-list table {
+.element-event-list {
   width: 100%;
-}
-
-.element-event-list thead {
-  color: var(--icon);
-}
-
-.element-event-list th,
-.element-event-list td {
-  padding: 5px;
-  text-align: left;
-  vertical-align: top;
-  font-size: 13px;
-  line-height: 15px;
-}
-.element-event-list td {
-  padding: 0 5px;
-}
-.element-event-list td:not(:last-child) {
-  white-space: nowrap;
-}
-.element-event-list td:last-child {
-  width: 100%;
+  border-collapse: collapse;
 }

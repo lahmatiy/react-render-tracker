@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import dateFormat from "dateformat";
+// import dateFormat from "dateformat";
 import ButtonCollapse from "../common/ButtonExpand";
 import EventRenderReason from "./EventRenderReasonDetails";
 import ElementId from "../common/ElementId";
@@ -17,31 +17,48 @@ function getReasons(event: Event) {
     const { context, hooks, props, state, parentUpdate } = event.changes || {};
 
     if (context) {
-      reasons.push("Context change");
+      reasons.push("Context changed");
     }
 
     if (hooks) {
-      reasons.push("Hooks change");
+      reasons.push("Hooks changed");
     }
 
     if (props) {
-      reasons.push("Props change");
+      reasons.push("Props changed");
     }
 
     if (state) {
-      reasons.push("State change");
+      reasons.push("State changed");
     }
 
     if (parentUpdate) {
-      reasons.push("Parent Update");
+      reasons.push("Parent render");
     }
   }
 
   return reasons;
 }
 
+function formatDuration(duration: number) {
+  let unit = "ms";
+
+  if (duration >= 100) {
+    duration /= 100;
+    unit = "s";
+  }
+
+  if (duration >= 100) {
+    duration /= 100;
+    unit = "m";
+  }
+
+  return duration.toFixed(1) + unit;
+}
+
 const EventListItem = ({ component, event }: EventListItemProps) => {
   const [expanded, setIsCollapsed] = useState(false);
+  const reasons = getReasons(event);
   const hasDetails =
     event.op === "render" &&
     (event.changes?.props || event.changes?.state || event.changes?.hooks);
@@ -49,24 +66,42 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
   return (
     <>
       <tr className="event-list-item">
-        <td>
-          {hasDetails && (
-            <ButtonCollapse expanded={expanded} setExpanded={setIsCollapsed} />
-          )}
+        <td className="event-list-item__event-type">
+          <span
+            className="event-list-item__event-type-label"
+            data-type={event.op}
+          >
+            {event.op}
+          </span>
         </td>
-        <td className="event-list-item__timestamp">
+
+        <td className="event-list-item__time">
+          {event.op === "render" && formatDuration(event.selfDuration)}
+        </td>
+        <td className="event-list-item__time">
+          {event.op === "render" && formatDuration(event.actualDuration)}
+        </td>
+        {/* <td className="event-list-item__timestamp">
           <span className="event-list-item__timestamp-label">
             {dateFormat(Number(event.timestamp), "HH:MM:ss.l")}
           </span>
-        </td>
-        <td className="event-list-item__event-type">
-          <span className="event-list-item__event-type-label">{event.op}</span>
-        </td>
+        </td> */}
         <td className="event-list-item__details">
-          {component.displayName || "Unknown"}
-          <ElementId id={component.id} /> {getReasons(event).join(", ")}{" "}
-          {event.op === "render" && event.selfDuration.toFixed(1)}ms{" "}
-          {event.op === "render" && event.actualDuration.toFixed(1)}ms
+          <span className="event-list-item__name">
+            {component.displayName || "Unknown"}
+          </span>
+          <ElementId id={component.id} />{" "}
+          {reasons.length > 0 && (
+            <span className="event-list-item__reasons">
+              {hasDetails && (
+                <ButtonCollapse
+                  expanded={expanded}
+                  setExpanded={setIsCollapsed}
+                />
+              )}
+              {reasons.join(", ")}
+            </span>
+          )}
         </td>
       </tr>
       {event.op === "render" && expanded && (
