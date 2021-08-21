@@ -1,7 +1,11 @@
-import { ElementType } from "../common/types";
+import { ElementType, Message } from "../common/types";
 export * from "../common/types";
 
-export type ReactRenderer = {
+export type DistributiveOmit<T, K extends keyof T> = T extends any
+  ? Omit<T, K>
+  : never;
+
+export type ReactInternals = {
   reconcilerVersion?: string;
   version?: string;
   rendererPackageName: string;
@@ -155,6 +159,8 @@ export type Dependencies = {
 
 type Lanes = number;
 type Flags = number;
+
+export type FiberRoot = any;
 export interface Fiber {
   // Tag identifying the type of fiber.
   tag: WorkTag;
@@ -431,4 +437,16 @@ export type RendererInterface = {
   getDisplayNameForFiberID: GetDisplayNameForFiberID;
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
+
+  getFiberByID: (id: number) => Fiber;
 };
+
+export interface Publisher {
+  ns(channel: string): {
+    publish(data: Message[]): void;
+  };
+}
+
+export type RecordEventHandler = (
+  payload: DistributiveOmit<Message, "id" | "timestamp">
+) => void;

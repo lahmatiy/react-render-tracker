@@ -30,13 +30,15 @@ import {
   STRICT_MODE_SYMBOL_STRING,
 } from "../constants.js";
 import {
-  ReactRenderer,
+  ReactInternals,
   Fiber,
   TransferElement,
   ReactChangeDescription,
+  RendererInterface,
+  SerializedElement,
+  RecordEventHandler,
+  FiberRoot,
 } from "../types";
-import { DevtoolsHook } from "../devtools-hook";
-import { Bridge } from "../bridge";
 import { TransferChangeDescription } from "../../common/types";
 
 function getFiberFlags(fiber: Fiber): number {
@@ -52,11 +54,9 @@ const getCurrentTime =
     : () => Date.now();
 
 export function attach(
-  bridge: Bridge,
-  devtoolsHook: DevtoolsHook,
-  rendererID: number,
-  renderer: ReactRenderer
-) {
+  renderer: ReactInternals,
+  recordEvent: RecordEventHandler
+): RendererInterface {
   // Newer versions of the reconciler package also specific reconciler version.
   // If that version number is present, use it.
   // Third party renderer versions may not match the reconciler version,
@@ -410,18 +410,6 @@ export function attach(
     return [legacyContext, modernContext];
   }
 
-  // Record all contexts at the time profiling is started.
-  // Fibers only store the current context value,
-  // so we need to track them separately in order to determine changed keys.
-  function crawlToInitializeContextsMap(fiber: Fiber) {
-    updateContextsForFiber(fiber);
-    let current = fiber.child;
-    while (current !== null) {
-      crawlToInitializeContextsMap(current);
-      current = current.sibling;
-    }
-  }
-
   function getContextChangedKeys(fiber: Fiber) {
     if (getElementTypeForFiber(fiber) === ElementTypeClass) {
       const id = getFiberIDThrows(fiber);
@@ -604,7 +592,7 @@ export function attach(
       }
 
       idToTransferElement.delete(id);
-      bridge.recordEvent({
+      recordEvent({
         op: "unmount",
         elementId: id,
       });
@@ -678,7 +666,7 @@ export function attach(
     }
 
     idToTransferElement.set(id, element);
-    bridge.recordEvent({
+    recordEvent({
       op: "mount",
       elementId: id,
       element: idToTransferElement.get(id),
@@ -887,7 +875,7 @@ export function attach(
     if (alternate == null || didFiberRender(alternate, fiber)) {
       const changes = getChangeDescription(alternate, fiber);
 
-      bridge.recordEvent({
+      recordEvent({
         op: "rerender",
         elementId: getFiberIDThrows(fiber),
         ...getDurations(fiber),
@@ -1062,7 +1050,7 @@ export function attach(
     }
   }
 
-  function rootSupportsProfiling(root) {
+  function rootSupportsProfiling(root: FiberRoot) {
     if (root.memoizedInteractions != null) {
       // v16 builds include this field for the scheduler/tracing API.
       return true;
@@ -1087,7 +1075,7 @@ export function attach(
     recordUnmount(fiber, false);
   }
 
-  function handlePostCommitFiberRoot(root: Fiber) {
+  function handlePostCommitFiberRoot(root: FiberRoot) {
     if (rootSupportsProfiling(root)) {
       if (currentCommitProfilingMetadata !== null) {
         const { effectDuration, passiveEffectDuration } =
@@ -1099,7 +1087,7 @@ export function attach(
     }
   }
 
-  function handleCommitFiberRoot(root: any, priorityLevel: number) {
+  function handleCommitFiberRoot(root: FiberRoot, priorityLevel: number) {
     const current = root.current;
     const alternate = current.alternate;
 
@@ -1231,6 +1219,7 @@ export function attach(
     findNearestUnfilteredAncestor = false
   ) {
     let fiber = renderer.findFiberByHostInstance(hostInstance);
+
     if (fiber != null) {
       if (findNearestUnfilteredAncestor) {
         while (fiber !== null && shouldFilterFiber(fiber)) {
@@ -1457,7 +1446,7 @@ export function attach(
 
   // END copied code
 
-  function fiberToSerializedElement(fiber: Fiber) {
+  function fiberToSerializedElement(fiber: Fiber): SerializedElement {
     return {
       displayName: getDisplayNameForFiber(fiber) || "Anonymous",
       id: getFiberIDThrows(fiber),
@@ -1491,18 +1480,6 @@ export function attach(
   const displayNamesByRootID = new Map();
   const idToContextsMap = new Map();
   const recordChangeDescriptions = true;
-
-  // Automatically start profiling so that we don't miss timing info from initial "mount".
-  devtoolsHook.getFiberRoots(rendererID).forEach(root => {
-    const rootID = getFiberIDThrows(root.current);
-    displayNamesByRootID.set(rootID, getDisplayNameForRoot(root.current));
-
-    // Record all contexts at the time profiling is started.
-    // Fibers only store the current context value,
-    // so we need to track them separately in order to determine changed keys.
-    crawlToInitializeContextsMap(root.current);
-  });
-
   const profilingStartTime = getCurrentTime();
 
   // Roots don't have a real persistent identity.

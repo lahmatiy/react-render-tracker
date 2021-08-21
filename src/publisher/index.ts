@@ -1,13 +1,5 @@
-import { Bridge } from "./bridge";
-import { installHook } from "./install-hook";
-import { publisher } from "./rempl-publisher";
+import { installReactDevtoolsHook } from "./react-devtools-hook";
+import { recordEvent } from "./rempl-publisher";
+import { attach } from "./renderer";
 
-const __win__ = window;
-
-function start() {
-  const hook = installHook(__win__);
-
-  new Bridge(hook, publisher);
-}
-
-start();
+installReactDevtoolsHook(window, renderer => attach(renderer, recordEvent));
