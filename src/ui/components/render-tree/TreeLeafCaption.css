@@ -59,7 +59,7 @@
 .tree-leaf-caption__main {
   flex: 1;
   padding: var(--padding-main);
-  padding-left: calc(5px + var(--depth, 0) * 15px);
+  padding-left: calc(var(--depth, 0) * 15px);
 }
 .tree-leaf-caption:last-child .tree-leaf-caption__main {
   padding-bottom: 2px;

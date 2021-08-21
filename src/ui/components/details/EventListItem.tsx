@@ -13,7 +13,7 @@ interface EventListItemProps {
 function getReasons(event: Event) {
   const reasons: string[] = [];
 
-  if (event.op === "render") {
+  if (event.op === "rerender") {
     const { context, hooks, props, state, parentUpdate } = event.changes || {};
 
     if (context) {
@@ -60,7 +60,7 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
   const [expanded, setIsCollapsed] = useState(false);
   const reasons = getReasons(event);
   const hasDetails =
-    event.op === "render" &&
+    event.op === "rerender" &&
     (event.changes?.props || event.changes?.state || event.changes?.hooks);
 
   return (
@@ -76,10 +76,12 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
         </td>
 
         <td className="event-list-item__time">
-          {event.op === "render" && formatDuration(event.selfDuration)}
+          {(event.op === "mount" || event.op === "rerender") &&
+            formatDuration(event.selfDuration)}
         </td>
         <td className="event-list-item__time">
-          {event.op === "render" && formatDuration(event.actualDuration)}
+          {(event.op === "mount" || event.op === "rerender") &&
+            formatDuration(event.actualDuration)}
         </td>
         {/* <td className="event-list-item__timestamp">
           <span className="event-list-item__timestamp-label">
@@ -104,7 +106,7 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
           )}
         </td>
       </tr>
-      {event.op === "render" && expanded && (
+      {event.op === "rerender" && expanded && (
         <EventRenderReason changes={event.changes} />
       )}
     </>

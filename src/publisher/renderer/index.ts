@@ -205,16 +205,11 @@ export function attach(
   // operations that should be the same whether the current and work-in-progress Fiber is used.
   const idToArbitraryFiberMap = new Map<number, Fiber>();
 
-  // When profiling is supported, we store the latest tree base durations for each Fiber.
-  // This map enables us to filter these times by root when sending them to the frontend.
-  const idToRootMap = new Map<number, number>();
-
   // When a mount or update is in progress, this value tracks the root that is being operated on.
   let currentRootID = -1;
 
   // Transfer elements
   const idToTransferElement = new Map<number, TransferElement>();
-  const mountedElements = new Set<number>();
 
   // Returns the unique ID for a Fiber or generates and caches a new one if the Fiber hasn't been seen before.
   // Once this method has been called for a Fiber, untrackFiberID() should always be called later to avoid leaking.
@@ -625,7 +620,6 @@ export function attach(
   function recordMount(fiber: Fiber, parentFiber: Fiber) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberID(fiber);
-    const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
     let element: TransferElement;
 
     if (isRoot) {
@@ -684,12 +678,16 @@ export function attach(
     }
 
     idToTransferElement.set(id, element);
-    mountedElements.add(id);
+    bridge.recordEvent({
+      op: "mount",
+      elementId: id,
+      element: idToTransferElement.get(id),
+      ...getDurations(fiber),
+    });
 
+    const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
     if (isProfilingSupported) {
-      idToRootMap.set(id, currentRootID);
-
-      recordRender(fiber, true);
+      updateContextsForFiber(fiber);
     }
   }
 
@@ -727,11 +725,6 @@ export function attach(
 
     if (!fiber._debugNeedsRemount) {
       untrackFiberID(fiber);
-
-      const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
-      if (isProfilingSupported) {
-        idToRootMap.delete(id);
-      }
     }
   }
 
@@ -867,32 +860,37 @@ export function attach(
     return safeEntry;
   }
 
-  function recordRender(fiber: Fiber, initial = false) {
-    const id = getFiberIDThrows(fiber);
-    const { alternate } = fiber;
+  // Calculate fiber durations. Should be called on mount or fiber changes only,
+  // otherwise it may return a duration for a previous fiber update.
+  function getDurations(fiber: Fiber) {
     const actualDuration = fiber.actualDuration ?? 0;
     let selfDuration = actualDuration;
 
-    if (alternate == null || didFiberRender(alternate, fiber)) {
-      // The actual duration reported by React includes time spent working on children.
-      // This is useful information, but it's also useful to be able to exclude child durations.
-      // The frontend can't compute this, since the immediate children may have been filtered out.
-      // So we need to do this on the backend.
-      // Note that this calculated self duration is not the same thing as the base duration.
-      // The two are calculated differently (tree duration does not accumulate).
-      let child = fiber.child;
-      while (child !== null) {
-        selfDuration -= child.actualDuration || 0;
-        child = child.sibling;
-      }
+    // The actual duration reported by React includes time spent working on children.
+    // This is useful information, but it's also useful to be able to exclude child durations.
+    // The frontend can't compute this, since the immediate children may have been filtered out.
+    // So we need to do this on the backend.
+    // Note that this calculated self duration is not the same thing as the base duration.
+    // The two are calculated differently (tree duration does not accumulate).
+    let child = fiber.child;
+    while (actualDuration > 0 && child !== null) {
+      selfDuration -= child.actualDuration || 0;
+      child = child.sibling;
+    }
 
+    return { actualDuration, selfDuration };
+  }
+
+  function recordRender(fiber: Fiber) {
+    const { alternate } = fiber;
+
+    if (alternate == null || didFiberRender(alternate, fiber)) {
       const changes = getChangeDescription(alternate, fiber);
+
       bridge.recordEvent({
-        op: "render",
-        elementId: id,
-        initial,
-        actualDuration,
-        selfDuration,
+        op: "rerender",
+        elementId: getFiberIDThrows(fiber),
+        ...getDurations(fiber),
         changes: changes && parseCommitChanges(changes),
       });
 
@@ -1159,14 +1157,6 @@ export function attach(
 
     // We're done here.
     flushPendingEvents();
-    for (const id of mountedElements) {
-      mountedElements.delete(id);
-      bridge.recordEvent({
-        op: "mount",
-        elementId: id,
-        element: idToTransferElement.get(id),
-      });
-    }
 
     currentRootID = -1;
   }

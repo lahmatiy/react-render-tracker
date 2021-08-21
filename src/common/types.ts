@@ -40,6 +40,8 @@ export interface BaseMessage {
 export interface MountElementMessage extends BaseMessage {
   op: "mount";
   element: TransferElement;
+  actualDuration: number;
+  selfDuration: number;
 }
 
 export interface UnmountElementMessage extends BaseMessage {
@@ -47,8 +49,7 @@ export interface UnmountElementMessage extends BaseMessage {
 }
 
 export interface RenderElementMessage extends BaseMessage {
-  op: "render";
-  initial?: boolean;
+  op: "rerender";
   actualDuration: number;
   selfDuration: number;
   changes: TransferChangeDescription;

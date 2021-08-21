@@ -27,7 +27,7 @@
   /* background-color: #b8d877; */
   background-color: #cbe4b4;
 }
-.event-list-item__event-type-label[data-type="render"] {
+.event-list-item__event-type-label[data-type="rerender"] {
   /* background-color: #f1e27c; */
   background-color: #eaeac6;
 }

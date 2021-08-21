@@ -66,17 +66,21 @@ const ElementName = ({
   const { ownerId, events } = data;
   const isRenderRoot = ownerId === 0;
   const rerendersCount = events?.reduce(
-    (count, event) =>
-      event.op === "render" && !event.initial ? count + 1 : count,
+    (count, event) => (event.op === "rerender" ? count + 1 : count),
     0
   );
   const rerendersDuration = events?.reduce(
-    (time, event) => (event.op === "render" ? time + event.selfDuration : time),
+    (time, event) =>
+      event.op === "mount" || event.op === "rerender"
+        ? time + event.selfDuration
+        : time,
     0
   );
   const rerendersDuration2 = events?.reduce(
     (time, event) =>
-      event.op === "render" ? time + event.actualDuration : time,
+      event.op === "mount" || event.op === "rerender"
+        ? time + event.actualDuration
+        : time,
     0
   );
 
