@@ -2,3 +2,33 @@
   width: 100%;
   border-collapse: collapse;
 }
+.element-event-list__show-more {
+  display: flex;
+  gap: 0 2px;
+  padding: 2px 2px 1px;
+}
+.element-event-list__show-more button {
+  vertical-align: top;
+  color: #444;
+  min-height: 0;
+  padding: 3px 8px 3px;
+  margin: 0;
+  background-color: #ffffff1a;
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 13px;
+  font-family: system-ui, Arial, sans-serif;
+  cursor: pointer;
+}
+.element-event-list__show-more button:hover,
+.element-event-list__show-more button:active,
+.element-event-list__show-more button:focus {
+  background-color: #dddddd4d;
+  border-color: #aaa9;
+  outline: none;
+}
+.element-event-list__show-more button:active {
+  background-color: #83838340;
+  border-color: #7f7f7f66;
+}
