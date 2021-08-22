@@ -107,12 +107,14 @@ const ElementName = ({
       style={{ "--depth": depth } as React.CSSProperties}
       onClick={handleSelect}
     >
-      <span className="tree-leaf-caption__time">
-        {formatDuration(rerendersDuration)}
-      </span>
-      <span className="tree-leaf-caption__time">
-        {formatDuration(rerendersDuration2)}
-      </span>
+      <div className="tree-leaf-caption__timings">
+        <span className="tree-leaf-caption__time">
+          {formatDuration(rerendersDuration)}
+        </span>
+        <span className="tree-leaf-caption__time">
+          {formatDuration(rerendersDuration2)}
+        </span>
+      </div>
       <div className="tree-leaf-caption__main">
         <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
         <span className="tree-leaf-caption__name">

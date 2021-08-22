@@ -7,6 +7,7 @@
   white-space: nowrap;
   font-size: 12px;
   line-height: 20px;
+  background-color: white;
   color: var(--primary);
   cursor: pointer;
   transition: 0.2s;
@@ -20,7 +21,7 @@
   position: sticky;
   top: -1px;
   margin-top: -1px;
-  z-index: 1;
+  z-index: 2;
   background-color: #f4f4f4;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
@@ -36,7 +37,7 @@
   box-shadow: -1px 0 0 1px #e6e6e6 inset;
 }
 .tree-leaf-caption.selected {
-  background-color: rgba(2, 121, 201, 0.15);
+  background-color: #dde8f4;
 }
 .tree-leaf-caption.selected.render-root {
   background-color: #deebf7;
@@ -46,9 +47,17 @@
   text-decoration: line-through;
 }
 
+.tree-leaf-caption__timings {
+  flex-basis: 90px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: inherit;
+}
 .tree-leaf-caption__time {
-  min-width: 36px;
-  flex-basis: 36px;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 45px;
   padding: var(--padding-time);
   text-align: right;
   border-right: 1px solid #ddd;
