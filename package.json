@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint playground src",
     "start": "node scripts/server",
     "build": "node scripts/build",
-    "lint": "eslint playground src"
+    "prepublishOnly": "npm run build && npm run parser:bake"
   },
   "repository": {
     "type": "git",
@@ -39,5 +40,9 @@
     "express": "^4.17.1",
     "prettier": "^2.3.2",
     "typescript": "^4.3.5"
-  }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
 }

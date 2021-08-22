@@ -1,4 +1,8 @@
-import { gt, gte } from "semver";
+// import { gt, gte } from "semver";
+// semver is not good enough with tree shaking,
+// importing for specific functions saves ~24kB
+import gt from "semver/functions/gt";
+import gte from "semver/functions/gte";
 import { ElementType } from "../types";
 import {
   ElementTypeClass,

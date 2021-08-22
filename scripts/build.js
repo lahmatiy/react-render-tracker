@@ -1,6 +1,12 @@
 const esbuild = require("esbuild");
 
-exports.buildPlayground = async function (config) {
+module.exports = {
+  buildPlayground,
+  buildSubscriber,
+  buildPublisher,
+};
+
+async function buildPlayground(config) {
   const result = await esbuild.buildSync({
     entryPoints: ["playground/index.tsx"],
     // external: ["src/*"],
@@ -15,17 +21,17 @@ exports.buildPlayground = async function (config) {
   if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
-};
+}
 
-exports.buildSubscriber = async function (config, configCSS) {
+async function buildSubscriber(config, configCSS) {
   const css = await esbuild.buildSync({
     entryPoints: ["src/ui/index.css"],
     bundle: true,
-    sourcemap: true,
     loader: {
       ".png": "dataurl",
       ".svg": "dataurl",
     },
+    sourcemap: true,
     ...configCSS,
     write: false,
   });
@@ -34,7 +40,7 @@ exports.buildSubscriber = async function (config, configCSS) {
     bundle: true,
     sourcemap: true,
     format: "esm",
-    loader: { ".js": "jsx" },
+    // loader: { ".js": "jsx" },
     define: { __CSS__: JSON.stringify(css.outputFiles[0].text) },
     write: false,
     ...config,
@@ -43,26 +49,48 @@ exports.buildSubscriber = async function (config, configCSS) {
   if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
-};
+}
 
-exports.buildPublisher = async function (config) {
+async function buildPublisher(config) {
   const result = await esbuild.buildSync({
     entryPoints: ["src/publisher/index.ts"],
     bundle: true,
     sourcemap: true,
     format: "esm",
     write: false,
+    define: {
+      __DEV__: true,
+    },
     ...config,
   });
 
   if (result.outputFiles && result.outputFiles.length) {
     return result.outputFiles[0].text;
   }
-};
+}
 
 if (require.main === module) {
-  exports.buildPlayground({
-    write: true,
-    outdir: "dist",
-  });
+  (async () => {
+    const __SUBSCRIBER_SRC__ = await buildSubscriber(
+      {
+        minify: true,
+        sourcemap: false,
+      },
+      {
+        minify: true,
+        sourcemap: false,
+      }
+    );
+    buildPublisher({
+      write: true,
+      outfile: "dist/react-render-tracker.js",
+      format: "iife",
+      minify: true,
+      sourcemap: false,
+      define: {
+        __DEV__: false,
+        __SUBSCRIBER_SRC__: JSON.stringify(__SUBSCRIBER_SRC__),
+      },
+    });
+  })();
 }

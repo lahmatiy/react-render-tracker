@@ -5,19 +5,18 @@ const { buildPublisher, buildSubscriber, buildPlayground } = require("./build");
 
 const app = express();
 app.use(cors());
+app.use("/dist", express.static(path.join(__dirname, "../dist")));
 app.use(express.static(path.join(__dirname, "../playground")));
-app.get(
-  "/index.js",
-  asyncResponse(() => buildPlayground())
-);
-app.get(
-  "/publisher.js",
-  asyncResponse(() => buildPublisher())
-);
-app.get(
-  "/subscriber.js",
-  asyncResponse(() => buildSubscriber())
-);
+
+for (let [url, generator] of Object.entries({
+  "/index.js": () => buildPlayground(),
+  "/react-render-tracker.js": () => buildPublisher(),
+  "/publisher.js": () => buildPublisher(),
+  "/subscriber.js": () => buildSubscriber(),
+})) {
+  app.get(url, asyncResponse(generator));
+}
+
 app.listen(3000, function () {
   console.log(`Server listen on ${`http://localhost:${this.address().port}`}`);
 });
