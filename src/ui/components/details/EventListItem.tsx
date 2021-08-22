@@ -89,8 +89,14 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
           </span>
         </td> */}
         <td className="event-list-item__details">
-          <span className="event-list-item__name">
-            {component.displayName || "Unknown"}
+          <span
+            className={
+              "event-list-item__name" +
+              (event.op === "unmount" ? " event-list-item__name_unmounted" : "")
+            }
+          >
+            {component.displayName ||
+              (!component.ownerId ? "Render root" : "Unknown")}
           </span>
           <ElementId id={component.id} />{" "}
           {reasons.length > 0 && (

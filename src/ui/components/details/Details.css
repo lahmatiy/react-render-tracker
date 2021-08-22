@@ -4,7 +4,7 @@
   overscroll-behavior: contain;
   border-left: 1px solid #ddd;
 }
-.details__controls {
+.details__header {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -13,16 +13,17 @@
   border-bottom: 1px solid #ddd;
   background-color: #f4f4f4;
 }
-.details__controls::before {
-  content: "Event log";
-  display: block;
+.details__header-caption {
   flex: 1;
   padding-left: 4px;
   text-align: left;
   font-size: 11px;
   color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.details__controls .button-toggle {
+.details__header .button-toggle {
   padding-top: 2px;
   padding-bottom: 3px;
 }

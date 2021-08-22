@@ -42,7 +42,7 @@ function App({ data }: { data: MessageElement[] }) {
         selectedId={selectedId}
         highlight={filterPattern.toLowerCase()}
       />
-      {selectedComponent && <Details data={selectedComponent} />}
+      {selectedComponent && <Details component={selectedComponent} />}
     </div>
   );
 }

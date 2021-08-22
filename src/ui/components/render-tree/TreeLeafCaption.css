@@ -45,6 +45,7 @@
 .tree-leaf-caption.unmounted .tree-leaf-caption__name {
   color: var(--text-muted);
   text-decoration: line-through;
+  text-decoration-color: #888;
 }
 
 .tree-leaf-caption__timings {

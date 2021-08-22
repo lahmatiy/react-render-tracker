@@ -3,17 +3,26 @@ import List from "react-feather/dist/icons/list";
 import ButtonToggle from "../common/ButtonToggle";
 import { TreeElement } from "../../types";
 import EventList from "./EventList";
+import ElementId from "../common/ElementId";
 
 interface DetailsProps {
-  data: TreeElement;
+  component: TreeElement;
 }
 
-const Details = ({ data }: DetailsProps) => {
+const Details = ({ component }: DetailsProps) => {
   const [showChildChanges, setShowChildChanges] = useState(true);
 
   return (
     <div className="details">
-      <div className="details__controls">
+      <div className="details__header">
+        <div className="details__header-caption">
+          Events of {showChildChanges && "subtree of"}{" "}
+          <span className={"details__header-component-name"}>
+            {component.displayName ||
+              (!component.ownerId ? "Render root" : "Unknown")}
+          </span>
+          <ElementId id={component.id} />
+        </div>
         <ButtonToggle
           icon={<List />}
           isActive={showChildChanges}
@@ -22,8 +31,8 @@ const Details = ({ data }: DetailsProps) => {
         />
       </div>
       <EventList
-        key={data.id} // to reset state of visible records on component change
-        data={data}
+        key={component.id} // to reset state of visible records on component change
+        component={component}
         showChildChanges={showChildChanges}
       />
     </div>

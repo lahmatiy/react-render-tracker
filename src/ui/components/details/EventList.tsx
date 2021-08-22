@@ -3,7 +3,7 @@ import { ElementEvent, TreeElement } from "../../types";
 import EventListItem from "./EventListItem";
 
 interface EventListProps {
-  data: TreeElement;
+  component: TreeElement;
   showChildChanges: boolean;
 }
 
@@ -38,8 +38,8 @@ function getEventLog(component: TreeElement, showChildChanges = false) {
 
 const sectionSize = 50;
 const sectionMinSize = 10;
-const EventList = ({ data, showChildChanges }: EventListProps) => {
-  const records = getEventLog(data, showChildChanges);
+const EventList = ({ component, showChildChanges }: EventListProps) => {
+  const records = getEventLog(component, showChildChanges);
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, records.length - sectionSize);
     return offset < sectionMinSize ? 0 : offset;

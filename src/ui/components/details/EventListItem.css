@@ -18,18 +18,21 @@
 .event-list-item__event-type-label {
   display: inline-block;
   vertical-align: top;
-  background: #e8e8e8;
   padding: 4px 4px 5px;
   width: 8ex;
   text-align: center;
+  background: #e8e8e8;
+  color: #777;
 }
 .event-list-item__event-type-label[data-type="mount"] {
   /* background-color: #b8d877; */
   background-color: #cbe4b4;
+  color: #5a7b3b;
 }
 .event-list-item__event-type-label[data-type="rerender"] {
   /* background-color: #f1e27c; */
   background-color: #eaeac6;
+  color: #71712f;
 }
 
 .event-list-item__details {
@@ -42,6 +45,11 @@
 }
 .event-list-item__name {
   color: var(--primary);
+}
+.event-list-item__name_unmounted {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: #888;
 }
 .event-list-item__reasons {
   display: inline-block;
