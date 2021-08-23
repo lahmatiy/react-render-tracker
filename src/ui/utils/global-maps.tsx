@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect } from "react";
 import { MessageElement } from "../types";
+import { notifyById, subscribeById } from "./subscription";
 
 interface GlobalMapsContext {
   componentById: SubscribeMap<number, MessageElement>;
@@ -33,27 +34,11 @@ class SubscribeMap<K, V> extends Map<K, V> {
   private subscriptionsMap = new Map<K, Set<callback<V>>>();
 
   subscribe(id: K, fn: callback<V>) {
-    let subscriptions: Set<callback<V>>;
-
-    if (!this.subscriptionsMap.has(id)) {
-      this.subscriptionsMap.set(id, (subscriptions = new Set()));
-    } else {
-      subscriptions = this.subscriptionsMap.get(id);
-    }
-
-    subscriptions.add(fn);
-
-    return () => {
-      subscriptions.delete(fn);
-    };
+    return subscribeById<K, callback<V>>(this.subscriptionsMap, id, fn);
   }
 
   notify(id: K) {
-    const subscriptions = this.subscriptionsMap.get(id) || [];
-
-    for (const fn of subscriptions) {
-      fn(this.get(id));
-    }
+    return notifyById(this.subscriptionsMap, id, this.get(id));
   }
 }
 

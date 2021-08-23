@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { TreeElement } from "../../types";
-import { useComponent, useComponentChildren } from "../../utils/componentMaps";
+import { useComponent, useComponentChildren } from "../../utils/global-maps";
 import { useViewSettingsContext } from "./contexts";
 import TreeElementCaption from "./TreeLeafCaption";
 
 export interface TreeElementProps {
   componentId: number;
   depth?: number;
-  selectedId: number | null;
-  onSelect: (id: number) => void;
 }
 
 const TreeElement = React.memo(
-  ({ componentId, depth = 0, selectedId, onSelect }: TreeElementProps) => {
+  ({ componentId, depth = 0 }: TreeElementProps) => {
     const { groupByParent, showUnmounted } = useViewSettingsContext();
     const component = useComponent(componentId);
     const children = useComponentChildren(componentId, groupByParent);
@@ -33,8 +31,6 @@ const TreeElement = React.memo(
         <TreeElementCaption
           depth={Math.max(depth - 1, 0)}
           component={component}
-          selected={selectedId === componentId}
-          onSelect={onSelect}
           expanded={expanded}
           setExpanded={hasChildren ? setExpanded : null}
         />
@@ -45,8 +41,6 @@ const TreeElement = React.memo(
               key={childId}
               componentId={childId}
               depth={depth + 1}
-              onSelect={onSelect}
-              selectedId={selectedId}
             />
           ))}
       </Wrapper>

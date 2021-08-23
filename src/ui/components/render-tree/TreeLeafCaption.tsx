@@ -4,17 +4,18 @@ import ElementId from "../common/ElementId";
 import ElementHocNames from "./ComponentHocNames";
 import { MessageElement } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
+import { useSelectionState } from "../../utils/selection";
 
 interface TreeLeafCaptionProps {
   component: MessageElement;
   depth?: number;
-  selected: boolean;
-  onSelect: (id: number) => void;
   expanded: boolean;
   setExpanded: (value: boolean) => void;
 }
 interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
   match: [offset: number, length: number] | null;
+  selected: boolean;
+  onSelect: (id: number) => void;
 }
 
 function getElementNameHighlight(
@@ -54,12 +55,11 @@ function formatDuration(duration: number) {
 const TreeLeafCaption = ({
   component,
   depth = 0,
-  selected,
-  onSelect,
   expanded,
   setExpanded,
 }: TreeLeafCaptionProps) => {
   const { id, displayName } = component;
+  const { selected, select } = useSelectionState(id);
   const match = useFindMatch(id, displayName);
   console.log("caption", id);
 
@@ -69,7 +69,7 @@ const TreeLeafCaption = ({
       depth={depth}
       match={match}
       selected={selected}
-      onSelect={onSelect}
+      onSelect={select}
       expanded={expanded}
       setExpanded={setExpanded}
     />

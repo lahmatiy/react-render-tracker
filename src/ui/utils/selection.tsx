@@ -1,0 +1,103 @@
+import * as React from "react";
+import { notify, notifyById, subscribe, subscribeById } from "./subscription";
+
+type idChangeCallback = (id: number) => void;
+type stateChangeCallback = (state: boolean) => void;
+interface Selection {
+  selectedId: number;
+  select: (nextSelectedId: number) => void;
+  subscribe: (fn: (value: number) => void) => () => void;
+  subscribeToIdState: (id: number, fn: stateChangeCallback) => () => void;
+}
+
+const SelectionContext = React.createContext<Selection>({} as any);
+const useSelectionContext = () => React.useContext(SelectionContext);
+export const SelectionContextProvider = ({
+  children,
+}: {
+  children: JSX.Element | JSX.Element[];
+}) => {
+  const value: Selection = React.useMemo(() => {
+    let selectedId = null;
+    const subscriptions = new Set<idChangeCallback>();
+    const stateSubscriptionsById = new Map<number, Set<stateChangeCallback>>();
+    const select: Selection["select"] = nextSelectedId => {
+      const prevSelectedId = selectedId;
+
+      if (nextSelectedId === prevSelectedId) {
+        return;
+      }
+
+      selectedId = nextSelectedId;
+      console.log("selection:", selectedId);
+
+      if (prevSelectedId !== null) {
+        notifyById(stateSubscriptionsById, prevSelectedId, false);
+      }
+
+      if (nextSelectedId !== null) {
+        notifyById(stateSubscriptionsById, nextSelectedId, true);
+      }
+
+      notify(subscriptions, selectedId);
+    };
+
+    return {
+      get selectedId() {
+        return selectedId;
+      },
+      set selectedId(id) {
+        select(id);
+      },
+      select,
+      subscribe(fn) {
+        return subscribe(subscriptions, fn);
+      },
+      subscribeToIdState(id, fn) {
+        return subscribeById<number, stateChangeCallback>(
+          stateSubscriptionsById,
+          id,
+          fn
+        );
+      },
+    };
+  }, []);
+
+  return (
+    <SelectionContext.Provider value={value}>
+      {children}
+    </SelectionContext.Provider>
+  );
+};
+
+export const SelectedIdConsumer = ({
+  children,
+}: {
+  children: (selectedId: number | null) => JSX.Element;
+}) => {
+  const { selectedId, subscribe } = useSelectionContext();
+  const [state, setState] = React.useState(selectedId);
+
+  React.useEffect(() => subscribe(setState), []);
+
+  return children(state);
+};
+
+export const useSelectionState = (id: number) => {
+  const { selectedId, subscribeToIdState, select } = useSelectionContext();
+  const [state, setState] = React.useState(id === selectedId);
+  const selectThis = React.useCallback(() => select(id), []);
+
+  React.useEffect(() => subscribeToIdState(id, setState), [id]);
+
+  return { selected: state, select: selectThis };
+};
+
+export const useSelectionId = (id: number) => {
+  const { selectedId, subscribe } = useSelectionContext();
+  const [state, setState] = React.useState<number | null>(selectedId);
+
+  React.useEffect(() => subscribe(setState), [id]);
+
+  return state;
+};

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MessageElement } from "../../types";
-import { useComponent } from "../../utils/componentMaps";
+import { useComponent } from "../../utils/global-maps";
 import EventListItem from "./EventListItem";
 
 interface EventListProps {

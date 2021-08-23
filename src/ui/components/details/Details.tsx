@@ -3,7 +3,7 @@ import List from "react-feather/dist/icons/list";
 import ButtonToggle from "../common/ButtonToggle";
 import EventList from "./EventList";
 import ElementId from "../common/ElementId";
-import { useComponent } from "../../utils/componentMaps";
+import { useComponent } from "../../utils/global-maps";
 
 interface DetailsProps {
   componentId: number;

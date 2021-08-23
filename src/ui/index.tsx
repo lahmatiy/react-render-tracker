@@ -3,10 +3,7 @@ import ReactDOM from "react-dom";
 import { getSubscriber } from "rempl";
 import App from "./App";
 import { MessageElement, Message } from "./types";
-import {
-  GlobalMapsContextProvider,
-  useGlobalMaps,
-} from "./utils/componentMaps";
+import { GlobalMapsContextProvider, useGlobalMaps } from "./utils/global-maps";
 
 // bootstrap HTML document
 declare let __CSS__: string;
