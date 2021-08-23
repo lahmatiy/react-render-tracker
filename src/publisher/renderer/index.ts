@@ -39,7 +39,6 @@ import {
   RecordEventHandler,
   FiberRoot,
 } from "../types";
-import { TransferChangeDescription } from "../../common/types";
 
 function getFiberFlags(fiber: Fiber): number {
   // The name of this field changed from "effectTag" to "flags"
@@ -350,7 +349,7 @@ export function attach(
             hooks: getChangedHooks(
               prevFiber.memoizedState,
               nextFiber.memoizedState,
-              _debugHookTypes
+              _debugHookTypes || []
             ),
             props: getChangedKeys(
               prevFiber.memoizedProps,
@@ -447,22 +446,22 @@ export function attach(
     );
   }
 
-  function getChangedInputsIndecies(prevDeps: any[], nextDeps: any[]) {
-    if (!Array.isArray(prevDeps) || !Array.isArray(nextDeps)) {
-      return false;
-    }
+  // function getChangedInputsIndecies(prevDeps: any[], nextDeps: any[]) {
+  //   if (!Array.isArray(prevDeps) || !Array.isArray(nextDeps)) {
+  //     return false;
+  //   }
 
-    const changes: number[] = [];
-    for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
-      if (Object.is(nextDeps[i], prevDeps[i])) {
-        changes.push(i);
-      }
-    }
+  //   const changes: number[] = [];
+  //   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+  //     if (Object.is(nextDeps[i], prevDeps[i])) {
+  //       changes.push(i);
+  //     }
+  //   }
 
-    return changes.length > 0 ? changes : false;
-  }
+  //   return changes.length > 0 ? changes : false;
+  // }
 
-  function getChangedHooks(prev, next, hookNames) {
+  function getChangedHooks(prev, next, hookNames: string[]) {
     if (prev == null || next == null) {
       return null;
     }
@@ -483,12 +482,13 @@ export function attach(
         const changed = prev.memoizedState !== next.memoizedState;
 
         if (effect) {
-          const computed =
-            !prev.memoizedState ||
-            getChangedInputsIndecies(
-              prev.memoizedState.deps,
-              next.memoizedState.deps
-            );
+          const computed = false;
+          // TODO: use computed in separate changes property
+          // !prev.memoizedState ||
+          // getChangedInputsIndecies(
+          //   prev.memoizedState.deps,
+          //   next.memoizedState.deps
+          // );
 
           if (computed || changed) {
             indices.push({
@@ -515,6 +515,32 @@ export function attach(
     return indices.length > 0 ? indices : null;
   }
 
+  function simpleValueSerialization(value: any) {
+    switch (typeof value) {
+      case "boolean":
+      case "undefined":
+      case "number":
+      case "bigint":
+      case "symbol":
+        return String(value);
+
+      case "function":
+        return "ƒn";
+
+      case "string":
+        return value.length > 20 ? value.slice(0, 20) + "..." : value;
+
+      case "object":
+        if (Array.isArray(value)) {
+          return "[]";
+        }
+
+        return value.constructor === Object
+          ? "{}"
+          : Object.prototype.toString.call(value);
+    }
+  }
+
   function getChangedKeys(prev, next) {
     if (prev == null || next == null) {
       return null;
@@ -533,11 +559,11 @@ export function attach(
     const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
     const changedKeys = [];
     for (const key of keys) {
-      if (prev[key] !== next[key]) {
+      if (!Object.is(prev[key], next[key])) {
         changedKeys.push({
           name: key,
-          prev: prev[key],
-          next: next[key],
+          prev: simpleValueSerialization(prev[key]),
+          next: simpleValueSerialization(next[key]),
         });
       }
     }
@@ -819,35 +845,6 @@ export function attach(
     }
   }
 
-  /**
-   * Fixes possible circular dependencies in component props
-   * to allow data serialisation and sending over rempl.
-   */
-  function parseCommitChanges(entry: ReactChangeDescription) {
-    const { props, state } = entry;
-    const safeEntry: TransferChangeDescription = {
-      ...entry,
-      props: null,
-      state: null,
-    };
-
-    if (props) {
-      safeEntry.props = props.map(entry => ({
-        name: entry.name,
-        changed: entry.prev !== entry.next,
-      }));
-    }
-
-    if (state) {
-      safeEntry.state = state.map(entry => ({
-        name: entry.name,
-        changed: entry.prev !== entry.next,
-      }));
-    }
-
-    return safeEntry;
-  }
-
   // Calculate fiber durations. Should be called on mount or fiber changes only,
   // otherwise it may return a duration for a previous fiber update.
   function getDurations(fiber: Fiber) {
@@ -879,7 +876,7 @@ export function attach(
         op: "rerender",
         elementId: getFiberIDThrows(fiber),
         ...getDurations(fiber),
-        changes: changes && parseCommitChanges(changes),
+        changes,
       });
 
       updateContextsForFiber(fiber);

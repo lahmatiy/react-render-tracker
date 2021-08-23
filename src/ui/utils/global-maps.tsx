@@ -44,35 +44,28 @@ export class SubscribeMap<K, V> extends Map<K, V> {
 
 export const useComponent = (componentId: number) => {
   const { componentById } = useGlobalMaps();
-  const [component, setComponent] = React.useState<MessageElement>(
-    componentById.get(componentId)
-  );
+  const [, triggerUpdate] = React.useState<MessageElement>();
 
   useEffect(
-    () => componentById.subscribe(componentId, setComponent),
-    [componentId, setComponent]
+    () => componentById.subscribe(componentId, triggerUpdate),
+    [componentId]
   );
 
-  return component;
+  return componentById.get(componentId);
 };
 
-const NOCHILDREN = [];
 export const useComponentChildren = (
   componentId: number,
   groupByParent = false
 ) => {
   const { componentsByOwnerId, componentsByParentId } = useGlobalMaps();
   const map = groupByParent ? componentsByParentId : componentsByOwnerId;
-  const [childrenIds, setChildrenIds] = React.useState<number[]>(
-    () => map.get(componentId) || NOCHILDREN
+  const [, triggerUpdate] = React.useState<number[]>();
+
+  useEffect(
+    () => map.subscribe(componentId, triggerUpdate),
+    [componentId, map]
   );
 
-  useEffect(() => {
-    // TODO: investigate why we need this, otherwise new children do not apply
-    setChildrenIds(map.get(componentId) || NOCHILDREN);
-
-    return map.subscribe(componentId, setChildrenIds);
-  }, [componentId, map, setChildrenIds]);
-
-  return childrenIds || [];
+  return map.get(componentId) || [];
 };

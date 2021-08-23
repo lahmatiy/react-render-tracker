@@ -26,8 +26,8 @@ export type TransferChangeDescription = {
     changed: boolean;
     computed?: boolean;
   }> | null;
-  props: Array<{ name: string; changed: boolean }> | null;
-  state: Array<{ name: string; changed: boolean }> | null;
+  props: Array<{ name: string; prev: string; next: string }> | null;
+  state: Array<{ name: string; prev: string; next: string }> | null;
 };
 
 export interface BaseMessage {

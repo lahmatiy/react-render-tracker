@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // import dateFormat from "dateformat";
 import ButtonCollapse from "../common/ButtonExpand";
-import EventRenderReason from "./EventRenderReasonDetails";
+import EventRenderReasons from "./EventRenderReasons";
 import ElementId from "../common/ElementId";
 import { Event, MessageElement } from "../../types";
 
@@ -113,7 +113,7 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
         </td>
       </tr>
       {event.op === "rerender" && expanded && (
-        <EventRenderReason changes={event.changes} />
+        <EventRenderReasons changes={event.changes} />
       )}
     </>
   );

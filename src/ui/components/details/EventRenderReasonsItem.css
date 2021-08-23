@@ -1,0 +1,33 @@
+.event-render-reason:not(:last-child) {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.event-render-reason td {
+  padding-left: 2px;
+  padding-right: 2px;
+  color: #444;
+}
+.event-render-reason td:first-child {
+  min-width: 8ex;
+  text-align: right;
+  padding-left: 4px;
+}
+
+.event-render-reason__type {
+  background-color: #d6daf3;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #666;
+}
+
+.event-render-reason__value-change {
+  width: 100%;
+}
+
+.event-render-reason__value-change code {
+  color: #1e9611;
+  background-color: #ecf3ed;
+  padding: 2px 4px;
+  border-radius: 4px;
+}

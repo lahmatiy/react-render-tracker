@@ -7,7 +7,8 @@
 @import url("./components/details/Details.css");
 @import url("./components/details/EventList.css");
 @import url("./components/details/EventListItem.css");
-@import url("./components/details/EventRenderReasonDetails.css");
+@import url("./components/details/EventRenderReasons.css");
+@import url("./components/details/EventRenderReasonsItem.css");
 @import url("./components/render-tree/Tree.css");
 @import url("./components/render-tree/TreeLeaf.css");
 @import url("./components/render-tree/TreeLeafCaption.css");
