@@ -75,15 +75,43 @@ function upsertComponent(
   }
 }
 
+function removeComponent(
+  map: Map<number, number[]>,
+  id: number,
+  componentId: number
+) {
+  if (map.has(id)) {
+    const list = map.get(id);
+    const idx = list.indexOf(componentId);
+    list.splice(idx, 1);
+  }
+}
+
+function markUpdated(map, id, type) {
+  if (map.has(id)) {
+    map.set(id, map.get(id) | type);
+  } else {
+    map.set(id, type);
+  }
+}
+
+const UPDATE_SELF /*        */ = 0b00000001;
+const UPDATE_OWNER /*       */ = 0b00000010;
+const UPDATE_PARENT /*      */ = 0b00000100;
+const UPDATE_MOUNT_OWNER /* */ = 0b00001000;
+const UPDATE_MOUNT_PARENT /**/ = 0b00010000;
+
 function processEvents(
   events: Message[],
   {
     componentById,
     componentsByParentId,
     componentsByOwnerId,
+    mountedComponentsByParentId,
+    mountedComponentsByOwnerId,
   }: ReturnType<typeof useGlobalMaps>
 ) {
-  const updated = new Set<number>();
+  const updated = new Map<number, number>();
 
   for (const event of events) {
     let element: MessageElement;
@@ -96,11 +124,23 @@ function processEvents(
           events: [],
         };
 
+        markUpdated(updated, element.parentId, UPDATE_OWNER);
         upsertComponent(componentsByParentId, element.parentId, element.id);
-        updated.add(element.parentId);
+        markUpdated(updated, element.parentId, UPDATE_MOUNT_OWNER);
+        upsertComponent(
+          mountedComponentsByParentId,
+          element.parentId,
+          element.id
+        );
 
+        markUpdated(updated, element.ownerId, UPDATE_OWNER);
         upsertComponent(componentsByOwnerId, element.ownerId, element.id);
-        updated.add(element.ownerId);
+        markUpdated(updated, element.ownerId, UPDATE_MOUNT_OWNER);
+        upsertComponent(
+          mountedComponentsByOwnerId,
+          element.ownerId,
+          element.id
+        );
         break;
       }
 
@@ -109,6 +149,21 @@ function processEvents(
           ...componentById.get(event.elementId),
           mounted: false,
         };
+
+        markUpdated(updated, element.ownerId, UPDATE_MOUNT_OWNER);
+        removeComponent(
+          mountedComponentsByOwnerId,
+          element.ownerId,
+          element.id
+        );
+
+        markUpdated(updated, element.parentId, UPDATE_MOUNT_PARENT);
+        removeComponent(
+          mountedComponentsByParentId,
+          element.parentId,
+          element.id
+        );
+
         break;
       }
 
@@ -116,7 +171,7 @@ function processEvents(
         element = componentById.get(event.elementId);
     }
 
-    updated.add(element.id);
+    markUpdated(updated, element.id, UPDATE_SELF);
     componentById.set(event.elementId, {
       ...element,
       events: element.events.concat(event),
@@ -124,10 +179,12 @@ function processEvents(
   }
 
   // console.log("updated", [...updated], events);
-  for (const id of updated) {
-    componentById.notify(id);
-    componentsByOwnerId.notify(id);
-    componentsByParentId.notify(id);
+  for (const [id, update] of updated) {
+    update & UPDATE_SELF && componentById.notify(id);
+    update & UPDATE_OWNER && componentsByOwnerId.notify(id);
+    update & UPDATE_PARENT && componentsByParentId.notify(id);
+    update & UPDATE_MOUNT_OWNER && mountedComponentsByOwnerId.notify(id);
+    update & UPDATE_MOUNT_PARENT && mountedComponentsByParentId.notify(id);
   }
 
   return [...componentById.values()];

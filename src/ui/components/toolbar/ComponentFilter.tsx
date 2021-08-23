@@ -16,7 +16,7 @@ const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
       <Search />
       <input
         type="text"
-        placeholder="Filter components"
+        placeholder="Find component"
         onChange={handleChange}
         value={value}
       />

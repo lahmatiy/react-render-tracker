@@ -38,7 +38,11 @@ function App() {
               />
             </FindMatchContextProvider>
             {selectedId !== null && (
-              <Details componentId={selectedId} groupByParent={groupByParent} />
+              <Details
+                componentId={selectedId}
+                groupByParent={groupByParent}
+                showUnmounted={showUnmounted}
+              />
             )}
           </div>
         )}

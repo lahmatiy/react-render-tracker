@@ -7,6 +7,12 @@ interface GlobalMapsContext {
   componentById: SubscribeMap<number, MessageElement>;
   componentsByParentId: SubscribeMap<number, number[]>;
   componentsByOwnerId: SubscribeMap<number, number[]>;
+  mountedComponentsByParentId: SubscribeMap<number, number[]>;
+  mountedComponentsByOwnerId: SubscribeMap<number, number[]>;
+  selectChildrenMap: (
+    groupByParent: boolean,
+    includeUnmounted: boolean
+  ) => SubscribeMap<number, number[]>;
 }
 
 const GlobalMapsContext = React.createContext<GlobalMapsContext>({} as any);
@@ -16,11 +22,29 @@ export function GlobalMapsContextProvider({
 }: {
   children: JSX.Element;
 }) {
-  const value: GlobalMapsContext = {
-    componentById: new SubscribeMap(),
-    componentsByParentId: new SubscribeMap(),
-    componentsByOwnerId: new SubscribeMap(),
-  };
+  const value: GlobalMapsContext = React.useMemo(() => {
+    const componentsByParentId = new SubscribeMap<number, number[]>();
+    const componentsByOwnerId = new SubscribeMap<number, number[]>();
+    const mountedComponentsByParentId = new SubscribeMap<number, number[]>();
+    const mountedComponentsByOwnerId = new SubscribeMap<number, number[]>();
+
+    return {
+      componentById: new SubscribeMap(),
+      componentsByParentId,
+      componentsByOwnerId,
+      mountedComponentsByParentId,
+      mountedComponentsByOwnerId,
+      selectChildrenMap(groupByParent, includeUnmounted) {
+        return groupByParent
+          ? includeUnmounted
+            ? componentsByParentId
+            : mountedComponentsByParentId
+          : includeUnmounted
+          ? componentsByOwnerId
+          : mountedComponentsByOwnerId;
+      },
+    };
+  }, []);
 
   return (
     <GlobalMapsContext.Provider value={value}>
@@ -56,10 +80,11 @@ export const useComponent = (componentId: number) => {
 
 export const useComponentChildren = (
   componentId: number,
-  groupByParent = false
+  groupByParent = false,
+  includeUnmounted = false
 ) => {
-  const { componentsByOwnerId, componentsByParentId } = useGlobalMaps();
-  const map = groupByParent ? componentsByParentId : componentsByOwnerId;
+  const { selectChildrenMap } = useGlobalMaps();
+  const map = selectChildrenMap(groupByParent, includeUnmounted);
   const [, triggerUpdate] = React.useState<number[]>();
 
   useEffect(

@@ -13,7 +13,11 @@ const TreeElement = React.memo(
   ({ componentId, depth = 0 }: TreeElementProps) => {
     const { groupByParent, showUnmounted } = useViewSettingsContext();
     const component = useComponent(componentId);
-    const children = useComponentChildren(componentId, groupByParent);
+    const children = useComponentChildren(
+      componentId,
+      groupByParent,
+      showUnmounted
+    );
     const [expanded, setExpanded] = useState(true);
     const hasChildren = children.length > 0;
 

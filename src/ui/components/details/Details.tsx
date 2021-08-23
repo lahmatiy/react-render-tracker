@@ -9,12 +9,22 @@ import { useEventLog } from "../../utils/events";
 interface DetailsProps {
   componentId: number;
   groupByParent: boolean;
+  showUnmounted: boolean;
 }
 
-const Details = ({ componentId, groupByParent }: DetailsProps) => {
+const Details = ({
+  componentId,
+  groupByParent,
+  showUnmounted,
+}: DetailsProps) => {
   const component = useComponent(componentId);
   const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
-  const events = useEventLog(componentId, groupByParent, showSubtreeEvents);
+  const events = useEventLog(
+    componentId,
+    groupByParent,
+    showUnmounted,
+    showSubtreeEvents
+  );
 
   return (
     <div className="details">

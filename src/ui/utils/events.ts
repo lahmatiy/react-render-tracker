@@ -7,10 +7,10 @@ import { Message, MessageElement } from "../types";
 export const useEventLog = (
   componentId: number,
   groupByParent: boolean,
+  includeUnmounted: boolean,
   includeSubtree: boolean
 ) => {
-  const { componentById, componentsByParentId, componentsByOwnerId } =
-    useGlobalMaps();
+  const { componentById, selectChildrenMap } = useGlobalMaps();
   const subtree = React.useMemo(() => new Map<number, () => void>(), []);
   const [events, setEvents] =
     React.useState<{ component: MessageElement; event: Message }[]>();
@@ -27,12 +27,10 @@ export const useEventLog = (
         }
 
         setEvents(events.sort((a, b) => a.event.id - b.event.id));
-      }, 1),
+      }, 1) as () => void,
     []
   );
-  const childrenMap = groupByParent
-    ? componentsByParentId
-    : componentsByOwnerId;
+  const childrenMap = selectChildrenMap(groupByParent, includeUnmounted);
 
   React.useEffect(() => {
     // subtree
