@@ -24,14 +24,40 @@ function AppWithData() {
   const maps = useGlobalMaps();
 
   useEffect(() => {
+    const MAX_EVENT_COUNT = 256;
     let lastOffset = 0;
-    return getSubscriber()
-      .ns("tree-changes")
-      .subscribe((events: Message[] = []) => {
-        events = events || [];
-        processEvents(events.slice(lastOffset), maps);
-        lastOffset = events.length;
-      });
+    let totalCount = 0;
+    let loading = false;
+    const channel = getSubscriber().ns("tree-changes");
+    const loadRemoteEvents = channel.getRemoteMethod("getEvents");
+    const loadEvents = () => {
+      if (loading || lastOffset >= totalCount) {
+        return;
+      }
+
+      loading = true;
+      loadRemoteEvents(
+        lastOffset,
+        Math.min(totalCount - lastOffset, MAX_EVENT_COUNT),
+        (events: Message[]) => {
+          processEvents(events, maps);
+          lastOffset += events.length;
+          loading = false;
+
+          // call load events to make sure there are no more events
+          setTimeout(() => loadEvents(), 250);
+        }
+      );
+    };
+
+    return channel.subscribe((data: { count: number } | null) => {
+      const { count } = data || { count: 0 };
+
+      if (count !== totalCount) {
+        totalCount = count;
+        loadEvents();
+      }
+    });
   }, []);
 
   return <App />;

@@ -1,6 +1,6 @@
 import rempl from "rempl";
 import debounce from "lodash.debounce";
-import { Publisher, RecordEventHandler, Message } from "./types";
+import { RecordEventHandler, Message } from "./types";
 
 let eventIdSeed = 0;
 const events: Message[] = [];
@@ -13,6 +13,26 @@ const getTimestamp =
 
 declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
+export interface Publisher {
+  ns<T extends string>(
+    channel: T
+  ): T extends "tree-changes"
+    ? {
+        publish(data: { count: number }): void;
+        provide<T extends string>(
+          method: T,
+          fn: T extends "getEvents"
+            ? (
+                offset: number,
+                count: number,
+                callback: (events: Message[]) => void
+              ) => void
+            : never
+        ): void;
+      }
+    : never;
+}
+
 export const publisher: Publisher = rempl.createPublisher(
   "react-render-tracker",
   (
@@ -31,8 +51,22 @@ export const publisher: Publisher = rempl.createPublisher(
   }
 );
 
+const eventLogChannel = publisher.ns("tree-changes");
+eventLogChannel.provide("getEvents", (offset, count, callback) => {
+  if (isNaN(offset) || isNaN(count)) {
+    return callback([]);
+  }
+
+  offset = Math.max(0, Math.floor(offset));
+  count = Math.min(Math.max(0, Math.floor(count)), events.length - offset);
+
+  callback(events.slice(offset, offset + count));
+});
 const publishEventsDebounced = debounce(
-  () => publisher.ns("tree-changes").publish(events),
+  () =>
+    eventLogChannel.publish({
+      count: events.length,
+    }),
   50,
   { maxWait: 100 }
 );

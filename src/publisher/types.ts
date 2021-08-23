@@ -441,12 +441,6 @@ export type RendererInterface = {
   getFiberByID: (id: number) => Fiber;
 };
 
-export interface Publisher {
-  ns(channel: string): {
-    publish(data: Message[]): void;
-  };
-}
-
 export type RecordEventHandler = (
   payload: DistributiveOmit<Message, "id" | "timestamp">
 ) => void;
