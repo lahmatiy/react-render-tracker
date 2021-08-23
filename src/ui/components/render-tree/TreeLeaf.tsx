@@ -16,7 +16,6 @@ const TreeElement = React.memo(
     const children = useComponentChildren(componentId, groupByParent);
     const [expanded, setExpanded] = useState(true);
     const hasChildren = children.length > 0;
-    console.log("TreeLeaf", component.id, children);
 
     if (!component.mounted && !showUnmounted) {
       return null;

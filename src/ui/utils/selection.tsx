@@ -29,7 +29,6 @@ export const SelectionContextProvider = ({
       }
 
       selectedId = nextSelectedId;
-      console.log("selection:", selectedId);
 
       if (prevSelectedId !== null) {
         notifyById(stateSubscriptionsById, prevSelectedId, false);

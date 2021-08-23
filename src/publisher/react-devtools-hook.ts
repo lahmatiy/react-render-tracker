@@ -61,10 +61,10 @@ export function createReactDevtoolsHook(
       }
 
       try {
-        console.log("handleCommitFiberUnmount");
+        // console.log("handleCommitFiberUnmount");
         rendererInterfaces.get(rendererId).handleCommitFiberUnmount(fiber);
       } catch (e) {
-        console.error(e);
+        console.error("[react-render-tracker]", e);
         // debugger;
       }
     },
@@ -92,12 +92,12 @@ export function createReactDevtoolsHook(
       }
 
       try {
-        console.log("handleCommitFiberRoot");
+        // console.log("handleCommitFiberRoot");
         rendererInterfaces
           .get(rendererId)
           .handleCommitFiberRoot(root, priorityLevel);
       } catch (e) {
-        console.error(e);
+        console.error("[react-render-tracker]", e);
         // debugger;
       }
     },
@@ -115,10 +115,10 @@ export function createReactDevtoolsHook(
       }
 
       try {
-        console.log("handlePostCommitFiberRoot");
+        // console.log("handlePostCommitFiberRoot");
         rendererInterfaces.get(rendererId).handlePostCommitFiberRoot(root);
       } catch (e) {
-        console.error(e);
+        console.error("[react-render-tracker]", e);
         // debugger;
       }
     },

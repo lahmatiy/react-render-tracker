@@ -28,6 +28,7 @@ function AppWithData() {
     return getSubscriber()
       .ns("tree-changes")
       .subscribe((events: Message[] = []) => {
+        events = events || [];
         processEvents(events.slice(lastOffset), maps);
         lastOffset = events.length;
       });
@@ -96,7 +97,7 @@ function processEvents(
     });
   }
 
-  console.log("updated", [...updated], events);
+  // console.log("updated", [...updated], events);
   for (const id of updated) {
     componentById.notify(id);
     componentsByOwnerId.notify(id);

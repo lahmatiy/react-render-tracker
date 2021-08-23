@@ -61,7 +61,6 @@ const TreeLeafCaption = ({
   const { id, displayName } = component;
   const { selected, select } = useSelectionState(id);
   const match = useFindMatch(id, displayName);
-  console.log("caption", id);
 
   return (
     <TreeLeafCaptionInner
@@ -88,7 +87,6 @@ const TreeLeafCaptionInner = React.memo(
   }: TreeLeafCaptionInnerProps) => {
     const { id, ownerId, displayName, hocDisplayNames, events, mounted } =
       component;
-    console.log("caption-inner", id);
 
     const name = getElementNameHighlight(displayName, match);
     const isRenderRoot = ownerId === 0;

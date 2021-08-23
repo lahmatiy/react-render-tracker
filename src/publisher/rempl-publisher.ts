@@ -1,4 +1,5 @@
 import rempl from "rempl";
+import debounce from "lodash.debounce";
 import { Publisher, RecordEventHandler, Message } from "./types";
 
 let eventIdSeed = 0;
@@ -30,11 +31,17 @@ export const publisher: Publisher = rempl.createPublisher(
   }
 );
 
+const publishEventsDebounced = debounce(
+  () => publisher.ns("tree-changes").publish(events),
+  50,
+  { maxWait: 100 }
+);
 export const recordEvent: RecordEventHandler = payload => {
   events.push({
     id: eventIdSeed++,
     timestamp: getTimestamp(),
     ...payload,
   });
-  publisher.ns("tree-changes").publish(events);
+
+  publishEventsDebounced();
 };
