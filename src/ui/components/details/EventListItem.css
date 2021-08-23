@@ -1,3 +1,7 @@
+.event-list-item:hover {
+  background-color: #eee;
+}
+
 .event-list-item__time {
   min-width: 36px;
   padding: 6px 4px 1px;

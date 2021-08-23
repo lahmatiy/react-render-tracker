@@ -1,45 +1,46 @@
 import * as React from "react";
-import { ElementEvent, TreeElement } from "../../types";
+import { MessageElement } from "../../types";
+import { useComponent } from "../../utils/componentMaps";
 import EventListItem from "./EventListItem";
 
 interface EventListProps {
-  component: TreeElement;
-  showChildChanges: boolean;
+  componentId: number;
+  showSubtreeEvents: boolean;
 }
 
-function getEventLog(component: TreeElement, showChildChanges = false) {
-  if (showChildChanges) {
-    const queue = new Set([component]);
-    const combinedChanges: ElementEvent[] = [];
-
-    for (const component of queue) {
-      for (const event of component.events) {
-        combinedChanges.push({
-          component,
-          event,
-        });
-      }
-
-      if (component.children) {
-        for (const child of component.children) {
-          queue.add(child);
-        }
-      }
-    }
-
-    return combinedChanges.sort((a, b) => a.event.id - b.event.id);
-  } else {
-    return component.events.map(event => ({
-      component,
-      event,
-    }));
+function getEventLog(component: MessageElement, showSubtreeEvents = false) {
+  // FIXME: temporary disable show subtree events, since it requires
+  // build a set for subtree and subscribe for each component in it
+  if (showSubtreeEvents) {
+    // const queue = new Set([component]);
+    // const combinedChanges: ElementEvent[] = [];
+    // for (const component of queue) {
+    //   for (const event of component.events) {
+    //     combinedChanges.push({
+    //       component,
+    //       event,
+    //     });
+    //   }
+    //   if (component.children) {
+    //     for (const child of component.children) {
+    //       queue.add(child);
+    //     }
+    //   }
+    // }
+    // return combinedChanges.sort((a, b) => a.event.id - b.event.id);
   }
+
+  return component.events.map(event => ({
+    component,
+    event,
+  }));
 }
 
 const sectionSize = 50;
 const sectionMinSize = 10;
-const EventList = ({ component, showChildChanges }: EventListProps) => {
-  const records = getEventLog(component, showChildChanges);
+const EventList = ({ componentId, showSubtreeEvents }: EventListProps) => {
+  const component = useComponent(componentId);
+  const records = getEventLog(component, showSubtreeEvents);
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, records.length - sectionSize);
     return offset < sectionMinSize ? 0 : offset;

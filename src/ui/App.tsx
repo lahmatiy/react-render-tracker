@@ -1,33 +1,16 @@
-import React, { useState, useMemo } from "react";
-
-import { getTreeData, handleFilterDataElement } from "./data/helpers";
-import { MessageElement } from "./types";
-
+import * as React from "react";
 import Toolbar from "./components/toolbar/Toolbar";
 import Details from "./components/details/Details";
 import RenderTree from "./components/render-tree/Tree";
 
-function App({ data }: { data: MessageElement[] }) {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [filterPattern, setFilterPattern] = useState("");
-  const [groupByParent, setGroupByParent] = useState(false);
-  const [showUnmounted, setShowUnmounted] = useState(true);
-
-  const { componentById, roots } = useMemo(
-    () => getTreeData(data || [], groupByParent),
-    [data, groupByParent]
-  );
-  const filteredData = useMemo(
-    () => handleFilterDataElement(roots, filterPattern, showUnmounted),
-    [roots, filterPattern, showUnmounted]
-  );
-  const selectedComponent = componentById.get(selectedId) || null;
+function App() {
+  const [selectedId, setSelectedId] = React.useState<number | null>(null);
+  const [filterPattern, setFilterPattern] = React.useState("");
+  const [groupByParent, setGroupByParent] = React.useState(false);
+  const [showUnmounted, setShowUnmounted] = React.useState(true);
 
   return (
-    <div
-      className="app"
-      data-has-selected={selectedComponent !== null || undefined}
-    >
+    <div className="app" data-has-selected={selectedId !== null || undefined}>
       <Toolbar
         onFilterPatternChange={setFilterPattern}
         filterPattern={filterPattern}
@@ -37,12 +20,14 @@ function App({ data }: { data: MessageElement[] }) {
         showUnmounted={showUnmounted}
       />
       <RenderTree
-        roots={filteredData}
+        rootId={0}
+        groupByParent={groupByParent}
+        showUnmounted={showUnmounted}
         onSelect={setSelectedId}
         selectedId={selectedId}
         highlight={filterPattern.toLowerCase()}
       />
-      {selectedComponent && <Details component={selectedComponent} />}
+      {selectedId !== null && <Details componentId={selectedId} />}
     </div>
   );
 }

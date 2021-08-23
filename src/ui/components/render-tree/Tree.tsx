@@ -1,27 +1,45 @@
-import React from "react";
-import { TreeElement as ITreeElement } from "../../types";
+import * as React from "react";
+import { useComponentChildren } from "../../utils/componentMaps";
+import { ViewSettings, ViewSettingsContext } from "./contexts";
 import TreeElement, { TreeElementProps } from "./TreeLeaf";
 
 const Tree = ({
-  roots,
+  rootId = 0,
+  groupByParent = false,
+  showUnmounted = true,
   onSelect,
   selectedId,
   highlight,
 }: Pick<TreeElementProps, "onSelect" | "selectedId" | "highlight"> & {
-  roots: ITreeElement[];
+  groupByParent: boolean;
+  showUnmounted: boolean;
+  rootId: number;
 }) => {
+  const children = useComponentChildren(rootId);
+  const viewSettings = React.useMemo<ViewSettings>(
+    () => ({
+      groupByParent,
+      showUnmounted,
+    }),
+    [groupByParent, showUnmounted]
+  );
+
+  console.log("?!tree", [...children]);
+
   return (
     <div className="render-tree">
       <div className="render-tree__content">
-        {roots?.map(root => (
-          <TreeElement
-            key={root.id}
-            data={root}
-            onSelect={onSelect}
-            selectedId={selectedId}
-            highlight={highlight}
-          />
-        ))}
+        <ViewSettingsContext.Provider value={viewSettings}>
+          {children.map(childId => (
+            <TreeElement
+              key={childId}
+              componentId={childId}
+              onSelect={onSelect}
+              selectedId={selectedId}
+              highlight={highlight}
+            />
+          ))}
+        </ViewSettingsContext.Provider>
       </div>
     </div>
   );

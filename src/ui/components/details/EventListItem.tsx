@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import ButtonCollapse from "../common/ButtonExpand";
 import EventRenderReason from "./EventRenderReasonDetails";
 import ElementId from "../common/ElementId";
-import { TreeElement, Event } from "../../types";
+import { Event, MessageElement } from "../../types";
 
 interface EventListItemProps {
-  component: TreeElement;
+  component: MessageElement;
   event: Event;
 }
 

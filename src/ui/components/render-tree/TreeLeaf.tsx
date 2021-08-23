@@ -1,57 +1,68 @@
 import React, { useState } from "react";
 import { TreeElement } from "../../types";
+import { useComponent, useComponentChildren } from "../../utils/componentMaps";
+import { useViewSettingsContext } from "./contexts";
 import TreeElementCaption from "./TreeLeafCaption";
 
 export interface TreeElementProps {
-  data: TreeElement;
+  componentId: number;
   depth?: number;
   selectedId: number | null;
   onSelect: (id: number) => void;
   highlight: string;
 }
 
-const TreeElement = ({
-  data,
-  depth = 0,
-  selectedId,
-  onSelect,
-  highlight,
-}: TreeElementProps) => {
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = data.children?.length > 0;
-  const handleSetExpanded = hasChildren ? setExpanded : null;
+const TreeElement = React.memo(
+  ({
+    componentId,
+    depth = 0,
+    selectedId,
+    onSelect,
+    highlight,
+  }: TreeElementProps) => {
+    const { groupByParent, showUnmounted } = useViewSettingsContext();
+    const component = useComponent(componentId);
+    const children = useComponentChildren(componentId, groupByParent);
+    const [expanded, setExpanded] = useState(true);
+    const hasChildren = children.length > 0;
+    console.log("TreeLeaf", component.id, children);
 
-  // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
-  const isRenderRoot = data.ownerId === 0;
-  const Wrapper = isRenderRoot ? "div" : React.Fragment;
+    if (!component.mounted && !showUnmounted) {
+      return null;
+    }
 
-  return (
-    <Wrapper>
-      <TreeElementCaption
-        depth={Math.max(depth - 1, 0)}
-        data={data}
-        selected={selectedId === data.id}
-        onSelect={onSelect}
-        unmounted={!data.mounted}
-        expanded={expanded}
-        setExpanded={handleSetExpanded}
-        highlight={highlight}
-      />
+    // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
+    const isRenderRoot = component.ownerId === 0;
+    const Wrapper = isRenderRoot ? "div" : React.Fragment;
 
-      {expanded &&
-        hasChildren &&
-        data.children.map(child => (
-          <TreeElement
-            key={child.id}
-            data={child}
-            depth={depth + 1}
-            onSelect={onSelect}
-            selectedId={selectedId}
-            highlight={highlight}
-          />
-        ))}
-    </Wrapper>
-  );
-};
+    return (
+      <Wrapper>
+        <TreeElementCaption
+          depth={Math.max(depth - 1, 0)}
+          component={component}
+          selected={selectedId === componentId}
+          onSelect={onSelect}
+          expanded={expanded}
+          setExpanded={hasChildren ? setExpanded : null}
+          highlight={highlight}
+        />
+
+        {expanded &&
+          children.map(childId => (
+            <TreeElement
+              key={childId}
+              componentId={childId}
+              depth={depth + 1}
+              onSelect={onSelect}
+              selectedId={selectedId}
+              highlight={highlight}
+            />
+          ))}
+      </Wrapper>
+    );
+  }
+);
+
+TreeElement.displayName = "TreeElement";
 
 export default TreeElement;

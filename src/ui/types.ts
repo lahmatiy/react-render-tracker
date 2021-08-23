@@ -14,7 +14,7 @@ export type Event =
 
 export interface MessageElement extends TransferElement {
   mounted: boolean;
-  events: any[];
+  events: Event[];
 }
 // FIXME: a hack to override children
 export type TreeElement = {
