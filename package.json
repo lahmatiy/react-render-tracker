@@ -1,24 +1,26 @@
 {
   "name": "react-render-tracker",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "React render tracker – a tool to discover performance issues related to unintended re-renders",
+  "repository": "lahmatiy/react-render-tracker",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "devtools",
+    "development",
+    "render",
+    "tracker",
+    "performance"
+  ],
+  "main": "src/publisher/index.js",
+  "unpkg": "dist/react-render-reacker.js",
+  "jsdelivr": "dist/react-render-reacker.js",
   "scripts": {
     "lint": "eslint playground src",
     "start": "node scripts/server",
     "build": "node scripts/build",
-    "prepublishOnly": "npm run build && npm run parser:bake"
+    "prepublishOnly": "npm run build"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lahmatiy/react-render-tracker.git"
-  },
-  "keywords": [],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/lahmatiy/react-render-tracker/issues"
-  },
-  "homepage": "https://github.com/lahmatiy/react-render-tracker#readme",
   "dependencies": {
     "cors": "^2.8.5",
     "dateformat": "^4.5.1",
