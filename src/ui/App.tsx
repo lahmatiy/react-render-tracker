@@ -2,6 +2,7 @@ import * as React from "react";
 import Toolbar from "./components/toolbar/Toolbar";
 import Details from "./components/details/Details";
 import RenderTree from "./components/render-tree/Tree";
+import { FindMatchContextProvider } from "./utils/find-match";
 
 function App() {
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
@@ -19,14 +20,15 @@ function App() {
         onShowUnmounted={setShowUnmounted}
         showUnmounted={showUnmounted}
       />
-      <RenderTree
-        rootId={0}
-        groupByParent={groupByParent}
-        showUnmounted={showUnmounted}
-        onSelect={setSelectedId}
-        selectedId={selectedId}
-        highlight={filterPattern.toLowerCase()}
-      />
+      <FindMatchContextProvider pattern={filterPattern}>
+        <RenderTree
+          rootId={0}
+          groupByParent={groupByParent}
+          showUnmounted={showUnmounted}
+          onSelect={setSelectedId}
+          selectedId={selectedId}
+        />
+      </FindMatchContextProvider>
       {selectedId !== null && <Details componentId={selectedId} />}
     </div>
   );

@@ -9,17 +9,10 @@ export interface TreeElementProps {
   depth?: number;
   selectedId: number | null;
   onSelect: (id: number) => void;
-  highlight: string;
 }
 
 const TreeElement = React.memo(
-  ({
-    componentId,
-    depth = 0,
-    selectedId,
-    onSelect,
-    highlight,
-  }: TreeElementProps) => {
+  ({ componentId, depth = 0, selectedId, onSelect }: TreeElementProps) => {
     const { groupByParent, showUnmounted } = useViewSettingsContext();
     const component = useComponent(componentId);
     const children = useComponentChildren(componentId, groupByParent);
@@ -44,7 +37,6 @@ const TreeElement = React.memo(
           onSelect={onSelect}
           expanded={expanded}
           setExpanded={hasChildren ? setExpanded : null}
-          highlight={highlight}
         />
 
         {expanded &&
@@ -55,7 +47,6 @@ const TreeElement = React.memo(
               depth={depth + 1}
               onSelect={onSelect}
               selectedId={selectedId}
-              highlight={highlight}
             />
           ))}
       </Wrapper>

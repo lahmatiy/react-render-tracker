@@ -9,8 +9,7 @@ const Tree = ({
   showUnmounted = true,
   onSelect,
   selectedId,
-  highlight,
-}: Pick<TreeElementProps, "onSelect" | "selectedId" | "highlight"> & {
+}: Pick<TreeElementProps, "onSelect" | "selectedId"> & {
   groupByParent: boolean;
   showUnmounted: boolean;
   rootId: number;
@@ -36,7 +35,6 @@ const Tree = ({
               componentId={childId}
               onSelect={onSelect}
               selectedId={selectedId}
-              highlight={highlight}
             />
           ))}
         </ViewSettingsContext.Provider>

@@ -24,7 +24,6 @@ ReactDOM.render(
 
 // subscribe to data and pass it to app
 function AppWithData() {
-  const [data, setData] = React.useState<MessageElement[]>([]);
   const maps = useGlobalMaps();
 
   useEffect(() => {
@@ -35,9 +34,9 @@ function AppWithData() {
         processEvents(events.slice(lastOffset), maps);
         lastOffset = events.length;
       });
-  }, [setData]);
+  }, []);
 
-  return <App data={data} />;
+  return <App />;
 }
 
 function upsertComponent(

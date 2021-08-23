@@ -3,6 +3,7 @@ import ButtonExpand from "../common/ButtonExpand";
 import ElementId from "../common/ElementId";
 import ElementHocNames from "./ComponentHocNames";
 import { MessageElement } from "../../types";
+import { useFindMatch } from "../../utils/find-match";
 
 interface TreeLeafCaptionProps {
   component: MessageElement;
@@ -11,29 +12,27 @@ interface TreeLeafCaptionProps {
   onSelect: (id: number) => void;
   expanded: boolean;
   setExpanded: (value: boolean) => void;
-  highlight: string;
+}
+interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
+  match: [offset: number, length: number] | null;
 }
 
-function getElementNameHighlight(name: string, pattern: string) {
-  if (!pattern || !name) {
+function getElementNameHighlight(
+  name: string | null,
+  range: [number, number] | null
+) {
+  if (name === null || range === null) {
     return name;
   }
 
-  const matchIndex = name.toLowerCase().indexOf(pattern);
-
-  if (matchIndex !== -1) {
-    return (
-      <>
-        {name.slice(0, matchIndex)}
-        <span className="highlight">
-          {name.slice(matchIndex, matchIndex + pattern.length)}
-        </span>
-        {name.slice(matchIndex + pattern.length)}
-      </>
-    );
-  }
-
-  return name;
+  const [offset, length] = range;
+  return (
+    <>
+      {name.slice(0, offset)}
+      <span className="highlight">{name.slice(offset, offset + length)}</span>
+      {name.slice(offset + length)}
+    </>
+  );
 }
 
 function formatDuration(duration: number) {
@@ -52,19 +51,46 @@ function formatDuration(duration: number) {
   return duration.toFixed(1) + unit;
 }
 
-const TreeLeafCaption = React.memo(
+const TreeLeafCaption = ({
+  component,
+  depth = 0,
+  selected,
+  onSelect,
+  expanded,
+  setExpanded,
+}: TreeLeafCaptionProps) => {
+  const { id, displayName } = component;
+  const match = useFindMatch(id, displayName);
+  console.log("caption", id);
+
+  return (
+    <TreeLeafCaptionInner
+      component={component}
+      depth={depth}
+      match={match}
+      selected={selected}
+      onSelect={onSelect}
+      expanded={expanded}
+      setExpanded={setExpanded}
+    />
+  );
+};
+
+const TreeLeafCaptionInner = React.memo(
   ({
     component,
-    depth = 0,
+    depth,
+    match,
     selected,
     onSelect,
     expanded,
     setExpanded,
-    highlight,
-  }: TreeLeafCaptionProps) => {
-    console.log("caption", component);
+  }: TreeLeafCaptionInnerProps) => {
     const { id, ownerId, displayName, hocDisplayNames, events, mounted } =
       component;
+    console.log("caption-inner", id);
+
+    const name = getElementNameHighlight(displayName, match);
     const isRenderRoot = ownerId === 0;
     const rerendersCount = events?.reduce(
       (count, event) => (event.op === "rerender" ? count + 1 : count),
@@ -96,7 +122,6 @@ const TreeLeafCaption = React.memo(
       }
     }
 
-    const name = getElementNameHighlight(displayName, highlight);
     const handleSelect = (event: React.MouseEvent) => {
       event.stopPropagation();
       onSelect(id);
@@ -132,6 +157,6 @@ const TreeLeafCaption = React.memo(
   }
 );
 
-TreeLeafCaption.displayName = "TreeLeafCaption";
+TreeLeafCaptionInner.displayName = "TreeLeafCaptionInner";
 
 export default TreeLeafCaption;
