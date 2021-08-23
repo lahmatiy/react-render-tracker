@@ -37,7 +37,9 @@ function App() {
                 showUnmounted={showUnmounted}
               />
             </FindMatchContextProvider>
-            {selectedId !== null && <Details componentId={selectedId} />}
+            {selectedId !== null && (
+              <Details componentId={selectedId} groupByParent={groupByParent} />
+            )}
           </div>
         )}
       </SelectedIdConsumer>

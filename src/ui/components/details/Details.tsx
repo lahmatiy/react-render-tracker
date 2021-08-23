@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import * as React from "react";
 import List from "react-feather/dist/icons/list";
 import ButtonToggle from "../common/ButtonToggle";
 import EventList from "./EventList";
 import ElementId from "../common/ElementId";
 import { useComponent } from "../../utils/global-maps";
+import { useEventLog } from "../../utils/events";
 
 interface DetailsProps {
   componentId: number;
+  groupByParent: boolean;
 }
 
-const Details = ({ componentId }: DetailsProps) => {
-  const [showSubtreeEvents, setShowSubtreeEvents] = useState(true);
+const Details = ({ componentId, groupByParent }: DetailsProps) => {
   const component = useComponent(componentId);
+  const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
+  const events = useEventLog(componentId, groupByParent, showSubtreeEvents);
 
   return (
     <div className="details">
@@ -31,11 +34,13 @@ const Details = ({ componentId }: DetailsProps) => {
           tooltip="Show child changes"
         />
       </div>
-      <EventList
-        key={componentId} // to reset state of visible records on component change
-        componentId={componentId}
-        showSubtreeEvents={showSubtreeEvents}
-      />
+      {events && (
+        <EventList
+          // key used to reset state of visible records on component & settings change
+          key={[componentId, groupByParent, showSubtreeEvents].join("-")}
+          events={events}
+        />
+      )}
     </div>
   );
 };

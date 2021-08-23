@@ -30,7 +30,7 @@ export function GlobalMapsContextProvider({
 }
 
 type callback<V> = (value: V) => void;
-class SubscribeMap<K, V> extends Map<K, V> {
+export class SubscribeMap<K, V> extends Map<K, V> {
   private subscriptionsMap = new Map<K, Set<callback<V>>>();
 
   subscribe(id: K, fn: callback<V>) {

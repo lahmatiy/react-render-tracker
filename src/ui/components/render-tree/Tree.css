@@ -6,4 +6,6 @@
 }
 .render-tree__content {
   margin-top: -1px;
+  display: table;
+  min-width: 100%;
 }
