@@ -29,6 +29,17 @@ Features:
 <script src="path/to/react-render-tracker.js"></script>
 ```
 
+You can use CDN services to include script with no installation:
+
+```html
+<!-- unpkg -->
+<script src="https://unpkg.com/react-render-tracker"></script>
+<!-- jsdelivr -->
+<script src="https://cdn.jsdelivr.net/npm/react-render-tracker"></script>
+```
+
+https://unpkg.com/react-render-tracker
+
 2. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
 
 3. Open your html page and browser's devtools, open Rempl tab. That's it.

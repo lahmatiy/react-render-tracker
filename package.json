@@ -13,8 +13,8 @@
     "performance"
   ],
   "main": "src/publisher/index.js",
-  "unpkg": "dist/react-render-reacker.js",
-  "jsdelivr": "dist/react-render-reacker.js",
+  "unpkg": "dist/react-render-tracker.js",
+  "jsdelivr": "dist/react-render-tracker.js",
   "scripts": {
     "lint": "eslint playground src",
     "start": "node scripts/server",
