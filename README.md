@@ -1,3 +1,5 @@
+[![NPM version](https://img.shields.io/npm/v/react-render-tracker.svg)](https://www.npmjs.com/package/react-render-tracker)
+
 # React render tracker
 
 React render tracker – a tool to discover performance issues related to unintended re-renders
