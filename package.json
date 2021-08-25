@@ -22,8 +22,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dateformat": "^4.5.1",
     "lodash.debounce": "^4.0.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -37,6 +35,7 @@
     "@types/react-dom": "^17.0.9",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
+    "cors": "^2.8.5",
     "esbuild": "^0.12.16",
     "eslint": "^7.31.0",
     "eslint-plugin-react": "^7.24.0",
