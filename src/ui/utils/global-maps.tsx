@@ -13,6 +13,7 @@ interface GlobalMapsContext {
     groupByParent: boolean,
     includeUnmounted: boolean
   ) => SubscribeMap<number, number[]>;
+  clearTree: () => void;
 }
 
 const GlobalMapsContext = React.createContext<GlobalMapsContext>({} as any);
@@ -42,6 +43,12 @@ export function GlobalMapsContextProvider({
           : includeUnmounted
           ? componentsByOwnerId
           : mountedComponentsByOwnerId;
+      },
+      clearTree() {
+        componentsByParentId.clear();
+        componentsByOwnerId.clear();
+        mountedComponentsByParentId.clear();
+        mountedComponentsByOwnerId.clear();
       },
     };
   }, []);
