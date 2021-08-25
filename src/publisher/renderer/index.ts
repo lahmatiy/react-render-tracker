@@ -531,6 +531,10 @@ export function attach(
         return value.length > 20 ? value.slice(0, 20) + "..." : value;
 
       case "object":
+        if (value === null) {
+          return String(value);
+        }
+
         if (Array.isArray(value)) {
           return "[]";
         }
