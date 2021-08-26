@@ -21,13 +21,15 @@ Features:
 
 ## How to use
 
-### Option 1 – Using with devtools
+### Option 1 – Using with browser's devtools
 
 1. Add to your html file a script before a React app:
 
 ```html
 <script src="path/to/react-render-tracker.js"></script>
 ```
+
+> NOTE: A path for a bundle in the npm package is `dist/react-render-tracker.js`
 
 You can use CDN services to include script with no installation:
 
@@ -37,8 +39,6 @@ You can use CDN services to include script with no installation:
 <!-- jsdelivr -->
 <script src="https://cdn.jsdelivr.net/npm/react-render-tracker"></script>
 ```
-
-https://unpkg.com/react-render-tracker
 
 2. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
 
