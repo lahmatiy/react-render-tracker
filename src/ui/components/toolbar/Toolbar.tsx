@@ -15,7 +15,7 @@ interface ToolbarProps {
   onGroupingChange: BolleanToggle;
   onShowUnmounted: BolleanToggle;
   showUnmounted: boolean;
-  onClearTree: () => void;
+  onClearEventLog: () => void;
 }
 
 const Toolbar = ({
@@ -25,7 +25,7 @@ const Toolbar = ({
   onGroupingChange,
   onShowUnmounted,
   showUnmounted,
-  onClearTree,
+  onClearEventLog,
 }: ToolbarProps) => {
   return (
     <div className="toolbar">
@@ -45,7 +45,7 @@ const Toolbar = ({
       <ButtonToggle
         icon={<ClearEventLog />}
         isActive={false}
-        onChange={onClearTree}
+        onChange={onClearEventLog}
         tooltip={"Clear event log"}
       />
     </div>

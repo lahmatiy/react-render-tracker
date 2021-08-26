@@ -14,13 +14,7 @@ function App() {
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
 
-  const [, triggerUpdate] = React.useState<unknown>();
-  const { clearTree } = useGlobalMaps();
-
-  const onClearTree = React.useCallback(() => {
-    clearTree();
-    triggerUpdate({});
-  }, [clearTree]);
+  const { clearEventLog } = useGlobalMaps();
 
   return (
     <SelectionContextProvider>
@@ -37,7 +31,7 @@ function App() {
               groupByParent={groupByParent}
               onShowUnmounted={setShowUnmounted}
               showUnmounted={showUnmounted}
-              onClearTree={onClearTree}
+              onClearEventLog={clearEventLog}
             />
 
             <FindMatchContextProvider pattern={filterPattern}>

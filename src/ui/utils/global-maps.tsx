@@ -13,7 +13,7 @@ interface GlobalMapsContext {
     groupByParent: boolean,
     includeUnmounted: boolean
   ) => SubscribeMap<number, number[]>;
-  clearTree: () => void;
+  clearEventLog: () => void;
 }
 
 const GlobalMapsContext = React.createContext<GlobalMapsContext>({} as any);
@@ -24,13 +24,15 @@ export function GlobalMapsContextProvider({
   children: JSX.Element;
 }) {
   const value: GlobalMapsContext = React.useMemo(() => {
+    const componentById = new SubscribeMap<number, MessageElement>();
+
     const componentsByParentId = new SubscribeMap<number, number[]>();
     const componentsByOwnerId = new SubscribeMap<number, number[]>();
     const mountedComponentsByParentId = new SubscribeMap<number, number[]>();
     const mountedComponentsByOwnerId = new SubscribeMap<number, number[]>();
 
     return {
-      componentById: new SubscribeMap(),
+      componentById,
       componentsByParentId,
       componentsByOwnerId,
       mountedComponentsByParentId,
@@ -44,11 +46,17 @@ export function GlobalMapsContextProvider({
           ? componentsByOwnerId
           : mountedComponentsByOwnerId;
       },
-      clearTree() {
-        componentsByParentId.clear();
-        componentsByOwnerId.clear();
-        mountedComponentsByParentId.clear();
-        mountedComponentsByOwnerId.clear();
+      clearEventLog() {
+        componentById.forEach(component => {
+          componentById.set(component.id, {
+            ...component,
+            events: [],
+            rerendersCount: 0,
+            totalTime: 0,
+            selfTime: 0,
+          });
+          componentById.notify(component.id);
+        });
       },
     };
   }, []);
