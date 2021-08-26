@@ -59,4 +59,7 @@ const StatusBar = () => {
   );
 };
 
-export default StatusBar;
+const StatusBarMemo = React.memo(StatusBar);
+StatusBarMemo.displayName = "StatusBar";
+
+export default StatusBarMemo;

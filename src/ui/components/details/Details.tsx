@@ -55,4 +55,7 @@ const Details = ({
   );
 };
 
-export default Details;
+const DetailsMemo = React.memo(Details);
+DetailsMemo.displayName = "Details";
+
+export default DetailsMemo;

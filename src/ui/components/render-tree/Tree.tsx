@@ -34,4 +34,7 @@ const Tree = ({
   );
 };
 
-export default Tree;
+const TreeMemo = React.memo(Tree);
+TreeMemo.displayName = "Tree";
+
+export default TreeMemo;

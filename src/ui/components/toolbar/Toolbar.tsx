@@ -53,4 +53,7 @@ const Toolbar = ({
   );
 };
 
-export default Toolbar;
+const ToolbarMemo = React.memo(Toolbar);
+ToolbarMemo.displayName = "Toolbar";
+
+export default ToolbarMemo;
