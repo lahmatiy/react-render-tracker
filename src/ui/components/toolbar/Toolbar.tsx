@@ -2,6 +2,7 @@ import React from "react";
 
 import ToggleUnmounted from "react-feather/dist/icons/eye-off";
 import ToggleGrouping from "react-feather/dist/icons/code";
+import ClearEventLog from "react-feather/dist/icons/trash";
 
 import ComponentFilter from "./ComponentFilter";
 import ButtonToggle from "../common/ButtonToggle";
@@ -14,6 +15,7 @@ interface ToolbarProps {
   onGroupingChange: BolleanToggle;
   onShowUnmounted: BolleanToggle;
   showUnmounted: boolean;
+  onClearEventLog: () => void;
 }
 
 const Toolbar = ({
@@ -23,6 +25,7 @@ const Toolbar = ({
   onGroupingChange,
   onShowUnmounted,
   showUnmounted,
+  onClearEventLog,
 }: ToolbarProps) => {
   return (
     <div className="toolbar">
@@ -38,6 +41,12 @@ const Toolbar = ({
         isActive={showUnmounted}
         onChange={onShowUnmounted}
         tooltip={"Toggle unmounted components visibility"}
+      />
+      <ButtonToggle
+        icon={<ClearEventLog />}
+        isActive={false}
+        onChange={onClearEventLog}
+        tooltip={"Clear event log"}
       />
     </div>
   );
