@@ -90,6 +90,7 @@ const TreeLeafCaptionInner = React.memo(
       ownerId,
       displayName,
       hocDisplayNames,
+      events,
       mounted,
       rerendersCount,
       selfTime,
@@ -104,6 +105,7 @@ const TreeLeafCaptionInner = React.memo(
       selected,
       unmounted: !mounted,
       "render-root": isRenderRoot,
+      "no-events": events.length === 0,
     })) {
       if (add) {
         classes.push(cls);
@@ -123,10 +125,10 @@ const TreeLeafCaptionInner = React.memo(
       >
         <div className="tree-leaf-caption__timings">
           <span className="tree-leaf-caption__time" title="Self time">
-            {formatDuration(selfTime)}
+            {events.length > 0 ? formatDuration(selfTime) : "\xA0"}
           </span>
           <span className="tree-leaf-caption__time" title="Total time">
-            {formatDuration(totalTime)}
+            {events.length > 0 ? formatDuration(totalTime) : "\xA0"}
           </span>
         </div>
         <div className="tree-leaf-caption__main">

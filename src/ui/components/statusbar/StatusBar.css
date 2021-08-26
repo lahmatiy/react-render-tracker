@@ -32,7 +32,7 @@
 .statusbar__pending::after {
   right: auto;
   width: calc(var(--progress, 0) - 8px);
-  transition: width 100ms ease-in-out;
+  transition: width 100ms ease-out;
   background-color: #44a0dd;
 }
 

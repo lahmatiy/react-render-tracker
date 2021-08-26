@@ -8,6 +8,7 @@ function plural(num: number, single: string, multiple = single + "s") {
 
 const StatusBar = () => {
   const {
+    loadingStartOffset,
     loadedEventsCount,
     totalEventsCount,
     mountCount,
@@ -15,17 +16,8 @@ const StatusBar = () => {
     rerenderCount,
   } = useEventsContext();
   const pendingEventsCount = totalEventsCount - loadedEventsCount;
-  const pendingEventsOffset = React.useRef(-1);
   const { componentById } = useGlobalMaps();
   const componentCount = componentById.size;
-
-  if (pendingEventsCount > 0) {
-    if (pendingEventsOffset.current === -1) {
-      pendingEventsOffset.current = loadedEventsCount;
-    }
-  } else {
-    pendingEventsOffset.current = -1;
-  }
 
   return (
     <div className="statusbar">
@@ -45,8 +37,8 @@ const StatusBar = () => {
           style={
             {
               "--progress": `${(
-                (100 * (loadedEventsCount - pendingEventsOffset.current)) /
-                (totalEventsCount - pendingEventsOffset.current)
+                (100 * (loadedEventsCount - loadingStartOffset)) /
+                (totalEventsCount - loadingStartOffset)
               ).toFixed(3)}%`,
             } as React.CSSProperties
           }

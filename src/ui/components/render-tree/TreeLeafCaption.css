@@ -10,8 +10,10 @@
   background-color: white;
   color: var(--primary);
   cursor: pointer;
-  transition: 0.2s;
-  transition-property: color;
+}
+
+.tree-leaf-caption.no-events {
+  color: #90bce5;
 }
 
 .tree-leaf-caption.render-root {
@@ -46,6 +48,8 @@
   color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-color: #888;
+  transition: 0.25s;
+  transition-property: color;
 }
 
 .tree-leaf-caption__timings {

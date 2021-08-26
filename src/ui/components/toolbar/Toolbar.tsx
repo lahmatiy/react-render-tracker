@@ -26,7 +26,7 @@ const Toolbar = ({
   onShowUnmounted,
   showUnmounted,
 }: ToolbarProps) => {
-  const { clearAllEvents: clearEventLog } = useEventsContext();
+  const { clearAllEvents } = useEventsContext();
 
   return (
     <div className="toolbar">
@@ -46,7 +46,7 @@ const Toolbar = ({
       <ButtonToggle
         icon={<ClearEventLog />}
         isActive={false}
-        onChange={clearEventLog}
+        onChange={clearAllEvents}
         tooltip={"Clear event log"}
       />
     </div>

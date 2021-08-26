@@ -7,6 +7,7 @@ import { Message, MessageElement } from "../types";
 
 interface EventsContext {
   events: Message[];
+  loadingStartOffset: number;
   loadedEventsCount: number;
   totalEventsCount: number;
   mountCount: number;
@@ -17,6 +18,7 @@ interface EventsContext {
 
 const createEventsContextValue = (): EventsContext => ({
   events: [],
+  loadingStartOffset: 0,
   loadedEventsCount: 0,
   totalEventsCount: 0,
   mountCount: 0,
@@ -34,7 +36,7 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
   const eventsSince = React.useRef(0);
   const maps = useGlobalMaps();
   const { componentById } = maps;
-  const clearEventLog = React.useCallback(() => {
+  const clearAllEvents = React.useCallback(() => {
     for (const [id, component] of componentById) {
       componentById.set(id, {
         ...component,
@@ -51,6 +53,7 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
       return {
         ...state,
         events: [],
+        loadingStartOffset: 0,
         loadedEventsCount: 0,
         totalEventsCount: state.totalEventsCount - state.events.length,
         mountCount: 0,
@@ -66,7 +69,7 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
   const value = React.useMemo(
     () => ({
       ...state,
-      clearEventLog,
+      clearAllEvents,
     }),
     [state, componentById]
   );
@@ -77,21 +80,28 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
 
     const TROTTLE = false;
     const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
+    let loadingStartOffset = 0;
     let lastLoadedOffset = 0;
     let totalEventsCount = 0;
     let loading = false;
 
-    const x = () => {
+    const finalizeLoading = () => {
       loading = false;
       loadEvents();
     };
     const loadEvents = () => {
-      if (loading || lastLoadedOffset >= totalEventsCount) {
+      if (loading) {
         return;
       }
 
       if (lastLoadedOffset < eventsSince.current) {
+        loadingStartOffset = eventsSince.current;
         lastLoadedOffset = eventsSince.current;
+      }
+
+      if (lastLoadedOffset >= totalEventsCount) {
+        loadingStartOffset = totalEventsCount;
+        return;
       }
 
       loading = true;
@@ -129,7 +139,11 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
           }
 
           // call load events to make sure there are no more events
-          TROTTLE ? setTimeout(x, 250) : requestAnimationFrame(x);
+          if (TROTTLE) {
+            setTimeout(finalizeLoading, 250);
+          } else {
+            requestAnimationFrame(finalizeLoading);
+          }
         }
       );
     };
@@ -139,6 +153,13 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
 
       if (count !== totalEventsCount) {
         totalEventsCount = count;
+
+        setState(state => ({
+          ...state,
+          loadingStartOffset: loadingStartOffset - eventsSince.current,
+          totalEventsCount: totalEventsCount - eventsSince.current,
+        }));
+
         loadEvents();
       }
     });
