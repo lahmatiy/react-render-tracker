@@ -12,7 +12,7 @@ async function buildPlayground(config) {
     // external: ["src/*"],
     bundle: true,
     sourcemap: true,
-    // keepNames: true,
+    keepNames: true,
     format: "esm",
     write: false,
     ...config,
