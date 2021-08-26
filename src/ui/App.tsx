@@ -3,6 +3,7 @@ import Toolbar from "./components/toolbar/Toolbar";
 import Details from "./components/details/Details";
 import RenderTree from "./components/render-tree/Tree";
 import { FindMatchContextProvider } from "./utils/find-match";
+import { useGlobalMaps } from "./utils/global-maps";
 import {
   SelectedIdConsumer,
   SelectionContextProvider,
@@ -12,6 +13,8 @@ function App() {
   const [filterPattern, setFilterPattern] = React.useState("");
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
+
+  const { clearEventLog } = useGlobalMaps();
 
   return (
     <SelectionContextProvider>
@@ -28,6 +31,7 @@ function App() {
               groupByParent={groupByParent}
               onShowUnmounted={setShowUnmounted}
               showUnmounted={showUnmounted}
+              onClearEventLog={clearEventLog}
             />
 
             <FindMatchContextProvider pattern={filterPattern}>
