@@ -75,13 +75,13 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
           </span>
         </td>
 
-        <td className="event-list-item__time">
+        <td className="event-list-item__time" title="Self time">
           {(event.op === "mount" || event.op === "rerender") &&
-            formatDuration(event.selfDuration)}
+            formatDuration(event.selfTime)}
         </td>
-        <td className="event-list-item__time">
+        <td className="event-list-item__time" title="Total time">
           {(event.op === "mount" || event.op === "rerender") &&
-            formatDuration(event.actualDuration)}
+            formatDuration(event.totalTime)}
         </td>
         {/* <td className="event-list-item__timestamp">
           <span className="event-list-item__timestamp-label">

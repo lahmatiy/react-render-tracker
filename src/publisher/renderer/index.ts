@@ -852,8 +852,8 @@ export function attach(
   // Calculate fiber durations. Should be called on mount or fiber changes only,
   // otherwise it may return a duration for a previous fiber update.
   function getDurations(fiber: Fiber) {
-    const actualDuration = fiber.actualDuration ?? 0;
-    let selfDuration = actualDuration;
+    const totalTime = fiber.actualDuration ?? 0;
+    let selfTime = totalTime;
 
     // The actual duration reported by React includes time spent working on children.
     // This is useful information, but it's also useful to be able to exclude child durations.
@@ -862,12 +862,12 @@ export function attach(
     // Note that this calculated self duration is not the same thing as the base duration.
     // The two are calculated differently (tree duration does not accumulate).
     let child = fiber.child;
-    while (actualDuration > 0 && child !== null) {
-      selfDuration -= child.actualDuration || 0;
+    while (totalTime > 0 && child !== null) {
+      selfTime -= child.actualDuration || 0;
       child = child.sibling;
     }
 
-    return { actualDuration, selfDuration };
+    return { totalTime, selfTime };
   }
 
   function recordRender(fiber: Fiber) {

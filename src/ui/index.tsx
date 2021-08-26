@@ -87,7 +87,7 @@ function removeComponent(
   }
 }
 
-function markUpdated(map, id, type) {
+function markUpdated(map: Map<number, number>, id: number, type: number) {
   if (map.has(id)) {
     map.set(id, map.get(id) | type);
   } else {
@@ -122,6 +122,9 @@ function processEvents(
           ...event.element,
           mounted: true,
           events: [],
+          rerendersCount: 0,
+          selfTime: event.selfTime,
+          totalTime: event.totalTime,
         };
 
         markUpdated(updated, element.parentId, UPDATE_OWNER);
@@ -167,8 +170,16 @@ function processEvents(
         break;
       }
 
-      default:
+      case "rerender":
         element = componentById.get(event.elementId);
+        element = {
+          ...element,
+          rerendersCount: element.rerendersCount + 1,
+          selfTime: element.selfTime + event.selfTime,
+          totalTime: element.totalTime + event.totalTime,
+        };
+
+        break;
     }
 
     markUpdated(updated, element.id, UPDATE_SELF);

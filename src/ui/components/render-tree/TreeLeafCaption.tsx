@@ -85,29 +85,19 @@ const TreeLeafCaptionInner = React.memo(
     expanded,
     setExpanded,
   }: TreeLeafCaptionInnerProps) => {
-    const { id, ownerId, displayName, hocDisplayNames, events, mounted } =
-      component;
+    const {
+      id,
+      ownerId,
+      displayName,
+      hocDisplayNames,
+      mounted,
+      rerendersCount,
+      selfTime,
+      totalTime,
+    } = component;
 
     const name = getElementNameHighlight(displayName, match);
     const isRenderRoot = ownerId === 0;
-    const rerendersCount = events?.reduce(
-      (count, event) => (event.op === "rerender" ? count + 1 : count),
-      0
-    );
-    const rerendersDuration = events?.reduce(
-      (time, event) =>
-        event.op === "mount" || event.op === "rerender"
-          ? time + event.selfDuration
-          : time,
-      0
-    );
-    const rerendersDuration2 = events?.reduce(
-      (time, event) =>
-        event.op === "mount" || event.op === "rerender"
-          ? time + event.actualDuration
-          : time,
-      0
-    );
 
     const classes = ["tree-leaf-caption"];
     for (const [cls, add] of Object.entries({
@@ -132,11 +122,11 @@ const TreeLeafCaptionInner = React.memo(
         onClick={handleSelect}
       >
         <div className="tree-leaf-caption__timings">
-          <span className="tree-leaf-caption__time">
-            {formatDuration(rerendersDuration)}
+          <span className="tree-leaf-caption__time" title="Self time">
+            {formatDuration(selfTime)}
           </span>
-          <span className="tree-leaf-caption__time">
-            {formatDuration(rerendersDuration2)}
+          <span className="tree-leaf-caption__time" title="Total time">
+            {formatDuration(totalTime)}
           </span>
         </div>
         <div className="tree-leaf-caption__main">

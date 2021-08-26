@@ -1,6 +1,5 @@
 import {
   TransferElement,
-  ElementType,
   MountElementMessage,
   UnmountElementMessage,
   RenderElementMessage,
@@ -15,22 +14,12 @@ export type Event =
 export interface MessageElement extends TransferElement {
   mounted: boolean;
   events: Event[];
+  rerendersCount: number;
+  selfTime: number;
+  totalTime: number;
 }
-// FIXME: a hack to override children
-export type TreeElement = {
-  id: number;
-  type: ElementType;
-  key: number | string | null;
-  parentId: number;
-  ownerId: number;
-  children: TreeElement[];
-  displayName: string | null;
-  hocDisplayNames: null | Array<string>;
-  mounted: boolean;
-  events: Event[];
-};
 
 export interface ElementEvent {
-  component: TreeElement;
+  component: MessageElement;
   event: Event;
 }
