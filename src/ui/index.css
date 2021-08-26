@@ -1,6 +1,4 @@
 @import url("./App.css");
-@import url("./components/toolbar/ComponentFilter.css");
-@import url("./components/toolbar/Toolbar.css");
 @import url("./components/common/ButtonExpand.css");
 @import url("./components/common/ButtonToggle.css");
 @import url("./components/common/ElementId.css");
@@ -13,6 +11,9 @@
 @import url("./components/render-tree/TreeLeaf.css");
 @import url("./components/render-tree/TreeLeafCaption.css");
 @import url("./components/render-tree/ComponentHocNames.css");
+@import url("./components/statusbar/StatusBar.css");
+@import url("./components/toolbar/ComponentFilter.css");
+@import url("./components/toolbar/Toolbar.css");
 
 html,
 body {

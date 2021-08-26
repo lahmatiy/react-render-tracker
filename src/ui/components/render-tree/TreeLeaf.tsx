@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { TreeElement } from "../../types";
 import { useComponent, useComponentChildren } from "../../utils/global-maps";
 import { useViewSettingsContext } from "./contexts";
 import TreeElementCaption from "./TreeLeafCaption";
@@ -20,10 +19,6 @@ const TreeElement = React.memo(
     );
     const [expanded, setExpanded] = useState(true);
     const hasChildren = children.length > 0;
-
-    if (!component.mounted && !showUnmounted) {
-      return null;
-    }
 
     // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
     const isRenderRoot = component.ownerId === 0;

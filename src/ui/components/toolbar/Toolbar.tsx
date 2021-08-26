@@ -6,6 +6,7 @@ import ClearEventLog from "react-feather/dist/icons/trash";
 
 import ComponentFilter from "./ComponentFilter";
 import ButtonToggle from "../common/ButtonToggle";
+import { useEventsContext } from "../../utils/events";
 
 type BolleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -15,7 +16,6 @@ interface ToolbarProps {
   onGroupingChange: BolleanToggle;
   onShowUnmounted: BolleanToggle;
   showUnmounted: boolean;
-  onClearEventLog: () => void;
 }
 
 const Toolbar = ({
@@ -25,8 +25,9 @@ const Toolbar = ({
   onGroupingChange,
   onShowUnmounted,
   showUnmounted,
-  onClearEventLog,
 }: ToolbarProps) => {
+  const { clearAllEvents: clearEventLog } = useEventsContext();
+
   return (
     <div className="toolbar">
       <ComponentFilter onChange={onFilterPatternChange} value={filterPattern} />
@@ -45,7 +46,7 @@ const Toolbar = ({
       <ButtonToggle
         icon={<ClearEventLog />}
         isActive={false}
-        onChange={onClearEventLog}
+        onChange={clearEventLog}
         tooltip={"Clear event log"}
       />
     </div>

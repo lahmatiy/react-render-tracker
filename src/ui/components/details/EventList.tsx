@@ -19,7 +19,7 @@ const EventList = ({ events }: EventListProps) => {
   }
 
   if (!events.length) {
-    return <div>No events found</div>;
+    return <div className="element-event-list__no-events">No events found</div>;
   }
 
   return (

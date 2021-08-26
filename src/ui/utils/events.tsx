@@ -1,8 +1,153 @@
 import * as React from "react";
 import debounce from "lodash.debounce";
+import { getSubscriber } from "rempl";
 import { useGlobalMaps } from "./global-maps";
 import { subscribeSubtree } from "./tree";
 import { Message, MessageElement } from "../types";
+
+interface EventsContext {
+  events: Message[];
+  loadedEventsCount: number;
+  totalEventsCount: number;
+  mountCount: number;
+  unmountCount: number;
+  rerenderCount: number;
+  clearAllEvents: () => void;
+}
+
+const createEventsContextValue = (): EventsContext => ({
+  events: [],
+  loadedEventsCount: 0,
+  totalEventsCount: 0,
+  mountCount: 0,
+  unmountCount: 0,
+  rerenderCount: 0,
+  clearAllEvents() {
+    /* mock fn */
+  },
+});
+const EventsContext = React.createContext(createEventsContextValue());
+export const useEventsContext = () => React.useContext(EventsContext);
+
+export function EventsContextProvider({ children }: { children: JSX.Element }) {
+  const [state, setState] = React.useState(createEventsContextValue);
+  const eventsSince = React.useRef(0);
+  const maps = useGlobalMaps();
+  const { componentById } = maps;
+  const clearEventLog = React.useCallback(() => {
+    for (const [id, component] of componentById) {
+      componentById.set(id, {
+        ...component,
+        events: [],
+        rerendersCount: 0,
+        totalTime: 0,
+        selfTime: 0,
+      });
+    }
+
+    setState(state => {
+      eventsSince.current += state.events.length;
+
+      return {
+        ...state,
+        events: [],
+        loadedEventsCount: 0,
+        totalEventsCount: state.totalEventsCount - state.events.length,
+        mountCount: 0,
+        unmountCount: 0,
+        rerenderCount: 0,
+      };
+    });
+
+    for (const id of componentById.keys()) {
+      componentById.notify(id);
+    }
+  }, [componentById]);
+  const value = React.useMemo(
+    () => ({
+      ...state,
+      clearEventLog,
+    }),
+    [state, componentById]
+  );
+
+  React.useEffect(() => {
+    const channel = getSubscriber().ns("tree-changes");
+    const remoteLoadEvents = channel.getRemoteMethod("getEvents");
+
+    const TROTTLE = false;
+    const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
+    let lastLoadedOffset = 0;
+    let totalEventsCount = 0;
+    let loading = false;
+
+    const x = () => {
+      loading = false;
+      loadEvents();
+    };
+    const loadEvents = () => {
+      if (loading || lastLoadedOffset >= totalEventsCount) {
+        return;
+      }
+
+      if (lastLoadedOffset < eventsSince.current) {
+        lastLoadedOffset = eventsSince.current;
+      }
+
+      loading = true;
+      remoteLoadEvents(
+        lastLoadedOffset,
+        Math.min(totalEventsCount - lastLoadedOffset, MAX_EVENT_COUNT),
+        (eventsChunk: Message[]) => {
+          if (lastLoadedOffset < eventsSince.current) {
+            eventsChunk = eventsChunk.slice(
+              eventsSince.current - lastLoadedOffset
+            );
+          }
+
+          lastLoadedOffset += eventsChunk.length;
+
+          if (eventsChunk.length > 0) {
+            const { mountCount, unmountCount, rerenderCount } = processEvents(
+              eventsChunk,
+              maps
+            );
+
+            setState(state => {
+              state.events.push(...eventsChunk);
+
+              return {
+                ...state,
+                events: state.events,
+                loadedEventsCount: state.loadedEventsCount + eventsChunk.length,
+                totalEventsCount: totalEventsCount - eventsSince.current,
+                mountCount: state.mountCount + mountCount,
+                unmountCount: state.unmountCount + unmountCount,
+                rerenderCount: state.rerenderCount + rerenderCount,
+              };
+            });
+          }
+
+          // call load events to make sure there are no more events
+          TROTTLE ? setTimeout(x, 250) : requestAnimationFrame(x);
+        }
+      );
+    };
+
+    return channel.subscribe((data: { count: number } | null) => {
+      const { count } = data || { count: 0 };
+
+      if (count !== totalEventsCount) {
+        totalEventsCount = count;
+        loadEvents();
+      }
+    });
+  }, [maps]);
+
+  return (
+    <EventsContext.Provider value={value}>{children}</EventsContext.Provider>
+  );
+}
 
 function upsertComponent(
   map: Map<number, number[]>,
@@ -53,12 +198,16 @@ export function processEvents(
   }: ReturnType<typeof useGlobalMaps>
 ) {
   const updated = new Map<number, number>();
+  let mountCount = 0;
+  let unmountCount = 0;
+  let rerenderCount = 0;
 
   for (const event of events) {
     let element: MessageElement;
 
     switch (event.op) {
       case "mount": {
+        mountCount++;
         element = {
           ...event.element,
           mounted: true,
@@ -89,6 +238,7 @@ export function processEvents(
       }
 
       case "unmount": {
+        unmountCount++;
         element = {
           ...componentById.get(event.elementId),
           mounted: false,
@@ -112,6 +262,7 @@ export function processEvents(
       }
 
       case "rerender":
+        rerenderCount++;
         element = componentById.get(event.elementId);
         element = {
           ...element,
@@ -139,7 +290,11 @@ export function processEvents(
     update & UPDATE_MOUNT_PARENT && mountedComponentsByParentId.notify(id);
   }
 
-  return [...componentById.values()];
+  return {
+    mountCount,
+    unmountCount,
+    rerenderCount,
+  };
 }
 
 export function useEventLog(

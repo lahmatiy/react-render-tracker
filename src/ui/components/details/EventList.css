@@ -2,6 +2,13 @@
   width: 100%;
   border-collapse: collapse;
 }
+
+.element-event-list__no-events {
+  padding: 1em 2ex;
+  text-align: center;
+  color: #888;
+}
+
 .element-event-list__show-more {
   display: flex;
   gap: 0 2px;
