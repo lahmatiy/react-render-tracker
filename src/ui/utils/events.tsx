@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getSubscriber } from "rempl";
-import { useComponentMaps } from "./component-maps";
+import { SubscribeMap, useComponentMaps } from "./component-maps";
 import { subscribeSubtree } from "./tree";
 import { ElementEvent, Message, MessageElement } from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";
@@ -35,16 +35,45 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
   const [state, setState] = React.useState(createEventsContextValue);
   const eventsSince = React.useRef(0);
   const maps = useComponentMaps();
-  const { componentById } = maps;
+  const {
+    componentById,
+    componentsByParentId,
+    componentsByOwnerId,
+    mountedComponentsByParentId,
+    mountedComponentsByOwnerId,
+  } = maps;
   const clearAllEvents = React.useCallback(() => {
+    const updates: { map: SubscribeMap<number, any>; id: number }[] = [];
+
     for (const [id, component] of componentById) {
-      componentById.set(id, {
-        ...component,
-        events: [],
-        rerendersCount: 0,
-        totalTime: 0,
-        selfTime: 0,
-      });
+      if (component.events.length > 0) {
+        updates.push({ map: componentById, id });
+        componentById.set(id, {
+          ...component,
+          events: [],
+          rerendersCount: 0,
+          totalTime: 0,
+          selfTime: 0,
+        });
+      }
+    }
+
+    for (const [id, children] of componentsByParentId) {
+      const mountedChildrenOnly = mountedComponentsByParentId.get(id) || [];
+
+      if (children.length !== mountedChildrenOnly.length) {
+        updates.push({ map: componentsByParentId, id });
+        componentsByParentId.set(id, mountedChildrenOnly);
+      }
+    }
+
+    for (const [id, children] of componentsByOwnerId) {
+      const mountedChildrenOnly = mountedComponentsByOwnerId.get(id) || [];
+
+      if (children.length !== mountedChildrenOnly.length) {
+        updates.push({ map: componentsByOwnerId, id });
+        componentsByOwnerId.set(id, mountedChildrenOnly);
+      }
     }
 
     setState(state => {
@@ -62,8 +91,8 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
       };
     });
 
-    for (const id of componentById.keys()) {
-      componentById.notify(id);
+    for (const { map, id } of updates) {
+      map.notify(id);
     }
   }, [componentById]);
   const value = React.useMemo(
