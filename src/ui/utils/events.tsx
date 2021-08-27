@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getSubscriber } from "rempl";
-import { useGlobalMaps } from "./component-maps";
+import { useComponentMaps } from "./component-maps";
 import { subscribeSubtree } from "./tree";
 import { ElementEvent, Message, MessageElement } from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";
@@ -34,7 +34,7 @@ export const useEventsContext = () => React.useContext(EventsContext);
 export function EventsContextProvider({ children }: { children: JSX.Element }) {
   const [state, setState] = React.useState(createEventsContextValue);
   const eventsSince = React.useRef(0);
-  const maps = useGlobalMaps();
+  const maps = useComponentMaps();
   const { componentById } = maps;
   const clearAllEvents = React.useCallback(() => {
     for (const [id, component] of componentById) {
@@ -109,12 +109,6 @@ export function EventsContextProvider({ children }: { children: JSX.Element }) {
         lastLoadedOffset,
         Math.min(totalEventsCount - lastLoadedOffset, MAX_EVENT_COUNT),
         (eventsChunk: Message[]) => {
-          if (lastLoadedOffset < eventsSince.current) {
-            eventsChunk = eventsChunk.slice(
-              eventsSince.current - lastLoadedOffset
-            );
-          }
-
           lastLoadedOffset += eventsChunk.length;
 
           if (eventsChunk.length > 0) {
@@ -216,7 +210,7 @@ export function processEvents(
     componentsByOwnerId,
     mountedComponentsByParentId,
     mountedComponentsByOwnerId,
-  }: ReturnType<typeof useGlobalMaps>
+  }: ReturnType<typeof useComponentMaps>
 ) {
   const updated = new Map<number, number>();
   let mountCount = 0;
@@ -324,7 +318,7 @@ export function useEventLog(
   includeUnmounted: boolean,
   includeSubtree: boolean
 ) {
-  const { componentById, selectChildrenMap } = useGlobalMaps();
+  const { componentById, selectChildrenMap } = useComponentMaps();
   const childrenMap = selectChildrenMap(groupByParent, includeUnmounted);
   const subtree = React.useMemo(
     () => new Map<number, () => void>(),
