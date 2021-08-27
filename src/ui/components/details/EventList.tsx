@@ -6,8 +6,8 @@ interface EventListProps {
   events: ReturnType<typeof useEventLog>;
 }
 
-const sectionSize = 50;
-const sectionMinSize = 10;
+const SECTION_SIZE = 50;
+const SECTION_MIN_SIZE = 10;
 const EventList = ({ events }: EventListProps) => {
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, events.length - SECTION_SIZE);
