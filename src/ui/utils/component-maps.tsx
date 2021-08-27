@@ -6,7 +6,7 @@ import {
   useComputeSubscription,
 } from "./subscription";
 
-interface GlobalMapsContext {
+interface ComponentMapsContext {
   componentById: SubscribeMap<number, MessageElement>;
   componentsByParentId: SubscribeMap<number, number[]>;
   componentsByOwnerId: SubscribeMap<number, number[]>;
@@ -18,14 +18,16 @@ interface GlobalMapsContext {
   ) => SubscribeMap<number, number[]>;
 }
 
-const GlobalMapsContext = React.createContext<GlobalMapsContext>({} as any);
-export const useGlobalMaps = () => React.useContext(GlobalMapsContext);
-export function GlobalMapsContextProvider({
+const ComponentMapsContext = React.createContext<ComponentMapsContext>(
+  {} as any
+);
+export const useComponentMaps = () => React.useContext(ComponentMapsContext);
+export function ComponentMapsContextProvider({
   children,
 }: {
   children: JSX.Element;
 }) {
-  const value: GlobalMapsContext = React.useMemo(() => {
+  const value: ComponentMapsContext = React.useMemo(() => {
     const componentById = new SubscribeMap<number, MessageElement>();
     const componentsByParentId = new SubscribeMap<number, number[]>();
     const componentsByOwnerId = new SubscribeMap<number, number[]>();
@@ -51,9 +53,9 @@ export function GlobalMapsContextProvider({
   }, []);
 
   return (
-    <GlobalMapsContext.Provider value={value}>
+    <ComponentMapsContext.Provider value={value}>
       {children}
-    </GlobalMapsContext.Provider>
+    </ComponentMapsContext.Provider>
   );
 }
 
@@ -71,7 +73,7 @@ export class SubscribeMap<K, V> extends Map<K, V> {
 }
 
 export const useComponent = (componentId: number) => {
-  const { componentById } = useGlobalMaps();
+  const { componentById } = useComponentMaps();
 
   const compute = React.useCallback(
     () => componentById.get(componentId),
@@ -92,7 +94,7 @@ export const useComponentChildren = (
   groupByParent = false,
   includeUnmounted = false
 ) => {
-  const { selectChildrenMap } = useGlobalMaps();
+  const { selectChildrenMap } = useComponentMaps();
   const map = selectChildrenMap(groupByParent, includeUnmounted);
 
   const compute = React.useCallback(

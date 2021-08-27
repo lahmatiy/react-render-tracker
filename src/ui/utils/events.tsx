@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getSubscriber } from "rempl";
-import { useGlobalMaps } from "./global-maps";
+import { useGlobalMaps } from "./component-maps";
 import { subscribeSubtree } from "./tree";
 import { ElementEvent, Message, MessageElement } from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useComponent, useComponentChildren } from "../../utils/global-maps";
+import { useComponent, useComponentChildren } from "../../utils/component-maps";
 import { useViewSettingsContext } from "./contexts";
 import TreeElementCaption from "./TreeLeafCaption";
 

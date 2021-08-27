@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEventsContext } from "../../utils/events";
-import { useGlobalMaps } from "../../utils/global-maps";
+import { useComponentMaps } from "../../utils/component-maps";
 
 function plural(num: number, single: string, multiple = single + "s") {
   return `${num} ${num === 1 ? single : multiple}`;
@@ -16,7 +16,7 @@ const StatusBar = () => {
     rerenderCount,
   } = useEventsContext();
   const pendingEventsCount = totalEventsCount - loadedEventsCount;
-  const { componentById } = useGlobalMaps();
+  const { componentById } = useComponentMaps();
   const componentCount = componentById.size;
 
   return (
