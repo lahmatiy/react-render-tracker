@@ -8,7 +8,7 @@ React render tracker – a tool to discover performance issues related to uninte
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished. The initial plan can be found [here](https://github.com/lahmatiy/react-render-tracker/issues/6). Feel free to create an issue if you found a bug or have an idea.
 
-![image](https://user-images.githubusercontent.com/270491/130531090-b77802ed-4245-435f-9b27-f50c1bc1a796.png)
+![image](https://user-images.githubusercontent.com/270491/131173796-9bd485b6-32b4-43f4-b6d2-3a9739631652.png)
 
 Features:
 
@@ -17,6 +17,7 @@ Features:
 - Number of component's re-renders
 - Show unmounted components (can be disabled by a toggle in the top right corner)
 - Event log for a component or its subtree
+- Overall stats on events and component instances
 - More to come...
 
 ## How to use
