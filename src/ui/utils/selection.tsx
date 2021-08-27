@@ -19,8 +19,11 @@ export const SelectionContextProvider = ({
 }) => {
   const value: Selection = React.useMemo(() => {
     let selectedId = null;
-    const subscriptions = new Set<idChangeCallback>();
-    const stateSubscriptionsById = new Map<number, Set<stateChangeCallback>>();
+    const subscriptions = new Set<{ fn: idChangeCallback }>();
+    const stateSubscriptionsById = new Map<
+      number,
+      Set<{ fn: stateChangeCallback }>
+    >();
     const select: Selection["select"] = nextSelectedId => {
       const prevSelectedId = selectedId;
 

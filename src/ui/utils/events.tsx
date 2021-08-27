@@ -1,9 +1,9 @@
 import * as React from "react";
-import debounce from "lodash.debounce";
 import { getSubscriber } from "rempl";
 import { useGlobalMaps } from "./global-maps";
 import { subscribeSubtree } from "./tree";
-import { Message, MessageElement } from "../types";
+import { ElementEvent, Message, MessageElement } from "../types";
+import { useDebouncedComputeSubscription } from "./subscription";
 
 interface EventsContext {
   events: Message[];
@@ -325,55 +325,61 @@ export function useEventLog(
   includeSubtree: boolean
 ) {
   const { componentById, selectChildrenMap } = useGlobalMaps();
-  const subtree = React.useMemo(() => new Map<number, () => void>(), []);
-  const [events, setEvents] =
-    React.useState<{ component: MessageElement; event: Message }[]>();
-  const syncEvents = React.useMemo(
-    () =>
-      debounce(() => {
-        const events = [];
-
-        for (const id of subtree.keys()) {
-          const component = componentById.get(id);
-          for (const event of component.events) {
-            events.push({ component, event });
-          }
-        }
-
-        setEvents(events.sort((a, b) => a.event.id - b.event.id));
-      }, 1) as () => void,
-    []
-  );
   const childrenMap = selectChildrenMap(groupByParent, includeUnmounted);
+  const subtree = React.useMemo(
+    () => new Map<number, () => void>(),
+    [componentId, includeSubtree, componentById, childrenMap]
+  );
 
-  React.useEffect(() => {
-    // subtree
-    if (includeSubtree) {
-      return subscribeSubtree(componentId, childrenMap, (added, removed) => {
-        for (const id of added) {
-          if (!subtree.has(id)) {
-            subtree.set(id, componentById.subscribe(id, syncEvents));
-          }
-        }
+  const compute = React.useCallback((): ElementEvent[] => {
+    const events = [];
 
-        for (const id of removed) {
-          if (subtree.has(id)) {
-            subtree.get(id)();
-            subtree.delete(id);
-          }
-        }
+    for (const id of subtree.keys()) {
+      const component = componentById.get(id);
 
-        syncEvents();
-      });
+      for (const event of component.events) {
+        events.push({ component, event });
+      }
     }
 
-    // single component
-    subtree.set(componentId, componentById.subscribe(componentId, syncEvents));
-    return () => {
-      subtree.get(componentId)();
-      subtree.delete(componentId);
-    };
-  }, [componentId, includeSubtree, subtree, childrenMap]);
+    return events.sort((a, b) => a.event.id - b.event.id);
+  }, [subtree, componentById]);
 
-  return events;
+  const subscribe = React.useCallback(
+    requestRecompute => {
+      // subtree
+      if (includeSubtree) {
+        return subscribeSubtree(componentId, childrenMap, (added, removed) => {
+          for (const id of added) {
+            if (!subtree.has(id)) {
+              subtree.set(id, componentById.subscribe(id, requestRecompute));
+            }
+          }
+
+          for (const id of removed) {
+            if (subtree.has(id)) {
+              subtree.get(id)(); // unsubscribe
+              subtree.delete(id);
+            }
+          }
+
+          requestRecompute();
+        });
+      }
+
+      // single component
+      subtree.set(
+        componentId,
+        componentById.subscribe(componentId, requestRecompute)
+      );
+
+      return () => {
+        subtree.get(componentId)(); // unsubscribe
+        subtree.delete(componentId);
+      };
+    },
+    [componentId, includeSubtree, subtree]
+  );
+
+  return useDebouncedComputeSubscription(compute, subscribe, 50);
 }

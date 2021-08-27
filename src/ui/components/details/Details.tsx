@@ -17,8 +17,8 @@ const Details = ({
   groupByParent,
   showUnmounted,
 }: DetailsProps) => {
-  const component = useComponent(componentId);
   const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
+  const component = useComponent(componentId);
   const events = useEventLog(
     componentId,
     groupByParent,
@@ -47,7 +47,12 @@ const Details = ({
       {events && (
         <EventList
           // key used to reset state of visible records on component & settings change
-          key={[componentId, groupByParent, showSubtreeEvents].join("-")}
+          key={[
+            componentId,
+            groupByParent,
+            showUnmounted,
+            showSubtreeEvents,
+          ].join("-")}
           events={events}
         />
       )}

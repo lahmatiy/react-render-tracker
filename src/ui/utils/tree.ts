@@ -95,6 +95,7 @@ export function subscribeSubtree(
 
   add(id);
   notifyChanges();
+  notifyChanges.flush();
 
   return () => {
     for (const [id] of subscriptions) {

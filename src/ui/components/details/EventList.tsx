@@ -10,8 +10,8 @@ const sectionSize = 50;
 const sectionMinSize = 10;
 const EventList = ({ events }: EventListProps) => {
   const [startOffset, setStartOffset] = React.useState(() => {
-    const offset = Math.max(0, events.length - sectionSize);
-    return offset < sectionMinSize ? 0 : offset;
+    const offset = Math.max(0, events.length - SECTION_SIZE);
+    return offset < SECTION_MIN_SIZE ? 0 : offset;
   });
 
   if (events === null) {
@@ -26,13 +26,13 @@ const EventList = ({ events }: EventListProps) => {
     <>
       {startOffset > 0 && (
         <div className="element-event-list__show-more">
-          {startOffset > sectionSize + sectionMinSize && (
+          {startOffset > SECTION_SIZE + SECTION_MIN_SIZE && (
             <button
               onClick={() =>
-                setStartOffset(Math.max(0, startOffset - sectionSize))
+                setStartOffset(Math.max(0, startOffset - SECTION_SIZE))
               }
             >
-              Show {Math.min(startOffset, sectionSize)} more...
+              Show {Math.min(startOffset, SECTION_SIZE)} more...
             </button>
           )}
           <button onClick={() => setStartOffset(0)}>
@@ -51,4 +51,7 @@ const EventList = ({ events }: EventListProps) => {
   );
 };
 
-export default EventList;
+const EventListMemo = React.memo(EventList);
+EventListMemo.displayName = "EventList";
+
+export default EventListMemo;

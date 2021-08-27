@@ -1,7 +1,10 @@
 import React from "react";
-import { useEffect } from "react";
 import { MessageElement } from "../types";
-import { notifyById, subscribeById } from "./subscription";
+import {
+  notifyById,
+  subscribeById,
+  useComputeSubscription,
+} from "./subscription";
 
 interface GlobalMapsContext {
   componentById: SubscribeMap<number, MessageElement>;
@@ -56,7 +59,7 @@ export function GlobalMapsContextProvider({
 
 type callback<V> = (value: V) => void;
 export class SubscribeMap<K, V> extends Map<K, V> {
-  private subscriptionsMap = new Map<K, Set<callback<V>>>();
+  private subscriptionsMap = new Map<K, Set<{ fn: callback<V> }>>();
 
   subscribe(id: K, fn: callback<V>) {
     return subscribeById<K, callback<V>>(this.subscriptionsMap, id, fn);
@@ -69,16 +72,21 @@ export class SubscribeMap<K, V> extends Map<K, V> {
 
 export const useComponent = (componentId: number) => {
   const { componentById } = useGlobalMaps();
-  const [, triggerUpdate] = React.useState<MessageElement>();
 
-  useEffect(
-    () => componentById.subscribe(componentId, triggerUpdate),
-    [componentId]
+  const compute = React.useCallback(
+    () => componentById.get(componentId),
+    [componentById, componentId]
   );
 
-  return componentById.get(componentId);
+  const subscribe = React.useCallback(
+    requestRecompute => componentById.subscribe(componentId, requestRecompute),
+    [componentById, componentId]
+  );
+
+  return useComputeSubscription(compute, subscribe);
 };
 
+const EMPTY_CHILDREN = Object.seal([]);
 export const useComponentChildren = (
   componentId: number,
   groupByParent = false,
@@ -86,12 +94,16 @@ export const useComponentChildren = (
 ) => {
   const { selectChildrenMap } = useGlobalMaps();
   const map = selectChildrenMap(groupByParent, includeUnmounted);
-  const [, triggerUpdate] = React.useState<number[]>();
 
-  useEffect(
-    () => map.subscribe(componentId, triggerUpdate),
-    [componentId, map]
+  const compute = React.useCallback(
+    () => map.get(componentId) || EMPTY_CHILDREN,
+    [map, componentId]
   );
 
-  return map.get(componentId) || [];
+  const subscribe = React.useCallback(
+    requestRecompute => map.subscribe(componentId, requestRecompute),
+    [map, componentId]
+  );
+
+  return useComputeSubscription(compute, subscribe);
 };
