@@ -211,9 +211,10 @@ function removeComponent(
   componentId: number
 ) {
   if (map.has(id)) {
-    const list = map.get(id);
-    const idx = list.indexOf(componentId);
-    list.splice(idx, 1);
+    map.set(
+      id,
+      map.get(id).filter(childId => childId !== componentId)
+    );
   }
 }
 
