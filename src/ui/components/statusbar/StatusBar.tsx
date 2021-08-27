@@ -22,14 +22,12 @@ const StatusBar = () => {
   return (
     <div className="statusbar">
       <span className="statusbar__summary">
-        {totalEventsCount === 0 ? (
-          "No events"
-        ) : (
-          <>
-            {plural(loadedEventsCount, "event")} for{" "}
-            {plural(componentCount, "component instance")}
-          </>
-        )}
+        {totalEventsCount > 0
+          ? plural(loadedEventsCount, "event")
+          : "No events"}
+        {componentCount > 0
+          ? ` for ${plural(componentCount, "component instance")}`
+          : ""}
       </span>
       {pendingEventsCount > 0 && (
         <span
