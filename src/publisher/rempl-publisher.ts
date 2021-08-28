@@ -13,32 +13,10 @@ const getTimestamp =
 
 declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
-export interface Publisher {
-  ns<T extends string>(
-    channel: T
-  ): T extends "tree-changes"
-    ? {
-        publish(data: { count: number }): void;
-        provide<T extends string>(
-          method: T,
-          fn: T extends "getEvents"
-            ? (
-                offset: number,
-                count: number,
-                callback: (events: Message[]) => void
-              ) => void
-            : never
-        ): void;
-      }
-    : never;
-}
 
-export const publisher: Publisher = rempl.createPublisher(
+export const publisher = rempl.createPublisher(
   "react-render-tracker",
-  (
-    settings: any,
-    callback: (error: Error | null, type: string, value: string) => void
-  ) => {
+  (settings, callback) => {
     if (__DEV__) {
       const { origin } = new URL(import.meta.url);
 
@@ -68,7 +46,7 @@ const publishEventsDebounced = debounce(
       count: events.length,
     }),
   50,
-  { maxWait: 100 }
+  { maxWait: 50 }
 );
 export const recordEvent: RecordEventHandler = payload => {
   events.push({

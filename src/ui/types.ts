@@ -3,8 +3,8 @@ import {
   MountElementMessage,
   UnmountElementMessage,
   RenderElementMessage,
-} from "../common/types";
-export * from "../common/types";
+} from "common-types";
+export * from "common-types";
 
 export type Event =
   | MountElementMessage

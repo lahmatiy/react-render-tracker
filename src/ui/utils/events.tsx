@@ -175,7 +175,7 @@ export function EventsContextProvider({
       );
     };
 
-    return channel.subscribe((data: { count: number } | null) => {
+    return channel.subscribe(data => {
       const { count } = data || { count: 0 };
 
       if (count !== totalEventsCount) {
@@ -288,6 +288,7 @@ export function processEvents(
 
       case "unmount": {
         unmountCount++;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         element = componentById.get(event.elementId)!;
         element = {
           ...element,
@@ -313,6 +314,7 @@ export function processEvents(
 
       case "rerender":
         rerenderCount++;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         element = componentById.get(event.elementId)!;
         element = {
           ...element,
