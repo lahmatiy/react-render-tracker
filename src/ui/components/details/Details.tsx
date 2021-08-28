@@ -1,5 +1,5 @@
 import * as React from "react";
-import List from "react-feather/dist/icons/list";
+import { SubtreeToggle } from "../common/icons";
 import ButtonToggle from "../common/ButtonToggle";
 import EventList from "./EventList";
 import ElementId from "../common/ElementId";
@@ -44,7 +44,7 @@ const Details = ({
           )}
         </div>
         <ButtonToggle
-          icon={<List />}
+          icon={SubtreeToggle}
           isActive={showSubtreeEvents}
           onChange={setShowSubtreeEvents}
           tooltip="Show child changes"

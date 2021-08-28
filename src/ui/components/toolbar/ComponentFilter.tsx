@@ -1,5 +1,5 @@
 import React from "react";
-import Search from "react-feather/dist/icons/search";
+import { Search } from "../common/icons";
 
 interface ComponentFilterProps {
   onChange: (pattern: string) => void;
@@ -13,7 +13,7 @@ const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
 
   return (
     <div className="component-filter">
-      <Search />
+      {Search}
       <input
         type="text"
         placeholder="Find component"

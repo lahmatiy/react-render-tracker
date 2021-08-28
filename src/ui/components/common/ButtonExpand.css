@@ -7,21 +7,27 @@
   cursor: pointer;
 }
 
-.button-collapse svg {
+.button-collapse::before {
+  content: "";
+  display: inline-block;
   width: 13px;
   height: 13px;
   color: var(--icon);
+  background-image: url("./ButtonExpand.svg");
+  background-position: center;
+  background-size: 13px;
   vertical-align: middle;
+  opacity: 0.35;
   transform: rotate(-90deg);
   transition: 0.2s;
-  transition-property: color, transform;
+  transition-property: opacity, transform;
 }
 
-.button-collapse:hover svg {
-  color: black;
+.button-collapse:hover::before {
+  opacity: 1;
 }
 
-.button-collapse.expanded svg {
+.button-collapse.expanded::before {
   transform: rotate(0);
 }
 

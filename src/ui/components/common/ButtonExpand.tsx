@@ -1,5 +1,4 @@
 import React from "react";
-import ChevronDown from "react-feather/dist/icons/chevron-down";
 
 interface ButtonExpandProps {
   expanded: boolean;
@@ -20,9 +19,7 @@ const ButtonExpand = ({ expanded, setExpanded }: ButtonExpandProps) => {
     <button
       className={`button-collapse ${collapsedCls} ${disabledCls}`}
       onClick={handleClick}
-    >
-      <ChevronDown />
-    </button>
+    />
   );
 };
 

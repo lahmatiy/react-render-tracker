@@ -1,8 +1,10 @@
 import React from "react";
 
-import ToggleUnmounted from "react-feather/dist/icons/eye-off";
-import ToggleGrouping from "react-feather/dist/icons/code";
-import ClearEventLog from "react-feather/dist/icons/trash";
+import {
+  ToggleGrouping,
+  ToggleUnmounted,
+  ClearEventLog,
+} from "../common/icons";
 
 import ComponentFilter from "./ComponentFilter";
 import ButtonToggle from "../common/ButtonToggle";
@@ -32,19 +34,19 @@ const Toolbar = ({
     <div className="toolbar">
       <ComponentFilter onChange={onFilterPatternChange} value={filterPattern} />
       <ButtonToggle
-        icon={<ToggleGrouping />}
+        icon={ToggleGrouping}
         isActive={groupByParent}
         onChange={onGroupingChange}
         tooltip={"Toggle components grouping by parent or owner"}
       />
       <ButtonToggle
-        icon={<ToggleUnmounted />}
+        icon={ToggleUnmounted}
         isActive={showUnmounted}
         onChange={onShowUnmounted}
         tooltip={"Toggle unmounted components visibility"}
       />
       <ButtonToggle
-        icon={<ClearEventLog />}
+        icon={ClearEventLog}
         isActive={false}
         onChange={clearAllEvents}
         tooltip={"Clear event log"}
