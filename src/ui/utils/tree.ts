@@ -15,12 +15,13 @@ export function getSubtreeIds(id: number, childrenMap: Map<number, number[]>) {
   return subtree;
 }
 
+type SubscribeDescriptor = { prev: Set<number>; unsubscribe(): void };
 export function subscribeSubtree(
   id: number,
   childrenMap: SubscribeMap<number, number[]>,
   fn: (added: number[], removed: number[]) => void
 ) {
-  const subscriptions = new Map();
+  const subscriptions = new Map<number, SubscribeDescriptor>();
   const pendingAdded = new Set<number>();
   const pendingRemoved = new Set<number>();
   const notifyChanges = debounce(
@@ -45,7 +46,8 @@ export function subscribeSubtree(
       return;
     }
 
-    const { prev, unsubscribe } = subscriptions.get(id);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { prev, unsubscribe } = subscriptions.get(id)!;
     subscriptions.delete(id);
     unsubscribe();
     for (const id of prev) {
