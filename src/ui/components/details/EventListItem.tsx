@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import * as React from "react";
 // import dateFormat from "dateformat";
 import ButtonCollapse from "../common/ButtonExpand";
 import EventRenderReasons from "./EventRenderReasons";
@@ -57,7 +57,7 @@ function formatDuration(duration: number) {
 }
 
 const EventListItem = ({ component, event }: EventListItemProps) => {
-  const [expanded, setIsCollapsed] = useState(false);
+  const [expanded, setIsCollapsed] = React.useState(false);
   const reasons = getReasons(event);
   const hasDetails =
     event.op === "rerender" &&

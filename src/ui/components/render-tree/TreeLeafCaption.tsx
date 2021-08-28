@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import ButtonExpand from "../common/ButtonExpand";
 import ElementId from "../common/ElementId";
 import ElementHocNames from "./ComponentHocNames";

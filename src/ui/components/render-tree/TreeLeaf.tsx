@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import * as React from "react";
 import { useComponent, useComponentChildren } from "../../utils/component-maps";
 import { useViewSettingsContext } from "./contexts";
 import TreeElementCaption from "./TreeLeafCaption";
@@ -17,7 +17,7 @@ const TreeElement = React.memo(
       groupByParent,
       showUnmounted
     );
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = React.useState(true);
     const hasChildren = children.length > 0;
 
     if (!component) {
