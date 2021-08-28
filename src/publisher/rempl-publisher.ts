@@ -37,7 +37,7 @@ export const publisher: Publisher = rempl.createPublisher(
   "react-render-tracker",
   (
     settings: any,
-    callback: (error: Error, type: string, value: string) => void
+    callback: (error: Error | null, type: string, value: string) => void
   ) => {
     if (__DEV__) {
       const { origin } = new URL(import.meta.url);

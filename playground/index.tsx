@@ -5,7 +5,7 @@ import createTestCaseWrapper from "./create-test-case-wrapper.jsx";
 import { RenderContextProvider } from "./helpers.jsx";
 import { createElement } from "./dom-utils.js";
 
-function createTocItem(id: string | null, title: string) {
+function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
     createElement("a", { id, href: `#${id || ""}` }, title),
   ]);
@@ -18,7 +18,7 @@ Promise.all(testCases).then(testCases => {
   let contentEl: HTMLElement;
   const playgroundEl = createElement("div", "playground", [
     (tocEl = createElement("ul", "playground__toc", [
-      createTocItem(null, "All"),
+      createTocItem(undefined, "All"),
     ])),
     (contentEl = createElement("section", "playground__content")),
   ]);

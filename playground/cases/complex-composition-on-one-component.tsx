@@ -2,19 +2,19 @@ import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
-function Foo({ children }: { children: JSX.Element }) {
+function Foo({ children }: { children?: React.ReactNode }) {
   useTrackRender();
   return <>{children}</>;
 }
 
-function Bar({ children }: { children: JSX.Element }) {
+function Bar({ children }: { children?: React.ReactNode }) {
   useTrackRender();
   return <>{children}</>;
 }
 
 const BarMemo = React.memo(Baz);
 
-function Baz({ children }: { children: JSX.Element }) {
+function Baz({ children }: { children?: React.ReactNode }) {
   useTrackRender();
   return <>{children}</>;
 }

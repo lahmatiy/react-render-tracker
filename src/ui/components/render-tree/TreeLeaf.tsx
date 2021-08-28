@@ -20,6 +20,10 @@ const TreeElement = React.memo(
     const [expanded, setExpanded] = useState(true);
     const hasChildren = children.length > 0;
 
+    if (!component) {
+      return null;
+    }
+
     // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
     const isRenderRoot = component.ownerId === 0;
     const Wrapper = isRenderRoot ? "div" : React.Fragment;
@@ -30,7 +34,7 @@ const TreeElement = React.memo(
           depth={Math.max(depth - 1, 0)}
           component={component}
           expanded={expanded}
-          setExpanded={hasChildren ? setExpanded : null}
+          setExpanded={hasChildren ? setExpanded : undefined}
         />
 
         {expanded &&

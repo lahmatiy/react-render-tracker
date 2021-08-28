@@ -45,7 +45,7 @@ export default function (testcase: TestCase) {
           }
           break;
         case "childList":
-          for (const node of mutation.addedNodes) {
+          for (const node of Array.from(mutation.addedNodes)) {
             const target = node as HTMLElement;
             if (
               target.nodeType === 1 &&

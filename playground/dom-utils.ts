@@ -1,16 +1,17 @@
 const { hasOwnProperty } = Object.prototype;
 
-type Attrs =
-  | {
-      [key in keyof AddEventListenerOptions]: (evt: Event) => void;
-    }
-  | {
-      [key: string]: string;
-    };
+type EventHandler<T> = (evt: T) => void;
+type Attrs = {
+  [key in keyof HTMLElementEventMap as `on${key}`]?:
+    | EventHandler<HTMLElementEventMap[key]>
+    | undefined;
+} & {
+  [key: string]: string | undefined;
+};
 
 export function createElement(
   tag: string,
-  attrs: Attrs | string,
+  attrs: Attrs | string | null,
   children?: (Node | string)[] | string
 ) {
   const el = document.createElement(tag);
@@ -22,15 +23,17 @@ export function createElement(
   }
 
   for (const attrName in attrs) {
-    if (hasOwnProperty.call(attrs, attrName)) {
-      if (attrs[attrName] === undefined) {
+    if (typeof attrName === "string" && hasOwnProperty.call(attrs, attrName)) {
+      const value = attrs[attrName];
+
+      if (typeof value === "undefined") {
         continue;
       }
 
-      if (attrName.startsWith("on")) {
-        el.addEventListener(attrName.substr(2), attrs[attrName]);
+      if (typeof value === "function") {
+        el.addEventListener(attrName.substr(2), value);
       } else {
-        el.setAttribute(attrName, attrs[attrName]);
+        el.setAttribute(attrName, value);
       }
     }
   }

@@ -56,16 +56,16 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberUnmount(rendererId, fiber);
       }
 
-      if (!rendererInterfaces.has(rendererId)) {
-        return;
-      }
+      const renderer = rendererInterfaces.get(rendererId);
 
-      try {
-        // console.log("handleCommitFiberUnmount");
-        rendererInterfaces.get(rendererId).handleCommitFiberUnmount(fiber);
-      } catch (e) {
-        console.error("[react-render-tracker]", e);
-        // debugger;
+      if (renderer) {
+        try {
+          // console.log("handleCommitFiberUnmount");
+          renderer.handleCommitFiberUnmount(fiber);
+        } catch (e) {
+          console.error("[react-render-tracker]", e);
+          // debugger;
+        }
       }
     },
 
@@ -74,11 +74,13 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberRoot(rendererId, root, priorityLevel);
       }
 
-      if (!rendererInterfaces.has(rendererId)) {
+      const renderer = rendererInterfaces.get(rendererId);
+      const mountedRoots = fiberRoots.get(rendererId);
+
+      if (!renderer || !mountedRoots) {
         return;
       }
 
-      const mountedRoots = fiberRoots.get(rendererId);
       const isKnownRoot = mountedRoots.has(root);
       const current = root.current;
       const isUnmounting =
@@ -93,9 +95,7 @@ export function createReactDevtoolsHook(
 
       try {
         // console.log("handleCommitFiberRoot");
-        rendererInterfaces
-          .get(rendererId)
-          .handleCommitFiberRoot(root, priorityLevel);
+        renderer.handleCommitFiberRoot(root, priorityLevel);
       } catch (e) {
         console.error("[react-render-tracker]", e);
         // debugger;
@@ -110,16 +110,16 @@ export function createReactDevtoolsHook(
         existing.onPostCommitFiberRoot(rendererId, root);
       }
 
-      if (!rendererInterfaces.has(rendererId)) {
-        return;
-      }
+      const renderer = rendererInterfaces.get(rendererId);
 
-      try {
-        // console.log("handlePostCommitFiberRoot");
-        rendererInterfaces.get(rendererId).handlePostCommitFiberRoot(root);
-      } catch (e) {
-        console.error("[react-render-tracker]", e);
-        // debugger;
+      if (renderer) {
+        try {
+          // console.log("handlePostCommitFiberRoot");
+          renderer.handlePostCommitFiberRoot(root);
+        } catch (e) {
+          console.error("[react-render-tracker]", e);
+          // debugger;
+        }
       }
     },
   };

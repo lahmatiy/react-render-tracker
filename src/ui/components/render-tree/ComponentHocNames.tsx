@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ComponentHocNamesProps {
-  names: string[];
+  names: string[] | null;
 }
 
 export default function ComponentHocNames({ names }: ComponentHocNamesProps) {

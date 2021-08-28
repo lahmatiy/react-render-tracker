@@ -1,4 +1,8 @@
-import { ElementType, Message } from "../common/types";
+import {
+  ElementType,
+  Message,
+  TransferChangeDescription,
+} from "../common/types";
 export * from "../common/types";
 
 export type DistributiveOmit<T, K extends keyof T> = T extends any
@@ -12,7 +16,7 @@ export type ReactInternals = {
   findFiberByHostInstance: (hostInstance: NativeType) => Fiber | null;
 };
 
-type NativeType = Record<string, unknown>;
+export type NativeType = Record<string, unknown>;
 type FindNativeNodesForFiberID = any;
 type GetDisplayNameForFiberID = any;
 type GetFiberIDForNative = any;
@@ -161,6 +165,7 @@ type Lanes = number;
 type Flags = number;
 
 export type FiberRoot = any;
+export type MemoizedState = any;
 export interface Fiber {
   // Tag identifying the type of fiber.
   tag: WorkTag;
@@ -210,7 +215,7 @@ export interface Fiber {
   updateQueue: null;
 
   // The state used to create the output
-  memoizedState: any;
+  memoizedState: MemoizedState;
 
   // Dependencies (contexts, events) for this fiber, if it has any
   dependencies: Dependencies | null;
@@ -303,24 +308,10 @@ export type OwnersList = {
   owners: Array<SerializedElement> | null;
 };
 
-export type ReactChangeDescription = {
-  context: Array<string> | boolean | null;
-  isFirstMount: boolean;
-  parentUpdate: boolean;
-  props: Array<{ name: string; prev: any; next: any }> | null;
-  state: Array<{ name: string; prev: any; next: any }> | null;
-  hooks: Array<{
-    index: number;
-    name: string;
-    changed: boolean;
-    computed?: boolean;
-  }> | null;
-};
-
 export type ReactCommitData = {
   commitTime: number;
   // Tuple of fiber ID and change description
-  changeDescriptions: Map<number, ReactChangeDescription> | null;
+  changeDescriptions: Map<number, TransferChangeDescription> | null;
   duration: number;
   // Only available in certain (newer) React builds,
   effectDuration: number | null;
@@ -438,7 +429,7 @@ export type RendererInterface = {
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 
-  getFiberByID: (id: number) => Fiber;
+  getFiberByID: (id: number) => Fiber | null;
 };
 
 export type RecordEventHandler = (

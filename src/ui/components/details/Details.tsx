@@ -31,11 +31,17 @@ const Details = ({
       <div className="details__header">
         <div className="details__header-caption">
           Events of {showSubtreeEvents && "subtree of"}{" "}
-          <span className={"details__header-component-name"}>
-            {component.displayName ||
-              (!component.ownerId ? "Render root" : "Unknown")}
-          </span>
-          <ElementId id={component.id} />
+          {component ? (
+            <>
+              <span className={"details__header-component-name"}>
+                {component.displayName ||
+                  (!component.ownerId ? "Render root" : "Unknown")}
+              </span>
+              <ElementId id={component.id} />
+            </>
+          ) : (
+            "Unknown"
+          )}
         </div>
         <ButtonToggle
           icon={<List />}

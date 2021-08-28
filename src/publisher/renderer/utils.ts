@@ -3,7 +3,7 @@
 // importing for specific functions saves ~24kB
 import gt from "semver/functions/gt";
 import gte from "semver/functions/gte";
-import { ElementType } from "../types";
+import { ElementType, FiberRoot } from "../types";
 import {
   ElementTypeClass,
   ElementTypeForwardRef,
@@ -29,11 +29,12 @@ import {
 } from "../constants";
 import { Fiber } from "../types";
 
-const cachedDisplayNames = new WeakMap();
+const cachedDisplayNames = new WeakMap<any, string>();
 
-export function getDisplayName(type, fallbackName = "Anonymous") {
-  if (cachedDisplayNames.has(type)) {
-    return cachedDisplayNames.get(type);
+export function getDisplayName(type: any, fallbackName = "Anonymous"): string {
+  const displayNameFromCache = cachedDisplayNames.get(type);
+  if (typeof displayNameFromCache === "string") {
+    return displayNameFromCache;
   }
 
   let displayName = fallbackName;
@@ -41,10 +42,12 @@ export function getDisplayName(type, fallbackName = "Anonymous") {
   // The displayName property is not guaranteed to be a string.
   // It's only safe to use for our purposes if it's a string.
   // github.com/facebook/react-devtools/issues/803
-  if (typeof type.displayName === "string") {
-    displayName = type.displayName;
-  } else if (typeof type.name === "string" && type.name !== "") {
-    displayName = type.name;
+  if (type) {
+    if (typeof type.displayName === "string") {
+      displayName = type.displayName;
+    } else if (typeof type.name === "string" && type.name !== "") {
+      displayName = type.name;
+    }
   }
 
   cachedDisplayNames.set(type, displayName);
@@ -52,24 +55,22 @@ export function getDisplayName(type, fallbackName = "Anonymous") {
   return displayName;
 }
 
-export function getEffectDurations(root) {
+export function getEffectDurations(root: FiberRoot) {
   // Profiling durations are only available for certain builds.
   // If available, they'll be stored on the HostRoot.
-  let effectDuration = null;
-  let passiveEffectDuration = null;
-  const hostRoot = root.current;
-  if (hostRoot != null) {
-    const stateNode = hostRoot.stateNode;
-    if (stateNode != null) {
-      effectDuration =
-        stateNode.effectDuration != null ? stateNode.effectDuration : null;
-      passiveEffectDuration =
-        stateNode.passiveEffectDuration != null
-          ? stateNode.passiveEffectDuration
-          : null;
+  const hostRoot = root.current || null;
+
+  if (hostRoot !== null) {
+    const stateNode = hostRoot.stateNode || null;
+
+    if (stateNode !== null) {
+      const { effectDuration = null, passiveEffectDuration = null } = stateNode;
+
+      return { effectDuration, passiveEffectDuration };
     }
   }
-  return { effectDuration, passiveEffectDuration };
+
+  return { effectDuration: null, passiveEffectDuration: null };
 }
 
 export function separateDisplayNameAndHOCs(
@@ -92,8 +93,8 @@ export function separateDisplayNameAndHOCs(
     if (parsedDisplayName.includes("(")) {
       const matches = parsedDisplayName.match(/[^()]+/g);
 
-      if (matches != null) {
-        parsedDisplayName = matches.pop();
+      if (matches !== null) {
+        parsedDisplayName = matches.pop() || "";
         hocDisplayNames = matches;
       }
     }
@@ -348,8 +349,9 @@ export function getInternalReactConstants(version: string) {
     SuspenseListComponent,
   } = ReactTypeOfWork;
 
-  function resolveFiberType(type) {
+  function resolveFiberType(type: any): any {
     const typeSymbol = getTypeSymbol(type);
+
     switch (typeSymbol) {
       case MEMO_NUMBER:
       case MEMO_SYMBOL_STRING:

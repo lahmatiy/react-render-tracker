@@ -18,6 +18,10 @@ type RenderContextProviderProps = {
   log: (msg: string) => void;
   children: JSX.Element;
 };
+type Trigger = {
+  type: string;
+  value: any;
+};
 
 const RenderContext = React.createContext<IRenderContext>({} as IRenderContext);
 
@@ -38,15 +42,22 @@ export function RenderContextProvider({
         );
       } catch (e) {
         if (e.stack) {
-          name = String(e.stack)
-            .replace(/^Error.*?\n/, "")
-            .split("\n")[2]
-            .match(/(?:\s*at\s+)?([a-z$_][a-z$_\d]+)/i)[1];
+          const nameStackLine =
+            String(e.stack)
+              .replace(/^Error.*?\n/, "")
+              .split("\n")[2] || "";
+          const matchName = nameStackLine.match(
+            /(?:\s*at\s+)?([a-z$_][a-z$_\d]+)/i
+          );
+
+          if (matchName !== null) {
+            name = matchName[1];
+          }
         }
       }
 
       const id = `${name}#${seed++}`;
-      const triggers = [];
+      const triggers: Trigger[] = [];
       const contexts = new Set();
 
       return {
@@ -112,8 +123,8 @@ export function useTrackRender(reason = "unknown") {
   // console.log(`[render] ${instance.current.id} ${reason}`);
 
   React.useEffect(() => {
-    instance.current.log("[mount]");
-    return () => instance.current.log("[unmount]");
+    instance.current?.log("[mount]");
+    return () => instance.current?.log("[unmount]");
   }, []);
 
   return {

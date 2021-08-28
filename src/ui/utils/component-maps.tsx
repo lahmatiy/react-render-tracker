@@ -25,7 +25,7 @@ export const useComponentMaps = () => React.useContext(ComponentMapsContext);
 export function ComponentMapsContextProvider({
   children,
 }: {
-  children: JSX.Element;
+  children: React.ReactNode;
 }) {
   const value: ComponentMapsContext = React.useMemo(() => {
     const componentById = new SubscribeMap<number, MessageElement>();
@@ -61,14 +61,14 @@ export function ComponentMapsContextProvider({
 
 type callback<V> = (value: V) => void;
 export class SubscribeMap<K, V> extends Map<K, V> {
-  private subscriptionsMap = new Map<K, Set<{ fn: callback<V> }>>();
+  private subscriptionsMap = new Map<K, Set<{ fn: callback<V | null> }>>();
 
   subscribe(id: K, fn: callback<V>) {
     return subscribeById<K, callback<V>>(this.subscriptionsMap, id, fn);
   }
 
   notify(id: K) {
-    return notifyById(this.subscriptionsMap, id, this.get(id));
+    return notifyById(this.subscriptionsMap, id, this.get(id) || null);
   }
 }
 

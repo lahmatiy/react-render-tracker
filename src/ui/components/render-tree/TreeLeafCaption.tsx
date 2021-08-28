@@ -10,7 +10,7 @@ interface TreeLeafCaptionProps {
   component: MessageElement;
   depth?: number;
   expanded: boolean;
-  setExpanded: (value: boolean) => void;
+  setExpanded?: (value: boolean) => void;
 }
 interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
   match: [offset: number, length: number] | null;
@@ -137,7 +137,7 @@ const TreeLeafCaptionInner = React.memo(
             {name || (!ownerId && "Render root") || "Unknown"}
           </span>
           <ElementId id={id} />
-          <ElementHocNames names={hocDisplayNames} />
+          {hocDisplayNames && <ElementHocNames names={hocDisplayNames} />}
           {rerendersCount > 0 && (
             <span className="tree-leaf-caption__count">{rerendersCount}</span>
           )}

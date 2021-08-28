@@ -1,11 +1,11 @@
 import * as React from "react";
 import { notify, notifyById, subscribe, subscribeById } from "./subscription";
 
-type idChangeCallback = (id: number) => void;
+type idChangeCallback = (id: number | null) => void;
 type stateChangeCallback = (state: boolean) => void;
 interface Selection {
-  selectedId: number;
-  select: (nextSelectedId: number) => void;
+  selectedId: number | null;
+  select: (nextSelectedId: number | null) => void;
   subscribe: (fn: (value: number) => void) => () => void;
   subscribeToIdState: (id: number, fn: stateChangeCallback) => () => void;
 }
@@ -15,10 +15,10 @@ const useSelectionContext = () => React.useContext(SelectionContext);
 export const SelectionContextProvider = ({
   children,
 }: {
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }) => {
   const value: Selection = React.useMemo(() => {
-    let selectedId = null;
+    let selectedId: number | null = null;
     const subscriptions = new Set<{ fn: idChangeCallback }>();
     const stateSubscriptionsById = new Map<
       number,

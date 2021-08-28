@@ -19,15 +19,15 @@ export type TransferElement = {
 export type TransferChangeDescription = {
   isFirstMount: boolean;
   parentUpdate: boolean;
-  context: Array<string> | boolean | null;
+  context: Array<{ name: string; prev: string; next: string }> | boolean | null;
+  props: Array<{ name: string; prev: string; next: string }> | null;
+  state: Array<{ name: string; prev: string; next: string }> | null;
   hooks: Array<{
     index: number;
     name: string;
     changed: boolean;
     computed?: boolean;
   }> | null;
-  props: Array<{ name: string; prev: string; next: string }> | null;
-  state: Array<{ name: string; prev: string; next: string }> | null;
 };
 
 export interface BaseMessage {
@@ -52,7 +52,7 @@ export interface RenderElementMessage extends BaseMessage {
   op: "rerender";
   totalTime: number;
   selfTime: number;
-  changes: TransferChangeDescription;
+  changes: TransferChangeDescription | null;
 }
 
 export type Message =

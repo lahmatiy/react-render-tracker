@@ -10,13 +10,13 @@ export const FindMatchContextProvider = ({
   children,
 }: {
   pattern: string | null;
-  children: JSX.Element;
+  children: React.ReactNode;
 }) => {
-  const match = React.useMemo(() => {
+  const match = React.useMemo<matchFn>(() => {
     const matches = new Map<number, matchResult>();
     const matched = new Set<number>();
 
-    return (id: number, value: string) => {
+    return (id, value) => {
       if (!matches.has(id)) {
         let range: matchResult = null;
 
@@ -36,7 +36,7 @@ export const FindMatchContextProvider = ({
         matches.set(id, range);
       }
 
-      return matches.get(id);
+      return matches.get(id) || null;
     };
   }, [pattern]);
 
@@ -47,7 +47,8 @@ export const FindMatchContextProvider = ({
   );
 };
 
-export const useFindMatch = (id: number, value: string) => {
+export const useFindMatch = (id: number, value: string | null) => {
   const match = useFindMatchContext();
+
   return match(id, value);
 };

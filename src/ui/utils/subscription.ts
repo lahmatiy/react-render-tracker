@@ -2,24 +2,23 @@ import * as React from "react";
 import debounce from "lodash.debounce";
 
 export function subscribeById<I, T>(map: Map<I, Set<{ fn: T }>>, id: I, fn: T) {
-  let subscriptions: Set<{ fn: T }>;
+  let subscriptions = map.get(id);
 
-  if (!map.has(id)) {
-    map.set(id, (subscriptions = new Set()));
-  } else {
-    subscriptions = map.get(id);
+  if (typeof subscriptions === "undefined") {
+    subscriptions = new Set();
+    map.set(id, subscriptions);
   }
 
   return subscribe(subscriptions, fn);
 }
 
 export function subscribe<T>(subscriptions: Set<{ fn: T }>, fn: T) {
-  const entry = { fn };
+  let entry: { fn: T } | undefined = { fn };
   subscriptions.add(entry);
 
   return () => {
-    entry.fn = null;
-    subscriptions.delete(entry);
+    subscriptions.delete(entry as { fn: T });
+    entry = undefined;
   };
 }
 

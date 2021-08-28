@@ -3,19 +3,18 @@ import ChevronDown from "react-feather/dist/icons/chevron-down";
 
 interface ButtonExpandProps {
   expanded: boolean;
-  setExpanded: (value: boolean) => void;
+  setExpanded?: (value: boolean) => void;
 }
 
 const ButtonExpand = ({ expanded, setExpanded }: ButtonExpandProps) => {
   const collapsedCls = expanded ? "expanded" : "";
-  const disabledCls = typeof setExpanded === "function" ? "" : "disabled";
+  const disabledCls = setExpanded ? "" : "disabled";
   const handleClick =
-    typeof setExpanded === "function"
-      ? (event: React.MouseEvent) => {
-          event.stopPropagation();
-          setExpanded(!expanded);
-        }
-      : null;
+    setExpanded &&
+    ((event: React.MouseEvent) => {
+      event.stopPropagation();
+      setExpanded(!expanded);
+    });
 
   return (
     <button

@@ -31,7 +31,11 @@ const createEventsContextValue = (): EventsContext => ({
 const EventsContext = React.createContext(createEventsContextValue());
 export const useEventsContext = () => React.useContext(EventsContext);
 
-export function EventsContextProvider({ children }: { children: JSX.Element }) {
+export function EventsContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [state, setState] = React.useState(createEventsContextValue);
   const eventsSince = React.useRef(0);
   const maps = useComponentMaps();
@@ -199,7 +203,7 @@ function upsertComponent(
   componentId: number
 ) {
   if (map.has(id)) {
-    map.set(id, map.get(id).concat(componentId));
+    map.set(id, (map.get(id) || []).concat(componentId));
   } else {
     map.set(id, [componentId]);
   }
@@ -213,14 +217,14 @@ function removeComponent(
   if (map.has(id)) {
     map.set(
       id,
-      map.get(id).filter(childId => childId !== componentId)
+      (map.get(id) || []).filter(childId => childId !== componentId)
     );
   }
 }
 
 function markUpdated(map: Map<number, number>, id: number, type: number) {
   if (map.has(id)) {
-    map.set(id, map.get(id) | type);
+    map.set(id, (map.get(id) || 0) | type);
   } else {
     map.set(id, type);
   }
@@ -284,8 +288,9 @@ export function processEvents(
 
       case "unmount": {
         unmountCount++;
+        element = componentById.get(event.elementId)!;
         element = {
-          ...componentById.get(event.elementId),
+          ...element,
           mounted: false,
         };
 
@@ -308,7 +313,7 @@ export function processEvents(
 
       case "rerender":
         rerenderCount++;
-        element = componentById.get(event.elementId);
+        element = componentById.get(event.elementId)!;
         element = {
           ...element,
           rerendersCount: element.rerendersCount + 1,
@@ -361,8 +366,10 @@ export function useEventLog(
     for (const id of subtree.keys()) {
       const component = componentById.get(id);
 
-      for (const event of component.events) {
-        events.push({ component, event });
+      if (component) {
+        for (const event of component.events) {
+          events.push({ component, event });
+        }
       }
     }
 
@@ -381,8 +388,10 @@ export function useEventLog(
           }
 
           for (const id of removed) {
-            if (subtree.has(id)) {
-              subtree.get(id)(); // unsubscribe
+            const unsubscribe = subtree.get(id);
+
+            if (typeof unsubscribe === "function") {
+              unsubscribe();
               subtree.delete(id);
             }
           }
@@ -398,8 +407,12 @@ export function useEventLog(
       );
 
       return () => {
-        subtree.get(componentId)(); // unsubscribe
-        subtree.delete(componentId);
+        const unsubscribe = subtree.get(componentId);
+
+        if (typeof unsubscribe === "function") {
+          unsubscribe(); // unsubscribe
+          subtree.delete(componentId);
+        }
       };
     },
     [componentId, includeSubtree, subtree]

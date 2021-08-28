@@ -7,6 +7,10 @@ interface EventRenderReasonsProps {
 }
 
 const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
+  if (!changes) {
+    return <>Unknown changes</>;
+  }
+
   return (
     <tr className="event-render-reasons">
       <td colSpan={4}>
