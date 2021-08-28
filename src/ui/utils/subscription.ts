@@ -62,62 +62,52 @@ export function useSubscription(subscribe: () => () => void) {
 
 export function useComputeSubscription<T>(
   compute: () => T,
-  subscribe: (
-    requestRecompute: () => void,
-    state: { accept: boolean }
-  ) => () => void
+  subscribe: (requestRecompute: () => void, accept: boolean) => () => void
 ) {
   type State = {
+    compute: () => T;
+    subscribe: (requestRecompute: () => void, accept: boolean) => () => void;
     value: T;
   };
 
   const mountedRef = React.useRef(false);
-  const computeRef = React.useRef<() => T>();
-  const acceptRecomputeRequests = React.useRef(false);
-  const lastComputedValue = React.useRef<T>();
+  const acceptRecomputeRequestsRef = React.useRef(false);
+  const isRecomputeNeededRef = React.useRef(false);
   const [state, setState] = React.useState<State>({
-    value: null,
-  });
+    compute: undefined,
+    subscribe: undefined,
+    value: undefined,
+  } as any);
+  let valueToReturn = state.value;
 
   const syncStateValue = React.useCallback(() => {
-    if (mountedRef.current) {
+    if (isRecomputeNeededRef.current && mountedRef.current) {
       setState(prevState => {
-        if (prevState.value === lastComputedValue.current) {
+        const newValue = prevState.compute();
+
+        if (prevState.value === newValue) {
           return prevState;
         }
 
-        return { value: lastComputedValue.current };
+        return {
+          ...prevState,
+          value: newValue,
+        };
       });
     }
   }, []);
 
   // Handle recompute requests
-  const recompute = React.useCallback(() => {
-    lastComputedValue.current = computeRef.current();
-    syncStateValue();
-  }, []);
-  const requestRecompute = React.useCallback(
-    // accept recompute requests only after a first computation
-    () => acceptRecomputeRequests.current && recompute(),
-    []
-  );
-
-  if (computeRef.current !== compute) {
-    acceptRecomputeRequests.current = false;
-  }
+  acceptRecomputeRequestsRef.current = state.compute === compute;
 
   // subscribe to changes
   useSubscription(
     React.useCallback(
       () =>
-        subscribe(
-          requestRecompute,
-          Object.freeze({
-            get accept() {
-              return acceptRecomputeRequests.current;
-            },
-          })
-        ),
+        subscribe(() => {
+          isRecomputeNeededRef.current = acceptRecomputeRequestsRef.current;
+          syncStateValue();
+        }, acceptRecomputeRequestsRef.current),
       [subscribe]
     )
   );
@@ -134,16 +124,19 @@ export function useComputeSubscription<T>(
     };
   }, []);
 
-  // Initial computation on compute set
-  if (computeRef.current !== compute) {
-    computeRef.current = compute;
-    lastComputedValue.current = compute();
-    acceptRecomputeRequests.current = true;
+  // Initial computation on compute & subscribe set
+  if (state.compute !== compute || state.subscribe !== subscribe) {
+    acceptRecomputeRequestsRef.current = true;
+    valueToReturn = compute();
 
-    state.value = lastComputedValue.current;
+    setState({
+      compute,
+      subscribe,
+      value: valueToReturn,
+    });
   }
 
-  return state.value;
+  return valueToReturn;
 }
 
 export function useDebouncedComputeSubscription<T>(
@@ -152,13 +145,14 @@ export function useDebouncedComputeSubscription<T>(
   debounced: number
 ) {
   const subscribeWithDebouncedCompute = React.useCallback(
-    (requestRecompute, state) => {
+    (requestRecompute, acceptRequests) => {
       const debouncedRequestRecompute = debounce(requestRecompute, debounced);
-      const unsubscribe = subscribe(() => {
-        if (state.accept) {
-          debouncedRequestRecompute();
-        }
-      });
+      const unsubscribe = subscribe(() => debouncedRequestRecompute());
+
+      // cancel any recompute requests after a subscription
+      if (!acceptRequests) {
+        debouncedRequestRecompute.cancel();
+      }
 
       return () => {
         unsubscribe();
