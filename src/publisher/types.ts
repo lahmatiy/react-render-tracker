@@ -13,9 +13,6 @@ export type ReactInternals = {
 };
 
 export type NativeType = Record<string, unknown>;
-type FindNativeNodesForFiberID = any;
-type GetDisplayNameForFiberID = any;
-type GetFiberIDForNative = any;
 type HookType =
   | "useState"
   | "useReducer"
@@ -419,12 +416,14 @@ export type RendererInterface = {
   handleCommitFiberUnmount: (fiber: Fiber) => void;
   handlePostCommitFiberRoot: (fiber: Fiber) => void;
 
-  findNativeNodesForFiberID: FindNativeNodesForFiberID;
-  getFiberIDForNative: GetFiberIDForNative;
-  getDisplayNameForFiberID: GetDisplayNameForFiberID;
+  findNativeNodesForFiberID: (id: number) => any[] | null;
+  getFiberIDForNative: (
+    hostInstance: NativeType,
+    findNearestUnfilteredAncestor?: boolean
+  ) => number | null;
+  getDisplayNameForFiberID: (id: number) => string | null;
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
-
   getFiberByID: (id: number) => Fiber | null;
 };
 

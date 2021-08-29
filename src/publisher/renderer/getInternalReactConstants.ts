@@ -3,12 +3,7 @@
 // importing for specific functions saves ~24kB
 import gt from "semver/functions/gt";
 import gte from "semver/functions/gte";
-import { ElementType, FiberRoot } from "../types";
 import {
-  ElementTypeClass,
-  ElementTypeForwardRef,
-  ElementTypeFunction,
-  ElementTypeMemo,
   CONCURRENT_MODE_NUMBER,
   CONCURRENT_MODE_SYMBOL_STRING,
   CONTEXT_NUMBER,
@@ -28,94 +23,7 @@ import {
   STRICT_MODE_SYMBOL_STRING,
 } from "../constants";
 import { Fiber } from "../types";
-
-const cachedDisplayNames = new WeakMap<any, string>();
-
-export function getDisplayName(type: any, fallbackName = "Anonymous"): string {
-  const displayNameFromCache = cachedDisplayNames.get(type);
-  if (typeof displayNameFromCache === "string") {
-    return displayNameFromCache;
-  }
-
-  let displayName = fallbackName;
-
-  // The displayName property is not guaranteed to be a string.
-  // It's only safe to use for our purposes if it's a string.
-  // github.com/facebook/react-devtools/issues/803
-  if (type) {
-    if (typeof type.displayName === "string") {
-      displayName = type.displayName;
-    } else if (typeof type.name === "string" && type.name !== "") {
-      displayName = type.name;
-    }
-  }
-
-  cachedDisplayNames.set(type, displayName);
-
-  return displayName;
-}
-
-export function getEffectDurations(root: FiberRoot) {
-  // Profiling durations are only available for certain builds.
-  // If available, they'll be stored on the HostRoot.
-  const hostRoot = root.current || null;
-
-  if (hostRoot !== null) {
-    const stateNode = hostRoot.stateNode || null;
-
-    if (stateNode !== null) {
-      const { effectDuration = null, passiveEffectDuration = null } = stateNode;
-
-      return { effectDuration, passiveEffectDuration };
-    }
-  }
-
-  return { effectDuration: null, passiveEffectDuration: null };
-}
-
-export function separateDisplayNameAndHOCs(
-  displayName: string | null,
-  type: ElementType
-): [string | null, Array<string> | null] {
-  if (displayName === null) {
-    return [null, null];
-  }
-
-  let parsedDisplayName = displayName;
-  let hocDisplayNames = null;
-
-  if (
-    type === ElementTypeClass ||
-    type === ElementTypeFunction ||
-    type === ElementTypeForwardRef ||
-    type === ElementTypeMemo
-  ) {
-    if (parsedDisplayName.includes("(")) {
-      const matches = parsedDisplayName.match(/[^()]+/g);
-
-      if (matches !== null) {
-        parsedDisplayName = matches.pop() || "";
-        hocDisplayNames = matches;
-      }
-    }
-  }
-
-  if (type === ElementTypeMemo) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["Memo"];
-    } else {
-      hocDisplayNames.unshift("Memo");
-    }
-  } else if (type === ElementTypeForwardRef) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["ForwardRef"];
-    } else {
-      hocDisplayNames.unshift("ForwardRef");
-    }
-  }
-
-  return [parsedDisplayName, hocDisplayNames];
-}
+import { getDisplayName } from "./getDisplayName";
 
 export function getInternalReactConstants(version: string) {
   const ReactTypeOfSideEffect = {

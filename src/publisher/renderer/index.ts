@@ -1,6 +1,5 @@
-import { getInternalReactConstants, separateDisplayNameAndHOCs } from "./utils";
-// import { inspectHooksOfFiber } from "react-debug-tools";
-
+import { getInternalReactConstants } from "./getInternalReactConstants";
+import { separateDisplayNameAndHOCs } from "./separateDisplayNameAndHOCs";
 import {
   ElementTypeClass,
   ElementTypeContext,
@@ -105,6 +104,7 @@ export function attach(
         // For now, ignore it, and only show it once it gets hydrated.
         // https://github.com/bvaughn/react-devtools-experimental/issues/197
         return true;
+
       case HostPortal:
       case HostComponent:
       case HostText:
@@ -112,19 +112,20 @@ export function attach(
       case LegacyHiddenComponent:
       case OffscreenComponent:
         return true;
+
       case HostRoot:
         // It is never valid to filter the root element.
         return false;
-      default:
-        const typeSymbol = getTypeSymbol(fiber.type);
 
-        switch (typeSymbol) {
+      default:
+        switch (getTypeSymbol(fiber.type)) {
           case CONCURRENT_MODE_NUMBER:
           case CONCURRENT_MODE_SYMBOL_STRING:
           case DEPRECATED_ASYNC_MODE_SYMBOL_STRING:
           case STRICT_MODE_NUMBER:
           case STRICT_MODE_SYMBOL_STRING:
             return true;
+
           default:
             return false;
         }
@@ -299,7 +300,7 @@ export function attach(
       untrackFibersTimeoutID = null;
     }
 
-    untrackFibersSet.forEach(fiber => {
+    for (const fiber of untrackFibersSet) {
       const fiberID = getFiberIDUnsafe(fiber);
 
       if (fiberID !== null) {
@@ -307,12 +308,8 @@ export function attach(
       }
 
       fiberToIDMap.delete(fiber);
-
-      const { alternate } = fiber;
-      if (alternate !== null) {
-        fiberToIDMap.delete(alternate);
-      }
-    });
+      fiberToIDMap.delete(fiber.alternate as Fiber);
+    }
     untrackFibersSet.clear();
   }
 
@@ -1073,7 +1070,7 @@ export function attach(
 
   function handleCommitFiberRoot(root: FiberRoot, priorityLevel?: number) {
     const current = root.current;
-    const alternate = current.alternate;
+    const { alternate } = current;
 
     // Flush any pending Fibers that we are untracking before processing the new commit.
     // If we don't do this, we might end up double-deleting Fibers in some cases (like Legacy Suspense).
@@ -1082,7 +1079,7 @@ export function attach(
     currentRootID = getOrGenerateFiberID(current);
 
     // FIXME: add to commit event
-    console.log(formatPriorityLevel(priorityLevel || 0));
+    console.log(formatPriorityLevel(priorityLevel || -1));
 
     // Handle multi-renderer edge-case where only some v16 renderers support profiling.
     // const isProfilingSupported = rootSupportsProfiling(root);
@@ -1167,9 +1164,11 @@ export function attach(
   function findNativeNodesForFiberID(id: number) {
     try {
       let fiber = findCurrentFiberUsingSlowPathById(id);
+
       if (fiber === null) {
         return null;
       }
+
       // Special case for a timed-out Suspense.
       const isTimedOutSuspense =
         fiber.tag === SuspenseComponent && fiber.memoizedState !== null;
@@ -1181,6 +1180,7 @@ export function attach(
           fiber = maybeFallbackFiber;
         }
       }
+
       const hostFibers = findAllCurrentHostFibers(id);
       return hostFibers.map(hostFiber => hostFiber.stateNode).filter(Boolean);
     } catch (err) {
@@ -1210,6 +1210,7 @@ export function attach(
           fiber = fiber.return;
         }
       }
+
       return fiber && getFiberIDThrows(fiber);
     }
 
@@ -1225,16 +1226,19 @@ export function attach(
   function isFiberMountedImpl(fiber: Fiber) {
     let node = fiber;
     let prevNode = null;
+
     if (!fiber.alternate) {
       // If there is no alternate, this might be a new tree that isn't inserted
       // yet. If it is, then it will have a pending insertion effect on it.
       if ((getFiberFlags(node) & Placement) !== NoFlags) {
         return MOUNTING;
       }
+
       // This indicates an error during render.
       if ((getFiberFlags(node) & Incomplete) !== NoFlags) {
         return UNMOUNTED;
       }
+
       while (node.return) {
         prevNode = node;
         node = node.return;
@@ -1242,6 +1246,7 @@ export function attach(
         if ((getFiberFlags(node) & Placement) !== NoFlags) {
           return MOUNTING;
         }
+
         // This indicates an error during render.
         if ((getFiberFlags(node) & Incomplete) !== NoFlags) {
           return UNMOUNTED;
@@ -1256,6 +1261,7 @@ export function attach(
           const fallbackChildFragment = primaryChildFragment
             ? primaryChildFragment.sibling
             : null;
+
           if (prevNode !== fallbackChildFragment) {
             return UNMOUNTED;
           }
@@ -1266,11 +1272,13 @@ export function attach(
         node = node.return;
       }
     }
+
     if (node.tag === HostRoot) {
       // TODO: Check if this was a nested HostRoot when used with
       // renderContainerIntoSubtree.
       return MOUNTED;
     }
+
     // If we didn't hit the root, that means that we're in an disconnected tree
     // that has been unmounted.
     return UNMOUNTED;
@@ -1282,23 +1290,28 @@ export function attach(
   // BEGIN copied code
   function findCurrentFiberUsingSlowPathById(id: number) {
     const fiber = idToArbitraryFiberMap.get(id);
+
     if (fiber == null) {
       console.warn(`Could not find Fiber with id "${id}"`);
       return null;
     }
 
-    const alternate = fiber.alternate;
+    const { alternate } = fiber;
     if (!alternate) {
       // If there is no alternate, then we only need to check if it is mounted.
       const state = isFiberMountedImpl(fiber);
+
       if (state === UNMOUNTED) {
         throw Error("Unable to find node on an unmounted component.");
       }
+
       if (state === MOUNTING) {
         return null;
       }
+
       return fiber;
     }
+
     // If we have two possible branches, we'll walk backwards up to the root
     // to see what path the root points to. On the way we may hit one of the
     // special cases and we'll deal with them.
@@ -1310,6 +1323,7 @@ export function attach(
         // We're at the root.
         break;
       }
+
       const parentB = parentA.alternate;
       if (parentB === null) {
         // There is no alternate. This is an unusual case. Currently, it only
@@ -1336,17 +1350,22 @@ export function attach(
             if (isFiberMountedImpl(parentA) !== MOUNTED) {
               throw Error("Unable to find node on an unmounted component.");
             }
+
             return fiber;
           }
+
           if (child === b) {
             // We've determined that B is the current branch.
             if (isFiberMountedImpl(parentA) !== MOUNTED) {
               throw Error("Unable to find node on an unmounted component.");
             }
+
             return alternate;
           }
+
           child = child.sibling;
         }
+
         // We should never have an alternate for any mounting node. So the only
         // way this could possibly happen is if this was unmounted, if at all.
         throw Error("Unable to find node on an unmounted component.");
@@ -1367,6 +1386,7 @@ export function attach(
         // Search parent A's child set
         let didFindChild = false;
         let child = parentA.child;
+
         while (child) {
           if (child === a) {
             didFindChild = true;
@@ -1374,17 +1394,21 @@ export function attach(
             b = parentB;
             break;
           }
+
           if (child === b) {
             didFindChild = true;
             b = parentA;
             a = parentB;
             break;
           }
+
           child = child.sibling;
         }
+
         if (!didFindChild) {
           // Search parent B's child set
           child = parentB.child;
+
           while (child) {
             if (child === a) {
               didFindChild = true;
@@ -1392,14 +1416,17 @@ export function attach(
               b = parentA;
               break;
             }
+
             if (child === b) {
               didFindChild = true;
               b = parentB;
               a = parentA;
               break;
             }
+
             child = child.sibling;
           }
+
           if (!didFindChild) {
             throw Error(
               "Child was not found in either parent set. This indicates a bug " +
@@ -1421,14 +1448,15 @@ export function attach(
     if (a.tag !== HostRoot) {
       throw Error("Unable to find node on an unmounted component.");
     }
+
     if (a.stateNode.current === a) {
       // We've determined that A is the current branch.
       return fiber;
     }
+
     // Otherwise B has to be current branch.
     return alternate;
   }
-
   // END copied code
 
   function fiberToSerializedElement(fiber: Fiber): SerializedElement {
@@ -1442,7 +1470,8 @@ export function attach(
 
   function getOwnersList(id: number) {
     const fiber = findCurrentFiberUsingSlowPathById(id);
-    if (fiber == null) {
+
+    if (fiber === null) {
       return null;
     }
 
@@ -1473,26 +1502,32 @@ export function attach(
   function setRootPseudoKey(id: number, fiber: Fiber) {
     const name = getDisplayNameForRoot(fiber);
     const counter = rootDisplayNameCounter.get(name) || 0;
-    rootDisplayNameCounter.set(name, counter + 1);
     const pseudoKey = `${name}:${counter}`;
+
+    rootDisplayNameCounter.set(name, counter + 1);
     rootPseudoKeys.set(id, pseudoKey);
   }
 
   function removeRootPseudoKey(id: number) {
     const pseudoKey = rootPseudoKeys.get(id);
+
     if (pseudoKey === undefined) {
       throw new Error("Expected root pseudo key to be known.");
     }
+
     const name = pseudoKey.substring(0, pseudoKey.lastIndexOf(":"));
     const counter = rootDisplayNameCounter.get(name);
+
     if (counter === undefined) {
       throw new Error("Expected counter to be known.");
     }
+
     if (counter > 1) {
       rootDisplayNameCounter.set(name, counter - 1);
     } else {
       rootDisplayNameCounter.delete(name);
     }
+
     rootPseudoKeys.delete(id);
   }
 
@@ -1500,12 +1535,14 @@ export function attach(
     let preferredDisplayName = null;
     let fallbackDisplayName = null;
     let child = fiber.child;
+
     // Go at most three levels deep into direct children
     // while searching for a child that has a displayName.
     for (let i = 0; i < 3; i++) {
       if (child === null) {
         break;
       }
+
       const displayName = getDisplayNameForFiber(child);
       if (displayName !== null) {
         // Prefer display names that we get from user-defined components.
@@ -1518,35 +1555,40 @@ export function attach(
           fallbackDisplayName = displayName;
         }
       }
+
       if (preferredDisplayName !== null) {
         break;
       }
+
       child = child.child;
     }
+
     return preferredDisplayName || fallbackDisplayName || "Anonymous";
   }
 
   function getPathFrame(fiber: Fiber) {
     const { key } = fiber;
-    let displayName = getDisplayNameForFiber(fiber);
     const index = fiber.index;
+    let displayName = getDisplayNameForFiber(fiber);
+
     switch (fiber.tag) {
       case HostRoot:
         // Roots don't have a real displayName, index, or key.
         // Instead, we'll use the pseudo key (childDisplayName:indexWithThatName).
         const id = getFiberIDThrows(fiber);
         const pseudoKey = rootPseudoKeys.get(id);
+
         if (pseudoKey === undefined) {
           throw new Error("Expected mounted root to have known pseudo key.");
         }
+
         displayName = pseudoKey;
         break;
       case HostComponent:
         displayName = fiber.type;
         break;
-      default:
-        break;
     }
+
     return {
       displayName,
       key,
@@ -1560,23 +1602,21 @@ export function attach(
   // because their keys and indexes are important to restoring the selection.
   function getPathForElement(id: number) {
     let fiber = idToArbitraryFiberMap.get(id) || null;
-    if (fiber == null) {
+
+    if (fiber === null) {
       return null;
     }
+
     const keyPath = [];
     while (fiber !== null) {
       keyPath.push(getPathFrame(fiber));
       fiber = fiber.return;
     }
-    keyPath.reverse();
-    return keyPath;
+
+    return keyPath.reverse();
   }
 
-  const formatPriorityLevel = (priorityLevel: number) => {
-    if (priorityLevel == null) {
-      return "Unknown";
-    }
-
+  function formatPriorityLevel(priorityLevel: number | null = null) {
     switch (priorityLevel) {
       case ImmediatePriority:
         return "Immediate";
@@ -1592,7 +1632,7 @@ export function attach(
       default:
         return "Unknown";
     }
-  };
+  }
 
   return {
     handleCommitFiberRoot,
@@ -1604,7 +1644,6 @@ export function attach(
     getFiberIDForNative,
     getOwnersList,
     getPathForElement,
-
     getFiberByID,
   };
 }
