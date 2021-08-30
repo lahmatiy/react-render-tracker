@@ -1,10 +1,10 @@
-import { ElementType } from "../types";
+import { ElementType } from "../../types";
 import {
   ElementTypeClass,
   ElementTypeForwardRef,
   ElementTypeFunction,
   ElementTypeMemo,
-} from "../constants";
+} from "./constants";
 
 export function separateDisplayNameAndHOCs(
   displayName: string | null,

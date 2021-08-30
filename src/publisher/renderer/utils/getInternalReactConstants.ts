@@ -21,8 +21,8 @@ import {
   SCOPE_SYMBOL_STRING,
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
-} from "../constants";
-import { Fiber } from "../types";
+} from "./constants";
+import { Fiber } from "../../types";
 import { getDisplayName } from "./getDisplayName";
 
 export function getInternalReactConstants(version: string) {
