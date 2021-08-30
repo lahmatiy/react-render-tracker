@@ -1,12 +1,17 @@
 import { getFiberFlags } from "./utils/getFiberFlags";
-import type { createCommonApi } from "./common";
-import { Fiber, IntercationApi, NativeType, SerializedElement } from "../types";
+import type { createIntegrationCore } from "./core";
+import {
+  Fiber,
+  ReactInterationApi,
+  NativeType,
+  SerializedElement,
+} from "../types";
 
 const MOUNTING = 1;
 const MOUNTED = 2;
 const UNMOUNTED = 3;
 
-export function createInteractionApi({
+export function createReactInteractionApi({
   ReactTypeOfSideEffect,
   ReactTypeOfWork,
   getFiberIDThrows,
@@ -16,7 +21,7 @@ export function createInteractionApi({
   getRootPseudoKey,
   shouldFilterFiber,
   findFiberByHostInstance,
-}: ReturnType<typeof createCommonApi>): IntercationApi {
+}: ReturnType<typeof createIntegrationCore>): ReactInterationApi {
   const { Incomplete, NoFlags, Placement } = ReactTypeOfSideEffect;
   const { HostRoot, HostComponent, HostText, SuspenseComponent } =
     ReactTypeOfWork;

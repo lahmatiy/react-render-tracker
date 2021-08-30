@@ -411,12 +411,12 @@ export type InspectedElementPayload =
   | InspectElementNoChange
   | InspectElementNotFound;
 
-export type ReactHookHandlers = {
+export type ReactDevtoolsHookHandlers = {
   handleCommitFiberRoot: (fiber: Fiber, commitPriority?: number) => void;
   handleCommitFiberUnmount: (fiber: Fiber) => void;
   handlePostCommitFiberRoot: (fiber: Fiber) => void;
 };
-export type IntercationApi = {
+export type ReactInterationApi = {
   findNativeNodesForFiberID: (id: number) => any[] | null;
   getFiberIDForNative: (
     hostInstance: NativeType,
@@ -426,7 +426,7 @@ export type IntercationApi = {
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
-export type RendererInterface = ReactHookHandlers & IntercationApi;
+export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 
 export type RecordEventHandler = (
   payload: DistributiveOmit<Message, "id" | "timestamp">

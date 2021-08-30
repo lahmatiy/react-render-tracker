@@ -25,7 +25,7 @@ import {
 } from "./utils/constants.js";
 import { ReactInternals, Fiber, NativeType } from "../types";
 
-export function createCommonApi(renderer: ReactInternals) {
+export function createIntegrationCore(renderer: ReactInternals) {
   // Newer versions of the reconciler package also specific reconciler version.
   // If that version number is present, use it.
   // Third party renderer versions may not match the reconciler version,

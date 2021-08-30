@@ -1,4 +1,4 @@
-import { RendererInterface, ReactInternals, Fiber, FiberRoot } from "./types";
+import { ReactIntegration, ReactInternals, Fiber, FiberRoot } from "./types";
 
 type ReactDevtoolsHook = {
   supportsFiber: boolean;
@@ -18,10 +18,10 @@ type ReactDevtoolsHook = {
  */
 
 export function createReactDevtoolsHook(
-  attachRenderer: (renderer: ReactInternals) => RendererInterface,
+  attachRenderer: (renderer: ReactInternals) => ReactIntegration,
   existing: ReactDevtoolsHook
 ) {
-  const rendererInterfaces = new Map<number, RendererInterface>();
+  const rendererInterfaces = new Map<number, ReactIntegration>();
   const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
@@ -136,7 +136,7 @@ const MARKER = Symbol();
 
 export function installReactDevtoolsHook(
   target: any,
-  attachRenderer: (renderer: ReactInternals) => RendererInterface
+  attachRenderer: (renderer: ReactInternals) => ReactIntegration
 ) {
   const existingHook = target[hookName];
 

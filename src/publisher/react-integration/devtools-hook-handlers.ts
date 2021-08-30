@@ -7,21 +7,21 @@ import {
   ElementTypeMemo,
   ElementTypeRoot,
 } from "./utils/constants";
-import type { createCommonApi } from "./common";
+import type { createIntegrationCore } from "./core";
 import {
   Fiber,
   MemoizedState,
   TransferElement,
   TransferChangeDescription,
   FiberRoot,
-  ReactHookHandlers,
+  ReactDevtoolsHookHandlers,
   RecordEventHandler,
 } from "../types";
 
 // Differentiates between a null context value and no context.
 const NO_CONTEXT = {};
 
-export function createHookHandlers(
+export function createReactDevtoolsHookHandlers(
   {
     ReactTypeOfSideEffect,
     ReactTypeOfWork,
@@ -36,9 +36,9 @@ export function createHookHandlers(
     setRootPseudoKey,
     removeRootPseudoKey,
     shouldFilterFiber,
-  }: ReturnType<typeof createCommonApi>,
+  }: ReturnType<typeof createIntegrationCore>,
   recordEvent: RecordEventHandler
-): ReactHookHandlers {
+): ReactDevtoolsHookHandlers {
   const { PerformedWork } = ReactTypeOfSideEffect;
   const { HostRoot, SuspenseComponent, OffscreenComponent } = ReactTypeOfWork;
   const {
