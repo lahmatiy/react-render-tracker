@@ -12,7 +12,7 @@ const Tree = ({
   groupByParent: boolean;
   showUnmounted: boolean;
 }) => {
-  const children = useComponentChildren(rootId);
+  const children = useComponentChildren(rootId, groupByParent, showUnmounted);
   const viewSettings = React.useMemo<ViewSettings>(
     () => ({
       groupByParent,

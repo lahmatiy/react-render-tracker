@@ -1,6 +1,7 @@
 ## next
 
 - Fixed owner-based hierarchy for root level components
+- Fixed unmounted render root displaying
 
 ## 0.2.0 (August 27, 2021)
 
