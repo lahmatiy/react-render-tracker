@@ -53,7 +53,7 @@ export function createReactDevtoolsHookHandlers(
   let currentRootID = -1;
 
   // Transfer elements
-  const idToOwnerId = new Map<number, number>();
+  const idToRootId = new Map<number, number>();
   const idToContextsMap = new Map();
 
   const untrackFibersSet = new Set<Fiber>();
@@ -368,7 +368,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const id of unmountIds) {
-      idToOwnerId.delete(id);
+      idToRootId.delete(id);
       recordEvent({
         op: "unmount",
         elementId: id,
@@ -388,6 +388,7 @@ export function createReactDevtoolsHookHandlers(
     let element: TransferElement;
 
     if (isRoot) {
+      idToRootId.set(id, id);
       element = {
         id,
         type: ElementTypeRoot,
@@ -402,9 +403,10 @@ export function createReactDevtoolsHookHandlers(
       const elementType = getElementTypeForFiber(fiber);
       const displayName = getDisplayNameForFiber(fiber);
       const parentId = parentFiber ? getFiberIDThrows(parentFiber) : 0;
+      const rootId = idToRootId.get(parentId) || 0;
       const ownerId =
         _debugOwner === null
-          ? idToOwnerId.get(parentId) || 0
+          ? rootId
           : // Ideally we should call getFiberIDThrows() for _debugOwner,
             // since owners are almost always higher in the tree (and so have already been processed),
             // but in some (rare) instances reported in open source, a descendant mounts before an owner.
@@ -415,6 +417,7 @@ export function createReactDevtoolsHookHandlers(
       const [displayNameWithoutHOCs, hocDisplayNames] =
         separateDisplayNameAndHOCs(displayName, elementType);
 
+      idToRootId.set(id, rootId);
       element = {
         id,
         type: elementType,
@@ -426,7 +429,6 @@ export function createReactDevtoolsHookHandlers(
       };
     }
 
-    idToOwnerId.set(id, element.ownerId || id);
     recordEvent({
       op: "mount",
       elementId: id,

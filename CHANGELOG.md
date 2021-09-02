@@ -1,3 +1,7 @@
+## next
+
+- Fixed owner-based hierarchy for root level components
+
 ## 0.2.0 (August 27, 2021)
 
 - Added reset event log button which also vanish unmounted components (#9, @ilyaryabchinski)
