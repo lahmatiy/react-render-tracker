@@ -32,7 +32,6 @@ export function createReactDevtoolsHookHandlers(
     removeFiber,
     getElementTypeForFiber,
     getDisplayNameForFiber,
-    getDisplayNameForRoot,
     setRootPseudoKey,
     removeRootPseudoKey,
     shouldFilterFiber,
@@ -54,9 +53,7 @@ export function createReactDevtoolsHookHandlers(
   let currentRootID = -1;
 
   // Transfer elements
-  const idToTransferElement = new Map<number, TransferElement>();
-
-  const displayNamesByRootID = new Map();
+  const idToOwnerId = new Map<number, number>();
   const idToContextsMap = new Map();
 
   const untrackFibersSet = new Set<Fiber>();
@@ -229,11 +226,11 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function getChangedHooks(
-    prev: MemoizedState,
-    next: MemoizedState,
+    prev: MemoizedState = null,
+    next: MemoizedState = null,
     hookNames: string[]
   ) {
-    if (prev == null || next == null) {
+    if (prev === null || next === null) {
       return null;
     }
 
@@ -321,16 +318,6 @@ export function createReactDevtoolsHookHandlers(
       return null;
     }
 
-    // We can't report anything meaningful for hooks changes.
-    if (
-      next.hasOwnProperty("baseState") &&
-      next.hasOwnProperty("memoizedState") &&
-      next.hasOwnProperty("next") &&
-      next.hasOwnProperty("queue")
-    ) {
-      return null;
-    }
-
     const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
     const changedKeys = [];
     for (const key of keys) {
@@ -381,13 +368,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const id of unmountIds) {
-      if (!idToTransferElement.has(id)) {
-        throw new Error(
-          `Cannot remove node "${id}" because no matching node was found in the Store.`
-        );
-      }
-
-      idToTransferElement.delete(id);
+      idToOwnerId.delete(id);
       recordEvent({
         op: "unmount",
         elementId: id,
@@ -416,37 +397,20 @@ export function createReactDevtoolsHookHandlers(
         displayName: null,
         hocDisplayNames: null,
       };
-
-      if (displayNamesByRootID !== null) {
-        displayNamesByRootID.set(id, getDisplayNameForRoot(fiber));
-      }
     } else {
       const { key, _debugOwner = null } = fiber;
-      const displayName = getDisplayNameForFiber(fiber);
       const elementType = getElementTypeForFiber(fiber);
-
-      let ownerId =
-        _debugOwner !== null ? getOrGenerateFiberID(_debugOwner) : 0;
+      const displayName = getDisplayNameForFiber(fiber);
       const parentId = parentFiber ? getFiberIDThrows(parentFiber) : 0;
-
-      if (!idToTransferElement.has(parentId)) {
-        throw new Error(
-          `Cannot add child "${id}" to parent "${parentId}" because parent node was not found in the Store.`
-        );
-      }
-
-      const parentElement = idToTransferElement.get(parentId) || null;
-
-      if (_debugOwner === null || ownerId === 0) {
-        ownerId = parentElement?.ownerId || parentElement?.id || 0;
-      } else {
-        // Ideally we should call getFiberIDThrows() for _debugOwner,
-        // since owners are almost always higher in the tree (and so have already been processed),
-        // but in some (rare) instances reported in open source, a descendant mounts before an owner.
-        // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
-        // See https://github.com/facebook/react/issues/21445
-        ownerId = getOrGenerateFiberID(_debugOwner);
-      }
+      const ownerId =
+        _debugOwner === null
+          ? idToOwnerId.get(parentId) || 0
+          : // Ideally we should call getFiberIDThrows() for _debugOwner,
+            // since owners are almost always higher in the tree (and so have already been processed),
+            // but in some (rare) instances reported in open source, a descendant mounts before an owner.
+            // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
+            // See https://github.com/facebook/react/issues/21445
+            getOrGenerateFiberID(_debugOwner);
 
       const [displayNameWithoutHOCs, hocDisplayNames] =
         separateDisplayNameAndHOCs(displayName, elementType);
@@ -454,7 +418,7 @@ export function createReactDevtoolsHookHandlers(
       element = {
         id,
         type: elementType,
-        key: key === null ? null : "" + key,
+        key: key === null ? null : String(key),
         ownerId,
         parentId,
         displayName: displayNameWithoutHOCs,
@@ -462,7 +426,7 @@ export function createReactDevtoolsHookHandlers(
       };
     }
 
-    idToTransferElement.set(id, element);
+    idToOwnerId.set(id, element.ownerId || id);
     recordEvent({
       op: "mount",
       elementId: id,
@@ -478,6 +442,7 @@ export function createReactDevtoolsHookHandlers(
 
   function recordUnmount(fiber: Fiber, isSimulated: boolean) {
     const unsafeID = getFiberIDUnsafe(fiber);
+
     if (unsafeID === null) {
       // If we've never seen this Fiber, it might be inside of a legacy render Suspense fragment (so the store is not even aware of it).
       // In that case we can just ignore it or it will cause errors later on.
@@ -916,8 +881,8 @@ export function createReactDevtoolsHookHandlers(
   }
 
   return {
-    handleCommitFiberUnmount,
-    handlePostCommitFiberRoot,
     handleCommitFiberRoot,
+    handlePostCommitFiberRoot,
+    handleCommitFiberUnmount,
   };
 }
