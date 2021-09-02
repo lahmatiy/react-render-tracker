@@ -122,22 +122,26 @@ export function createReactDevtoolsHookHandlers(
           } as TransferChangeDescription;
         } else {
           const { _debugHookTypes } = nextFiber;
+          const isElementTypeClass = prevFiber.stateNode !== null;
           const data: TransferChangeDescription = {
             isFirstMount: false,
             parentUpdate: false,
-            context: getContextChangedKeys(nextFiber),
-            hooks: getChangedHooks(
-              prevFiber.memoizedState,
-              nextFiber.memoizedState,
-              _debugHookTypes || []
-            ),
+            context: isElementTypeClass
+              ? getContextChangedKeys(nextFiber)
+              : null,
+            state: isElementTypeClass
+              ? getChangedKeys(prevFiber.memoizedState, nextFiber.memoizedState)
+              : null,
+            hooks: !isElementTypeClass
+              ? getChangedHooks(
+                  prevFiber.memoizedState,
+                  nextFiber.memoizedState,
+                  _debugHookTypes || []
+                )
+              : null,
             props: getChangedKeys(
               prevFiber.memoizedProps,
               nextFiber.memoizedProps
-            ),
-            state: getChangedKeys(
-              prevFiber.memoizedState,
-              nextFiber.memoizedState
             ),
           };
 
@@ -169,11 +173,11 @@ export function createReactDevtoolsHookHandlers(
       return null;
     }
 
-    const instance = fiber.stateNode;
+    const instance = fiber.stateNode || null;
     let legacyContext = NO_CONTEXT;
     let modernContext = NO_CONTEXT;
 
-    if (instance != null) {
+    if (instance !== null) {
       if (instance.constructor && instance.constructor.contextType != null) {
         modernContext = instance.context;
       } else {
@@ -235,49 +239,44 @@ export function createReactDevtoolsHookHandlers(
     }
 
     const indices = [];
+    let index = 0;
 
-    if (
-      next.hasOwnProperty("baseState") &&
-      next.hasOwnProperty("memoizedState") &&
-      next.hasOwnProperty("next") &&
-      next.hasOwnProperty("queue")
-    ) {
-      let index = 0;
+    // contexts are treating aside by "dependencies" property on fiber
+    hookNames = hookNames.filter(name => name !== "useContext");
 
-      while (next !== null) {
-        const effect =
-          isEffect(prev.memoizedState) && isEffect(next.memoizedState);
-        const changed = prev.memoizedState !== next.memoizedState;
+    while (next !== null) {
+      const effect =
+        isEffect(prev.memoizedState) && isEffect(next.memoizedState);
+      const changed = prev.memoizedState !== next.memoizedState;
 
-        if (effect) {
-          const computed = false;
-          // TODO: use computed in separate changes property
-          // !prev.memoizedState ||
-          // getChangedInputsIndecies(
-          //   prev.memoizedState.deps,
-          //   next.memoizedState.deps
-          // );
+      if (effect) {
+        const computed = false;
+        // TODO: use computed in separate changes property
+        // !prev.memoizedState ||
+        // getChangedInputsIndecies(
+        //   prev.memoizedState.deps,
+        //   next.memoizedState.deps
+        // );
 
-          if (computed || changed) {
-            indices.push({
-              index,
-              name: hookNames[index],
-              changed,
-              computed,
-            });
-          }
-        } else if (changed) {
+        if (computed || changed) {
           indices.push({
             index,
             name: hookNames[index],
             changed,
+            computed,
           });
         }
-
-        next = next.next;
-        prev = prev.next;
-        index++;
+      } else if (changed) {
+        indices.push({
+          index,
+          name: hookNames[index],
+          changed,
+        });
       }
+
+      next = next.next;
+      prev = prev.next;
+      index++;
     }
 
     return indices.length > 0 ? indices : null;
