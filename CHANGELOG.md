@@ -3,6 +3,7 @@
 - Fixed owner-based hierarchy for root level components
 - Fixed unmounted render root displaying
 - Fixed state and hooks changes computation depending on component type, i.e. class-based or functional
+- Changed simple value serialization to distinguish an empty object/array with non-empty
 
 ## 0.2.0 (August 27, 2021)
 

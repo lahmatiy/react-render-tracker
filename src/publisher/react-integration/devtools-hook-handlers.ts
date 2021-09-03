@@ -18,6 +18,8 @@ import {
   RecordEventHandler,
 } from "../types";
 
+const { hasOwnProperty } = Object.prototype;
+
 // Differentiates between a null context value and no context.
 const NO_CONTEXT = {};
 
@@ -213,18 +215,18 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function isEffect(memoizedState: MemoizedState) {
-    if (memoizedState === null || typeof memoizedState !== "object") {
+    if (typeof memoizedState !== "object" || memoizedState === null) {
       return false;
     }
 
     const { deps } = memoizedState;
-    const hasOwnProperty = Object.prototype.hasOwnProperty.bind(memoizedState);
+
     return (
-      hasOwnProperty("create") &&
-      hasOwnProperty("destroy") &&
-      hasOwnProperty("deps") &&
-      hasOwnProperty("next") &&
-      hasOwnProperty("tag") &&
+      hasOwnProperty.call(memoizedState, "create") &&
+      hasOwnProperty.call(memoizedState, "destroy") &&
+      hasOwnProperty.call(memoizedState, "deps") &&
+      hasOwnProperty.call(memoizedState, "next") &&
+      hasOwnProperty.call(memoizedState, "tag") &&
       (deps === null || Array.isArray(deps))
     );
   }
@@ -295,7 +297,7 @@ export function createReactDevtoolsHookHandlers(
         return "ƒn";
 
       case "string":
-        return value.length > 20 ? value.slice(0, 20) + "..." : value;
+        return value.length > 20 ? value.slice(0, 20) + "…" : value;
 
       case "object":
         if (value === null) {
@@ -303,12 +305,20 @@ export function createReactDevtoolsHookHandlers(
         }
 
         if (Array.isArray(value)) {
-          return "[]";
+          return value.length ? "[…]" : "[]";
         }
 
-        return value.constructor === Object
-          ? "{}"
-          : Object.prototype.toString.call(value);
+        if (value.constructor === Object) {
+          for (const key in value) {
+            if (hasOwnProperty.call(value, key)) {
+              return "{…}";
+            }
+          }
+
+          return "{}";
+        }
+
+        return Object.prototype.toString.call(value);
     }
   }
 
