@@ -51,9 +51,6 @@ export function createReactDevtoolsHookHandlers(
     NoPriority,
   } = ReactPriorityLevels;
 
-  // When a mount or update is in progress, this value tracks the root that is being operated on.
-  let currentRootID = -1;
-
   // Transfer elements
   const idToRootId = new Map<number, number>();
   const idToContextsMap = new Map();
@@ -499,6 +496,7 @@ export function createReactDevtoolsHookHandlers(
     // Iterate over siblings rather than recursing.
     // This reduces the chance of stack overflow for wide trees (e.g. lists with many items).
     let fiber = firstChild;
+
     while (fiber !== null) {
       // Generate an ID even for filtered Fibers, in case it's needed later (e.g. for Profiling).
       getOrGenerateFiberID(fiber);
@@ -511,6 +509,7 @@ export function createReactDevtoolsHookHandlers(
       const isSuspense = fiber.tag === SuspenseComponent;
       if (isSuspense) {
         const isTimedOut = fiber.memoizedState !== null;
+
         if (isTimedOut) {
           // Special case: if Suspense mounts in a timed-out state,
           // get the fallback child from the inner fragment and mount
@@ -522,6 +521,7 @@ export function createReactDevtoolsHookHandlers(
           const fallbackChild = fallbackChildFragment
             ? fallbackChildFragment.child
             : null;
+
           if (fallbackChild !== null) {
             mountFiberRecursively(
               fallbackChild,
@@ -534,11 +534,13 @@ export function createReactDevtoolsHookHandlers(
           let primaryChild = null;
           const areSuspenseChildrenConditionallyWrapped =
             OffscreenComponent === -1;
+
           if (areSuspenseChildrenConditionallyWrapped) {
             primaryChild = fiber.child;
           } else if (fiber.child !== null) {
             primaryChild = fiber.child.child;
           }
+
           if (primaryChild !== null) {
             mountFiberRecursively(
               primaryChild,
@@ -613,11 +615,11 @@ export function createReactDevtoolsHookHandlers(
     return { totalTime, selfTime };
   }
 
-  function recordRender(fiber: Fiber) {
+  function recordRerender(fiber: Fiber) {
     const { alternate = null } = fiber;
 
-    if (alternate === null || didFiberRender(alternate, fiber)) {
-      const changes = alternate && getChangeDescription(alternate, fiber);
+    if (alternate !== null && didFiberRender(alternate, fiber)) {
+      const changes = getChangeDescription(alternate, fiber);
 
       recordEvent({
         op: "rerender",
@@ -639,7 +641,10 @@ export function createReactDevtoolsHookHandlers(
   ) {
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
-    let shouldResetChildren = false;
+
+    if (shouldIncludeInTree) {
+      recordRerender(nextFiber);
+    }
 
     // The behavior of timed-out Suspense trees is unique.
     // Rather than unmount the timed out content (and possibly lose important state),
@@ -651,6 +656,7 @@ export function createReactDevtoolsHookHandlers(
     // Suspense components only have a non-null memoizedState if they're timed-out.
     const prevDidTimeout = isSuspense && prevFiber.memoizedState !== null;
     const nextDidTimeOut = isSuspense && nextFiber.memoizedState !== null;
+
     // The logic below is inspired by the code paths in updateSuspenseComponent()
     // inside ReactFiberBeginWork in the React source code.
     if (prevDidTimeout && nextDidTimeOut) {
@@ -666,17 +672,14 @@ export function createReactDevtoolsHookHandlers(
       const prevFallbackChildSet = prevFiberChild
         ? prevFiberChild.sibling
         : null;
-      if (
-        nextFallbackChildSet != null &&
-        prevFallbackChildSet != null &&
+
+      if (nextFallbackChildSet != null && prevFallbackChildSet != null) {
         updateFiberRecursively(
           nextFallbackChildSet,
           prevFallbackChildSet,
           nextFiber,
           traceNearestHostComponentUpdate
-        )
-      ) {
-        shouldResetChildren = true;
+        );
       }
     } else if (prevDidTimeout && !nextDidTimeOut) {
       // Fallback -> Primary:
@@ -684,6 +687,7 @@ export function createReactDevtoolsHookHandlers(
       // Note: don't emulate fallback unmount because React actually did it.
       // 2. Mount primary set
       const nextPrimaryChildSet = nextFiber.child;
+
       if (nextPrimaryChildSet !== null) {
         mountFiberRecursively(
           nextPrimaryChildSet,
@@ -692,18 +696,19 @@ export function createReactDevtoolsHookHandlers(
           traceNearestHostComponentUpdate
         );
       }
-      shouldResetChildren = true;
     } else if (!prevDidTimeout && nextDidTimeOut) {
       // Primary -> Fallback:
       // 1. Hide primary set
       // This is not a real unmount, so it won't get reported by React.
       // We need to manually walk the previous tree and record unmounts.
       unmountFiberChildrenRecursively(prevFiber);
+
       // 2. Mount fallback set
       const nextFiberChild = nextFiber.child;
       const nextFallbackChildSet = nextFiberChild
         ? nextFiberChild.sibling
         : null;
+
       if (nextFallbackChildSet != null) {
         mountFiberRecursively(
           nextFallbackChildSet,
@@ -711,7 +716,6 @@ export function createReactDevtoolsHookHandlers(
           true,
           traceNearestHostComponentUpdate
         );
-        shouldResetChildren = true;
       }
     } else {
       // Common case: Primary -> Primary.
@@ -720,7 +724,7 @@ export function createReactDevtoolsHookHandlers(
         // If the first child is different, we need to traverse them.
         // Each next child will be either a new child (mount) or an alternate (update).
         let nextChild = nextFiber.child;
-        let prevChildAtSameIndex = prevFiber.child;
+
         while (nextChild) {
           // We already know children will be referentially different because
           // they are either new mounts or alternates of previous children.
@@ -728,25 +732,13 @@ export function createReactDevtoolsHookHandlers(
           // We don't track deletions here because they are reported separately.
           if (nextChild.alternate) {
             const prevChild = nextChild.alternate;
-            if (
-              updateFiberRecursively(
-                nextChild,
-                prevChild,
-                shouldIncludeInTree ? nextFiber : parentFiber,
-                traceNearestHostComponentUpdate
-              )
-            ) {
-              // If a nested tree child order changed but it can't handle its own
-              // child order invalidation (e.g. because it's filtered out like host nodes),
-              // propagate the need to reset child order upwards to this Fiber.
-              shouldResetChildren = true;
-            }
-            // However we also keep track if the order of the children matches
-            // the previous order. They are always different referentially, but
-            // if the instances line up conceptually we'll want to know that.
-            if (prevChild !== prevChildAtSameIndex) {
-              shouldResetChildren = true;
-            }
+
+            updateFiberRecursively(
+              nextChild,
+              prevChild,
+              shouldIncludeInTree ? nextFiber : parentFiber,
+              traceNearestHostComponentUpdate
+            );
           } else {
             mountFiberRecursively(
               nextChild,
@@ -754,43 +746,12 @@ export function createReactDevtoolsHookHandlers(
               false,
               traceNearestHostComponentUpdate
             );
-            shouldResetChildren = true;
           }
+
           // Try the next child.
           nextChild = nextChild.sibling;
-          // Advance the pointer in the previous list so that we can
-          // keep comparing if they line up.
-          if (!shouldResetChildren && prevChildAtSameIndex !== null) {
-            prevChildAtSameIndex = prevChildAtSameIndex.sibling;
-          }
-        }
-        // If we have no more children, but used to, they don't line up.
-        if (prevChildAtSameIndex !== null) {
-          shouldResetChildren = true;
         }
       }
-    }
-
-    if (shouldIncludeInTree) {
-      const isProfilingSupported = nextFiber.hasOwnProperty("treeBaseDuration");
-      if (isProfilingSupported) {
-        recordRender(nextFiber);
-      }
-    }
-
-    if (shouldResetChildren) {
-      // We need to crawl the subtree for closest non-filtered Fibers
-      // so that we can display them in a flat children set.
-      if (shouldIncludeInTree) {
-        // We've handled the child order change for this Fiber.
-        // Since it's included, there's no need to invalidate parent child order.
-        return false;
-      } else {
-        // Let the closest unfiltered parent Fiber reset its child order instead.
-        return true;
-      }
-    } else {
-      return false;
     }
   }
 
@@ -821,7 +782,7 @@ export function createReactDevtoolsHookHandlers(
     // If we don't do this, we might end up double-deleting Fibers in some cases (like Legacy Suspense).
     untrackFibers();
 
-    currentRootID = getOrGenerateFiberID(current);
+    const currentRootID = getOrGenerateFiberID(current);
 
     // FIXME: add to commit event
     console.log(formatPriorityLevel(priorityLevel || -1));
@@ -850,6 +811,7 @@ export function createReactDevtoolsHookHandlers(
         alternate.memoizedState.element != null;
       const isMounted =
         current.memoizedState != null && current.memoizedState.element != null;
+
       if (!wasMounted && isMounted) {
         // Mount a new root.
         setRootPseudoKey(currentRootID, current);
@@ -870,8 +832,6 @@ export function createReactDevtoolsHookHandlers(
 
     // We're done here.
     flushPendingEvents();
-
-    currentRootID = -1;
   }
 
   function formatPriorityLevel(priorityLevel: number | null = null) {
