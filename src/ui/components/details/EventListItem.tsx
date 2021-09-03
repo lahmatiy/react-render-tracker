@@ -10,30 +10,26 @@ interface EventListItemProps {
   event: Event;
 }
 
-function getReasons(event: Event) {
+function getChanges(event: Event) {
   const reasons: string[] = [];
 
   if (event.op === "rerender") {
-    const { context, hooks, props, state, parentUpdate } = event.changes || {};
-
-    if (context) {
-      reasons.push("Context changed");
-    }
-
-    if (hooks) {
-      reasons.push("Hooks changed");
-    }
+    const { context, hooks, props, state } = event.changes || {};
 
     if (props) {
-      reasons.push("Props changed");
+      reasons.push("props");
+    }
+
+    if (context) {
+      reasons.push("context");
     }
 
     if (state) {
-      reasons.push("State changed");
+      reasons.push("state");
     }
 
-    if (parentUpdate) {
-      reasons.push("Parent render");
+    if (hooks) {
+      reasons.push("hooks");
     }
   }
 
@@ -58,10 +54,7 @@ function formatDuration(duration: number) {
 
 const EventListItem = ({ component, event }: EventListItemProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
-  const reasons = getReasons(event);
-  const hasDetails =
-    event.op === "rerender" &&
-    (event.changes?.props || event.changes?.state || event.changes?.hooks);
+  const changes = getChanges(event);
 
   return (
     <>
@@ -89,6 +82,12 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
           </span>
         </td> */}
         <td className="event-list-item__details">
+          {event.op === "rerender" && event.changes?.ownerUpdate && (
+            <span
+              className="event-list-item__owner-update"
+              title={`Owner update (#${component.ownerId})`}
+            />
+          )}
           <span
             className={
               "event-list-item__name" +
@@ -99,15 +98,13 @@ const EventListItem = ({ component, event }: EventListItemProps) => {
               (!component.ownerId ? "Render root" : "Unknown")}
           </span>
           <ElementId id={component.id} />{" "}
-          {reasons.length > 0 && (
-            <span className="event-list-item__reasons">
-              {hasDetails && (
-                <ButtonCollapse
-                  expanded={expanded}
-                  setExpanded={setIsCollapsed}
-                />
-              )}
-              {reasons.join(", ")}
+          {changes.length > 0 && (
+            <span className="event-list-item__changes">
+              <ButtonCollapse
+                expanded={expanded}
+                setExpanded={setIsCollapsed}
+              />
+              Changes in {changes.join(", ")}
             </span>
           )}
         </td>

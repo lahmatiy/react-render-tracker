@@ -19,7 +19,7 @@ declare module "common-types" {
 
   export type TransferChangeDescription = {
     isFirstMount: boolean;
-    parentUpdate: boolean;
+    ownerUpdate: boolean;
     context:
       | Array<{ name: string; prev: string; next: string }>
       | boolean
@@ -29,8 +29,9 @@ declare module "common-types" {
     hooks: Array<{
       index: number;
       name: string;
-      changed: boolean;
-      computed?: boolean;
+      prev: string;
+      next: string;
+      // computed?: boolean;
     }> | null;
   };
 

@@ -51,17 +51,17 @@ export function createReactDevtoolsHookHandlers(
     NoPriority,
   } = ReactPriorityLevels;
 
-  // Transfer elements
-  const idToRootId = new Map<number, number>();
+  // Maps & sets
   const idToContextsMap = new Map();
-
+  const commitRenderedOwnerIds = new Set<number>();
   const untrackFibersSet = new Set<Fiber>();
-  let untrackFibersTimeoutID: ReturnType<typeof setTimeout> | null = null;
-
   const pendingOperations = [];
   const pendingRealUnmountedIDs: number[] = [];
   const pendingSimulatedUnmountedIDs: number[] = [];
+
+  let currentRootId = -1;
   let pendingUnmountedRootID: number | null = null;
+  let untrackFibersTimeoutID: ReturnType<typeof setTimeout> | null = null;
 
   // Removes a Fiber (and its alternate) from the Maps used to track their id.
   // This method should always be called when a Fiber is unmounting.
@@ -113,7 +113,7 @@ export function createReactDevtoolsHookHandlers(
         if (prevFiber === null) {
           return {
             isFirstMount: true,
-            parentUpdate: false,
+            ownerUpdate: false,
             context: null,
             hooks: null,
             props: null,
@@ -122,9 +122,10 @@ export function createReactDevtoolsHookHandlers(
         } else {
           const { _debugHookTypes } = nextFiber;
           const isElementTypeClass = prevFiber.stateNode !== null;
+          const ownerId = getFiberOwnerId(nextFiber);
           const data: TransferChangeDescription = {
             isFirstMount: false,
-            parentUpdate: false,
+            ownerUpdate: commitRenderedOwnerIds.has(ownerId),
             context: isElementTypeClass
               ? getContextChangedKeys(nextFiber)
               : null,
@@ -144,10 +145,6 @@ export function createReactDevtoolsHookHandlers(
             ),
           };
 
-          if (!data.hooks && !data.state && !data.props && !data.context) {
-            data.parentUpdate = true;
-          }
-
           return data;
         }
 
@@ -165,6 +162,19 @@ export function createReactDevtoolsHookHandlers(
         idToContextsMap.set(id, contexts);
       }
     }
+  }
+
+  function getFiberOwnerId(fiber: Fiber) {
+    const { _debugOwner = null } = fiber;
+
+    return _debugOwner === null
+      ? currentRootId
+      : // Ideally we should call getFiberIDThrows() for _debugOwner,
+        // since owners are almost always higher in the tree (and so have already been processed),
+        // but in some (rare) instances reported in open source, a descendant mounts before an owner.
+        // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
+        // See https://github.com/facebook/react/issues/21445
+        getOrGenerateFiberID(_debugOwner);
   }
 
   function getContextsForFiber(fiber: Fiber) {
@@ -375,7 +385,6 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const id of unmountIds) {
-      idToRootId.delete(id);
       recordEvent({
         op: "unmount",
         elementId: id,
@@ -395,7 +404,6 @@ export function createReactDevtoolsHookHandlers(
     let element: TransferElement;
 
     if (isRoot) {
-      idToRootId.set(id, id);
       element = {
         id,
         type: ElementTypeRoot,
@@ -406,25 +414,15 @@ export function createReactDevtoolsHookHandlers(
         hocDisplayNames: null,
       };
     } else {
-      const { key, _debugOwner = null } = fiber;
+      const { key } = fiber;
       const elementType = getElementTypeForFiber(fiber);
       const displayName = getDisplayNameForFiber(fiber);
       const parentId = parentFiber ? getFiberIDThrows(parentFiber) : 0;
-      const rootId = idToRootId.get(parentId) || 0;
-      const ownerId =
-        _debugOwner === null
-          ? rootId
-          : // Ideally we should call getFiberIDThrows() for _debugOwner,
-            // since owners are almost always higher in the tree (and so have already been processed),
-            // but in some (rare) instances reported in open source, a descendant mounts before an owner.
-            // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
-            // See https://github.com/facebook/react/issues/21445
-            getOrGenerateFiberID(_debugOwner);
+      const ownerId = getFiberOwnerId(fiber);
 
       const [displayNameWithoutHOCs, hocDisplayNames] =
         separateDisplayNameAndHOCs(displayName, elementType);
 
-      idToRootId.set(id, rootId);
       element = {
         id,
         type: elementType,
@@ -619,15 +617,16 @@ export function createReactDevtoolsHookHandlers(
     const { alternate = null } = fiber;
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
-      const changes = getChangeDescription(alternate, fiber);
+      const elementId = getFiberIDThrows(fiber);
 
       recordEvent({
         op: "rerender",
-        elementId: getFiberIDThrows(fiber),
+        elementId,
         ...getDurations(fiber),
-        changes,
+        changes: getChangeDescription(alternate, fiber),
       });
 
+      commitRenderedOwnerIds.add(elementId);
       updateContextsForFiber(fiber);
     }
   }
@@ -782,7 +781,7 @@ export function createReactDevtoolsHookHandlers(
     // If we don't do this, we might end up double-deleting Fibers in some cases (like Legacy Suspense).
     untrackFibers();
 
-    const currentRootID = getOrGenerateFiberID(current);
+    currentRootId = getOrGenerateFiberID(current);
 
     // FIXME: add to commit event
     console.log(formatPriorityLevel(priorityLevel || -1));
@@ -814,24 +813,25 @@ export function createReactDevtoolsHookHandlers(
 
       if (!wasMounted && isMounted) {
         // Mount a new root.
-        setRootPseudoKey(currentRootID, current);
+        setRootPseudoKey(currentRootId, current);
         mountFiberRecursively(current, null, false, false);
       } else if (wasMounted && isMounted) {
         // Update an existing root.
         updateFiberRecursively(current, alternate, null, false);
       } else if (wasMounted && !isMounted) {
         // Unmount an existing root.
-        removeRootPseudoKey(currentRootID);
+        removeRootPseudoKey(currentRootId);
         recordUnmount(current, false);
       }
     } else {
       // Mount a new root.
-      setRootPseudoKey(currentRootID, current);
+      setRootPseudoKey(currentRootId, current);
       mountFiberRecursively(current, null, false, false);
     }
 
     // We're done here.
     flushPendingEvents();
+    commitRenderedOwnerIds.clear();
   }
 
   function formatPriorityLevel(priorityLevel: number | null = null) {
