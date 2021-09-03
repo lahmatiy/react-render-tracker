@@ -252,27 +252,28 @@ export function createReactDevtoolsHookHandlers(
       const changed = prev.memoizedState !== next.memoizedState;
 
       if (effect) {
-        const computed = false;
         // TODO: use computed in separate changes property
+        // const computed =
         // !prev.memoizedState ||
         // getChangedInputsIndecies(
         //   prev.memoizedState.deps,
         //   next.memoizedState.deps
         // );
 
-        if (computed || changed) {
+        if (changed) {
           indices.push({
             index,
             name: hookNames[index],
-            changed,
-            computed,
+            prev: simpleValueSerialization(prev.memoizedState),
+            next: simpleValueSerialization(next.memoizedState),
           });
         }
       } else if (changed) {
         indices.push({
           index,
           name: hookNames[index],
-          changed,
+          prev: simpleValueSerialization(prev.memoizedState),
+          next: simpleValueSerialization(next.memoizedState),
         });
       }
 
