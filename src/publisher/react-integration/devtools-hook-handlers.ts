@@ -51,16 +51,11 @@ export function createReactDevtoolsHookHandlers(
     NoPriority,
   } = ReactPriorityLevels;
 
-  // Maps & sets
   const idToContextsMap = new Map();
   const commitRenderedOwnerIds = new Set<number>();
-  const untrackFibersSet = new Set<Fiber>();
-  const pendingOperations = [];
-  const pendingRealUnmountedIDs: number[] = [];
-  const pendingSimulatedUnmountedIDs: number[] = [];
-
   let currentRootId = -1;
-  let pendingUnmountedRootID: number | null = null;
+
+  const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimeoutID: ReturnType<typeof setTimeout> | null = null;
 
   // Removes a Fiber (and its alternate) from the Maps used to track their id.
@@ -361,43 +356,6 @@ export function createReactDevtoolsHookHandlers(
     );
   }
 
-  function flushPendingEvents() {
-    const unmountIds = new Set<number>();
-
-    // Fill in the real unmounts in the reverse order.
-    // They were inserted parents-first by React, but we want children-first.
-    // So we traverse our array backwards.
-    for (let j = pendingRealUnmountedIDs.length - 1; j >= 0; j--) {
-      unmountIds.add(pendingRealUnmountedIDs[j]);
-    }
-    // Fill in the simulated unmounts (hidden Suspense subtrees) in their order.
-    // (We want children to go before parents.)
-    // They go *after* the real unmounts because we know for sure they won't be
-    // children of already pushed "real" IDs. If they were, we wouldn't be able
-    // to discover them during the traversal, as they would have been deleted.
-    for (let j = 0; j < pendingSimulatedUnmountedIDs.length; j++) {
-      unmountIds.add(pendingSimulatedUnmountedIDs[j]);
-    }
-
-    // The root ID should always be unmounted last.
-    if (pendingUnmountedRootID !== null) {
-      unmountIds.add(pendingUnmountedRootID);
-    }
-
-    for (const id of unmountIds) {
-      recordEvent({
-        op: "unmount",
-        elementId: id,
-      });
-    }
-
-    // Reset all of the pending state now that we've told the frontend about it.
-    pendingOperations.length = 0;
-    pendingRealUnmountedIDs.length = 0;
-    pendingSimulatedUnmountedIDs.length = 0;
-    pendingUnmountedRootID = null;
-  }
-
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberID(fiber);
@@ -447,10 +405,10 @@ export function createReactDevtoolsHookHandlers(
     }
   }
 
-  function recordUnmount(fiber: Fiber, isSimulated: boolean) {
-    const unsafeID = getFiberIDUnsafe(fiber);
+  function recordUnmount(fiber: Fiber) {
+    const id = getFiberIDUnsafe(fiber);
 
-    if (unsafeID === null) {
+    if (id === null) {
       // If we've never seen this Fiber, it might be inside of a legacy render Suspense fragment (so the store is not even aware of it).
       // In that case we can just ignore it or it will cause errors later on.
       // One example of this is a Lazy component that never resolves before being unmounted.
@@ -461,23 +419,13 @@ export function createReactDevtoolsHookHandlers(
       return;
     }
 
-    // Flow refinement.
-    const id = unsafeID;
     const isRoot = fiber.tag === HostRoot;
 
-    if (isRoot) {
-      // Roots must be removed only after all children (pending and simulated) have been removed.
-      // So we track it separately.
-      pendingUnmountedRootID = id;
-    } else if (!shouldFilterFiber(fiber)) {
-      // To maintain child-first ordering,
-      // we'll push it into one of these queues,
-      // and later arrange them in the correct order.
-      if (isSimulated) {
-        pendingSimulatedUnmountedIDs.push(id);
-      } else {
-        pendingRealUnmountedIDs.push(id);
-      }
+    if (isRoot || !shouldFilterFiber(fiber)) {
+      recordEvent({
+        op: "unmount",
+        elementId: id,
+      });
     }
 
     if (!fiber._debugNeedsRemount) {
@@ -585,9 +533,10 @@ export function createReactDevtoolsHookHandlers(
       // Record simulated unmounts children-first.
       // We skip nodes without return because those are real unmounts.
       if (child.return !== null) {
+        recordUnmount(child);
         unmountFiberChildrenRecursively(child);
-        recordUnmount(child, true);
       }
+
       child = child.sibling;
     }
   }
@@ -758,7 +707,7 @@ export function createReactDevtoolsHookHandlers(
     // This is not recursive.
     // We can't traverse fibers after unmounting so instead
     // we rely on React telling us about each unmount.
-    recordUnmount(fiber, false);
+    recordUnmount(fiber);
   }
 
   function handlePostCommitFiberRoot(/* root */) {
@@ -821,7 +770,7 @@ export function createReactDevtoolsHookHandlers(
       } else if (wasMounted && !isMounted) {
         // Unmount an existing root.
         removeRootPseudoKey(currentRootId);
-        recordUnmount(current, false);
+        recordUnmount(current);
       }
     } else {
       // Mount a new root.
@@ -830,7 +779,6 @@ export function createReactDevtoolsHookHandlers(
     }
 
     // We're done here.
-    flushPendingEvents();
     commitRenderedOwnerIds.clear();
   }
 

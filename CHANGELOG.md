@@ -5,7 +5,7 @@
 - Fixed state and hooks changes computation depending on component type, i.e. class-based or functional
 - Changed simple value serialization to distinguish an empty object/array with non-empty
 - Added simple value changes description for hooks
-- Fixed an order of rerender events
+- Fixed an order of rerender and unmount events
 - Changed parent update -> owner update and improved its displaying in event log
 
 ## 0.2.0 (August 27, 2021)
