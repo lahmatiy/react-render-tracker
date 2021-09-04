@@ -1,6 +1,5 @@
 import * as React from "react";
 // import dateFormat from "dateformat";
-import ButtonCollapse from "../common/ButtonExpand";
 import EventRenderReasons from "./EventRenderReasons";
 import ElementId from "../common/ElementId";
 import { Event, MessageElement } from "../../types";
@@ -110,12 +109,14 @@ const EventListItem = ({
           </span>
           <ElementId id={component.id} />{" "}
           {changes.length > 0 && (
-            <span className="event-list-item__changes">
-              <ButtonCollapse
-                expanded={expanded}
-                setExpanded={setIsCollapsed}
-              />
-              Changes in {changes.join(", ")}
+            <span
+              className={
+                "event-list-item__changes" + (expanded ? " expanded" : "")
+              }
+              onClick={() => setIsCollapsed(expanded => !expanded)}
+            >
+              <span style={{ color: "#999" }}>Changes in</span>{" "}
+              {changes.join(", ")}
             </span>
           )}
         </td>
