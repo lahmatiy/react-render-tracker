@@ -54,6 +54,8 @@ export function createReactDevtoolsHookHandlers(
   const idToContextsMap = new Map();
   const commitRenderedOwnerIds = new Set<number>();
   let currentRootId = -1;
+  let currentCommitId = -1;
+  let commitIdSeed = 0;
 
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimeoutID: ReturnType<typeof setTimeout> | null = null;
@@ -394,6 +396,7 @@ export function createReactDevtoolsHookHandlers(
 
     recordEvent({
       op: "mount",
+      commitId: currentCommitId,
       elementId: id,
       element,
       ...getDurations(fiber),
@@ -424,6 +427,7 @@ export function createReactDevtoolsHookHandlers(
     if (isRoot || !shouldFilterFiber(fiber)) {
       recordEvent({
         op: "unmount",
+        commitId: currentCommitId,
         elementId: id,
       });
     }
@@ -570,6 +574,7 @@ export function createReactDevtoolsHookHandlers(
 
       recordEvent({
         op: "rerender",
+        commitId: currentCommitId,
         elementId,
         ...getDurations(fiber),
         changes: getChangeDescription(alternate, fiber),
@@ -730,6 +735,7 @@ export function createReactDevtoolsHookHandlers(
     // If we don't do this, we might end up double-deleting Fibers in some cases (like Legacy Suspense).
     untrackFibers();
 
+    currentCommitId = commitIdSeed++;
     currentRootId = getOrGenerateFiberID(current);
 
     // FIXME: add to commit event
@@ -752,33 +758,25 @@ export function createReactDevtoolsHookHandlers(
     //   };
     // }
 
-    if (alternate) {
-      // TODO: relying on this seems a bit fishy.
-      const wasMounted =
-        alternate.memoizedState != null &&
-        alternate.memoizedState.element != null;
-      const isMounted =
-        current.memoizedState != null && current.memoizedState.element != null;
+    // TODO: relying on this seems a bit fishy.
+    const wasMounted = Boolean(alternate?.memoizedState?.element);
+    const isMounted = Boolean(current.memoizedState?.element);
 
-      if (!wasMounted && isMounted) {
-        // Mount a new root.
-        setRootPseudoKey(currentRootId, current);
-        mountFiberRecursively(current, null, false, false);
-      } else if (wasMounted && isMounted) {
-        // Update an existing root.
-        updateFiberRecursively(current, alternate, null, false);
-      } else if (wasMounted && !isMounted) {
-        // Unmount an existing root.
-        removeRootPseudoKey(currentRootId);
-        recordUnmount(current);
-      }
-    } else {
+    if (!wasMounted && isMounted) {
       // Mount a new root.
       setRootPseudoKey(currentRootId, current);
       mountFiberRecursively(current, null, false, false);
+    } else if (wasMounted && isMounted) {
+      // Update an existing root.
+      updateFiberRecursively(current, alternate, null, false);
+    } else if (wasMounted && !isMounted) {
+      // Unmount an existing root.
+      removeRootPseudoKey(currentRootId);
+      recordUnmount(current);
     }
 
     // We're done here.
+    currentCommitId = -1;
     commitRenderedOwnerIds.clear();
   }
 

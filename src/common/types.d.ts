@@ -39,6 +39,7 @@ declare module "common-types" {
     op: string;
     id: number;
     timestamp: number;
+    commitId: number;
     elementId: number;
   }
 

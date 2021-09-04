@@ -22,6 +22,27 @@ const EventList = ({ events }: EventListProps) => {
     return <div className="element-event-list__no-events">No events found</div>;
   }
 
+  const eventsComponents = [];
+  for (let i = startOffset; i < events.length; i++) {
+    const { component, event } = events[i];
+    const prevCommitId = events[i - 1]?.event?.commitId;
+    const nextCommitId = events[i + 1]?.event?.commitId;
+
+    eventsComponents.push(
+      <EventListItem
+        key={event.id}
+        component={component}
+        event={event}
+        prevConjunction={
+          event.commitId !== -1 && event.commitId === prevCommitId
+        }
+        nextConjunction={
+          event.commitId !== -1 && event.commitId === nextCommitId
+        }
+      />
+    );
+  }
+
   return (
     <>
       {startOffset > 0 && (
@@ -41,11 +62,7 @@ const EventList = ({ events }: EventListProps) => {
         </div>
       )}
       <table className="element-event-list">
-        <tbody>
-          {events.slice(startOffset).map(({ component, event }) => (
-            <EventListItem key={event.id} component={component} event={event} />
-          ))}
-        </tbody>
+        <tbody>{eventsComponents}</tbody>
       </table>
     </>
   );

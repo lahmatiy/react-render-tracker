@@ -42,16 +42,21 @@
 .event-list-item__owner-update {
   display: inline-block;
   vertical-align: middle;
+  margin-left: -14px;
   margin-top: -2px;
   margin-right: 3px;
-  padding: 0px 2px;
-  border-radius: 3px;
-  background-color: #eaeac6;
-  color: #8a8a4a;
+  width: 15px;
+  padding: 1px 4px 0 8px;
+  border: 1px solid white;
+  border-radius: 0 8px 8px 0;
+  background: #eaeac6 12px center no-repeat;
+  background-size: 11px;
+  background-image: url("./img/owner-update.svg");
+  color: transparent;
   font-size: 9px;
 }
 .event-list-item__owner-update::before {
-  content: "⬇O";
+  content: "\a0";
 }
 
 .event-list-item__changes {
@@ -73,4 +78,68 @@
   color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-color: #888;
+}
+
+.event-list-item__dots {
+  overflow: hidden;
+  padding: 5px 0px 0 4px;
+  text-align: left;
+  vertical-align: baseline;
+  font-size: 12px;
+  line-height: 14px;
+}
+.event-list-item__dot {
+  position: relative;
+  top: -2px;
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 9px;
+  border: 1px solid white;
+  background: #e8e8e8 center no-repeat;
+  background-size: 11px;
+  color: #777;
+}
+.event-list-item__dot[data-type="unmount"] {
+  background-image: url("./img/event-unmount.svg");
+  background-size: 13px;
+}
+.event-list-item__dot[data-type="mount"] {
+  /* background-color: #b8d877; */
+  background-color: #cbe4b4;
+  background-image: url("./img/event-mount.svg");
+  background-size: 13px;
+  color: #5a7b3b;
+}
+.event-list-item__dot[data-type="rerender"] {
+  /* background-color: #f1e27c; */
+  background-color: #eaeac6;
+  background-image: url("./img/event-rerender.svg");
+  color: #71712f;
+}
+.event-list-item__dot_prev::before {
+  content: "";
+  position: absolute;
+  display: block;
+  bottom: 100%;
+  left: 5px;
+  width: 3px;
+  height: 50px;
+  background-color: inherit;
+  border: solid white;
+  border-width: 0 1px;
+}
+.event-list-item__dot_next::after {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 100%;
+  left: 5px;
+  width: 3px;
+  height: 50px;
+  background-color: inherit;
+  border: solid white;
+  border-width: 0 1px;
 }
