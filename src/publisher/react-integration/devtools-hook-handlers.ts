@@ -59,6 +59,8 @@ export function createReactDevtoolsHookHandlers(
   let currentCommitId = -1;
   let commitIdSeed = 0;
 
+  const unmountedFibersByOwnerId = new Map<number, Set<Fiber>>();
+  const unmountedFiberRootId = new Map<number, number>();
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -582,6 +584,17 @@ export function createReactDevtoolsHookHandlers(
         changes: getChangeDescription(alternate, fiber),
       });
 
+      if (unmountedFibersByOwnerId.has(elementId)) {
+        const unmountedFibers = unmountedFibersByOwnerId.get(
+          elementId
+        ) as Set<Fiber>;
+
+        unmountedFibersByOwnerId.delete(elementId);
+        for (const fiber of unmountedFibers) {
+          recordUnmount(fiber);
+        }
+      }
+
       commitRenderedOwnerIds.add(elementId);
       updateContextsForFiber(fiber);
     }
@@ -711,10 +724,21 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function handleCommitFiberUnmount(fiber: Fiber) {
-    // This is not recursive.
     // We can't traverse fibers after unmounting so instead
     // we rely on React telling us about each unmount.
-    recordUnmount(fiber);
+    // We only remember the unmounted fibers here and flush them on a commit,
+    // since React report about an unmount before a commit
+    const selfId = getFiberIDUnsafe(fiber) || 0;
+    const ownerId = getFiberOwnerId(fiber);
+    const rootId = unmountedFiberRootId.get(ownerId) || ownerId;
+
+    unmountedFiberRootId.set(selfId, rootId);
+
+    if (unmountedFibersByOwnerId.has(rootId)) {
+      unmountedFibersByOwnerId.get(rootId)?.add(fiber);
+    } else {
+      unmountedFibersByOwnerId.set(rootId, new Set([fiber]));
+    }
   }
 
   function handlePostCommitFiberRoot(/* root */) {
@@ -777,9 +801,19 @@ export function createReactDevtoolsHookHandlers(
       recordUnmount(current);
     }
 
-    // We're done here.
+    // Normally unmounted fibers should removed on re-render processing,
+    // but in case it's not (e.g. ownerId is not computed right) then flush what's left
+    for (const unmountedFibers of unmountedFibersByOwnerId.values()) {
+      for (const fiber of unmountedFibers) {
+        recordUnmount(fiber);
+      }
+    }
+
+    // We're done here
     currentCommitId = -1;
     commitRenderedOwnerIds.clear();
+    unmountedFibersByOwnerId.clear();
+    unmountedFiberRootId.clear();
   }
 
   function formatPriorityLevel(priorityLevel: number | null = null) {
