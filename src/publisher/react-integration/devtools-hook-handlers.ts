@@ -7,7 +7,7 @@ import {
   ElementTypeMemo,
   ElementTypeRoot,
 } from "./utils/constants";
-import type { createIntegrationCore } from "./core";
+import type { CoreApi } from "./core";
 import {
   Fiber,
   MemoizedState,
@@ -20,8 +20,10 @@ import {
 
 const { hasOwnProperty } = Object.prototype;
 
-// Differentiates between a null context value and no context.
-const NO_CONTEXT = {};
+type ContextDescriptor = {
+  legacy: boolean;
+  value: any;
+};
 
 export function createReactDevtoolsHookHandlers(
   {
@@ -37,7 +39,7 @@ export function createReactDevtoolsHookHandlers(
     setRootPseudoKey,
     removeRootPseudoKey,
     shouldFilterFiber,
-  }: ReturnType<typeof createIntegrationCore>,
+  }: CoreApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
   const { PerformedWork } = ReactTypeOfSideEffect;
@@ -51,22 +53,22 @@ export function createReactDevtoolsHookHandlers(
     NoPriority,
   } = ReactPriorityLevels;
 
-  const idToContextsMap = new Map();
+  const idToContextsMap = new Map<number, ContextDescriptor>();
   const commitRenderedOwnerIds = new Set<number>();
   let currentRootId = -1;
   let currentCommitId = -1;
   let commitIdSeed = 0;
 
   const untrackFibersSet = new Set<Fiber>();
-  let untrackFibersTimeoutID: ReturnType<typeof setTimeout> | null = null;
+  let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Removes a Fiber (and its alternate) from the Maps used to track their id.
   // This method should always be called when a Fiber is unmounting.
-  function untrackFiberID(fiber: Fiber) {
+  function untrackFiber(fiber: Fiber) {
     // Untrack Fibers after a slight delay in order to support a Fast Refresh edge case:
     // 1. Component type is updated and Fast Refresh schedules an update+remount.
     // 2. flushPendingErrorsAndWarningsAfterDelay() runs, sees the old Fiber is no longer mounted
-    //    (it's been disconnected by Fast Refresh), and calls untrackFiberID() to clear it from the Map.
+    //    (it's been disconnected by Fast Refresh), and calls untrackFiber() to clear it from the Map.
     // 3. React flushes pending passive effects before it runs the next render,
     //    which logs an error or warning, which causes a new ID to be generated for this Fiber.
     // 4. DevTools now tries to unmount the old Component with the new ID.
@@ -80,15 +82,15 @@ export function createReactDevtoolsHookHandlers(
 
     untrackFibersSet.add(fiber);
 
-    if (untrackFibersTimeoutID === null) {
-      untrackFibersTimeoutID = setTimeout(untrackFibers, 1000);
+    if (untrackFibersTimer === null) {
+      untrackFibersTimer = setTimeout(untrackFibers, 1000);
     }
   }
 
   function untrackFibers() {
-    if (untrackFibersTimeoutID !== null) {
-      clearTimeout(untrackFibersTimeoutID);
-      untrackFibersTimeoutID = null;
+    if (untrackFibersTimer !== null) {
+      clearTimeout(untrackFibersTimer);
+      untrackFibersTimer = null;
     }
 
     for (const fiber of untrackFibersSet) {
@@ -174,44 +176,44 @@ export function createReactDevtoolsHookHandlers(
         getOrGenerateFiberID(_debugOwner);
   }
 
-  function getContextsForFiber(fiber: Fiber) {
+  function getContextsForFiber(fiber: Fiber): ContextDescriptor | null {
     if (getElementTypeForFiber(fiber) !== ElementTypeClass) {
       return null;
     }
 
     const instance = fiber.stateNode || null;
-    let legacyContext = NO_CONTEXT;
-    let modernContext = NO_CONTEXT;
 
     if (instance !== null) {
       if (instance.constructor && instance.constructor.contextType != null) {
-        modernContext = instance.context;
+        return {
+          legacy: false,
+          value: instance.context,
+        };
       } else {
-        legacyContext = instance.context;
-        if (legacyContext && Object.keys(legacyContext).length === 0) {
-          legacyContext = NO_CONTEXT;
+        const legacyContext = instance.context;
+
+        if (legacyContext && Object.keys(legacyContext).length !== 0) {
+          return {
+            legacy: true,
+            value: legacyContext,
+          };
         }
       }
     }
 
-    return [legacyContext, modernContext];
+    return null;
   }
 
   function getContextChangedKeys(fiber: Fiber) {
     if (getElementTypeForFiber(fiber) === ElementTypeClass) {
       const id = getFiberIDThrows(fiber);
-      const prevContexts = idToContextsMap.get(id) || null;
-      const nextContexts = getContextsForFiber(fiber);
+      const prevContext = idToContextsMap.get(id) || null;
+      const nextContext = getContextsForFiber(fiber);
 
-      if (prevContexts !== null && nextContexts !== null) {
-        const [prevLegacyContext, prevModernContext] = prevContexts;
-        const [nextLegacyContext, nextModernContext] = nextContexts;
-
-        if (nextLegacyContext !== NO_CONTEXT) {
-          return getChangedKeys(prevLegacyContext, nextLegacyContext);
-        } else if (nextModernContext !== NO_CONTEXT) {
-          return prevModernContext !== nextModernContext;
-        }
+      if (prevContext !== null && nextContext !== null) {
+        return nextContext.legacy
+          ? getChangedKeys(prevContext.value, nextContext.value)
+          : prevContext.value !== nextContext.value;
       }
     }
 
@@ -433,7 +435,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (!fiber._debugNeedsRemount) {
-      untrackFiberID(fiber);
+      untrackFiber(fiber);
     }
   }
 

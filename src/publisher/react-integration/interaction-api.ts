@@ -1,5 +1,5 @@
 import { getFiberFlags } from "./utils/getFiberFlags";
-import type { createIntegrationCore } from "./core";
+import type { CoreApi } from "./core";
 import {
   Fiber,
   ReactInterationApi,
@@ -21,7 +21,7 @@ export function createReactInteractionApi({
   getRootPseudoKey,
   shouldFilterFiber,
   findFiberByHostInstance,
-}: ReturnType<typeof createIntegrationCore>): ReactInterationApi {
+}: CoreApi): ReactInterationApi {
   const { Incomplete, NoFlags, Placement } = ReactTypeOfSideEffect;
   const { HostRoot, HostComponent, HostText, SuspenseComponent } =
     ReactTypeOfWork;
