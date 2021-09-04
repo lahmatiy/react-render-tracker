@@ -24,12 +24,8 @@ const TreeElement = React.memo(
       return null;
     }
 
-    // use a wrapper for proper styles, e.g. push-out effect for position:stycky instead of overlapping
-    const isRenderRoot = component.ownerId === 0;
-    const Wrapper = isRenderRoot ? "div" : React.Fragment;
-
     return (
-      <Wrapper>
+      <div className="tree-leaf">
         <TreeElementCaption
           depth={Math.max(depth - 1, 0)}
           component={component}
@@ -45,7 +41,7 @@ const TreeElement = React.memo(
               depth={depth + 1}
             />
           ))}
-      </Wrapper>
+      </div>
     );
   }
 );

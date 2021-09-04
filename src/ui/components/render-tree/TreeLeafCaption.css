@@ -31,6 +31,9 @@
 .tree-leaf-caption.render-root .tree-leaf-caption__name {
   color: #666;
 }
+.tree-leaf:first-child .tree-leaf-caption.render-root + div {
+  margin-top: 1px;
+}
 
 .tree-leaf-caption:hover {
   background-color: #eee;
@@ -69,19 +72,21 @@
   font-size: 10px;
   color: #888;
 }
+
 .tree-leaf-caption__main {
   flex: 1;
   padding: var(--padding-main);
   padding-left: calc(var(--depth, 0) * 15px);
-}
-.tree-leaf-caption:last-child .tree-leaf-caption__main {
-  padding-bottom: 2px;
 }
 
 .tree-leaf-caption .highlight {
   margin: 0 0 -2px;
   border-radius: 0 0 2px 2px;
   border-bottom: 2px solid #e0bf08;
+}
+
+.tree-leaf-caption__name {
+  margin-left: 17px;
 }
 
 .tree-leaf-caption__count {

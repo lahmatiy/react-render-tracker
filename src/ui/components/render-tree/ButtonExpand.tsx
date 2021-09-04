@@ -17,7 +17,7 @@ const ButtonExpand = ({ expanded, setExpanded }: ButtonExpandProps) => {
 
   return (
     <button
-      className={`button-collapse ${collapsedCls} ${disabledCls}`}
+      className={`button-expand ${collapsedCls} ${disabledCls}`}
       onClick={handleClick}
     />
   );

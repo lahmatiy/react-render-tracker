@@ -23,7 +23,7 @@
 }
 .event-list-item__name {
   display: inline-block;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   color: var(--primary);
 }
 .event-list-item__name_unmounted {

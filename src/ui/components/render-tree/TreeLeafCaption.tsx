@@ -1,6 +1,6 @@
 import * as React from "react";
-import ButtonExpand from "../common/ButtonExpand";
 import ElementId from "../common/ElementId";
+import ButtonExpand from "./ButtonExpand";
 import ElementHocNames from "./ComponentHocNames";
 import { MessageElement } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
@@ -132,7 +132,9 @@ const TreeLeafCaptionInner = React.memo(
           </span>
         </div>
         <div className="tree-leaf-caption__main">
-          <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+          {setExpanded && (
+            <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+          )}
           <span className="tree-leaf-caption__name">
             {name || (!ownerId && "Render root") || "Unknown"}
           </span>

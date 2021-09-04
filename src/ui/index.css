@@ -1,5 +1,4 @@
 @import url("./App.css");
-@import url("./components/common/ButtonExpand.css");
 @import url("./components/common/ButtonToggle.css");
 @import url("./components/common/ElementId.css");
 @import url("./components/details/Details.css");
@@ -7,6 +6,7 @@
 @import url("./components/details/EventListItem.css");
 @import url("./components/details/EventRenderReasons.css");
 @import url("./components/details/EventRenderReasonsItem.css");
+@import url("./components/render-tree/ButtonExpand.css");
 @import url("./components/render-tree/Tree.css");
 @import url("./components/render-tree/TreeLeaf.css");
 @import url("./components/render-tree/TreeLeafCaption.css");
