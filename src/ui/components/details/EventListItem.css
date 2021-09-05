@@ -31,9 +31,6 @@
   text-decoration: line-through;
   text-decoration-color: #888;
 }
-.event-list-item__details .tree-element__id {
-  margin-right: 3px;
-}
 
 .event-list-item__owner-update {
   display: inline-block;
@@ -57,8 +54,8 @@
 
 .event-list-item__changes {
   display: inline-block;
-  margin: -2px 0 3px 0;
-  padding: 2px 4px 1px 0;
+  margin: -2px 0 2px 0;
+  padding: 1px 4px 1px 0;
   border: 1px solid transparent;
   border-radius: 3px;
   cursor: pointer;
