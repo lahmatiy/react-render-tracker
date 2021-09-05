@@ -1,5 +1,4 @@
 import { separateDisplayNameAndHOCs } from "./utils/separateDisplayNameAndHOCs";
-import { getFiberFlags } from "./utils/getFiberFlags";
 import {
   ElementTypeClass,
   ElementTypeForwardRef,
@@ -27,22 +26,22 @@ type ContextDescriptor = {
 
 export function createReactDevtoolsHookHandlers(
   {
-    ReactTypeOfSideEffect,
     ReactTypeOfWork,
     ReactPriorityLevels,
-    getOrGenerateFiberID,
-    getFiberIDThrows,
-    getFiberIDUnsafe,
+    getOrGenerateFiberId,
+    getFiberIdThrows,
+    getFiberIdUnsafe,
+    getFiberOwnerId,
     removeFiber,
     getElementTypeForFiber,
     getDisplayNameForFiber,
     setRootPseudoKey,
+    didFiberRender,
     removeRootPseudoKey,
     shouldFilterFiber,
   }: CoreApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
-  const { PerformedWork } = ReactTypeOfSideEffect;
   const { HostRoot, SuspenseComponent, OffscreenComponent } = ReactTypeOfWork;
   const {
     ImmediatePriority,
@@ -53,6 +52,7 @@ export function createReactDevtoolsHookHandlers(
     NoPriority,
   } = ReactPriorityLevels;
 
+  const idToOwnerId = new Map<number, number>();
   const idToContextsMap = new Map<number, ContextDescriptor>();
   const commitRenderedOwnerIds = new Set<number>();
   let currentRootId = -1;
@@ -123,10 +123,10 @@ export function createReactDevtoolsHookHandlers(
         } else {
           const { _debugHookTypes } = nextFiber;
           const isElementTypeClass = prevFiber.stateNode !== null;
-          const ownerId = getFiberOwnerId(nextFiber);
+          const ownerId = idToOwnerId.get(getFiberIdUnsafe(nextFiber) || 0);
           const data: TransferChangeDescription = {
             isFirstMount: false,
-            ownerUpdate: commitRenderedOwnerIds.has(ownerId),
+            ownerUpdate: commitRenderedOwnerIds.has(ownerId || 0),
             context: isElementTypeClass
               ? getContextChangedKeys(nextFiber)
               : null,
@@ -156,26 +156,13 @@ export function createReactDevtoolsHookHandlers(
 
   function updateContextsForFiber(fiber: Fiber) {
     if (getElementTypeForFiber(fiber) === ElementTypeClass) {
-      const id = getFiberIDThrows(fiber);
+      const id = getFiberIdThrows(fiber);
       const contexts = getContextsForFiber(fiber);
 
       if (contexts !== null) {
         idToContextsMap.set(id, contexts);
       }
     }
-  }
-
-  function getFiberOwnerId(fiber: Fiber) {
-    const { _debugOwner = null } = fiber;
-
-    return _debugOwner === null
-      ? currentRootId
-      : // Ideally we should call getFiberIDThrows() for _debugOwner,
-        // since owners are almost always higher in the tree (and so have already been processed),
-        // but in some (rare) instances reported in open source, a descendant mounts before an owner.
-        // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
-        // See https://github.com/facebook/react/issues/21445
-        getOrGenerateFiberID(_debugOwner);
   }
 
   function getContextsForFiber(fiber: Fiber): ContextDescriptor | null {
@@ -208,7 +195,7 @@ export function createReactDevtoolsHookHandlers(
 
   function getContextChangedKeys(fiber: Fiber) {
     if (getElementTypeForFiber(fiber) === ElementTypeClass) {
-      const id = getFiberIDThrows(fiber);
+      const id = getFiberIdThrows(fiber);
       const prevContext = idToContextsMap.get(id) || null;
       const nextContext = getContextsForFiber(fiber);
 
@@ -351,20 +338,9 @@ export function createReactDevtoolsHookHandlers(
     return changedKeys.length > 0 ? changedKeys : null;
   }
 
-  function didFiberRender(prevFiber: Fiber, nextFiber: Fiber) {
-    // For types that execute user code, we check PerformedWork effect.
-    // For other types compare inputs to determine whether something is an update.
-    return (
-      (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork ||
-      prevFiber.memoizedProps !== nextFiber.memoizedProps ||
-      prevFiber.memoizedState !== nextFiber.memoizedState ||
-      prevFiber.ref !== nextFiber.ref
-    );
-  }
-
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
-    const id = getOrGenerateFiberID(fiber);
+    const id = getOrGenerateFiberId(fiber);
     let element: TransferElement;
 
     if (isRoot) {
@@ -381,7 +357,7 @@ export function createReactDevtoolsHookHandlers(
       const { key } = fiber;
       const elementType = getElementTypeForFiber(fiber);
       const displayName = getDisplayNameForFiber(fiber);
-      const parentId = parentFiber ? getFiberIDThrows(parentFiber) : 0;
+      const parentId = parentFiber ? getFiberIdThrows(parentFiber) : 0;
       const ownerId = getFiberOwnerId(fiber);
 
       const [displayNameWithoutHOCs, hocDisplayNames] =
@@ -391,13 +367,14 @@ export function createReactDevtoolsHookHandlers(
         id,
         type: elementType,
         key: key === null ? null : String(key),
-        ownerId,
+        ownerId: ownerId !== -1 ? ownerId : currentRootId,
         parentId,
         displayName: displayNameWithoutHOCs,
         hocDisplayNames,
       };
     }
 
+    idToOwnerId.set(element.id, element.ownerId);
     recordEvent({
       op: "mount",
       commitId: currentCommitId,
@@ -413,7 +390,7 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function recordUnmount(fiber: Fiber) {
-    const id = getFiberIDUnsafe(fiber);
+    const id = getFiberIdUnsafe(fiber);
 
     if (id === null) {
       // If we've never seen this Fiber, it might be inside of a legacy render Suspense fragment (so the store is not even aware of it).
@@ -437,6 +414,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (!fiber._debugNeedsRemount) {
+      idToOwnerId.delete(id);
       untrackFiber(fiber);
     }
   }
@@ -453,7 +431,7 @@ export function createReactDevtoolsHookHandlers(
 
     while (fiber !== null) {
       // Generate an ID even for filtered Fibers, in case it's needed later (e.g. for Profiling).
-      getOrGenerateFiberID(fiber);
+      getOrGenerateFiberId(fiber);
 
       const shouldIncludeInTree = !shouldFilterFiber(fiber);
       if (shouldIncludeInTree) {
@@ -574,7 +552,7 @@ export function createReactDevtoolsHookHandlers(
     const { alternate = null } = fiber;
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
-      const elementId = getFiberIDThrows(fiber);
+      const elementId = getFiberIdThrows(fiber);
 
       recordEvent({
         op: "rerender",
@@ -728,8 +706,8 @@ export function createReactDevtoolsHookHandlers(
     // we rely on React telling us about each unmount.
     // We only remember the unmounted fibers here and flush them on a commit,
     // since React report about an unmount before a commit
-    const selfId = getFiberIDUnsafe(fiber) || 0;
-    const ownerId = getFiberOwnerId(fiber);
+    const selfId = getFiberIdUnsafe(fiber) || 0;
+    const ownerId = idToOwnerId.get(selfId) || 0;
     const rootId = unmountedFiberRootId.get(ownerId) || ownerId;
 
     unmountedFiberRootId.set(selfId, rootId);
@@ -762,7 +740,7 @@ export function createReactDevtoolsHookHandlers(
     untrackFibers();
 
     currentCommitId = commitIdSeed++;
-    currentRootId = getOrGenerateFiberID(current);
+    currentRootId = getOrGenerateFiberId(current);
 
     // FIXME: add to commit event
     console.log(formatPriorityLevel(priorityLevel || -1));

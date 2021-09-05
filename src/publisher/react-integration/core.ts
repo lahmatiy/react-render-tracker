@@ -1,4 +1,5 @@
 import { getInternalReactConstants } from "./utils/getInternalReactConstants";
+import { getFiberFlags } from "./utils/getFiberFlags";
 import {
   ElementTypeClass,
   ElementTypeContext,
@@ -42,6 +43,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
     ReactTypeOfSideEffect,
   } = getInternalReactConstants(version);
 
+  const { PerformedWork } = ReactTypeOfSideEffect;
   const {
     ClassComponent,
     DehydratedSuspenseComponent,
@@ -60,19 +62,22 @@ export function createIntegrationCore(renderer: ReactInternals) {
     SimpleMemoComponent,
     SuspenseComponent,
     SuspenseListComponent,
+    ContextProvider,
+    ContextConsumer,
+    LazyComponent,
   } = ReactTypeOfWork;
 
   // Map of one or more Fibers in a pair to their unique id number.
   // We track both Fibers to support Fast Refresh,
   // which may forcefully replace one of the pair as part of hot reloading.
   // In that case it's still important to be able to locate the previous ID during subsequent renders.
-  const fiberToIDMap = new Map<Fiber, number>();
+  const fiberToId = new Map<Fiber, number>();
   let fiberIdSeed = 0;
 
   // Map of id to one (arbitrary) Fiber in a pair.
   // This Map is used to e.g. get the display name for a Fiber or schedule an update,
   // operations that should be the same whether the current and work-in-progress Fiber is used.
-  const idToArbitraryFiberMap = new Map<number, Fiber>();
+  const idToArbitraryFiber = new Map<number, Fiber>();
 
   // Roots don't have a real persistent identity.
   // A root's "pseudo key" is "childDisplayName:indexWithThatName".
@@ -209,16 +214,16 @@ export function createIntegrationCore(renderer: ReactInternals) {
   }
 
   // Returns the unique ID for a Fiber or generates and caches a new one if the Fiber hasn't been seen before.
-  // Once this method has been called for a Fiber, untrackFiberID() should always be called later to avoid leaking.
-  function getOrGenerateFiberID(fiber: Fiber) {
+  // Once this method has been called for a Fiber, untrackFiber() should always be called later to avoid leaking.
+  function getOrGenerateFiberId(fiber: Fiber) {
     let id: number | undefined;
     const { alternate } = fiber;
 
-    if (fiberToIDMap.has(fiber)) {
-      id = fiberToIDMap.get(fiber);
+    if (fiberToId.has(fiber)) {
+      id = fiberToId.get(fiber);
     } else {
-      if (alternate !== null && fiberToIDMap.has(alternate)) {
-        id = fiberToIDMap.get(alternate);
+      if (alternate !== null && fiberToId.has(alternate)) {
+        id = fiberToId.get(alternate);
       }
     }
 
@@ -228,15 +233,15 @@ export function createIntegrationCore(renderer: ReactInternals) {
 
     // Make sure we're tracking this Fiber
     // e.g. if it just mounted or an error was logged during initial render.
-    if (!fiberToIDMap.has(fiber)) {
-      fiberToIDMap.set(fiber, id);
-      idToArbitraryFiberMap.set(id, fiber);
+    if (!fiberToId.has(fiber)) {
+      fiberToId.set(fiber, id);
+      idToArbitraryFiber.set(id, fiber);
     }
 
     // Also make sure we're tracking its alternate,
     // e.g. in case this is the first update after mount.
-    if (alternate !== null && !fiberToIDMap.has(alternate)) {
-      fiberToIDMap.set(alternate, id);
+    if (alternate !== null && !fiberToId.has(alternate)) {
+      fiberToId.set(alternate, id);
     }
 
     return id;
@@ -244,22 +249,22 @@ export function createIntegrationCore(renderer: ReactInternals) {
 
   // Returns an ID if one has already been generated for the Fiber or null if one has not been generated.
   // Use this method while e.g. logging to avoid over-retaining Fibers.
-  function getFiberIDUnsafe(fiber: Fiber) {
-    if (fiberToIDMap.has(fiber)) {
-      return fiberToIDMap.get(fiber) || null;
+  function getFiberIdUnsafe(fiber: Fiber) {
+    if (fiberToId.has(fiber)) {
+      return fiberToId.get(fiber) || null;
     }
 
     const { alternate } = fiber;
-    if (alternate !== null && fiberToIDMap.has(alternate)) {
-      return fiberToIDMap.get(alternate) || null;
+    if (alternate !== null && fiberToId.has(alternate)) {
+      return fiberToId.get(alternate) || null;
     }
 
     return null;
   }
 
   // Returns an ID if one has already been generated for the Fiber or throws.
-  function getFiberIDThrows(fiber: Fiber) {
-    const id = getFiberIDUnsafe(fiber);
+  function getFiberIdThrows(fiber: Fiber) {
+    const id = getFiberIdUnsafe(fiber);
 
     if (id === null) {
       throw Error(
@@ -270,8 +275,36 @@ export function createIntegrationCore(renderer: ReactInternals) {
     return id;
   }
 
-  function getFiberByID(id: number) {
-    return idToArbitraryFiberMap.get(id) || null;
+  function getFiberOwnerId(fiber: Fiber): number {
+    const { _debugOwner = null } = fiber;
+
+    if (_debugOwner !== null) {
+      // Ideally we should call getFiberIDThrows() for _debugOwner,
+      // since owners are almost always higher in the tree (and so have already been processed),
+      // but in some (rare) instances reported in open source, a descendant mounts before an owner.
+      // Since this is a DEV only field it's probably okay to also just lazily generate and ID here if needed.
+      // See https://github.com/facebook/react/issues/21445
+      return getOrGenerateFiberId(_debugOwner);
+    }
+
+    const { return: parentFiber = null } = fiber;
+    if (parentFiber?._debugOwner) {
+      if (
+        parentFiber.tag === ContextProvider ||
+        parentFiber.tag === ContextConsumer ||
+        parentFiber.tag === ForwardRef ||
+        parentFiber.tag === MemoComponent ||
+        parentFiber.tag === LazyComponent
+      ) {
+        return getFiberOwnerId(parentFiber);
+      }
+    }
+
+    return -1;
+  }
+
+  function getFiberById(id: number) {
+    return idToArbitraryFiber.get(id) || null;
   }
 
   function findFiberByHostInstance(hostInstance: NativeType) {
@@ -279,9 +312,9 @@ export function createIntegrationCore(renderer: ReactInternals) {
   }
 
   function removeFiber(fiber: Fiber) {
-    idToArbitraryFiberMap.delete(getFiberIDUnsafe(fiber) as number);
-    fiberToIDMap.delete(fiber);
-    fiberToIDMap.delete(fiber.alternate as Fiber);
+    idToArbitraryFiber.delete(getFiberIdUnsafe(fiber) as number);
+    fiberToId.delete(fiber);
+    fiberToId.delete(fiber.alternate as Fiber);
   }
 
   function setRootPseudoKey(id: number, fiber: Fiber) {
@@ -320,14 +353,39 @@ export function createIntegrationCore(renderer: ReactInternals) {
     rootPseudoKeys.delete(id);
   }
 
+  function didFiberRender(prevFiber: Fiber, nextFiber: Fiber) {
+    switch (nextFiber.tag) {
+      case ClassComponent:
+      case FunctionComponent:
+      case ContextConsumer:
+      case MemoComponent:
+      case SimpleMemoComponent:
+        // For types that execute user code, we check PerformedWork effect.
+        // We don't reflect bailouts (either referential or sCU) in DevTools.
+        // eslint-disable-next-line no-bitwise
+        return (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork;
+      // Note: ContextConsumer only gets PerformedWork effect in 16.3.3+
+      // so it won't get highlighted with React 16.3.0 to 16.3.2.
+      default:
+        // For host components and other types, we compare inputs
+        // to determine whether something is an update.
+        return (
+          prevFiber.memoizedProps !== nextFiber.memoizedProps ||
+          prevFiber.memoizedState !== nextFiber.memoizedState ||
+          prevFiber.ref !== nextFiber.ref
+        );
+    }
+  }
+
   return {
     ReactTypeOfSideEffect,
     ReactTypeOfWork,
     ReactPriorityLevels,
-    getOrGenerateFiberID,
-    getFiberIDThrows,
-    getFiberIDUnsafe,
-    getFiberByID,
+    getOrGenerateFiberId,
+    getFiberIdThrows,
+    getFiberIdUnsafe,
+    getFiberById,
+    getFiberOwnerId,
     removeFiber,
     getElementTypeForFiber,
     getDisplayNameForFiber,
@@ -335,6 +393,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
     setRootPseudoKey,
     getRootPseudoKey,
     removeRootPseudoKey,
+    didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
   };
