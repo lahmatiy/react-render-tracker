@@ -293,10 +293,7 @@ export function getInternalReactConstants(version: string) {
         return getDisplayName(resolvedType);
       case ForwardRef:
         // Mirror https://github.com/facebook/react/blob/7c21bf72ace77094fd1910cc350a548287ef8350/packages/shared/getComponentName.js#L27-L37
-        return (
-          (type && type.displayName) ||
-          getDisplayName(resolvedType, "Anonymous")
-        );
+        return type?.displayName || getDisplayName(resolvedType);
       case HostRoot:
         return null;
       case HostComponent:
@@ -313,9 +310,9 @@ export function getInternalReactConstants(version: string) {
       case MemoComponent:
       case SimpleMemoComponent:
         return (
-          (elementType && elementType.displayName) ||
-          (type && type.displayName) ||
-          getDisplayName(resolvedType, "Anonymous")
+          elementType?.displayName ||
+          type?.displayName ||
+          getDisplayName(resolvedType)
         );
       case SuspenseComponent:
         return "Suspense";

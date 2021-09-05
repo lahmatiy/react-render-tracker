@@ -1,12 +1,13 @@
 const cachedDisplayNames = new WeakMap<any, string>();
+let anonymousSeedId = 1;
 
-export function getDisplayName(type: any, fallbackName = "Anonymous"): string {
+export function getDisplayName(type: any): string {
   const displayNameFromCache = cachedDisplayNames.get(type);
   if (typeof displayNameFromCache === "string") {
     return displayNameFromCache;
   }
 
-  let displayName = fallbackName;
+  let displayName;
 
   // The displayName property is not guaranteed to be a string.
   // It's only safe to use for our purposes if it's a string.
@@ -17,6 +18,10 @@ export function getDisplayName(type: any, fallbackName = "Anonymous"): string {
     } else if (typeof type.name === "string" && type.name !== "") {
       displayName = type.name;
     }
+  }
+
+  if (!displayName) {
+    displayName = "Anonymous" + String(anonymousSeedId++);
   }
 
   cachedDisplayNames.set(type, displayName);

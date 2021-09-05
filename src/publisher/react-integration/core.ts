@@ -67,7 +67,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
   // which may forcefully replace one of the pair as part of hot reloading.
   // In that case it's still important to be able to locate the previous ID during subsequent renders.
   const fiberToIDMap = new Map<Fiber, number>();
-  let fiberIdSeed = 1;
+  let fiberIdSeed = 0;
 
   // Map of id to one (arbitrary) Fiber in a pair.
   // This Map is used to e.g. get the display name for a Fiber or schedule an update,
