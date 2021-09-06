@@ -59,8 +59,10 @@ export function createReactDevtoolsHookHandlers(
   let currentCommitId = -1;
   let commitIdSeed = 0;
 
-  const unmountedFibersByOwnerId = new Map<number, Set<Fiber>>();
-  const unmountedFiberRootId = new Map<number, number>();
+  const unmountedFiberIds = new Set<number>();
+  const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
+  const unmountedFiberIdBeforeSiblingId = new Map<number, number>();
+  const unmountedFiberIdForParentId = new Map<number, number>();
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -374,7 +376,7 @@ export function createReactDevtoolsHookHandlers(
       };
     }
 
-    idToOwnerId.set(element.id, element.ownerId);
+    idToOwnerId.set(id, element.ownerId);
     recordEvent({
       op: "mount",
       commitId: currentCommitId,
@@ -389,7 +391,47 @@ export function createReactDevtoolsHookHandlers(
     }
   }
 
-  function recordUnmount(fiber: Fiber) {
+  function recordUnmount(id: number) {
+    recordEvent({
+      op: "unmount",
+      commitId: currentCommitId,
+      elementId: id,
+    });
+  }
+
+  function recordSubtreeUnmount(id: number) {
+    unmountedFiberIds.delete(id);
+    recordUnmount(id);
+
+    const ownerUnmountedFiberIds = unmountedFiberIdsByOwnerId.get(id);
+    if (ownerUnmountedFiberIds !== undefined) {
+      unmountedFiberIdsByOwnerId.delete(id);
+
+      for (const fiberId of ownerUnmountedFiberIds) {
+        recordSubtreeUnmount(fiberId);
+      }
+    }
+  }
+
+  function recordPreviousSiblingUnmount(id: number) {
+    const siblingUnmountId = unmountedFiberIdBeforeSiblingId.get(id);
+
+    if (siblingUnmountId !== undefined) {
+      recordPreviousSiblingUnmount(siblingUnmountId);
+      recordSubtreeUnmount(siblingUnmountId);
+    }
+  }
+
+  function recordLastChildUnmounts(id: number) {
+    const lastChildUnmountId = unmountedFiberIdForParentId.get(id);
+
+    if (lastChildUnmountId !== undefined) {
+      recordPreviousSiblingUnmount(lastChildUnmountId);
+      recordSubtreeUnmount(lastChildUnmountId);
+    }
+  }
+
+  function unmountFiber(fiber: Fiber) {
     const id = getFiberIdUnsafe(fiber);
 
     if (id === null) {
@@ -406,11 +448,38 @@ export function createReactDevtoolsHookHandlers(
     const isRoot = fiber.tag === HostRoot;
 
     if (isRoot || !shouldFilterFiber(fiber)) {
-      recordEvent({
-        op: "unmount",
-        commitId: currentCommitId,
-        elementId: id,
-      });
+      if (currentCommitId !== -1) {
+        // If unmount occurs in a commit, then record it immediatelly.
+        recordSubtreeUnmount(id);
+      } else {
+        // If an unmount occurs outside of a commit then just remember it not record.
+        // React reports about an unmount before a commit, so we will flush
+        // events on a commit processing. A various maps are using here to record
+        // unmount events in more natural way (since we don't know the right order
+        // of events anyway and simulate it on component's tree traversal).
+        const ownerId = idToOwnerId.get(id) || 0;
+        const siblingId = fiber.sibling
+          ? getFiberIdUnsafe(fiber.sibling)
+          : null;
+
+        if (siblingId !== null) {
+          unmountedFiberIdBeforeSiblingId.set(siblingId, id);
+        } else {
+          const parentId = fiber.return ? getFiberIdUnsafe(fiber.return) : null;
+
+          if (parentId !== null) {
+            unmountedFiberIdForParentId.set(parentId, id);
+          }
+        }
+
+        if (unmountedFiberIdsByOwnerId.has(ownerId)) {
+          unmountedFiberIdsByOwnerId.get(ownerId)?.add(id);
+        } else {
+          unmountedFiberIdsByOwnerId.set(ownerId, new Set([id]));
+        }
+
+        unmountedFiberIds.add(id);
+      }
     }
 
     if (!fiber._debugNeedsRemount) {
@@ -503,23 +572,22 @@ export function createReactDevtoolsHookHandlers(
     // We might meet a nested Suspense on our way.
     const isTimedOutSuspense =
       fiber.tag === SuspenseComponent && fiber.memoizedState !== null;
-
     let child = fiber.child;
+
     if (isTimedOutSuspense) {
       // If it's showing fallback tree, let's traverse it instead.
       const primaryChildFragment = fiber.child;
-      const fallbackChildFragment = primaryChildFragment
-        ? primaryChildFragment.sibling
-        : null;
+      const fallbackChildFragment = primaryChildFragment?.sibling || null;
+
       // Skip over to the real Fiber child.
-      child = fallbackChildFragment ? fallbackChildFragment.child : null;
+      child = fallbackChildFragment?.child || null;
     }
 
     while (child !== null) {
       // Record simulated unmounts children-first.
       // We skip nodes without return because those are real unmounts.
       if (child.return !== null) {
-        recordUnmount(child);
+        unmountFiber(child);
         unmountFiberChildrenRecursively(child);
       }
 
@@ -562,17 +630,6 @@ export function createReactDevtoolsHookHandlers(
         changes: getChangeDescription(alternate, fiber),
       });
 
-      if (unmountedFibersByOwnerId.has(elementId)) {
-        const unmountedFibers = unmountedFibersByOwnerId.get(
-          elementId
-        ) as Set<Fiber>;
-
-        unmountedFibersByOwnerId.delete(elementId);
-        for (const fiber of unmountedFibers) {
-          recordUnmount(fiber);
-        }
-      }
-
       commitRenderedOwnerIds.add(elementId);
       updateContextsForFiber(fiber);
     }
@@ -587,6 +644,9 @@ export function createReactDevtoolsHookHandlers(
   ) {
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
+    const id = getFiberIdThrows(nextFiber);
+
+    recordPreviousSiblingUnmount(id);
 
     if (shouldIncludeInTree) {
       recordRerender(nextFiber);
@@ -699,24 +759,14 @@ export function createReactDevtoolsHookHandlers(
         }
       }
     }
+
+    recordLastChildUnmounts(id);
   }
 
   function handleCommitFiberUnmount(fiber: Fiber) {
     // We can't traverse fibers after unmounting so instead
     // we rely on React telling us about each unmount.
-    // We only remember the unmounted fibers here and flush them on a commit,
-    // since React report about an unmount before a commit
-    const selfId = getFiberIdUnsafe(fiber) || 0;
-    const ownerId = idToOwnerId.get(selfId) || 0;
-    const rootId = unmountedFiberRootId.get(ownerId) || ownerId;
-
-    unmountedFiberRootId.set(selfId, rootId);
-
-    if (unmountedFibersByOwnerId.has(rootId)) {
-      unmountedFibersByOwnerId.get(rootId)?.add(fiber);
-    } else {
-      unmountedFibersByOwnerId.set(rootId, new Set([fiber]));
-    }
+    unmountFiber(fiber);
   }
 
   function handlePostCommitFiberRoot(/* root */) {
@@ -776,22 +826,22 @@ export function createReactDevtoolsHookHandlers(
     } else if (wasMounted && !isMounted) {
       // Unmount an existing root.
       removeRootPseudoKey(currentRootId);
-      recordUnmount(current);
+      unmountFiber(current);
     }
 
-    // Normally unmounted fibers should removed on re-render processing,
-    // but in case it's not (e.g. ownerId is not computed right) then flush what's left
-    for (const unmountedFibers of unmountedFibersByOwnerId.values()) {
-      for (const fiber of unmountedFibers) {
-        recordUnmount(fiber);
-      }
+    // Normally unmounted fibers should removed on component's tree traversal,
+    // but in case it's not then flush what's left
+    for (const fiberId of unmountedFiberIds) {
+      recordUnmount(fiberId);
     }
 
     // We're done here
     currentCommitId = -1;
     commitRenderedOwnerIds.clear();
-    unmountedFibersByOwnerId.clear();
-    unmountedFiberRootId.clear();
+    unmountedFiberIds.clear();
+    unmountedFiberIdsByOwnerId.clear();
+    unmountedFiberIdBeforeSiblingId.clear();
+    unmountedFiberIdForParentId.clear();
   }
 
   // function formatPriorityLevel(priorityLevel: number | null = null) {
