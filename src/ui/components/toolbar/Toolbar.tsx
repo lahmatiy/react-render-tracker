@@ -37,13 +37,21 @@ const Toolbar = ({
         icon={ToggleGrouping}
         isActive={groupByParent}
         onChange={onGroupingChange}
-        tooltip={"Toggle components grouping by parent or owner"}
+        tooltip={
+          groupByParent
+            ? "Switch to owner-ownee relationship view in component's tree"
+            : "Switch to parent-child relationship view in component's tree"
+        }
       />
       <ButtonToggle
         icon={ToggleUnmounted}
         isActive={showUnmounted}
         onChange={onShowUnmounted}
-        tooltip={"Toggle unmounted components visibility"}
+        tooltip={
+          showUnmounted
+            ? "Hide unmounted components"
+            : "Show unmounted components"
+        }
       />
       <ButtonToggle
         icon={ClearEventLog}

@@ -47,7 +47,11 @@ const Details = ({
           icon={SubtreeToggle}
           isActive={showSubtreeEvents}
           onChange={setShowSubtreeEvents}
-          tooltip="Show child changes"
+          tooltip={
+            showSubtreeEvents
+              ? "Show component's events only"
+              : "Show component and its subtree components events"
+          }
         />
       </div>
       {events && (
