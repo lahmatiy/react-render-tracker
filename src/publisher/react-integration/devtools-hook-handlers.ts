@@ -27,7 +27,7 @@ type ContextDescriptor = {
 export function createReactDevtoolsHookHandlers(
   {
     ReactTypeOfWork,
-    ReactPriorityLevels,
+    // ReactPriorityLevels,
     getOrGenerateFiberId,
     getFiberIdThrows,
     getFiberIdUnsafe,
@@ -43,14 +43,14 @@ export function createReactDevtoolsHookHandlers(
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
   const { HostRoot, SuspenseComponent, OffscreenComponent } = ReactTypeOfWork;
-  const {
-    ImmediatePriority,
-    UserBlockingPriority,
-    NormalPriority,
-    LowPriority,
-    IdlePriority,
-    NoPriority,
-  } = ReactPriorityLevels;
+  // const {
+  //   ImmediatePriority,
+  //   UserBlockingPriority,
+  //   NormalPriority,
+  //   LowPriority,
+  //   IdlePriority,
+  //   NoPriority,
+  // } = ReactPriorityLevels;
 
   const idToOwnerId = new Map<number, number>();
   const idToContextsMap = new Map<number, ContextDescriptor>();
@@ -731,7 +731,7 @@ export function createReactDevtoolsHookHandlers(
     // }
   }
 
-  function handleCommitFiberRoot(root: FiberRoot, priorityLevel?: number) {
+  function handleCommitFiberRoot(root: FiberRoot /*, priorityLevel?: number*/) {
     const current = root.current;
     const { alternate } = current;
 
@@ -743,7 +743,7 @@ export function createReactDevtoolsHookHandlers(
     currentRootId = getOrGenerateFiberId(current);
 
     // FIXME: add to commit event
-    console.log(formatPriorityLevel(priorityLevel || -1));
+    // console.log(formatPriorityLevel(priorityLevel || -1));
 
     // Handle multi-renderer edge-case where only some v16 renderers support profiling.
     // const isProfilingSupported = rootSupportsProfiling(root);
@@ -794,23 +794,23 @@ export function createReactDevtoolsHookHandlers(
     unmountedFiberRootId.clear();
   }
 
-  function formatPriorityLevel(priorityLevel: number | null = null) {
-    switch (priorityLevel) {
-      case ImmediatePriority:
-        return "Immediate";
-      case UserBlockingPriority:
-        return "User-Blocking";
-      case NormalPriority:
-        return "Normal";
-      case LowPriority:
-        return "Low";
-      case IdlePriority:
-        return "Idle";
-      case NoPriority:
-      default:
-        return "Unknown";
-    }
-  }
+  // function formatPriorityLevel(priorityLevel: number | null = null) {
+  //   switch (priorityLevel) {
+  //     case ImmediatePriority:
+  //       return "Immediate";
+  //     case UserBlockingPriority:
+  //       return "User-Blocking";
+  //     case NormalPriority:
+  //       return "Normal";
+  //     case LowPriority:
+  //       return "Low";
+  //     case IdlePriority:
+  //       return "Idle";
+  //     case NoPriority:
+  //     default:
+  //       return "Unknown";
+  //   }
+  // }
 
   return {
     handleCommitFiberRoot,
