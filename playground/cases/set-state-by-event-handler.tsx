@@ -2,6 +2,16 @@ import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
+export default {
+  title: "Set state by event handler",
+  Root,
+} as TestCase;
+
+function Root() {
+  useTrackRender();
+  return <Child />;
+}
+
 function Child() {
   const { useState } = useTrackRender();
   const [ok, setOk] = useState(false);
@@ -15,13 +25,3 @@ function Child() {
   }
   return <>OK</>;
 }
-
-function Root() {
-  useTrackRender();
-  return <Child />;
-}
-
-export default {
-  title: "Set state by event handler",
-  Root,
-} as TestCase;

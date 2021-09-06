@@ -2,6 +2,26 @@ import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
+export default {
+  title: "Complex composition on one component",
+  Root,
+} as TestCase;
+
+function Root() {
+  useTrackRender();
+  return (
+    <Foo>
+      <Bar />
+      <Baz>
+        <Bar>
+          <Qux />
+        </Bar>
+      </Baz>
+      <BarMemo>K</BarMemo>
+    </Foo>
+  );
+}
+
 function Foo({ children }: { children?: React.ReactNode }) {
   useTrackRender();
   return <>{children}</>;
@@ -23,23 +43,3 @@ function Qux() {
   useTrackRender();
   return <>O</>;
 }
-
-function Root() {
-  useTrackRender();
-  return (
-    <Foo>
-      <Bar />
-      <Baz>
-        <Bar>
-          <Qux />
-        </Bar>
-      </Baz>
-      <BarMemo>K</BarMemo>
-    </Foo>
-  );
-}
-
-export default {
-  title: "Complex composition on one component",
-  Root,
-} as TestCase;

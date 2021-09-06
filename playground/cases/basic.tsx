@@ -2,17 +2,17 @@ import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
-function Child() {
-  useTrackRender();
-  return <>OK</>;
-}
+export default {
+  title: "Basic nested render",
+  Root,
+} as TestCase;
 
 function Root() {
   useTrackRender();
   return <Child />;
 }
 
-export default {
-  title: "Basic nested render",
-  Root,
-} as TestCase;
+function Child() {
+  useTrackRender();
+  return <>OK</>;
+}

@@ -1,6 +1,34 @@
 import * as React from "react";
 import { TestCase } from "../types";
 
+export default {
+  title: "App #1",
+  Root,
+} as TestCase;
+
+function Root() {
+  const [name, setName] = React.useState("World");
+
+  return (
+    <div className="app">
+      <Toolbar
+        input={<Input value={name} onInput={setName} />}
+        button={
+          <Button
+            caption="Click me!"
+            onClick={() => alert(`Hello, ${name}!`)}
+          />
+        }
+      />
+      <List>
+        {["This", "is", "example"].map(text => (
+          <ListItem key={text} caption={text} />
+        ))}
+      </List>
+    </div>
+  );
+}
+
 function Toolbar({
   input,
   button,
@@ -48,31 +76,3 @@ const List = function List({ children }: { children?: React.ReactNode }) {
 function ListItem({ caption }: { caption: string }) {
   return <li>{caption}</li>;
 }
-
-function Root() {
-  const [name, setName] = React.useState("World");
-
-  return (
-    <div className="app">
-      <Toolbar
-        input={<Input value={name} onInput={setName} />}
-        button={
-          <Button
-            caption="Click me!"
-            onClick={() => alert(`Hello, ${name}!`)}
-          />
-        }
-      />
-      <List>
-        {["This", "is", "example"].map(text => (
-          <ListItem key={text} caption={text} />
-        ))}
-      </List>
-    </div>
-  );
-}
-
-export default {
-  title: "App #1",
-  Root,
-} as TestCase;

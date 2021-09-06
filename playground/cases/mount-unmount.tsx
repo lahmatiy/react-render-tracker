@@ -3,10 +3,10 @@ import { useEffect } from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
-function Child() {
-  useTrackRender();
-  return <>OK</>;
-}
+export default {
+  title: "Mount/unmount",
+  Root,
+} as TestCase;
 
 function Root() {
   const { useState } = useTrackRender();
@@ -33,7 +33,7 @@ function Root() {
   );
 }
 
-export default {
-  title: "Mount/unmount",
-  Root,
-} as TestCase;
+function Child() {
+  useTrackRender();
+  return <>OK</>;
+}

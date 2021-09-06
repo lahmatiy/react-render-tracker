@@ -2,6 +2,21 @@ import * as React from "react";
 import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
+export default {
+  title: "Basic change of context",
+  Root,
+} as TestCase;
+
+function Root() {
+  useTrackRender();
+
+  return (
+    <MyContextProvider>
+      <Child />
+    </MyContextProvider>
+  );
+}
+
 const MyContext = React.createContext("Fail: waiting for context change");
 
 function Child() {
@@ -11,7 +26,7 @@ function Child() {
   return <>{context}</>;
 }
 
-function MyContextProvider({ children }: { children: JSX.Element }) {
+function MyContextProvider({ children }: { children?: React.ReactNode }) {
   const { useState } = useTrackRender();
   const [value, setValue] = useState(0);
 
@@ -32,18 +47,3 @@ function MyContextProvider({ children }: { children: JSX.Element }) {
     </MyContext.Provider>
   );
 }
-
-function Root() {
-  useTrackRender();
-
-  return (
-    <MyContextProvider>
-      <Child />
-    </MyContextProvider>
-  );
-}
-
-export default {
-  title: "Basic change of context",
-  Root,
-} as TestCase;
