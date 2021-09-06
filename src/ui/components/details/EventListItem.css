@@ -32,23 +32,24 @@
   text-decoration-color: #888;
 }
 
-.event-list-item__owner-update {
+.event-list-item__update-trigger {
   display: inline-block;
   vertical-align: middle;
   margin-left: -14px;
   margin-top: -2px;
   margin-right: 3px;
-  width: 15px;
-  padding: 1px 4px 0 8px;
+  width: 14px;
+  padding: 1px 6px 0 4px;
   border: 1px solid white;
   border-radius: 0 8px 8px 0;
-  background: #eaeac6 12px center no-repeat;
-  background-size: 11px;
-  background-image: url("./img/owner-update.svg");
+  background: #eaeac6 10px 2px no-repeat;
+  background-size: 10px;
+  background-image: url("./img/update-trigger.svg");
   color: transparent;
   font-size: 9px;
+  cursor: default;
 }
-.event-list-item__owner-update::before {
+.event-list-item__update-trigger::before {
   content: "\a0";
 }
 
@@ -116,6 +117,7 @@
   background: #e8e8e8 center no-repeat;
   background-size: 11px;
   color: #777;
+  cursor: default;
 }
 .event-list-item__dot[data-type="unmount"] {
   background-image: url("./img/event-unmount.svg");

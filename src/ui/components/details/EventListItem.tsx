@@ -11,6 +11,12 @@ interface EventListItemProps {
   nextConjunction: boolean;
 }
 
+const opTooltip: Record<Event["op"], string> = {
+  mount: "Mount",
+  rerender: "Update (re-render)",
+  unmount: "Unmount",
+};
+
 function getChanges(event: Event) {
   const reasons: string[] = [];
 
@@ -85,17 +91,17 @@ const EventListItem = ({
               (prevConjunction ? " event-list-item__dot_prev" : "") +
               (nextConjunction ? " event-list-item__dot_next" : "")
             }
-            title={event.op}
+            title={opTooltip[event.op]}
             data-type={event.op}
           >
             {"\xa0"}
           </span>
         </td>
         <td className="event-list-item__details">
-          {event.op === "rerender" && event.changes?.ownerUpdate && (
+          {event.op === "rerender" && !event.changes?.ownerUpdate && (
             <span
-              className="event-list-item__owner-update"
-              title={`Owner update (#${component.ownerId})`}
+              className="event-list-item__update-trigger"
+              title={"Update trigger"}
             />
           )}
           <span
