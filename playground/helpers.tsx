@@ -4,27 +4,29 @@ type IRenderTrigger = {
   type: string;
   value: any;
 };
-type IRenderInstance = {
+export type IRenderInstance = {
   id: string;
   log: (string: string) => void;
   flushTriggers: () => IRenderTrigger[];
   useState: typeof React.useState;
   useContext: typeof React.useContext;
 };
-type IRenderContext = {
+export type IRenderContext = {
   initInstance: () => IRenderInstance;
 };
 type RenderContextProviderProps = {
   log: (msg: string) => void;
-  children: JSX.Element;
+  children: React.ReactNode;
 };
 type Trigger = {
   type: string;
   value: any;
 };
 
-const RenderContext = React.createContext<IRenderContext>({} as IRenderContext);
-
+export const RenderContext = React.createContext<IRenderContext>(
+  {} as IRenderContext
+);
+RenderContext.displayName = "Foo";
 export const useRenderContext = () => React.useContext(RenderContext);
 export function RenderContextProvider({
   log,
@@ -42,17 +44,16 @@ export function RenderContextProvider({
         );
       } catch (e) {
         if (e.stack) {
-          const nameStackLine =
-            String(e.stack)
-              .replace(/^Error.*?\n/, "")
-              .split("\n")[2] || "";
-          const matchName = nameStackLine.match(
-            /(?:\s*at\s+)?([a-z$_][a-z$_\d]+)/i
-          );
+          const stackNameLines = String(e.stack)
+            .replace(/^Error.*?\n/, "")
+            .split("\n")
+            .slice(1, 3)
+            .map(
+              line => (line.match(/(?:\s*at\s+)?([a-z$_][a-z$_\d]+)/i) || [])[1]
+            )
+            .filter(name => name !== "useTrackRender");
 
-          if (matchName !== null) {
-            name = matchName[1];
-          }
+          name = stackNameLines[0] || name;
         }
       }
 
