@@ -62,7 +62,6 @@ export function createIntegrationCore(renderer: ReactInternals) {
     SimpleMemoComponent,
     SuspenseComponent,
     SuspenseListComponent,
-    ContextProvider,
     ContextConsumer,
     LazyComponent,
   } = ReactTypeOfWork;
@@ -290,8 +289,6 @@ export function createIntegrationCore(renderer: ReactInternals) {
     const { return: parentFiber = null } = fiber;
     if (parentFiber?._debugOwner) {
       if (
-        parentFiber.tag === ContextProvider ||
-        parentFiber.tag === ContextConsumer ||
         parentFiber.tag === ForwardRef ||
         parentFiber.tag === MemoComponent ||
         parentFiber.tag === LazyComponent
