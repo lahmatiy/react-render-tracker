@@ -8,7 +8,7 @@ React render tracker – a tool to discover performance issues related to uninte
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished. The initial plan can be found [here](https://github.com/lahmatiy/react-render-tracker/issues/6). Feel free to create an issue if you found a bug or have an idea.
 
-![image](https://user-images.githubusercontent.com/270491/131173796-9bd485b6-32b4-43f4-b6d2-3a9739631652.png)
+![image](https://user-images.githubusercontent.com/270491/132214961-ebe3198d-c8f5-4d08-9c6d-4cf881507ef7.png)
 
 Features:
 
@@ -70,9 +70,7 @@ This will launch a Rempl server on port `8177`. Use `--port` option to specify a
 <meta name="rempl:server" content="localhost:8177" />
 ```
 
-4. Open your html and url of Rempl server. You should see connected instance of React render tracker
-
-![image](https://user-images.githubusercontent.com/270491/130532702-e78fc867-da3a-41d9-9e0f-cc0c07c89dd5.png)
+4. Open your html and url of Rempl server. You should see connected instance of React render tracker, click on it to see UI.
 
 ## How to start playground locally
 
