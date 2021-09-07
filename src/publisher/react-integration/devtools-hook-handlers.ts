@@ -4,7 +4,7 @@ import {
   ElementTypeForwardRef,
   ElementTypeFunction,
   ElementTypeMemo,
-  ElementTypeRoot,
+  ElementTypeHostRoot,
 } from "./utils/constants";
 import type { CoreApi } from "./core";
 import {
@@ -341,7 +341,7 @@ export function createReactDevtoolsHookHandlers(
     if (isRoot) {
       element = {
         id,
-        type: ElementTypeRoot,
+        type: ElementTypeHostRoot,
         key: null,
         ownerId: 0,
         parentId: 0,
@@ -351,12 +351,13 @@ export function createReactDevtoolsHookHandlers(
     } else {
       const { key } = fiber;
       const elementType = getElementTypeForFiber(fiber);
-      const displayName = getDisplayNameForFiber(fiber);
       const parentId = parentFiber ? getFiberIdThrows(parentFiber) : 0;
       const ownerId = getFiberOwnerId(fiber);
 
-      const [displayNameWithoutHOCs, hocDisplayNames] =
-        separateDisplayNameAndHOCs(displayName, elementType);
+      const { displayName, hocDisplayNames } = separateDisplayNameAndHOCs(
+        getDisplayNameForFiber(fiber),
+        elementType
+      );
 
       element = {
         id,
@@ -364,7 +365,7 @@ export function createReactDevtoolsHookHandlers(
         key: key === null ? null : String(key),
         ownerId: ownerId !== -1 ? ownerId : currentRootId,
         parentId,
-        displayName: displayNameWithoutHOCs,
+        displayName,
         hocDisplayNames,
       };
     }

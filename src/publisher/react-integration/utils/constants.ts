@@ -1,14 +1,14 @@
 export const ElementTypeClass = 1;
-export const ElementTypeContext = 2;
-export const ElementTypeFunction = 5;
-export const ElementTypeForwardRef = 6;
+export const ElementTypeFunction = 2;
+export const ElementTypeMemo = 3;
+export const ElementTypeForwardRef = 4;
+export const ElementTypeContext = 5;
+export const ElementTypeHostRoot = 6;
 export const ElementTypeHostComponent = 7;
-export const ElementTypeMemo = 8;
-export const ElementTypeOtherOrUnknown = 9;
+export const ElementTypeSuspense = 8;
+export const ElementTypeSuspenseList = 9;
 export const ElementTypeProfiler = 10;
-export const ElementTypeRoot = 11;
-export const ElementTypeSuspense = 12;
-export const ElementTypeSuspenseList = 13;
+export const ElementTypeOtherOrUnknown = 11;
 
 export const CONCURRENT_MODE_NUMBER = 0xeacf;
 export const CONCURRENT_MODE_SYMBOL_STRING = "Symbol(react.concurrent_mode)";

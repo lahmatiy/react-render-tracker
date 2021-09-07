@@ -9,7 +9,7 @@ import {
   ElementTypeMemo,
   ElementTypeOtherOrUnknown,
   ElementTypeProfiler,
-  ElementTypeRoot,
+  ElementTypeHostRoot,
   ElementTypeSuspense,
   ElementTypeSuspenseList,
   CONCURRENT_MODE_NUMBER,
@@ -131,46 +131,54 @@ export function createIntegrationCore(renderer: ReactInternals) {
       case ClassComponent:
       case IncompleteClassComponent:
         return ElementTypeClass;
+
       case FunctionComponent:
       case IndeterminateComponent:
         return ElementTypeFunction;
+
+      case MemoComponent:
+      case SimpleMemoComponent:
+        return ElementTypeMemo;
+
       case ForwardRef:
         return ElementTypeForwardRef;
+
       case HostRoot:
-        return ElementTypeRoot;
+        return ElementTypeHostRoot;
+
       case HostComponent:
         return ElementTypeHostComponent;
+
+      case SuspenseComponent:
+        return ElementTypeSuspense;
+
+      case SuspenseListComponent:
+        return ElementTypeSuspenseList;
+
       case HostPortal:
       case HostText:
       case Fragment:
         return ElementTypeOtherOrUnknown;
-      case MemoComponent:
-      case SimpleMemoComponent:
-        return ElementTypeMemo;
-      case SuspenseComponent:
-        return ElementTypeSuspense;
-      case SuspenseListComponent:
-        return ElementTypeSuspenseList;
+
       default:
         const typeSymbol = getTypeSymbol(type);
 
         switch (typeSymbol) {
-          case CONCURRENT_MODE_NUMBER:
-          case CONCURRENT_MODE_SYMBOL_STRING:
-          case DEPRECATED_ASYNC_MODE_SYMBOL_STRING:
-            return ElementTypeOtherOrUnknown;
           case PROVIDER_NUMBER:
           case PROVIDER_SYMBOL_STRING:
-            return ElementTypeContext;
           case CONTEXT_NUMBER:
           case CONTEXT_SYMBOL_STRING:
             return ElementTypeContext;
-          case STRICT_MODE_NUMBER:
-          case STRICT_MODE_SYMBOL_STRING:
-            return ElementTypeOtherOrUnknown;
+
           case PROFILER_NUMBER:
           case PROFILER_SYMBOL_STRING:
             return ElementTypeProfiler;
+
+          case CONCURRENT_MODE_NUMBER:
+          case CONCURRENT_MODE_SYMBOL_STRING:
+          case DEPRECATED_ASYNC_MODE_SYMBOL_STRING:
+          case STRICT_MODE_NUMBER:
+          case STRICT_MODE_SYMBOL_STRING:
           default:
             return ElementTypeOtherOrUnknown;
         }

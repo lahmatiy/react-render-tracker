@@ -9,13 +9,12 @@ import {
 export function separateDisplayNameAndHOCs(
   displayName: string | null,
   type: ElementType
-): [string | null, Array<string> | null] {
+): { displayName: string | null; hocDisplayNames: string[] | null } {
   if (displayName === null) {
-    return [null, null];
+    return { displayName, hocDisplayNames: null };
   }
 
-  let parsedDisplayName = displayName;
-  let hocDisplayNames = null;
+  let hocDisplayNames: string[] = [];
 
   if (
     type === ElementTypeClass ||
@@ -23,29 +22,24 @@ export function separateDisplayNameAndHOCs(
     type === ElementTypeForwardRef ||
     type === ElementTypeMemo
   ) {
-    if (parsedDisplayName.includes("(")) {
-      const matches = parsedDisplayName.match(/[^()]+/g);
+    if (displayName.includes("(")) {
+      const matches = displayName.match(/[^()]+/g);
 
       if (matches !== null) {
-        parsedDisplayName = matches.pop() || "";
+        displayName = matches.pop() || "";
         hocDisplayNames = matches;
       }
     }
   }
 
   if (type === ElementTypeMemo) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["Memo"];
-    } else {
-      hocDisplayNames.unshift("Memo");
-    }
+    hocDisplayNames.unshift("Memo");
   } else if (type === ElementTypeForwardRef) {
-    if (hocDisplayNames === null) {
-      hocDisplayNames = ["ForwardRef"];
-    } else {
-      hocDisplayNames.unshift("ForwardRef");
-    }
+    hocDisplayNames.unshift("ForwardRef");
   }
 
-  return [parsedDisplayName, hocDisplayNames];
+  return {
+    displayName,
+    hocDisplayNames: hocDisplayNames.length > 0 ? hocDisplayNames : null,
+  };
 }
