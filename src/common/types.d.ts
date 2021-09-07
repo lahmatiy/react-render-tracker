@@ -6,27 +6,22 @@ declare module "common-types" {
 
   export type TransferElement = {
     id: number;
-    parentId: number;
     type: ElementType;
-    displayName: string | null;
     key: number | string | null;
-
+    displayName: string | null;
     hocDisplayNames: null | Array<string>;
-
-    // Owner (if available)
-    ownerId: number;
+    parentId: number;
+    ownerId: number; // Owner (if available)
   };
 
   export type TransferChangeDescription = {
-    isFirstMount: boolean;
-    ownerUpdate: boolean;
-    context:
+    props: Array<{ name: string; prev: string; next: string }> | null;
+    state?: Array<{ name: string; prev: string; next: string }> | null;
+    context?:
       | Array<{ name: string; prev: string; next: string }>
       | boolean
       | null;
-    props: Array<{ name: string; prev: string; next: string }> | null;
-    state: Array<{ name: string; prev: string; next: string }> | null;
-    hooks: Array<{
+    hooks?: Array<{
       index: number;
       name: string;
       prev: string;
@@ -58,6 +53,7 @@ declare module "common-types" {
     op: "rerender";
     totalTime: number;
     selfTime: number;
+    ownerUpdate: boolean;
     changes: TransferChangeDescription | null;
   }
 

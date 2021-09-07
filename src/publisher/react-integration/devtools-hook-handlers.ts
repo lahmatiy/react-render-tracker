@@ -108,52 +108,41 @@ export function createReactDevtoolsHookHandlers(
     prevFiber: Fiber,
     nextFiber: Fiber
   ): TransferChangeDescription | null {
-    switch (getElementTypeForFiber(nextFiber)) {
-      case ElementTypeClass:
-      case ElementTypeFunction:
-      case ElementTypeMemo:
-      case ElementTypeForwardRef:
-        if (prevFiber === null) {
-          return {
-            isFirstMount: true,
-            ownerUpdate: false,
-            context: null,
-            hooks: null,
-            props: null,
-            state: null,
-          } as TransferChangeDescription;
-        } else {
-          const { _debugHookTypes } = nextFiber;
-          const isElementTypeClass = prevFiber.stateNode !== null;
-          const ownerId = idToOwnerId.get(getFiberIdUnsafe(nextFiber) || 0);
-          const data: TransferChangeDescription = {
-            isFirstMount: false,
-            ownerUpdate: commitRenderedOwnerIds.has(ownerId || 0),
-            context: isElementTypeClass
-              ? getContextChangedKeys(nextFiber)
-              : null,
-            state: isElementTypeClass
-              ? getChangedKeys(prevFiber.memoizedState, nextFiber.memoizedState)
-              : null,
-            hooks: !isElementTypeClass
-              ? getChangedHooks(
-                  prevFiber.memoizedState,
-                  nextFiber.memoizedState,
-                  _debugHookTypes || []
-                )
-              : null,
-            props: getChangedKeys(
-              prevFiber.memoizedProps,
-              nextFiber.memoizedProps
-            ),
-          };
+    const type = getElementTypeForFiber(nextFiber);
 
-          return data;
-        }
-
-      default:
-        return null;
+    if (
+      type !== ElementTypeClass &&
+      type !== ElementTypeFunction &&
+      type !== ElementTypeMemo &&
+      type !== ElementTypeForwardRef
+    ) {
+      return null;
     }
+
+    const { _debugHookTypes } = nextFiber;
+    const isElementTypeClass = prevFiber.stateNode !== null;
+    const data: TransferChangeDescription = {
+      props: getChangedKeys(prevFiber.memoizedProps, nextFiber.memoizedProps),
+      ...(isElementTypeClass
+        ? {
+            // Class component
+            context: getContextChangedKeys(nextFiber),
+            state: getChangedKeys(
+              prevFiber.memoizedState,
+              nextFiber.memoizedState
+            ),
+          }
+        : {
+            // Functional component
+            hooks: getChangedHooks(
+              prevFiber.memoizedState,
+              nextFiber.memoizedState,
+              _debugHookTypes || []
+            ),
+          }),
+    };
+
+    return data;
   }
 
   function updateContextsForFiber(fiber: Fiber) {
@@ -240,8 +229,12 @@ export function createReactDevtoolsHookHandlers(
     const indices = [];
     let index = 0;
 
-    // contexts are treating aside by "dependencies" property on fiber
-    hookNames = hookNames.filter(name => name !== "useContext");
+    // Contexts are treating aside by "dependencies" property on fiber.
+    // useDebugValue hook has no memoizated state. So exclude both of hook types
+    // from the list for correct hook state matching.
+    hookNames = hookNames.filter(
+      name => name !== "useContext" && name !== "useDebugValue"
+    );
 
     while (next !== null) {
       const effect =
@@ -621,12 +614,14 @@ export function createReactDevtoolsHookHandlers(
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
       const elementId = getFiberIdThrows(fiber);
+      const ownerId = idToOwnerId.get(elementId);
 
       recordEvent({
         op: "rerender",
         commitId: currentCommitId,
         elementId,
         ...getDurations(fiber),
+        ownerUpdate: commitRenderedOwnerIds.has(ownerId || 0),
         changes: getChangeDescription(alternate, fiber),
       });
 

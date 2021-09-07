@@ -99,7 +99,7 @@ const EventListItem = ({
           </span>
         </td>
         <td className="event-list-item__details">
-          {event.op === "rerender" && !event.changes?.ownerUpdate && (
+          {event.op === "rerender" && !event.ownerUpdate && (
             <span
               className="event-list-item__update-trigger"
               title={"Update trigger"}
