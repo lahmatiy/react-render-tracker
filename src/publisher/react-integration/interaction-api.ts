@@ -14,8 +14,8 @@ const UNMOUNTED = 3;
 export function createReactInteractionApi({
   ReactTypeOfSideEffect,
   ReactTypeOfWork,
-  getFiberIDThrows,
-  getFiberByID,
+  getFiberIdThrows,
+  getFiberById,
   getElementTypeForFiber,
   getDisplayNameForFiber,
   getRootPseudoKey,
@@ -87,7 +87,7 @@ export function createReactInteractionApi({
   }
 
   function getDisplayNameForFiberID(id: number) {
-    const fiber = getFiberByID(id);
+    const fiber = getFiberById(id);
     return fiber !== null ? getDisplayNameForFiber(fiber) : null;
   }
 
@@ -107,7 +107,7 @@ export function createReactInteractionApi({
       }
     }
 
-    return fiber && getFiberIDThrows(fiber);
+    return fiber && getFiberIdThrows(fiber);
   }
 
   // This function is copied from React and should be kept in sync:
@@ -178,7 +178,7 @@ export function createReactInteractionApi({
   // It would be nice if we updated React to inject this function directly (vs just indirectly via findDOMNode).
   // BEGIN copied code
   function findCurrentFiberUsingSlowPathById(id: number) {
-    const fiber = getFiberByID(id);
+    const fiber = getFiberById(id);
 
     if (fiber === null) {
       console.warn(`Could not find Fiber with id "${id}"`);
@@ -351,7 +351,7 @@ export function createReactInteractionApi({
   function fiberToSerializedElement(fiber: Fiber): SerializedElement {
     return {
       displayName: getDisplayNameForFiber(fiber) || "Anonymous",
-      id: getFiberIDThrows(fiber),
+      id: getFiberIdThrows(fiber),
       key: fiber.key,
       type: getElementTypeForFiber(fiber),
     };
@@ -387,7 +387,7 @@ export function createReactInteractionApi({
       case HostRoot:
         // Roots don't have a real displayName, index, or key.
         // Instead, we'll use the pseudo key (childDisplayName:indexWithThatName).
-        const id = getFiberIDThrows(fiber);
+        const id = getFiberIdThrows(fiber);
         const pseudoKey = getRootPseudoKey(id);
 
         if (pseudoKey === null) {
@@ -413,7 +413,7 @@ export function createReactInteractionApi({
   // The return path will contain Fibers that are "invisible" to the store
   // because their keys and indexes are important to restoring the selection.
   function getPathForElement(id: number) {
-    let fiber = getFiberByID(id);
+    let fiber = getFiberById(id);
 
     if (fiber === null) {
       return null;

@@ -53,7 +53,7 @@ export function createReactDevtoolsHookHandlers(
   // } = ReactPriorityLevels;
 
   const idToOwnerId = new Map<number, number>();
-  const idToContextsMap = new Map<number, ContextDescriptor>();
+  const idToContexts = new Map<number, ContextDescriptor>();
   const commitRenderedOwnerIds = new Set<number>();
   let currentRootId = -1;
   let currentCommitId = -1;
@@ -151,7 +151,7 @@ export function createReactDevtoolsHookHandlers(
       const contexts = getContextsForFiber(fiber);
 
       if (contexts !== null) {
-        idToContextsMap.set(id, contexts);
+        idToContexts.set(id, contexts);
       }
     }
   }
@@ -164,7 +164,7 @@ export function createReactDevtoolsHookHandlers(
     const instance = fiber.stateNode || null;
 
     if (instance !== null) {
-      if (instance.constructor && instance.constructor.contextType != null) {
+      if (instance.constructor?.contextType) {
         return {
           legacy: false,
           value: instance.context,
@@ -187,7 +187,7 @@ export function createReactDevtoolsHookHandlers(
   function getContextChangedKeys(fiber: Fiber) {
     if (getElementTypeForFiber(fiber) === ElementTypeClass) {
       const id = getFiberIdThrows(fiber);
-      const prevContext = idToContextsMap.get(id) || null;
+      const prevContext = idToContexts.get(id) || null;
       const nextContext = getContextsForFiber(fiber);
 
       if (prevContext !== null && nextContext !== null) {
@@ -379,10 +379,7 @@ export function createReactDevtoolsHookHandlers(
       ...getDurations(fiber),
     });
 
-    const isProfilingSupported = fiber.hasOwnProperty("treeBaseDuration");
-    if (isProfilingSupported) {
-      updateContextsForFiber(fiber);
-    }
+    updateContextsForFiber(fiber);
   }
 
   function recordUnmount(id: number) {
@@ -478,6 +475,7 @@ export function createReactDevtoolsHookHandlers(
 
     if (!fiber._debugNeedsRemount) {
       idToOwnerId.delete(id);
+      idToContexts.delete(id);
       untrackFiber(fiber);
     }
   }
@@ -485,23 +483,23 @@ export function createReactDevtoolsHookHandlers(
   function mountFiberRecursively(
     firstChild: Fiber | null,
     parentFiber: Fiber | null,
-    traverseSiblings: boolean,
-    traceNearestHostComponentUpdate: boolean
+    traverseSiblings: boolean
   ) {
     // Iterate over siblings rather than recursing.
     // This reduces the chance of stack overflow for wide trees (e.g. lists with many items).
     let fiber = firstChild;
 
     while (fiber !== null) {
+      const shouldIncludeInTree = !shouldFilterFiber(fiber);
+      const isSuspense = fiber.tag === SuspenseComponent;
+
       // Generate an ID even for filtered Fibers, in case it's needed later (e.g. for Profiling).
       getOrGenerateFiberId(fiber);
 
-      const shouldIncludeInTree = !shouldFilterFiber(fiber);
       if (shouldIncludeInTree) {
         recordMount(fiber, parentFiber);
       }
 
-      const isSuspense = fiber.tag === SuspenseComponent;
       if (isSuspense) {
         const isTimedOut = fiber.memoizedState !== null;
 
@@ -510,19 +508,14 @@ export function createReactDevtoolsHookHandlers(
           // get the fallback child from the inner fragment and mount
           // it as if it was our own child. Updates handle this too.
           const primaryChildFragment = fiber.child;
-          const fallbackChildFragment = primaryChildFragment
-            ? primaryChildFragment.sibling
-            : null;
-          const fallbackChild = fallbackChildFragment
-            ? fallbackChildFragment.child
-            : null;
+          const fallbackChildFragment = primaryChildFragment?.sibling;
+          const fallbackChild = fallbackChildFragment?.child || null;
 
           if (fallbackChild !== null) {
             mountFiberRecursively(
               fallbackChild,
               shouldIncludeInTree ? fiber : parentFiber,
-              true,
-              traceNearestHostComponentUpdate
+              true
             );
           }
         } else {
@@ -540,8 +533,7 @@ export function createReactDevtoolsHookHandlers(
             mountFiberRecursively(
               primaryChild,
               shouldIncludeInTree ? fiber : parentFiber,
-              true,
-              traceNearestHostComponentUpdate
+              true
             );
           }
         }
@@ -550,8 +542,7 @@ export function createReactDevtoolsHookHandlers(
           mountFiberRecursively(
             fiber.child,
             shouldIncludeInTree ? fiber : parentFiber,
-            true,
-            traceNearestHostComponentUpdate
+            true
           );
         }
       }
@@ -635,8 +626,7 @@ export function createReactDevtoolsHookHandlers(
   function updateFiberRecursively(
     nextFiber: Fiber,
     prevFiber: Fiber,
-    parentFiber: Fiber | null,
-    traceNearestHostComponentUpdate: boolean
+    parentFiber: Fiber | null
   ) {
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
@@ -664,23 +654,16 @@ export function createReactDevtoolsHookHandlers(
     if (prevDidTimeout && nextDidTimeOut) {
       // Fallback -> Fallback:
       // 1. Reconcile fallback set.
-      const nextFiberChild = nextFiber.child;
-      const nextFallbackChildSet = nextFiberChild
-        ? nextFiberChild.sibling
-        : null;
+      const nextFallbackChildSet = nextFiber.child?.sibling || null;
       // Note: We can't use nextFiber.child.sibling.alternate
       // because the set is special and alternate may not exist.
-      const prevFiberChild = prevFiber.child;
-      const prevFallbackChildSet = prevFiberChild
-        ? prevFiberChild.sibling
-        : null;
+      const prevFallbackChildSet = prevFiber.child?.sibling || null;
 
-      if (nextFallbackChildSet != null && prevFallbackChildSet != null) {
+      if (nextFallbackChildSet !== null && prevFallbackChildSet !== null) {
         updateFiberRecursively(
           nextFallbackChildSet,
           prevFallbackChildSet,
-          nextFiber,
-          traceNearestHostComponentUpdate
+          nextFiber
         );
       }
     } else if (prevDidTimeout && !nextDidTimeOut) {
@@ -694,8 +677,7 @@ export function createReactDevtoolsHookHandlers(
         mountFiberRecursively(
           nextPrimaryChildSet,
           shouldIncludeInTree ? nextFiber : parentFiber,
-          true,
-          traceNearestHostComponentUpdate
+          true
         );
       }
     } else if (!prevDidTimeout && nextDidTimeOut) {
@@ -706,17 +688,13 @@ export function createReactDevtoolsHookHandlers(
       unmountFiberChildrenRecursively(prevFiber);
 
       // 2. Mount fallback set
-      const nextFiberChild = nextFiber.child;
-      const nextFallbackChildSet = nextFiberChild
-        ? nextFiberChild.sibling
-        : null;
+      const nextFallbackChildSet = nextFiber.child?.sibling || null;
 
-      if (nextFallbackChildSet != null) {
+      if (nextFallbackChildSet !== null) {
         mountFiberRecursively(
           nextFallbackChildSet,
           shouldIncludeInTree ? nextFiber : parentFiber,
-          true,
-          traceNearestHostComponentUpdate
+          true
         );
       }
     } else {
@@ -738,15 +716,13 @@ export function createReactDevtoolsHookHandlers(
             updateFiberRecursively(
               nextChild,
               prevChild,
-              shouldIncludeInTree ? nextFiber : parentFiber,
-              traceNearestHostComponentUpdate
+              shouldIncludeInTree ? nextFiber : parentFiber
             );
           } else {
             mountFiberRecursively(
               nextChild,
               shouldIncludeInTree ? nextFiber : parentFiber,
-              false,
-              traceNearestHostComponentUpdate
+              false
             );
           }
 
@@ -815,10 +791,10 @@ export function createReactDevtoolsHookHandlers(
     if (!wasMounted && isMounted) {
       // Mount a new root.
       setRootPseudoKey(currentRootId, current);
-      mountFiberRecursively(current, null, false, false);
+      mountFiberRecursively(current, null, false);
     } else if (wasMounted && isMounted) {
       // Update an existing root.
-      updateFiberRecursively(current, alternate, null, false);
+      updateFiberRecursively(current, alternate, null);
     } else if (wasMounted && !isMounted) {
       // Unmount an existing root.
       removeRootPseudoKey(currentRootId);
