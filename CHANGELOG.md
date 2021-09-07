@@ -9,6 +9,7 @@
 - Changed parent update -> owner update and improved its displaying in event log
 - Redesigned the type of events in the event log, added commit boundaries
 - Improved display name generation for anonymous components by adding an index number to distinguish instances of different components
+- Added displaying component's key if any
 
 ## 0.2.0 (August 27, 2021)
 

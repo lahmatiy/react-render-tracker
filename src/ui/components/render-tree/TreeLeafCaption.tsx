@@ -1,5 +1,6 @@
 import * as React from "react";
 import ElementId from "../common/ElementId";
+import ElementKey from "../common/ElementKey";
 import ButtonExpand from "./ButtonExpand";
 import ElementHocNames from "./ComponentHocNames";
 import { MessageElement } from "../../types";
@@ -87,6 +88,7 @@ const TreeLeafCaptionInner = React.memo(
   }: TreeLeafCaptionInnerProps) => {
     const {
       id,
+      key,
       ownerId,
       displayName,
       hocDisplayNames,
@@ -138,10 +140,13 @@ const TreeLeafCaptionInner = React.memo(
           <span className="tree-leaf-caption__name">
             {name || (!ownerId && "Render root") || "Unknown"}
           </span>
+          {key !== null && <ElementKey value={key} />}
           <ElementId id={id} />
           {hocDisplayNames && <ElementHocNames names={hocDisplayNames} />}
           {rerendersCount > 0 && (
-            <span className="tree-leaf-caption__count">{rerendersCount}</span>
+            <span className="tree-leaf-caption__update-count">
+              {rerendersCount}
+            </span>
           )}
         </div>
       </div>

@@ -5,7 +5,7 @@ interface ElementIdProps {
 }
 
 const ElementId = ({ id }: ElementIdProps) => {
-  return <span className="tree-element__id">#{id}</span>;
+  return <span className="element-id">#{id}</span>;
 };
 
 export default ElementId;

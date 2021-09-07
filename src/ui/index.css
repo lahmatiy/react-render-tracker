@@ -1,6 +1,7 @@
 @import url("./App.css");
 @import url("./components/common/ButtonToggle.css");
 @import url("./components/common/ElementId.css");
+@import url("./components/common/ElementKey.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventList.css");
 @import url("./components/details/EventListItem.css");

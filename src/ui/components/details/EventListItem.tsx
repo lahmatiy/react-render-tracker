@@ -3,6 +3,7 @@ import * as React from "react";
 import EventRenderReasons from "./EventRenderReasons";
 import ElementId from "../common/ElementId";
 import { Event, MessageElement } from "../../types";
+import ElementKey from "../common/ElementKey";
 
 interface EventListItemProps {
   component: MessageElement;
@@ -113,6 +114,7 @@ const EventListItem = ({
             {component.displayName ||
               (!component.ownerId ? "Render root" : "Unknown")}
           </span>
+          {component.key !== null && <ElementKey value={component.key} />}
           <ElementId id={component.id} />{" "}
           {changes.length > 0 && (
             <span

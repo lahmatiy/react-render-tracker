@@ -4,10 +4,11 @@
   color: white;
 }
 .component-hoc-name {
-  background: #d0eac6;
-  border-radius: 3px;
-  color: #6c9c1e;
   padding: 1px 4px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+  background: #d0eac6;
+  color: #6c9c1e;
 }
 .component-hoc-name + .component-hoc-name {
   margin-left: 2px;

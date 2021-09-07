@@ -8,7 +8,6 @@
   font-size: 12px;
   line-height: 20px;
   background-color: white;
-  color: var(--primary);
   cursor: pointer;
 }
 
@@ -87,9 +86,10 @@
 
 .tree-leaf-caption__name {
   margin-left: 17px;
+  color: var(--primary);
 }
 
-.tree-leaf-caption__count {
+.tree-leaf-caption__update-count {
   display: inline-block;
   margin-left: 4px;
   padding: 2px 4px 1px;
@@ -98,6 +98,7 @@
   min-width: 16px;
   background: #eaeac7;
   border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
   color: #949c35;
   text-align: center;
 }
