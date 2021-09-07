@@ -12,7 +12,11 @@ export default function ComponentHocNames({ names }: ComponentHocNamesProps) {
   return (
     <span className="component-hoc-names">
       {names.map(name => (
-        <span key={name} className="component-hoc-name">
+        <span
+          key={name}
+          className="component-hoc-name"
+          title="High Order Component (HOC)"
+        >
           {name}
         </span>
       ))}

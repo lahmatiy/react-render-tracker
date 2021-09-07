@@ -140,11 +140,14 @@ const TreeLeafCaptionInner = React.memo(
           <span className="tree-leaf-caption__name">
             {name || (!ownerId && "Render root") || "Unknown"}
           </span>
-          {key !== null && <ElementKey value={key} />}
+          {key !== null && <ElementKey component={component} />}
           <ElementId id={id} />
           {hocDisplayNames && <ElementHocNames names={hocDisplayNames} />}
           {rerendersCount > 0 && (
-            <span className="tree-leaf-caption__update-count">
+            <span
+              className="tree-leaf-caption__update-count"
+              title="Number of updates (re-renders)"
+            >
               {rerendersCount}
             </span>
           )}

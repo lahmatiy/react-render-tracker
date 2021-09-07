@@ -92,12 +92,12 @@
 .tree-leaf-caption__update-count {
   display: inline-block;
   margin-left: 4px;
-  padding: 2px 4px 1px;
+  padding: 3px 4px 2.3px;
   font-size: 10px;
   line-height: 10px;
   min-width: 16px;
   background: #eaeac7;
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
   color: #949c35;
   text-align: center;

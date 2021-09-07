@@ -114,7 +114,7 @@ const EventListItem = ({
             {component.displayName ||
               (!component.ownerId ? "Render root" : "Unknown")}
           </span>
-          {component.key !== null && <ElementKey value={component.key} />}
+          {component.key !== null && <ElementKey component={component} />}
           <ElementId id={component.id} />{" "}
           {changes.length > 0 && (
             <span
