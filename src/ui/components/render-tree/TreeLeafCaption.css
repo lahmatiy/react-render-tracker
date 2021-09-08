@@ -1,7 +1,7 @@
 .tree-leaf-caption {
   --padding-time: 2px 4px 1px;
   --padding-main: 1px 5px;
-  --no-timing-padding: 0;
+  --no-timing-padding: 0px;
 
   display: flex;
   box-sizing: border-box;
