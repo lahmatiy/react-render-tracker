@@ -140,7 +140,7 @@ export function createReactDevtoolsHookHandlers(
         : {
             // Functional component
             context: getFunctionContextChangedKeys(nextFiber),
-            hooks: getChangedHooks(
+            state: getChangedHooksState(
               prevFiber.memoizedState,
               nextFiber.memoizedState,
               _debugHookTypes || []
@@ -224,7 +224,7 @@ export function createReactDevtoolsHookHandlers(
       }
     }
 
-    return null;
+    return;
   }
 
   function getContextsForFunctionFiber(fiber: Fiber): HookContexts | null {
@@ -269,36 +269,19 @@ export function createReactDevtoolsHookHandlers(
       }
     }
 
-    return null;
+    return;
   }
 
-  function isEffect(memoizedState: MemoizedState) {
-    if (typeof memoizedState !== "object" || memoizedState === null) {
-      return false;
-    }
-
-    const { deps } = memoizedState;
-
-    return (
-      hasOwnProperty.call(memoizedState, "create") &&
-      hasOwnProperty.call(memoizedState, "destroy") &&
-      hasOwnProperty.call(memoizedState, "deps") &&
-      hasOwnProperty.call(memoizedState, "next") &&
-      hasOwnProperty.call(memoizedState, "tag") &&
-      (deps === null || Array.isArray(deps))
-    );
-  }
-
-  function getChangedHooks(
+  function getChangedHooksState(
     prev: MemoizedState = null,
     next: MemoizedState = null,
     hookNames: string[]
   ) {
     if (prev === null || next === null) {
-      return null;
+      return undefined;
     }
 
-    const indices = [];
+    const changes = [];
     let index = 0;
 
     // Contexts are treating aside by "dependencies" property on fiber.
@@ -309,34 +292,20 @@ export function createReactDevtoolsHookHandlers(
     );
 
     while (next !== null) {
-      const effect =
-        isEffect(prev.memoizedState) && isEffect(next.memoizedState);
-      const changed = prev.memoizedState !== next.memoizedState;
-
-      if (effect) {
-        // TODO: use computed in separate changes property
-        // const computed =
-        // !prev.memoizedState ||
-        // getChangedInputsIndecies(
-        //   prev.memoizedState.deps,
-        //   next.memoizedState.deps
-        // );
-
-        if (changed) {
-          indices.push({
+      // We only interested in useState/useReducer hooks, since only these
+      // hooks can be a trigger for an update. Such hooks have a special
+      // signature in the form of the presence of the "queue" property.
+      // So filter hooks by this attribute. With hookNames can distinguish
+      // these hooks.
+      if (next.queue) {
+        if (prev.memoizedState !== next.memoizedState) {
+          changes.push({
             index,
             name: hookNames[index],
             prev: simpleValueSerialization(prev.memoizedState),
             next: simpleValueSerialization(next.memoizedState),
           });
         }
-      } else if (changed) {
-        indices.push({
-          index,
-          name: hookNames[index],
-          prev: simpleValueSerialization(prev.memoizedState),
-          next: simpleValueSerialization(next.memoizedState),
-        });
       }
 
       next = next.next;
@@ -344,7 +313,7 @@ export function createReactDevtoolsHookHandlers(
       index++;
     }
 
-    return indices.length > 0 ? indices : null;
+    return changes.length > 0 ? changes : undefined;
   }
 
   function simpleValueSerialization(value: any) {
@@ -387,7 +356,7 @@ export function createReactDevtoolsHookHandlers(
 
   function getChangedKeys(prev: MemoizedState, next: MemoizedState) {
     if (prev == null || next == null) {
-      return null;
+      return undefined;
     }
 
     const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
@@ -402,7 +371,7 @@ export function createReactDevtoolsHookHandlers(
       }
     }
 
-    return changedKeys.length > 0 ? changedKeys : null;
+    return changedKeys.length > 0 ? changedKeys : undefined;
   }
 
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {

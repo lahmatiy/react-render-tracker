@@ -15,16 +15,16 @@ declare module "common-types" {
   };
 
   export type TransferChangeDescription = {
-    props: Array<{ name: string; prev: string; next: string }> | null;
-    state?: Array<{ name: string; prev: string; next: string }> | null;
-    context?: Array<{ name: string; prev: string; next: string }> | null;
+    props?: Array<{ name: string; prev: string; next: string }>;
+    state?: Array<{ name: string; prev: string; next: string }>;
+    context?: Array<{ name: string; prev: string; next: string }>;
     hooks?: Array<{
       index: number;
       name: string;
       prev: string;
       next: string;
       // computed?: boolean;
-    }> | null;
+    }>;
   };
 
   export interface BaseMessage {

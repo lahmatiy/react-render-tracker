@@ -19,14 +19,14 @@ const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
             {changes.props && (
               <EventRenderReasonsItem data={changes.props} type="prop" />
             )}
+            {changes.context && (
+              <EventRenderReasonsItem data={changes.context} type="context" />
+            )}
             {changes.state && (
               <EventRenderReasonsItem data={changes.state} type="state" />
             )}
             {changes.hooks && (
               <EventRenderReasonsItem data={changes.hooks} type="hook" />
-            )}
-            {changes.context && (
-              <EventRenderReasonsItem data={changes.context} type="context" />
             )}
           </tbody>
         </table>

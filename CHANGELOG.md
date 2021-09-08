@@ -12,6 +12,7 @@
 - Added displaying component's key if any
 - Added tracking for functional component's context changes
 - Added displaying for context changes in event log
+- Changed hooks changes tracking to handle only state related, i.e. useState()/useDispatcher()
 
 ## 0.2.0 (August 27, 2021)
 

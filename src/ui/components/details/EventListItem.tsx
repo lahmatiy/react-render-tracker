@@ -19,29 +19,30 @@ const opTooltip: Record<Event["op"], string> = {
 };
 
 function getChanges(event: Event) {
-  const reasons: string[] = [];
-
-  if (event.op === "rerender") {
-    const { context, hooks, props, state } = event.changes || {};
-
-    if (context) {
-      reasons.push("context");
-    }
-
-    if (state) {
-      reasons.push("state");
-    }
-
-    if (props) {
-      reasons.push("props");
-    }
-
-    if (hooks) {
-      reasons.push("hooks");
-    }
+  if (event.op !== "rerender" || event.changes === null) {
+    return null;
   }
 
-  return reasons;
+  const reasons: string[] = [];
+  const { context, hooks, props, state } = event.changes;
+
+  if (context) {
+    reasons.push("context");
+  }
+
+  if (state) {
+    reasons.push("state");
+  }
+
+  if (props) {
+    reasons.push("props");
+  }
+
+  if (hooks) {
+    reasons.push("hooks");
+  }
+
+  return reasons.length > 0 ? reasons : null;
 }
 
 function formatDuration(duration: number) {
@@ -68,6 +69,8 @@ const EventListItem = ({
 }: EventListItemProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
   const changes = getChanges(event);
+  const isUpdateTrigger =
+    changes !== null && (changes.length > 1 || changes[0] !== "props");
 
   return (
     <>
@@ -99,7 +102,7 @@ const EventListItem = ({
           </span>
         </td>
         <td className="event-list-item__main">
-          {event.op === "rerender" && !event.ownerUpdate && (
+          {event.op === "rerender" && isUpdateTrigger && (
             <span
               className="event-list-item__update-trigger"
               title={"Update trigger"}
@@ -116,7 +119,7 @@ const EventListItem = ({
           </span>
           {component.key !== null && <ElementKey component={component} />}
           <ElementId id={component.id} />{" "}
-          {changes.length > 0 && (
+          {changes !== null && (
             <span
               className={
                 "event-list-item__changes" + (expanded ? " expanded" : "")
