@@ -10,7 +10,8 @@ export interface TreeElementProps {
 
 const TreeElement = React.memo(
   ({ componentId, depth = 0 }: TreeElementProps) => {
-    const { groupByParent, showUnmounted } = useViewSettingsContext();
+    const { groupByParent, showUnmounted, showTimings } =
+      useViewSettingsContext();
     const component = useComponent(componentId);
     const children = useComponentChildren(
       componentId,
@@ -31,6 +32,7 @@ const TreeElement = React.memo(
           component={component}
           expanded={expanded}
           setExpanded={hasChildren ? setExpanded : undefined}
+          showTimings={showTimings}
         />
 
         {expanded &&

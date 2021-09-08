@@ -13,6 +13,7 @@
 - Added displaying for context changes in event log
 - Changed hooks changes tracking to handle only state related, i.e. useState()/useDispatcher()
 - Replaced "parent update" marker with update trigger marker
+- Added toggle for showing timings, by default timings are hidden as they are not that useful yet
 
 ## 0.2.0 (August 27, 2021)
 

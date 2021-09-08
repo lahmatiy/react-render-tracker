@@ -7,18 +7,21 @@ const Tree = ({
   rootId = 0,
   groupByParent = false,
   showUnmounted = true,
+  showTimings = false,
 }: {
   rootId: number;
-  groupByParent: boolean;
-  showUnmounted: boolean;
+  groupByParent?: boolean;
+  showUnmounted?: boolean;
+  showTimings?: boolean;
 }) => {
   const children = useComponentChildren(rootId, groupByParent, showUnmounted);
   const viewSettings = React.useMemo<ViewSettings>(
     () => ({
       groupByParent,
       showUnmounted,
+      showTimings,
     }),
-    [groupByParent, showUnmounted]
+    [groupByParent, showUnmounted, showTimings]
   );
 
   return (

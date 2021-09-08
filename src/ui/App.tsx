@@ -14,6 +14,7 @@ function App() {
   const [filterPattern, setFilterPattern] = React.useState("");
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
+  const [showTimings, setShowTimings] = React.useState(false);
 
   return (
     <EventsContextProvider>
@@ -31,6 +32,8 @@ function App() {
                 groupByParent={groupByParent}
                 onShowUnmounted={setShowUnmounted}
                 showUnmounted={showUnmounted}
+                onShowTimings={setShowTimings}
+                showTimings={showTimings}
               />
 
               <FindMatchContextProvider pattern={filterPattern}>
@@ -38,6 +41,7 @@ function App() {
                   rootId={0}
                   groupByParent={groupByParent}
                   showUnmounted={showUnmounted}
+                  showTimings={showTimings}
                 />
               </FindMatchContextProvider>
 
@@ -46,6 +50,7 @@ function App() {
                   componentId={selectedId}
                   groupByParent={groupByParent}
                   showUnmounted={showUnmounted}
+                  showTimings={showTimings}
                 />
               )}
               <StatusBar />

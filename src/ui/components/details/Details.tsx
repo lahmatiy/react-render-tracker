@@ -10,12 +10,14 @@ interface DetailsProps {
   componentId: number;
   groupByParent: boolean;
   showUnmounted: boolean;
+  showTimings: boolean;
 }
 
 const Details = ({
   componentId,
-  groupByParent,
-  showUnmounted,
+  groupByParent = false,
+  showUnmounted = true,
+  showTimings = false,
 }: DetailsProps) => {
   const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
   const component = useComponent(componentId);
@@ -64,6 +66,7 @@ const Details = ({
             showSubtreeEvents,
           ].join("-")}
           events={events}
+          showTimings={showTimings}
         />
       )}
     </div>

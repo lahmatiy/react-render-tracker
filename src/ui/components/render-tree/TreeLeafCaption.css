@@ -1,6 +1,7 @@
 .tree-leaf-caption {
   --padding-time: 2px 4px 1px;
   --padding-main: 1px 5px;
+  --no-timing-padding: 0;
 
   display: flex;
   box-sizing: border-box;
@@ -11,6 +12,9 @@
   cursor: pointer;
 }
 
+.tree-leaf-caption.no-timings {
+  --no-timing-padding: 2px;
+}
 .tree-leaf-caption.no-events {
   color: #90bce5;
 }
@@ -75,7 +79,7 @@
 .tree-leaf-caption__main {
   flex: 1;
   padding: var(--padding-main);
-  padding-left: calc(var(--depth, 0) * 15px);
+  padding-left: calc(var(--depth, 0) * 15px + var(--no-timing-padding));
 }
 
 .tree-leaf-caption .highlight {

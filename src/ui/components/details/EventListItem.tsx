@@ -1,13 +1,14 @@
 import * as React from "react";
-// import dateFormat from "dateformat";
 import EventRenderReasons from "./EventRenderReasons";
 import ElementId from "../common/ElementId";
 import { Event, MessageElement } from "../../types";
 import ElementKey from "../common/ElementKey";
+import { formatDuration } from "../../utils/duration";
 
 interface EventListItemProps {
   component: MessageElement;
   event: Event;
+  showTimings: boolean;
   prevConjunction: boolean;
   nextConjunction: boolean;
 }
@@ -45,25 +46,10 @@ function getChanges(event: Event) {
   return reasons.length > 0 ? reasons : null;
 }
 
-function formatDuration(duration: number) {
-  let unit = "ms";
-
-  if (duration >= 100) {
-    duration /= 1000;
-    unit = "s";
-  }
-
-  if (duration >= 100) {
-    duration /= 60;
-    unit = "m";
-  }
-
-  return duration.toFixed(1) + unit;
-}
-
 const EventListItem = ({
   component,
   event,
+  showTimings,
   prevConjunction,
   nextConjunction,
 }: EventListItemProps) => {
@@ -75,19 +61,18 @@ const EventListItem = ({
   return (
     <>
       <tr className="event-list-item">
-        <td className="event-list-item__time" title="Self time">
-          {(event.op === "mount" || event.op === "rerender") &&
-            formatDuration(event.selfTime)}
-        </td>
-        <td className="event-list-item__time" title="Total time">
-          {(event.op === "mount" || event.op === "rerender") &&
-            formatDuration(event.totalTime)}
-        </td>
-        {/* <td className="event-list-item__timestamp">
-          <span className="event-list-item__timestamp-label">
-            {dateFormat(Number(event.timestamp), "HH:MM:ss.l")}
-          </span>
-        </td> */}
+        {showTimings && (
+          <>
+            <td className="event-list-item__time" title="Self time">
+              {(event.op === "mount" || event.op === "rerender") &&
+                formatDuration(event.selfTime)}
+            </td>
+            <td className="event-list-item__time" title="Total time">
+              {(event.op === "mount" || event.op === "rerender") &&
+                formatDuration(event.totalTime)}
+            </td>
+          </>
+        )}
         <td className="event-list-item__dots">
           <span
             className={

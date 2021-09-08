@@ -4,29 +4,34 @@ import {
   ToggleGrouping,
   ToggleUnmounted,
   ClearEventLog,
+  ToggleTimings,
 } from "../common/icons";
 
 import ComponentFilter from "./ComponentFilter";
 import ButtonToggle from "../common/ButtonToggle";
 import { useEventsContext } from "../../utils/events";
 
-type BolleanToggle = (fn: (state: boolean) => boolean) => void;
+type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
   onFilterPatternChange: (pattern: string) => void;
   filterPattern: string;
+  onGroupingChange: BooleanToggle;
   groupByParent: boolean;
-  onGroupingChange: BolleanToggle;
-  onShowUnmounted: BolleanToggle;
+  onShowUnmounted: BooleanToggle;
   showUnmounted: boolean;
+  onShowTimings: BooleanToggle;
+  showTimings: boolean;
 }
 
 const Toolbar = ({
   onFilterPatternChange,
   filterPattern,
-  groupByParent,
   onGroupingChange,
+  groupByParent,
   onShowUnmounted,
   showUnmounted,
+  onShowTimings,
+  showTimings,
 }: ToolbarProps) => {
   const { clearAllEvents } = useEventsContext();
 
@@ -52,6 +57,12 @@ const Toolbar = ({
             ? "Hide unmounted components"
             : "Show unmounted components"
         }
+      />
+      <ButtonToggle
+        icon={ToggleTimings}
+        isActive={showTimings}
+        onChange={onShowTimings}
+        tooltip={showTimings ? "Hide timings" : "Show timings"}
       />
       <ButtonToggle
         icon={ClearEventLog}

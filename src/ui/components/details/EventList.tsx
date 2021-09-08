@@ -4,11 +4,12 @@ import EventListItem from "./EventListItem";
 
 interface EventListProps {
   events: ReturnType<typeof useEventLog>;
+  showTimings: boolean;
 }
 
 const SECTION_SIZE = 50;
 const SECTION_MIN_SIZE = 10;
-const EventList = ({ events }: EventListProps) => {
+const EventList = ({ events, showTimings }: EventListProps) => {
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, events.length - SECTION_SIZE);
     return offset < SECTION_MIN_SIZE ? 0 : offset;
@@ -33,6 +34,7 @@ const EventList = ({ events }: EventListProps) => {
         key={event.id}
         component={component}
         event={event}
+        showTimings={showTimings}
         prevConjunction={
           event.commitId !== -1 && event.commitId === prevCommitId
         }
