@@ -8,7 +8,7 @@ React render tracker – a tool to discover performance issues related to uninte
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished. The initial plan can be found [here](https://github.com/lahmatiy/react-render-tracker/issues/6). Feel free to create an issue if you found a bug or have an idea.
 
-![image](https://user-images.githubusercontent.com/270491/132214961-ebe3198d-c8f5-4d08-9c6d-4cf881507ef7.png)
+![Demo](https://user-images.githubusercontent.com/270491/132439005-2525b8a6-c9f4-4171-b37a-39b0f3ed666c.png)
 
 Features:
 
