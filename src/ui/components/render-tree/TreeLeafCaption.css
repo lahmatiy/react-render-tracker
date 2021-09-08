@@ -15,9 +15,6 @@
 .tree-leaf-caption.no-timings {
   --no-timing-padding: 2px;
 }
-.tree-leaf-caption.no-events {
-  color: #90bce5;
-}
 
 .tree-leaf-caption.render-root {
   --padding-time: 1px 4px 0px;
@@ -30,9 +27,6 @@
   background-color: #f4f4f4;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
-}
-.tree-leaf-caption.render-root .tree-leaf-caption__name {
-  color: #666;
 }
 .tree-leaf:first-child .tree-leaf-caption.render-root + div {
   margin-top: 1px;
@@ -49,13 +43,6 @@
 }
 .tree-leaf-caption.selected.render-root {
   background-color: #deebf7;
-}
-.tree-leaf-caption.unmounted .tree-leaf-caption__name {
-  color: var(--text-muted);
-  text-decoration: line-through;
-  text-decoration-color: #888;
-  transition: 0.25s;
-  transition-property: color;
 }
 
 .tree-leaf-caption__timings {
@@ -91,6 +78,19 @@
 .tree-leaf-caption__name {
   margin-left: 17px;
   color: var(--primary);
+}
+.tree-leaf-caption.no-events .tree-leaf-caption__name {
+  color: #90bce5;
+}
+.tree-leaf-caption.render-root .tree-leaf-caption__name {
+  color: #666;
+}
+.tree-leaf-caption.unmounted .tree-leaf-caption__name {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: #888;
+  transition: 0.25s;
+  transition-property: color;
 }
 
 .tree-leaf-caption__update-count {
