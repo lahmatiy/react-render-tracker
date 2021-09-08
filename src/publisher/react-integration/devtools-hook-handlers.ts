@@ -58,7 +58,6 @@ export function createReactDevtoolsHookHandlers(
   const idToOwnerId = new Map<number, number>();
   const idToClassContexts = new Map<number, ContextDescriptor>();
   const idToFunctionContexts = new Map<number, HookContexts>();
-  const commitRenderedOwnerIds = new Set<number>();
   const commitContextValue = new Map();
   let currentRootId = -1;
   let currentCommitId = -1;
@@ -660,18 +659,15 @@ export function createReactDevtoolsHookHandlers(
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
       const elementId = getFiberIdThrows(fiber);
-      const ownerId = idToOwnerId.get(elementId);
 
       recordEvent({
         op: "rerender",
         commitId: currentCommitId,
         elementId,
         ...getDurations(fiber),
-        ownerUpdate: commitRenderedOwnerIds.has(ownerId || 0),
         changes: getChangeDescription(alternate, fiber),
       });
 
-      commitRenderedOwnerIds.add(elementId);
       updateContextsForFiber(fiber);
     }
   }
@@ -875,7 +871,6 @@ export function createReactDevtoolsHookHandlers(
 
     // We're done here
     currentCommitId = -1;
-    commitRenderedOwnerIds.clear();
     commitContextValue.clear();
     unmountedFiberIds.clear();
     unmountedFiberIdsByOwnerId.clear();

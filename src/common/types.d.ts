@@ -50,7 +50,6 @@ declare module "common-types" {
     op: "rerender";
     totalTime: number;
     selfTime: number;
-    ownerUpdate: boolean;
     changes: TransferChangeDescription | null;
   }
 

@@ -6,13 +6,13 @@
 - Changed simple value serialization to distinguish an empty object/array with non-empty
 - Added simple value changes description for hooks
 - Fixed an order of events in the way React performs them
-- Changed parent update -> owner update and improved its displaying in event log
 - Redesigned the type of events in the event log, added commit boundaries
 - Improved display name generation for anonymous components by adding an index number to distinguish instances of different components
 - Added displaying component's key if any
 - Added tracking for functional component's context changes
 - Added displaying for context changes in event log
 - Changed hooks changes tracking to handle only state related, i.e. useState()/useDispatcher()
+- Replaced "parent update" marker with update trigger marker
 
 ## 0.2.0 (August 27, 2021)
 
