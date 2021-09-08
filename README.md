@@ -6,19 +6,18 @@ React render tracker – a tool to discover performance issues related to uninte
 
 > STATUS: MVP / proof of concept
 >
-> The project is at an early stage of development. Lots of things have yet to be added and polished. The initial plan can be found [here](https://github.com/lahmatiy/react-render-tracker/issues/6). Feel free to create an issue if you found a bug or have an idea.
+> The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
 
 ![Demo](https://user-images.githubusercontent.com/270491/132439005-2525b8a6-c9f4-4171-b37a-39b0f3ed666c.png)
 
 Features:
 
-- Show component tree grouped by owner (rendered by) component or by parent (composed by) component. Default is by owner component, can be changed by a toggle in the top right corner.
-- Self and total (including subtree components) cumulative time or all component renders
-- Number of component's re-renders
-- Show unmounted components (can be disabled by a toggle in the top right corner)
-- Event log for a component or its subtree
-- Overall stats on events and component instances
-- More to come...
+- Cumulative state of component's tree including unmounted components (can be hidden by a toggle in the top right corner) and number of updates (re-renders)
+- Two types of hierarchy in component's tree: owner-based (created by, better for render tracking, that's by default) and parent-based (composed by)
+- Event log for a component or its subtree, grouped by a React's commit of batch of rendering work, with some details on changes in components like context, state and props
+- Self and total (including subtree rendering) cumulative time or all component renders (hidden by default, use toggle in the right top corner to enable it)
+- Overall stats on events and component instances in status bar
+- More to come... (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6))
 
 ## How to use
 

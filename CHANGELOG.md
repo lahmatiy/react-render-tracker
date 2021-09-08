@@ -1,19 +1,19 @@
-## next
+## 0.3.0 (September 8, 2021)
 
-- Fixed owner-based hierarchy for root level components
-- Fixed unmounted render root displaying
-- Fixed state and hooks changes computation depending on component type, i.e. class-based or functional
-- Changed simple value serialization to distinguish an empty object/array with non-empty
-- Added simple value changes description for hooks
-- Fixed an order of events in the way React performs them
-- Redesigned the type of events in the event log, added commit boundaries
-- Improved display name generation for anonymous components by adding an index number to distinguish instances of different components
-- Added displaying component's key if any
-- Added tracking for functional component's context changes
-- Added displaying for context changes in event log
-- Changed hooks changes tracking to handle only state related, i.e. useState()/useDispatcher()
-- Replaced "parent update" marker with update trigger marker
+- Reworked an order of events in the way React performs them (in more natural way, i.e. component's tree traversal order)
+- Redesigned presenting of event types in the event log, with grouping by React's batch of work commit
+- Added "Update trigger" marker (lighting icon) to events in event log which indicates the components that are _potentially_ responsible for the update (now we cannot distinguish between which changes in the component became the trigger for the update, and which were added during the rendering of the component)
+- Replaced "Parent update" marker in event log as meaningless
 - Added toggle for showing timings, by default timings are hidden as they are not that useful yet
+- Added tracking for functional component's context changes and displaying it in event log if any
+- Added simple value changes description for hooks
+- Added displaying component's key if any
+- Improved display name generation for anonymous components by adding an index number to distinguish instances of different components
+- Changed hooks changes tracking to handle only state related, i.e. useState()/useDispatcher()
+- Changed simple value serialization to distinguish an empty object/array with non-empty
+- Fixed owner-based hierarchy for root level components
+- Fixed state and hooks changes computation depending on component type, i.e. class-based or functional
+- Fixed unmounted render root displaying
 
 ## 0.2.0 (August 27, 2021)
 
