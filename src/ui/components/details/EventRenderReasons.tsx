@@ -1,6 +1,6 @@
 import * as React from "react";
 import { RenderElementMessage } from "../../types";
-import ChangeRowsReason from "./EventRenderReasonsItem";
+import EventRenderReasonsItem from "./EventRenderReasonsItem";
 
 interface EventRenderReasonsProps {
   changes: RenderElementMessage["changes"];
@@ -17,13 +17,16 @@ const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
         <table className="event-render-reasons__list">
           <tbody>
             {changes.props && (
-              <ChangeRowsReason data={changes.props} type="prop" />
+              <EventRenderReasonsItem data={changes.props} type="prop" />
             )}
             {changes.state && (
-              <ChangeRowsReason data={changes.state} type="state" />
+              <EventRenderReasonsItem data={changes.state} type="state" />
             )}
             {changes.hooks && (
-              <ChangeRowsReason data={changes.hooks} type="hook" />
+              <EventRenderReasonsItem data={changes.hooks} type="hook" />
+            )}
+            {changes.context && (
+              <EventRenderReasonsItem data={changes.context} type="context" />
             )}
           </tbody>
         </table>

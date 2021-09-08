@@ -15,6 +15,7 @@ import {
   FiberRoot,
   ReactDevtoolsHookHandlers,
   RecordEventHandler,
+  ReactContext,
 } from "../types";
 
 const { hasOwnProperty } = Object.prototype;
@@ -23,6 +24,7 @@ type ContextDescriptor = {
   legacy: boolean;
   value: any;
 };
+type HookContexts = Map<ReactContext<any>, any>;
 
 export function createReactDevtoolsHookHandlers(
   {
@@ -42,7 +44,8 @@ export function createReactDevtoolsHookHandlers(
   }: CoreApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
-  const { HostRoot, SuspenseComponent, OffscreenComponent } = ReactTypeOfWork;
+  const { HostRoot, SuspenseComponent, OffscreenComponent, ContextProvider } =
+    ReactTypeOfWork;
   // const {
   //   ImmediatePriority,
   //   UserBlockingPriority,
@@ -53,8 +56,10 @@ export function createReactDevtoolsHookHandlers(
   // } = ReactPriorityLevels;
 
   const idToOwnerId = new Map<number, number>();
-  const idToContexts = new Map<number, ContextDescriptor>();
+  const idToClassContexts = new Map<number, ContextDescriptor>();
+  const idToFunctionContexts = new Map<number, HookContexts>();
   const commitRenderedOwnerIds = new Set<number>();
+  const commitContextValue = new Map();
   let currentRootId = -1;
   let currentCommitId = -1;
   let commitIdSeed = 0;
@@ -126,7 +131,7 @@ export function createReactDevtoolsHookHandlers(
       ...(isElementTypeClass
         ? {
             // Class component
-            context: getContextChangedKeys(nextFiber),
+            context: getClassContextChangedKeys(nextFiber),
             state: getChangedKeys(
               prevFiber.memoizedState,
               nextFiber.memoizedState
@@ -134,6 +139,7 @@ export function createReactDevtoolsHookHandlers(
           }
         : {
             // Functional component
+            context: getFunctionContextChangedKeys(nextFiber),
             hooks: getChangedHooks(
               prevFiber.memoizedState,
               nextFiber.memoizedState,
@@ -146,21 +152,34 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function updateContextsForFiber(fiber: Fiber) {
-    if (getElementTypeForFiber(fiber) === ElementTypeClass) {
-      const id = getFiberIdThrows(fiber);
-      const contexts = getContextsForFiber(fiber);
+    switch (getElementTypeForFiber(fiber)) {
+      case ElementTypeClass: {
+        const id = getFiberIdThrows(fiber);
+        const contexts = getContextsForClassFiber(fiber);
 
-      if (contexts !== null) {
-        idToContexts.set(id, contexts);
+        if (contexts !== null) {
+          idToClassContexts.set(id, contexts);
+        } else {
+          idToClassContexts.delete(id);
+        }
+      }
+
+      case ElementTypeFunction:
+      case ElementTypeMemo:
+      case ElementTypeForwardRef: {
+        const id = getFiberIdThrows(fiber);
+        const contexts = getContextsForFunctionFiber(fiber);
+
+        if (contexts !== null) {
+          idToFunctionContexts.set(id, contexts);
+        } else {
+          idToFunctionContexts.delete(id);
+        }
       }
     }
   }
 
-  function getContextsForFiber(fiber: Fiber): ContextDescriptor | null {
-    if (getElementTypeForFiber(fiber) !== ElementTypeClass) {
-      return null;
-    }
-
+  function getContextsForClassFiber(fiber: Fiber): ContextDescriptor | null {
     const instance = fiber.stateNode || null;
 
     if (instance !== null) {
@@ -184,16 +203,69 @@ export function createReactDevtoolsHookHandlers(
     return null;
   }
 
-  function getContextChangedKeys(fiber: Fiber) {
-    if (getElementTypeForFiber(fiber) === ElementTypeClass) {
-      const id = getFiberIdThrows(fiber);
-      const prevContext = idToContexts.get(id) || null;
-      const nextContext = getContextsForFiber(fiber);
+  function getClassContextChangedKeys(fiber: Fiber) {
+    const id = getFiberIdThrows(fiber);
+    const prevContext = idToClassContexts.get(id) || null;
+    const nextContext = getContextsForClassFiber(fiber);
 
-      if (prevContext !== null && nextContext !== null) {
-        return nextContext.legacy
-          ? getChangedKeys(prevContext.value, nextContext.value)
-          : prevContext.value !== nextContext.value;
+    if (prevContext !== null && nextContext !== null) {
+      if (nextContext.legacy) {
+        return getChangedKeys(prevContext.value, nextContext.value);
+      }
+
+      if (prevContext.value !== nextContext.value) {
+        return [
+          {
+            name: "Context",
+            prev: simpleValueSerialization(prevContext.value),
+            next: simpleValueSerialization(nextContext.value),
+          },
+        ];
+      }
+    }
+
+    return null;
+  }
+
+  function getContextsForFunctionFiber(fiber: Fiber): HookContexts | null {
+    if (fiber.dependencies !== null) {
+      const contexts = new Map();
+      let cursor = fiber.dependencies.firstContext;
+
+      while (cursor !== null) {
+        contexts.set(cursor.context, commitContextValue.get(cursor.context));
+
+        cursor = cursor.next;
+      }
+
+      return contexts;
+    }
+
+    return null;
+  }
+
+  function getFunctionContextChangedKeys(fiber: Fiber) {
+    const id = getFiberIdThrows(fiber);
+    const prevContexts = idToFunctionContexts.get(id) || null;
+    const nextContexts = getContextsForFunctionFiber(fiber);
+
+    if (prevContexts !== null && nextContexts !== null) {
+      const changes = [];
+
+      for (const [context, prevValue] of prevContexts) {
+        const nextValue = nextContexts.get(context);
+
+        if (prevValue !== nextValue) {
+          changes.push({
+            name: context.displayName || "Context",
+            prev: simpleValueSerialization(prevValue),
+            next: simpleValueSerialization(nextValue),
+          });
+        }
+      }
+
+      if (changes.length > 0) {
+        return changes;
       }
     }
 
@@ -475,7 +547,8 @@ export function createReactDevtoolsHookHandlers(
 
     if (!fiber._debugNeedsRemount) {
       idToOwnerId.delete(id);
-      idToContexts.delete(id);
+      idToClassContexts.delete(id);
+      idToFunctionContexts.delete(id);
       untrackFiber(fiber);
     }
   }
@@ -492,9 +565,17 @@ export function createReactDevtoolsHookHandlers(
     while (fiber !== null) {
       const shouldIncludeInTree = !shouldFilterFiber(fiber);
       const isSuspense = fiber.tag === SuspenseComponent;
+      const isProvider = fiber.tag === ContextProvider;
+      const context = isProvider ? fiber.type._context : null;
+      let prevProviderValue: any;
 
       // Generate an ID even for filtered Fibers, in case it's needed later (e.g. for Profiling).
       getOrGenerateFiberId(fiber);
+
+      if (context !== null) {
+        prevProviderValue = commitContextValue.get(context);
+        commitContextValue.set(context, fiber.memoizedProps.value);
+      }
 
       if (shouldIncludeInTree) {
         recordMount(fiber, parentFiber);
@@ -545,6 +626,10 @@ export function createReactDevtoolsHookHandlers(
             true
           );
         }
+      }
+
+      if (context !== null) {
+        commitContextValue.set(context, prevProviderValue);
       }
 
       fiber = traverseSiblings ? fiber.sibling : null;
@@ -628,11 +713,19 @@ export function createReactDevtoolsHookHandlers(
     prevFiber: Fiber,
     parentFiber: Fiber | null
   ) {
+    const id = getFiberIdThrows(nextFiber);
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
-    const id = getFiberIdThrows(nextFiber);
+    const isProvider = nextFiber.tag === ContextProvider;
+    const context = isProvider ? nextFiber.type._context : null;
+    let prevProviderValue: any;
 
     recordPreviousSiblingUnmount(id);
+
+    if (context !== null) {
+      prevProviderValue = commitContextValue.get(context);
+      commitContextValue.set(context, nextFiber.memoizedProps.value);
+    }
 
     if (shouldIncludeInTree) {
       recordRerender(nextFiber);
@@ -732,6 +825,10 @@ export function createReactDevtoolsHookHandlers(
       }
     }
 
+    if (context !== null) {
+      commitContextValue.set(context, prevProviderValue);
+    }
+
     recordLastChildUnmounts(id);
   }
 
@@ -810,6 +907,7 @@ export function createReactDevtoolsHookHandlers(
     // We're done here
     currentCommitId = -1;
     commitRenderedOwnerIds.clear();
+    commitContextValue.clear();
     unmountedFiberIds.clear();
     unmountedFiberIdsByOwnerId.clear();
     unmountedFiberIdBeforeSiblingId.clear();

@@ -146,7 +146,6 @@ export type ReactPortal = {
 export type ContextDependency<T> = {
   context: ReactContext<T>;
   next: ContextDependency<any> | null;
-  memoizedValue: T;
 };
 
 export type Dependencies = {

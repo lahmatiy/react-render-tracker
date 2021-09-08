@@ -10,7 +10,7 @@ interface HookReason {
   changed: boolean;
 }
 interface EventRenderReasonsItemProps {
-  type: "prop" | "state" | "hook";
+  type: "prop" | "state" | "hook" | "context";
   data: KeyedReason[] | HookReason[];
 }
 

@@ -17,10 +17,7 @@ declare module "common-types" {
   export type TransferChangeDescription = {
     props: Array<{ name: string; prev: string; next: string }> | null;
     state?: Array<{ name: string; prev: string; next: string }> | null;
-    context?:
-      | Array<{ name: string; prev: string; next: string }>
-      | boolean
-      | null;
+    context?: Array<{ name: string; prev: string; next: string }> | null;
     hooks?: Array<{
       index: number;
       name: string;

@@ -10,6 +10,8 @@
 - Redesigned the type of events in the event log, added commit boundaries
 - Improved display name generation for anonymous components by adding an index number to distinguish instances of different components
 - Added displaying component's key if any
+- Added tracking for functional component's context changes
+- Added displaying for context changes in event log
 
 ## 0.2.0 (August 27, 2021)
 

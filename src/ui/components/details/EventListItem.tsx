@@ -24,16 +24,16 @@ function getChanges(event: Event) {
   if (event.op === "rerender") {
     const { context, hooks, props, state } = event.changes || {};
 
-    if (props) {
-      reasons.push("props");
-    }
-
     if (context) {
       reasons.push("context");
     }
 
     if (state) {
       reasons.push("state");
+    }
+
+    if (props) {
+      reasons.push("props");
     }
 
     if (hooks) {
@@ -98,7 +98,7 @@ const EventListItem = ({
             {"\xa0"}
           </span>
         </td>
-        <td className="event-list-item__details">
+        <td className="event-list-item__main">
           {event.op === "rerender" && !event.ownerUpdate && (
             <span
               className="event-list-item__update-trigger"

@@ -13,7 +13,7 @@
   color: #888;
 }
 
-.event-list-item__details {
+.event-list-item__main {
   width: 100%;
   padding: 5px 5px 0 4px;
   text-align: left;
@@ -30,6 +30,11 @@
   color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-color: #888;
+}
+
+.event-list-item__main .element-key {
+  position: relative;
+  top: -1px;
 }
 
 .event-list-item__update-trigger {
