@@ -10,8 +10,10 @@ import type { CoreApi } from "./core";
 import {
   Fiber,
   MemoizedState,
-  TransferElement,
-  TransferChangeDescription,
+  TransferFiber,
+  TransferFiberChanges,
+  TransferNamedEntryChange,
+  TransferHookStateChange,
   FiberRoot,
   ReactDevtoolsHookHandlers,
   RecordEventHandler,
@@ -111,7 +113,7 @@ export function createReactDevtoolsHookHandlers(
   function getChangeDescription(
     prevFiber: Fiber,
     nextFiber: Fiber
-  ): TransferChangeDescription | null {
+  ): TransferFiberChanges | null {
     const type = getElementTypeForFiber(nextFiber);
 
     if (
@@ -125,7 +127,7 @@ export function createReactDevtoolsHookHandlers(
 
     const { _debugHookTypes } = nextFiber;
     const isElementTypeClass = prevFiber.stateNode !== null;
-    const data: TransferChangeDescription = {
+    const data: TransferFiberChanges = {
       props: getChangedKeys(prevFiber.memoizedProps, nextFiber.memoizedProps),
       ...(isElementTypeClass
         ? {
@@ -247,7 +249,9 @@ export function createReactDevtoolsHookHandlers(
     return null;
   }
 
-  function getFunctionContextChangedKeys(fiber: Fiber) {
+  function getFunctionContextChangedKeys(
+    fiber: Fiber
+  ): TransferNamedEntryChange[] | undefined {
     const id = getFiberIdThrows(fiber);
     const prevContexts = idToFunctionContexts.get(id) || null;
     const nextContexts = getContextsForFunctionFiber(fiber);
@@ -279,9 +283,9 @@ export function createReactDevtoolsHookHandlers(
     prev: MemoizedState = null,
     next: MemoizedState = null,
     hookNames: string[]
-  ) {
+  ): TransferHookStateChange[] | undefined {
     if (prev === null || next === null) {
-      return undefined;
+      return;
     }
 
     const changes = [];
@@ -380,7 +384,7 @@ export function createReactDevtoolsHookHandlers(
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberId(fiber);
-    let element: TransferElement;
+    let element: TransferFiber;
 
     if (isRoot) {
       element = {
@@ -418,8 +422,8 @@ export function createReactDevtoolsHookHandlers(
     recordEvent({
       op: "mount",
       commitId: currentCommitId,
-      elementId: id,
-      element,
+      fiberId: id,
+      fiber: element,
       ...getDurations(fiber),
     });
 
@@ -430,7 +434,7 @@ export function createReactDevtoolsHookHandlers(
     recordEvent({
       op: "unmount",
       commitId: currentCommitId,
-      elementId: id,
+      fiberId: id,
     });
   }
 
@@ -662,12 +666,12 @@ export function createReactDevtoolsHookHandlers(
     const { alternate = null } = fiber;
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
-      const elementId = getFiberIdThrows(fiber);
+      const fiberId = getFiberIdThrows(fiber);
 
       recordEvent({
         op: "update",
         commitId: currentCommitId,
-        elementId,
+        fiberId,
         ...getDurations(fiber),
         changes: getChangeDescription(alternate, fiber),
       });

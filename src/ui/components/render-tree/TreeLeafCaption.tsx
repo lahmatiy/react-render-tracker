@@ -3,13 +3,13 @@ import ElementId from "../common/ElementId";
 import ElementKey from "../common/ElementKey";
 import ButtonExpand from "./ButtonExpand";
 import ElementHocNames from "./ComponentHocNames";
-import { MessageElement } from "../../types";
+import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
 import { useSelectionState } from "../../utils/selection";
 import { formatDuration } from "../../utils/duration";
 
 interface TreeLeafCaptionProps {
-  component: MessageElement;
+  component: MessageFiber;
   depth?: number;
   expanded: boolean;
   setExpanded?: (value: boolean) => void;

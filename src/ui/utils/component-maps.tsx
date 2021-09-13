@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MessageElement } from "../types";
+import { MessageFiber } from "../types";
 import {
   notifyById,
   subscribeById,
@@ -7,7 +7,7 @@ import {
 } from "./subscription";
 
 interface ComponentMapsContext {
-  componentById: SubscribeMap<number, MessageElement>;
+  componentById: SubscribeMap<number, MessageFiber>;
   componentsByParentId: SubscribeMap<number, number[]>;
   componentsByOwnerId: SubscribeMap<number, number[]>;
   mountedComponentsByParentId: SubscribeMap<number, number[]>;
@@ -28,7 +28,7 @@ export function ComponentMapsContextProvider({
   children: React.ReactNode;
 }) {
   const value: ComponentMapsContext = React.useMemo(() => {
-    const componentById = new SubscribeMap<number, MessageElement>();
+    const componentById = new SubscribeMap<number, MessageFiber>();
     const componentsByParentId = new SubscribeMap<number, number[]>();
     const componentsByOwnerId = new SubscribeMap<number, number[]>();
     const mountedComponentsByParentId = new SubscribeMap<number, number[]>();

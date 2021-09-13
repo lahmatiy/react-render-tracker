@@ -2,7 +2,7 @@ import * as React from "react";
 import { getSubscriber } from "rempl";
 import { SubscribeMap, useComponentMaps } from "./component-maps";
 import { subscribeSubtree } from "./tree";
-import { ElementEvent, Message, MessageElement } from "../types";
+import { ElementEvent, Message, MessageFiber } from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";
 
 interface EventsContext {
@@ -200,24 +200,24 @@ export function EventsContextProvider({
 function upsertComponent(
   map: Map<number, number[]>,
   id: number,
-  componentId: number
+  fiberId: number
 ) {
   if (map.has(id)) {
-    map.set(id, (map.get(id) || []).concat(componentId));
+    map.set(id, (map.get(id) || []).concat(fiberId));
   } else {
-    map.set(id, [componentId]);
+    map.set(id, [fiberId]);
   }
 }
 
 function removeComponent(
   map: Map<number, number[]>,
   id: number,
-  componentId: number
+  fiberId: number
 ) {
   if (map.has(id)) {
     map.set(
       id,
-      (map.get(id) || []).filter(childId => childId !== componentId)
+      (map.get(id) || []).filter(childId => childId !== fiberId)
     );
   }
 }
@@ -252,13 +252,13 @@ export function processEvents(
   let rerenderCount = 0;
 
   for (const event of events) {
-    let element: MessageElement;
+    let fiber: MessageFiber;
 
     switch (event.op) {
       case "mount": {
         mountCount++;
-        element = {
-          ...event.element,
+        fiber = {
+          ...event.fiber,
           mounted: true,
           events: [],
           rerendersCount: 0,
@@ -266,48 +266,32 @@ export function processEvents(
           totalTime: event.totalTime,
         };
 
-        markUpdated(updated, element.parentId, UPDATE_OWNER);
-        upsertComponent(componentsByParentId, element.parentId, element.id);
-        markUpdated(updated, element.parentId, UPDATE_MOUNT_OWNER);
-        upsertComponent(
-          mountedComponentsByParentId,
-          element.parentId,
-          element.id
-        );
+        markUpdated(updated, fiber.parentId, UPDATE_OWNER);
+        upsertComponent(componentsByParentId, fiber.parentId, fiber.id);
+        markUpdated(updated, fiber.parentId, UPDATE_MOUNT_OWNER);
+        upsertComponent(mountedComponentsByParentId, fiber.parentId, fiber.id);
 
-        markUpdated(updated, element.ownerId, UPDATE_OWNER);
-        upsertComponent(componentsByOwnerId, element.ownerId, element.id);
-        markUpdated(updated, element.ownerId, UPDATE_MOUNT_OWNER);
-        upsertComponent(
-          mountedComponentsByOwnerId,
-          element.ownerId,
-          element.id
-        );
+        markUpdated(updated, fiber.ownerId, UPDATE_OWNER);
+        upsertComponent(componentsByOwnerId, fiber.ownerId, fiber.id);
+        markUpdated(updated, fiber.ownerId, UPDATE_MOUNT_OWNER);
+        upsertComponent(mountedComponentsByOwnerId, fiber.ownerId, fiber.id);
         break;
       }
 
       case "unmount": {
         unmountCount++;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        element = componentById.get(event.elementId)!;
-        element = {
-          ...element,
+        fiber = componentById.get(event.fiberId)!;
+        fiber = {
+          ...fiber,
           mounted: false,
         };
 
-        markUpdated(updated, element.ownerId, UPDATE_MOUNT_OWNER);
-        removeComponent(
-          mountedComponentsByOwnerId,
-          element.ownerId,
-          element.id
-        );
+        markUpdated(updated, fiber.ownerId, UPDATE_MOUNT_OWNER);
+        removeComponent(mountedComponentsByOwnerId, fiber.ownerId, fiber.id);
 
-        markUpdated(updated, element.parentId, UPDATE_MOUNT_PARENT);
-        removeComponent(
-          mountedComponentsByParentId,
-          element.parentId,
-          element.id
-        );
+        markUpdated(updated, fiber.parentId, UPDATE_MOUNT_PARENT);
+        removeComponent(mountedComponentsByParentId, fiber.parentId, fiber.id);
 
         break;
       }
@@ -315,21 +299,21 @@ export function processEvents(
       case "update":
         rerenderCount++;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        element = componentById.get(event.elementId)!;
-        element = {
-          ...element,
-          rerendersCount: element.rerendersCount + 1,
-          selfTime: element.selfTime + event.selfTime,
-          totalTime: element.totalTime + event.totalTime,
+        fiber = componentById.get(event.fiberId)!;
+        fiber = {
+          ...fiber,
+          rerendersCount: fiber.rerendersCount + 1,
+          selfTime: fiber.selfTime + event.selfTime,
+          totalTime: fiber.totalTime + event.totalTime,
         };
 
         break;
     }
 
-    markUpdated(updated, element.id, UPDATE_SELF);
-    componentById.set(event.elementId, {
-      ...element,
-      events: element.events.concat(event),
+    markUpdated(updated, fiber.id, UPDATE_SELF);
+    componentById.set(event.fiberId, {
+      ...fiber,
+      events: fiber.events.concat(event),
     });
   }
 
@@ -350,7 +334,7 @@ export function processEvents(
 }
 
 export function useEventLog(
-  componentId: number,
+  fiberId: number,
   groupByParent: boolean,
   includeUnmounted: boolean,
   includeSubtree: boolean
@@ -359,7 +343,7 @@ export function useEventLog(
   const childrenMap = selectChildrenMap(groupByParent, includeUnmounted);
   const subtree = React.useMemo(
     () => new Map<number, () => void>(),
-    [componentId, includeSubtree, componentById, childrenMap]
+    [fiberId, includeSubtree, componentById, childrenMap]
   );
 
   const compute = React.useCallback((): ElementEvent[] => {
@@ -382,7 +366,7 @@ export function useEventLog(
     requestRecompute => {
       // subtree
       if (includeSubtree) {
-        return subscribeSubtree(componentId, childrenMap, (added, removed) => {
+        return subscribeSubtree(fiberId, childrenMap, (added, removed) => {
           for (const id of added) {
             if (!subtree.has(id)) {
               subtree.set(id, componentById.subscribe(id, requestRecompute));
@@ -403,21 +387,18 @@ export function useEventLog(
       }
 
       // single component
-      subtree.set(
-        componentId,
-        componentById.subscribe(componentId, requestRecompute)
-      );
+      subtree.set(fiberId, componentById.subscribe(fiberId, requestRecompute));
 
       return () => {
-        const unsubscribe = subtree.get(componentId);
+        const unsubscribe = subtree.get(fiberId);
 
         if (typeof unsubscribe === "function") {
           unsubscribe(); // unsubscribe
-          subtree.delete(componentId);
+          subtree.delete(fiberId);
         }
       };
     },
-    [componentId, includeSubtree, subtree]
+    [fiberId, includeSubtree, subtree]
   );
 
   return useDebouncedComputeSubscription(compute, subscribe, 50);

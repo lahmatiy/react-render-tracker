@@ -1,4 +1,4 @@
-import { ElementType } from "../../types";
+import { FiberType } from "../../types";
 import {
   ElementTypeClass,
   ElementTypeForwardRef,
@@ -8,7 +8,7 @@ import {
 
 export function separateDisplayNameAndHOCs(
   displayName: string | null,
-  type: ElementType
+  type: FiberType
 ): { displayName: string | null; hocDisplayNames: string[] | null } {
   if (displayName === null) {
     return { displayName, hocDisplayNames: null };

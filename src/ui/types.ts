@@ -1,5 +1,5 @@
 import {
-  TransferElement,
+  TransferFiber,
   MountElementMessage,
   UnmountElementMessage,
   UpdateElementMessage,
@@ -11,7 +11,7 @@ export type Event =
   | UnmountElementMessage
   | UpdateElementMessage;
 
-export interface MessageElement extends TransferElement {
+export interface MessageFiber extends TransferFiber {
   mounted: boolean;
   events: Event[];
   rerendersCount: number;
@@ -20,6 +20,6 @@ export interface MessageElement extends TransferElement {
 }
 
 export interface ElementEvent {
-  component: MessageElement;
+  component: MessageFiber;
   event: Event;
 }

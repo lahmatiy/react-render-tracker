@@ -1,10 +1,10 @@
 import * as React from "react";
-import { MessageElement } from "../../types";
+import { MessageFiber } from "../../types";
 
 const MAX_TEXT = 12;
 
 interface ElementKeyProps {
-  component: MessageElement;
+  component: MessageFiber;
 }
 
 const ElementKey = ({ component: { displayName, key } }: ElementKeyProps) => {

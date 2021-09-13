@@ -1,12 +1,12 @@
 import * as React from "react";
 import EventRenderReasons from "./EventRenderReasons";
 import ElementId from "../common/ElementId";
-import { Event, MessageElement } from "../../types";
+import { Event, MessageFiber } from "../../types";
 import ElementKey from "../common/ElementKey";
 import { formatDuration } from "../../utils/duration";
 
 interface EventListItemProps {
-  component: MessageElement;
+  component: MessageFiber;
   event: Event;
   showTimings: boolean;
   prevConjunction: boolean;

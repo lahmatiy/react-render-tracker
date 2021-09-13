@@ -1,4 +1,4 @@
-import { ElementType, Message, TransferChangeDescription } from "common-types";
+import { FiberType, Message, TransferFiberChanges } from "common-types";
 export * from "common-types";
 
 export type DistributiveOmit<T, K extends keyof T> = T extends any
@@ -299,7 +299,7 @@ export type SerializedElement = {
   displayName: string | null;
   id: number;
   key: number | string | null;
-  type: ElementType;
+  type: FiberType;
 };
 
 export type OwnersList = {
@@ -310,7 +310,7 @@ export type OwnersList = {
 export type ReactCommitData = {
   commitTime: number;
   // Tuple of fiber ID and change description
-  changeDescriptions: Map<number, TransferChangeDescription> | null;
+  changeDescriptions: Map<number, TransferFiberChanges> | null;
   duration: number;
   // Only available in certain (newer) React builds,
   effectDuration: number | null;
@@ -374,7 +374,7 @@ export type InspectedElement = {
   // Location of component in source code.
   source: Source | null;
 
-  type: ElementType;
+  type: FiberType;
 
   // Meta information about the root this element belongs to.
   rootType: string | null;
