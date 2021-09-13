@@ -1,12 +1,12 @@
 import * as React from "react";
 import EventRenderReasons from "./EventRenderReasons";
-import ElementId from "../common/ElementId";
-import { Event, MessageFiber } from "../../types";
-import ElementKey from "../common/ElementKey";
+import FiberId from "../common/FiberId";
+import FiberKey from "../common/FiberKey";
 import { formatDuration } from "../../utils/duration";
+import { Event, MessageFiber } from "../../types";
 
 interface EventListItemProps {
-  component: MessageFiber;
+  fiber: MessageFiber;
   event: Event;
   showTimings: boolean;
   prevConjunction: boolean;
@@ -47,7 +47,7 @@ function getChanges(event: Event) {
 }
 
 const EventListItem = ({
-  component,
+  fiber,
   event,
   showTimings,
   prevConjunction,
@@ -99,11 +99,10 @@ const EventListItem = ({
               (event.op === "unmount" ? " event-list-item__name_unmounted" : "")
             }
           >
-            {component.displayName ||
-              (!component.ownerId ? "Render root" : "Unknown")}
+            {fiber.displayName || (!fiber.ownerId ? "Render root" : "Unknown")}
           </span>
-          {component.key !== null && <ElementKey component={component} />}
-          <ElementId id={component.id} />{" "}
+          {fiber.key !== null && <FiberKey fiber={fiber} />}
+          <FiberId id={fiber.id} />{" "}
           {changes !== null && (
             <span
               className={

@@ -1,20 +1,20 @@
-.element-event-list {
+.fiber-event-list {
   width: 100%;
   border-collapse: collapse;
 }
 
-.element-event-list__no-events {
+.fiber-event-list__no-events {
   padding: 1em 2ex;
   text-align: center;
   color: #888;
 }
 
-.element-event-list__show-more {
+.fiber-event-list__show-more {
   display: flex;
   gap: 0 2px;
   padding: 2px 2px 1px;
 }
-.element-event-list__show-more button {
+.fiber-event-list__show-more button {
   vertical-align: top;
   color: #444;
   min-height: 0;
@@ -28,14 +28,14 @@
   font-family: system-ui, Arial, sans-serif;
   cursor: pointer;
 }
-.element-event-list__show-more button:hover,
-.element-event-list__show-more button:active,
-.element-event-list__show-more button:focus {
+.fiber-event-list__show-more button:hover,
+.fiber-event-list__show-more button:active,
+.fiber-event-list__show-more button:focus {
   background-color: #dddddd4d;
   border-color: #aaa9;
   outline: none;
 }
-.element-event-list__show-more button:active {
+.fiber-event-list__show-more button:active {
   background-color: #83838340;
   border-color: #7f7f7f66;
 }

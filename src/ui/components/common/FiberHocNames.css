@@ -1,16 +1,16 @@
-.component-hoc-names {
+.fiber-hoc-names {
   margin-left: 3px;
   font-size: 10px;
   line-height: 10px;
   color: white;
 }
-.component-hoc-name {
+.fiber-hoc-name {
   padding: 2px 4px;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
   background: #d0eac6;
   color: #6c9c1e;
 }
-.component-hoc-name + .component-hoc-name {
+.fiber-hoc-name + .fiber-hoc-name {
   margin-left: 2px;
 }

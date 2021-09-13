@@ -1,5 +1,5 @@
 import debounce from "lodash.debounce";
-import { SubscribeMap } from "./component-maps";
+import { SubscribeMap } from "./fiber-maps";
 
 export function getSubtreeIds(id: number, childrenMap: Map<number, number[]>) {
   const subtree = new Set<number>([id]);

@@ -2,27 +2,27 @@ import * as React from "react";
 import { SubtreeToggle } from "../common/icons";
 import ButtonToggle from "../common/ButtonToggle";
 import EventList from "./EventList";
-import ElementId from "../common/ElementId";
-import { useComponent } from "../../utils/component-maps";
+import FiberId from "../common/FiberId";
+import { useFiber } from "../../utils/fiber-maps";
 import { useEventLog } from "../../utils/events";
 
 interface DetailsProps {
-  componentId: number;
+  rootId: number;
   groupByParent: boolean;
   showUnmounted: boolean;
   showTimings: boolean;
 }
 
 const Details = ({
-  componentId,
+  rootId,
   groupByParent = false,
   showUnmounted = true,
   showTimings = false,
 }: DetailsProps) => {
   const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
-  const component = useComponent(componentId);
+  const fiber = useFiber(rootId);
   const events = useEventLog(
-    componentId,
+    rootId,
     groupByParent,
     showUnmounted,
     showSubtreeEvents
@@ -33,13 +33,13 @@ const Details = ({
       <div className="details__header">
         <div className="details__header-caption">
           Events of {showSubtreeEvents && "subtree of"}{" "}
-          {component ? (
+          {fiber ? (
             <>
               <span className={"details__header-component-name"}>
-                {component.displayName ||
-                  (!component.ownerId ? "Render root" : "Unknown")}
+                {fiber.displayName ||
+                  (!fiber.ownerId ? "Render root" : "Unknown")}
               </span>
-              <ElementId id={component.id} />
+              <FiberId id={fiber.id} />
             </>
           ) : (
             "Unknown"
@@ -59,12 +59,9 @@ const Details = ({
       {events && (
         <EventList
           // key used to reset state of visible records on component & settings change
-          key={[
-            componentId,
-            groupByParent,
-            showUnmounted,
-            showSubtreeEvents,
-          ].join("-")}
+          key={[rootId, groupByParent, showUnmounted, showSubtreeEvents].join(
+            "-"
+          )}
           events={events}
           showTimings={showTimings}
         />

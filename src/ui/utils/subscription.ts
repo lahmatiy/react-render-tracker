@@ -111,7 +111,7 @@ export function useComputeSubscription<T>(
     )
   );
 
-  // We can't invoke setState() until component is mounted.
+  // We can't invoke setState() until fiber is mounted.
   // However, a value can be recomputed by a request, so we need to sync
   // state value if needed.
   React.useEffect(() => {

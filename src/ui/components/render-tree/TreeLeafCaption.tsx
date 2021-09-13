@@ -1,15 +1,15 @@
 import * as React from "react";
-import ElementId from "../common/ElementId";
-import ElementKey from "../common/ElementKey";
 import ButtonExpand from "./ButtonExpand";
-import ElementHocNames from "./ComponentHocNames";
+import FiberId from "../common/FiberId";
+import FiberKey from "../common/FiberKey";
+import FiberHocNames from "../common/FiberHocNames";
 import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
 import { useSelectionState } from "../../utils/selection";
 import { formatDuration } from "../../utils/duration";
 
 interface TreeLeafCaptionProps {
-  component: MessageFiber;
+  fiber: MessageFiber;
   depth?: number;
   expanded: boolean;
   setExpanded?: (value: boolean) => void;
@@ -21,7 +21,7 @@ interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
   onSelect: (id: number) => void;
 }
 
-function getElementNameHighlight(
+function getFiberNameHighlight(
   name: string | null,
   range: [number, number] | null
 ) {
@@ -40,19 +40,19 @@ function getElementNameHighlight(
 }
 
 const TreeLeafCaption = ({
-  component,
+  fiber,
   depth = 0,
   expanded,
   setExpanded,
   showTimings,
 }: TreeLeafCaptionProps) => {
-  const { id, displayName } = component;
+  const { id, displayName } = fiber;
   const { selected, select } = useSelectionState(id);
   const match = useFindMatch(id, displayName);
 
   return (
     <TreeLeafCaptionInner
-      component={component}
+      fiber={fiber}
       depth={depth}
       match={match}
       selected={selected}
@@ -66,7 +66,7 @@ const TreeLeafCaption = ({
 
 const TreeLeafCaptionInner = React.memo(
   ({
-    component,
+    fiber,
     depth,
     match,
     selected,
@@ -86,9 +86,9 @@ const TreeLeafCaptionInner = React.memo(
       rerendersCount,
       selfTime,
       totalTime,
-    } = component;
+    } = fiber;
 
-    const name = getElementNameHighlight(displayName, match);
+    const name = getFiberNameHighlight(displayName, match);
     const isRenderRoot = ownerId === 0;
 
     const classes = ["tree-leaf-caption"];
@@ -132,9 +132,9 @@ const TreeLeafCaptionInner = React.memo(
           <span className="tree-leaf-caption__name">
             {name || (!ownerId && "Render root") || "Unknown"}
           </span>
-          {key !== null && <ElementKey component={component} />}
-          <ElementId id={id} />
-          {hocDisplayNames && <ElementHocNames names={hocDisplayNames} />}
+          {key !== null && <FiberKey fiber={fiber} />}
+          <FiberId id={id} />
+          {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
           {rerendersCount > 0 && (
             <span
               className="tree-leaf-caption__update-count"

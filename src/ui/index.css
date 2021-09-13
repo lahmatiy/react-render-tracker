@@ -1,7 +1,8 @@
 @import url("./App.css");
 @import url("./components/common/ButtonToggle.css");
-@import url("./components/common/ElementId.css");
-@import url("./components/common/ElementKey.css");
+@import url("./components/common/FiberHocNames.css");
+@import url("./components/common/FiberId.css");
+@import url("./components/common/FiberKey.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventList.css");
 @import url("./components/details/EventListItem.css");
@@ -11,7 +12,6 @@
 @import url("./components/render-tree/Tree.css");
 @import url("./components/render-tree/TreeLeaf.css");
 @import url("./components/render-tree/TreeLeafCaption.css");
-@import url("./components/render-tree/ComponentHocNames.css");
 @import url("./components/statusbar/StatusBar.css");
 @import url("./components/toolbar/ComponentFilter.css");
 @import url("./components/toolbar/Toolbar.css");

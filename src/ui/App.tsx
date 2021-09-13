@@ -47,7 +47,7 @@ function App() {
 
               {selectedId !== null && (
                 <Details
-                  componentId={selectedId}
+                  rootId={selectedId}
                   groupByParent={groupByParent}
                   showUnmounted={showUnmounted}
                   showTimings={showTimings}

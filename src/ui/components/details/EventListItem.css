@@ -32,7 +32,7 @@
   text-decoration-color: #888;
 }
 
-.event-list-item__main .element-key {
+.event-list-item__main .fiber-key {
   position: relative;
   top: -1px;
 }

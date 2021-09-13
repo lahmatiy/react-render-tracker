@@ -20,19 +20,19 @@ const EventList = ({ events, showTimings }: EventListProps) => {
   }
 
   if (!events.length) {
-    return <div className="element-event-list__no-events">No events found</div>;
+    return <div className="fiber-event-list__no-events">No events found</div>;
   }
 
-  const eventsComponents = [];
+  const fiberEvents = [];
   for (let i = startOffset; i < events.length; i++) {
-    const { component, event } = events[i];
+    const { fiber, event } = events[i];
     const prevCommitId = events[i - 1]?.event?.commitId;
     const nextCommitId = events[i + 1]?.event?.commitId;
 
-    eventsComponents.push(
+    fiberEvents.push(
       <EventListItem
         key={event.id}
-        component={component}
+        fiber={fiber}
         event={event}
         showTimings={showTimings}
         prevConjunction={
@@ -48,7 +48,7 @@ const EventList = ({ events, showTimings }: EventListProps) => {
   return (
     <>
       {startOffset > 0 && (
-        <div className="element-event-list__show-more">
+        <div className="fiber-event-list__show-more">
           {startOffset > SECTION_SIZE + SECTION_MIN_SIZE && (
             <button
               onClick={() =>
@@ -63,8 +63,8 @@ const EventList = ({ events, showTimings }: EventListProps) => {
           </button>
         </div>
       )}
-      <table className="element-event-list">
-        <tbody>{eventsComponents}</tbody>
+      <table className="fiber-event-list">
+        <tbody>{fiberEvents}</tbody>
       </table>
     </>
   );

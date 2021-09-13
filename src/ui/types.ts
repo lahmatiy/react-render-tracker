@@ -1,15 +1,7 @@
-import {
-  TransferFiber,
-  MountElementMessage,
-  UnmountElementMessage,
-  UpdateElementMessage,
-} from "common-types";
+import { TransferFiber, Message } from "common-types";
 export * from "common-types";
 
-export type Event =
-  | MountElementMessage
-  | UnmountElementMessage
-  | UpdateElementMessage;
+export type Event = Message;
 
 export interface MessageFiber extends TransferFiber {
   mounted: boolean;
@@ -19,7 +11,7 @@ export interface MessageFiber extends TransferFiber {
   totalTime: number;
 }
 
-export interface ElementEvent {
-  component: MessageFiber;
+export interface FiberEvent {
+  fiber: MessageFiber;
   event: Event;
 }

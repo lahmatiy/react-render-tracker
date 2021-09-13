@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEventsContext } from "../../utils/events";
-import { useComponentMaps } from "../../utils/component-maps";
+import { useFiberMaps } from "../../utils/fiber-maps";
 
 function plural(num: number, single: string, multiple = single + "s") {
   return `${num} ${num === 1 ? single : multiple}`;
@@ -16,8 +16,8 @@ const StatusBar = () => {
     rerenderCount,
   } = useEventsContext();
   const pendingEventsCount = totalEventsCount - loadedEventsCount;
-  const { componentById } = useComponentMaps();
-  const componentCount = componentById.size;
+  const { fiberById } = useFiberMaps();
+  const fiberCount = fiberById.size;
 
   return (
     <div className="statusbar">
@@ -25,8 +25,8 @@ const StatusBar = () => {
         {totalEventsCount > 0
           ? plural(loadedEventsCount, "event")
           : "No events"}
-        {componentCount > 0
-          ? ` for ${plural(componentCount, "component instance")}`
+        {fiberCount > 0
+          ? ` for ${plural(fiberCount, "component instance")}`
           : ""}
       </span>
       {pendingEventsCount > 0 && (

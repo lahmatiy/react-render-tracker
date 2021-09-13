@@ -1,7 +1,7 @@
 import * as React from "react";
-import { useComponentChildren } from "../../utils/component-maps";
+import { useFiberChildren } from "../../utils/fiber-maps";
 import { ViewSettings, ViewSettingsContext } from "./contexts";
-import TreeElement from "./TreeLeaf";
+import TreeLeaf from "./TreeLeaf";
 
 const Tree = ({
   rootId = 0,
@@ -14,7 +14,7 @@ const Tree = ({
   showUnmounted?: boolean;
   showTimings?: boolean;
 }) => {
-  const children = useComponentChildren(rootId, groupByParent, showUnmounted);
+  const children = useFiberChildren(rootId, groupByParent, showUnmounted);
   const viewSettings = React.useMemo<ViewSettings>(
     () => ({
       groupByParent,
@@ -29,7 +29,7 @@ const Tree = ({
       <div className="render-tree__content">
         <ViewSettingsContext.Provider value={viewSettings}>
           {children.map(childId => (
-            <TreeElement key={childId} componentId={childId} />
+            <TreeLeaf key={childId} fiberId={childId} />
           ))}
         </ViewSettingsContext.Provider>
       </div>

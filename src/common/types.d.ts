@@ -40,18 +40,18 @@ declare module "common-types" {
     fiberId: number;
   }
 
-  export interface MountElementMessage extends BaseMessage {
+  export interface MountFiberMessage extends BaseMessage {
     op: "mount";
     fiber: TransferFiber;
     totalTime: number;
     selfTime: number;
   }
 
-  export interface UnmountElementMessage extends BaseMessage {
+  export interface UnmountFiberMessage extends BaseMessage {
     op: "unmount";
   }
 
-  export interface UpdateElementMessage extends BaseMessage {
+  export interface UpdateFiberMessage extends BaseMessage {
     op: "update";
     totalTime: number;
     selfTime: number;
@@ -59,7 +59,7 @@ declare module "common-types" {
   }
 
   export type Message =
-    | MountElementMessage
-    | UnmountElementMessage
-    | UpdateElementMessage;
+    | MountFiberMessage
+    | UnmountFiberMessage
+    | UpdateFiberMessage;
 }
