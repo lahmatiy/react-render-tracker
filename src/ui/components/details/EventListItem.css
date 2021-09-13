@@ -138,7 +138,7 @@
 }
 .event-list-item__dot[data-type="update"] {
   background-color: #efe6a9;
-  background-image: url("./img/event-rerender.svg");
+  background-image: url("./img/event-update.svg");
   color: #71712f;
 }
 .event-list-item__dot_prev::before {

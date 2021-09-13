@@ -1,14 +1,14 @@
 import * as React from "react";
 
-export interface ViewSettings {
+export interface TreeViewSettings {
   groupByParent: boolean;
   showUnmounted: boolean;
   showTimings: boolean;
 }
-export const ViewSettingsContext = React.createContext<ViewSettings>({
+export const TreeViewSettingsContext = React.createContext<TreeViewSettings>({
   groupByParent: false,
   showUnmounted: true,
   showTimings: false,
 });
-export const useViewSettingsContext = () =>
-  React.useContext(ViewSettingsContext);
+export const useTreeViewSettingsContext = () =>
+  React.useContext(TreeViewSettingsContext);

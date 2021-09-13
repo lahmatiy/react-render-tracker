@@ -83,7 +83,7 @@ const TreeLeafCaptionInner = React.memo(
       hocDisplayNames,
       events,
       mounted,
-      rerendersCount,
+      updatesCount,
       selfTime,
       totalTime,
     } = fiber;
@@ -135,12 +135,12 @@ const TreeLeafCaptionInner = React.memo(
           {key !== null && <FiberKey fiber={fiber} />}
           <FiberId id={id} />
           {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
-          {rerendersCount > 0 && (
+          {updatesCount > 0 && (
             <span
               className="tree-leaf-caption__update-count"
               title="Number of updates (re-renders)"
             >
-              {rerendersCount}
+              {updatesCount}
             </span>
           )}
         </div>

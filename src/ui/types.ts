@@ -6,7 +6,7 @@ export type Event = Message;
 export interface MessageFiber extends TransferFiber {
   mounted: boolean;
   events: Event[];
-  rerendersCount: number;
+  updatesCount: number;
   selfTime: number;
   totalTime: number;
 }

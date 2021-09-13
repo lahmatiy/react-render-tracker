@@ -13,7 +13,7 @@ const StatusBar = () => {
     totalEventsCount,
     mountCount,
     unmountCount,
-    rerenderCount,
+    updateCount,
   } = useEventsContext();
   const pendingEventsCount = totalEventsCount - loadedEventsCount;
   const { fiberById } = useFiberMaps();
@@ -48,7 +48,7 @@ const StatusBar = () => {
         {mountCount}
       </span>
       <span className="statusbar__event-type-count" data-type="update">
-        {rerenderCount}
+        {updateCount}
       </span>
       <span className="statusbar__event-type-count" data-type="unmount">
         {unmountCount}

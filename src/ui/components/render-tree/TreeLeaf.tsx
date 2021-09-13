@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useFiber, useFiberChildren } from "../../utils/fiber-maps";
-import { useViewSettingsContext } from "./contexts";
+import { useTreeViewSettingsContext } from "./contexts";
 import TreeLeafCaption from "./TreeLeafCaption";
 
 export interface TreeLeafProps {
@@ -10,7 +10,7 @@ export interface TreeLeafProps {
 
 const TreeLeaf = React.memo(({ fiberId, depth = 0 }: TreeLeafProps) => {
   const { groupByParent, showUnmounted, showTimings } =
-    useViewSettingsContext();
+    useTreeViewSettingsContext();
   const fiber = useFiber(fiberId);
   const children = useFiberChildren(fiberId, groupByParent, showUnmounted);
   const [expanded, setExpanded] = React.useState(true);

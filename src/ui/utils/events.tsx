@@ -12,7 +12,7 @@ interface EventsContext {
   totalEventsCount: number;
   mountCount: number;
   unmountCount: number;
-  rerenderCount: number;
+  updateCount: number;
   clearAllEvents: () => void;
 }
 
@@ -23,7 +23,7 @@ const createEventsContextValue = (): EventsContext => ({
   totalEventsCount: 0,
   mountCount: 0,
   unmountCount: 0,
-  rerenderCount: 0,
+  updateCount: 0,
   clearAllEvents() {
     /* mock fn */
   },
@@ -55,7 +55,7 @@ export function EventsContextProvider({
         fiberById.set(id, {
           ...fiber,
           events: [],
-          rerendersCount: 0,
+          updatesCount: 0,
           totalTime: 0,
           selfTime: 0,
         });
@@ -91,7 +91,7 @@ export function EventsContextProvider({
         totalEventsCount: state.totalEventsCount - state.events.length,
         mountCount: 0,
         unmountCount: 0,
-        rerenderCount: 0,
+        updateCount: 0,
       };
     });
 
@@ -145,7 +145,7 @@ export function EventsContextProvider({
           lastLoadedOffset += eventsChunk.length;
 
           if (eventsChunk.length > 0) {
-            const { mountCount, unmountCount, rerenderCount } = processEvents(
+            const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
               maps
             );
@@ -160,7 +160,7 @@ export function EventsContextProvider({
                 totalEventsCount: totalEventsCount - eventsSince.current,
                 mountCount: state.mountCount + mountCount,
                 unmountCount: state.unmountCount + unmountCount,
-                rerenderCount: state.rerenderCount + rerenderCount,
+                updateCount: state.updateCount + updateCount,
               };
             });
           }
@@ -241,7 +241,7 @@ export function processEvents(
   const updated = new Map<number, number>();
   let mountCount = 0;
   let unmountCount = 0;
-  let rerenderCount = 0;
+  let updateCount = 0;
 
   for (const event of events) {
     let fiber: MessageFiber;
@@ -253,7 +253,7 @@ export function processEvents(
           ...event.fiber,
           mounted: true,
           events: [],
-          rerendersCount: 0,
+          updatesCount: 0,
           selfTime: event.selfTime,
           totalTime: event.totalTime,
         };
@@ -289,12 +289,12 @@ export function processEvents(
       }
 
       case "update":
-        rerenderCount++;
+        updateCount++;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         fiber = fiberById.get(event.fiberId)!;
         fiber = {
           ...fiber,
-          rerendersCount: fiber.rerendersCount + 1,
+          updatesCount: fiber.updatesCount + 1,
           selfTime: fiber.selfTime + event.selfTime,
           totalTime: fiber.totalTime + event.totalTime,
         };
@@ -321,7 +321,7 @@ export function processEvents(
   return {
     mountCount,
     unmountCount,
-    rerenderCount,
+    updateCount,
   };
 }
 
