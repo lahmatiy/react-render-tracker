@@ -2,14 +2,14 @@ import {
   TransferElement,
   MountElementMessage,
   UnmountElementMessage,
-  RenderElementMessage,
+  UpdateElementMessage,
 } from "common-types";
 export * from "common-types";
 
 export type Event =
   | MountElementMessage
   | UnmountElementMessage
-  | RenderElementMessage;
+  | UpdateElementMessage;
 
 export interface MessageElement extends TransferElement {
   mounted: boolean;

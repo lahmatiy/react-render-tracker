@@ -47,7 +47,7 @@ const StatusBar = () => {
       <span className="statusbar__event-type-count" data-type="mount">
         {mountCount}
       </span>
-      <span className="statusbar__event-type-count" data-type="rerender">
+      <span className="statusbar__event-type-count" data-type="update">
         {rerenderCount}
       </span>
       <span className="statusbar__event-type-count" data-type="unmount">

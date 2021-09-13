@@ -658,14 +658,14 @@ export function createReactDevtoolsHookHandlers(
     return { totalTime, selfTime };
   }
 
-  function recordRerender(fiber: Fiber) {
+  function recordUpdate(fiber: Fiber) {
     const { alternate = null } = fiber;
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
       const elementId = getFiberIdThrows(fiber);
 
       recordEvent({
-        op: "rerender",
+        op: "update",
         commitId: currentCommitId,
         elementId,
         ...getDurations(fiber),
@@ -697,7 +697,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (shouldIncludeInTree) {
-      recordRerender(nextFiber);
+      recordUpdate(nextFiber);
     }
 
     // The behavior of timed-out Suspense trees is unique.

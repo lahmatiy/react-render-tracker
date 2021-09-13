@@ -136,7 +136,7 @@
   background-size: 13px;
   color: #5a7b3b;
 }
-.event-list-item__dot[data-type="rerender"] {
+.event-list-item__dot[data-type="update"] {
   background-color: #efe6a9;
   background-image: url("./img/event-rerender.svg");
   color: #71712f;

@@ -46,8 +46,8 @@ declare module "common-types" {
     op: "unmount";
   }
 
-  export interface RenderElementMessage extends BaseMessage {
-    op: "rerender";
+  export interface UpdateElementMessage extends BaseMessage {
+    op: "update";
     totalTime: number;
     selfTime: number;
     changes: TransferChangeDescription | null;
@@ -56,5 +56,5 @@ declare module "common-types" {
   export type Message =
     | MountElementMessage
     | UnmountElementMessage
-    | RenderElementMessage;
+    | UpdateElementMessage;
 }

@@ -15,12 +15,12 @@ interface EventListItemProps {
 
 const opTooltip: Record<Event["op"], string> = {
   mount: "Mount",
-  rerender: "Update (re-render)",
+  update: "Update (re-render)",
   unmount: "Unmount",
 };
 
 function getChanges(event: Event) {
-  if (event.op !== "rerender" || event.changes === null) {
+  if (event.op !== "update" || event.changes === null) {
     return null;
   }
 
@@ -64,11 +64,11 @@ const EventListItem = ({
         {showTimings && (
           <>
             <td className="event-list-item__time" title="Self time">
-              {(event.op === "mount" || event.op === "rerender") &&
+              {(event.op === "mount" || event.op === "update") &&
                 formatDuration(event.selfTime)}
             </td>
             <td className="event-list-item__time" title="Total time">
-              {(event.op === "mount" || event.op === "rerender") &&
+              {(event.op === "mount" || event.op === "update") &&
                 formatDuration(event.totalTime)}
             </td>
           </>
@@ -87,7 +87,7 @@ const EventListItem = ({
           </span>
         </td>
         <td className="event-list-item__main">
-          {event.op === "rerender" && isUpdateTrigger && (
+          {event.op === "update" && isUpdateTrigger && (
             <span
               className="event-list-item__update-trigger"
               title={"Update trigger"}
@@ -117,7 +117,7 @@ const EventListItem = ({
           )}
         </td>
       </tr>
-      {event.op === "rerender" && expanded && (
+      {event.op === "update" && expanded && (
         <EventRenderReasons changes={event.changes} />
       )}
     </>

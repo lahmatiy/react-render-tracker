@@ -312,7 +312,7 @@ export function processEvents(
         break;
       }
 
-      case "rerender":
+      case "update":
         rerenderCount++;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         element = componentById.get(event.elementId)!;

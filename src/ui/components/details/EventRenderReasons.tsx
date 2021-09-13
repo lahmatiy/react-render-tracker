@@ -1,9 +1,9 @@
 import * as React from "react";
-import { RenderElementMessage } from "../../types";
+import { UpdateElementMessage } from "../../types";
 import EventRenderReasonsItem from "./EventRenderReasonsItem";
 
 interface EventRenderReasonsProps {
-  changes: RenderElementMessage["changes"];
+  changes: UpdateElementMessage["changes"];
 }
 
 const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
