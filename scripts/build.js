@@ -7,7 +7,7 @@ module.exports = {
 };
 
 async function buildPlayground(config) {
-  const result = await esbuild.buildSync({
+  const result = await esbuild.build({
     entryPoints: ["playground/index.tsx"],
     // external: ["src/*"],
     bundle: true,
@@ -24,7 +24,7 @@ async function buildPlayground(config) {
 }
 
 async function buildSubscriber(config, configCSS) {
-  const css = await esbuild.buildSync({
+  const css = await esbuild.build({
     entryPoints: ["src/ui/index.css"],
     bundle: true,
     loader: {
@@ -35,7 +35,7 @@ async function buildSubscriber(config, configCSS) {
     ...configCSS,
     write: false,
   });
-  const result = await esbuild.buildSync({
+  const result = await esbuild.build({
     entryPoints: ["src/ui/index.tsx"],
     bundle: true,
     sourcemap: true,
@@ -52,7 +52,7 @@ async function buildSubscriber(config, configCSS) {
 }
 
 async function buildPublisher(config) {
-  const result = await esbuild.buildSync({
+  const result = await esbuild.build({
     entryPoints: ["src/publisher/index.ts"],
     bundle: true,
     sourcemap: true,
