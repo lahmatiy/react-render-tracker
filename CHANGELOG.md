@@ -1,3 +1,7 @@
+## next
+
+- Fixed crash when used for React prior 16.9 because of another internals for dependencies (context)
+
 ## 0.3.0 (September 8, 2021)
 
 - Reworked an order of events in the way React performs them (in more natural way, i.e. component's tree traversal order)

@@ -227,9 +227,13 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function getContextsForFunctionFiber(fiber: Fiber): HookContexts | null {
-    if (fiber.dependencies !== null) {
+    let cursor =
+      fiber.dependencies?.firstContext ||
+      fiber.contextDependencies?.first ||
+      null;
+
+    if (cursor !== null) {
       const contexts = new Map();
-      let cursor = fiber.dependencies.firstContext;
 
       while (cursor !== null) {
         contexts.set(cursor.context, commitContextValue.get(cursor.context));

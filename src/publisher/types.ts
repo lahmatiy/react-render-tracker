@@ -153,6 +153,10 @@ export type Dependencies = {
   firstContext: ContextDependency<any> | null;
 };
 
+export type OldDependencies = {
+  first: ContextDependency<any> | null;
+};
+
 type Lanes = number;
 type Flags = number;
 
@@ -209,8 +213,11 @@ export interface Fiber {
   // The state used to create the output
   memoizedState: MemoizedState;
 
-  // Dependencies (contexts, events) for this fiber, if it has any
-  dependencies: Dependencies | null;
+  // React 16.9+ Dependencies (contexts, events) for this fiber, if it has any
+  dependencies?: Dependencies | null;
+
+  // React prior 16.9 Dependencies (contexts, events) for this fiber, if it has any
+  contextDependencies?: OldDependencies | null;
 
   // Bitfield that describes properties about the fiber and its subtree. E.g.
   // the ConcurrentMode flag indicates whether the subtree should be async-by-
