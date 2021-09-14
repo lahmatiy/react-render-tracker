@@ -17,7 +17,7 @@ for (let [url, generator] of Object.entries({
   app.get(url, asyncResponse(generator));
 }
 
-app.listen(3000, function () {
+app.listen(process.env.PORT || 3000, function () {
   console.log(`Server listen on ${`http://localhost:${this.address().port}`}`);
 });
 
