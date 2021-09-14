@@ -58,8 +58,20 @@ declare module "common-types" {
     changes: TransferFiberChanges | null;
   }
 
+  export interface CreateEffectFiberMessage extends BaseMessage {
+    op: "effect-create";
+    path?: string[];
+  }
+
+  export interface DestroyEffectFiberMessage extends BaseMessage {
+    op: "effect-destroy";
+    path?: string[];
+  }
+
   export type Message =
     | MountFiberMessage
     | UnmountFiberMessage
-    | UpdateFiberMessage;
+    | UpdateFiberMessage
+    | CreateEffectFiberMessage
+    | DestroyEffectFiberMessage;
 }

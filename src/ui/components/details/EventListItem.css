@@ -141,6 +141,16 @@
   background-image: url("./img/event-update.svg");
   color: #71712f;
 }
+.event-list-item__dot[data-type="effect-create"] {
+  background-color: #bcddf5;
+  background-image: url("./img/event-effect-create.svg");
+  background-size: 13px;
+}
+.event-list-item__dot[data-type="effect-destroy"] {
+  background-color: #e1c7ef;
+  background-image: url("./img/event-effect-destroy.svg");
+  background-size: 13px;
+}
 .event-list-item__dot_prev::before {
   content: "";
   position: absolute;

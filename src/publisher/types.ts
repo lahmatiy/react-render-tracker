@@ -8,6 +8,8 @@ export type DistributiveOmit<T, K extends keyof T> = T extends any
 export type ReactInternals = {
   reconcilerVersion?: string;
   version?: string;
+  currentDispatcherRef: any;
+  getCurrentFiber: () => Fiber;
   rendererPackageName: string;
   findFiberByHostInstance: (hostInstance: NativeType) => Fiber | null;
 };

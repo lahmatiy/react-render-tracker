@@ -17,6 +17,8 @@ const opTooltip: Record<Event["op"], string> = {
   mount: "Mount",
   update: "Update (re-render)",
   unmount: "Unmount",
+  "effect-create": "Create effect",
+  "effect-destroy": "Destroy effect",
 };
 
 function getChanges(event: Event) {
@@ -114,6 +116,10 @@ const EventListItem = ({
               {changes.join(", ")}
             </span>
           )}
+          {(event.op === "effect-create" || event.op === "effect-destroy") &&
+          event.path
+            ? event.path.join(" → ")
+            : ""}
         </td>
       </tr>
       {event.op === "update" && expanded && (

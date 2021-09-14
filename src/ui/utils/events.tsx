@@ -300,6 +300,14 @@ export function processEvents(
         };
 
         break;
+
+      case "effect-create":
+      case "effect-destroy":
+        fiber = fiberById.get(event.fiberId)!;
+        break;
+
+      default:
+        continue;
     }
 
     markUpdated(updated, fiber.id, UPDATE_SELF);
