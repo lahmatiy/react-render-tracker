@@ -27,7 +27,7 @@ function getChanges(event: Event) {
   }
 
   const reasons: string[] = [];
-  const { context, hooks, props, state } = event.changes;
+  const { context, props, state } = event.changes;
 
   if (context) {
     reasons.push("context");
@@ -39,10 +39,6 @@ function getChanges(event: Event) {
 
   if (props) {
     reasons.push("props");
-  }
-
-  if (hooks) {
-    reasons.push("hooks");
   }
 
   return reasons.length > 0 ? reasons : null;

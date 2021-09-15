@@ -14,6 +14,9 @@
 }
 
 .event-render-reason__type {
+  vertical-align: top;
+}
+.event-render-reason__type-badge {
   background-color: #d6daf3;
   padding: 4px 8px;
   border-radius: 4px;
@@ -23,6 +26,8 @@
 
 .event-render-reason__value-change {
   width: 100%;
+  line-height: 16px;
+  padding-top: 3px;
 }
 
 .event-render-reason__value-change code {
@@ -30,4 +35,51 @@
   background-color: #ecf3ed;
   padding: 2px 4px;
   border-radius: 4px;
+}
+
+.event-render-reason__diff-bracket {
+  position: relative;
+  top: -1px;
+  font-family: monospace;
+  color: #aaa;
+}
+.event-render-reason__diff-line {
+  display: block;
+  padding-left: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: #444;
+}
+.event-render-reason__diff-line .key {
+  font-family: monospace;
+  color: #9c913b;
+}
+.event-render-reason__diff-line.added .key {
+  color: #359c42;
+}
+.event-render-reason__diff-line.added .key::before {
+  content: "+";
+  margin-left: -1ch;
+  opacity: 0.65;
+}
+.event-render-reason__diff-line.removed {
+  color: #e24646;
+}
+.event-render-reason__diff-line.removed .key::before {
+  content: "-";
+  margin-left: -1ch;
+  opacity: 0.65;
+}
+.event-render-reason__diff-line.removed .key {
+  color: inherit;
+}
+.event-render-reason__diff-line.removed code {
+  background-color: #f3ecec;
+  color: inherit;
+}
+.event-render-reason__diff-rest {
+  display: block;
+  padding-left: 12px;
+  font-size: 10px;
+  color: #aaa;
 }

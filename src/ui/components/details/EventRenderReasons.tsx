@@ -25,9 +25,6 @@ const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
             {changes.state && (
               <EventRenderReasonsItem data={changes.state} type="state" />
             )}
-            {changes.hooks && (
-              <EventRenderReasonsItem data={changes.hooks} type="hook" />
-            )}
           </tbody>
         </table>
       </td>

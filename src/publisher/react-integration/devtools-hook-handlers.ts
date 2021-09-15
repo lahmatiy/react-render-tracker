@@ -13,14 +13,13 @@ import {
   TransferFiber,
   TransferFiberChanges,
   TransferNamedEntryChange,
-  TransferHookStateChange,
   FiberRoot,
   ReactDevtoolsHookHandlers,
   RecordEventHandler,
   ReactContext,
 } from "../types";
-
-const { hasOwnProperty } = Object.prototype;
+import { simpleValueSerialization } from "./utils/simpleValueSerialization";
+import { objectDiff } from "./utils/objectDiff";
 
 type ContextDescriptor = {
   legacy: boolean;
@@ -210,16 +209,20 @@ export function createReactDevtoolsHookHandlers(
     const nextContext = getContextsForClassFiber(fiber);
 
     if (prevContext !== null && nextContext !== null) {
+      const prevValue = prevContext.value;
+      const nextValue = nextContext.value;
+
       if (nextContext.legacy) {
-        return getChangedKeys(prevContext.value, nextContext.value);
+        return getChangedKeys(prevValue, nextValue);
       }
 
-      if (prevContext.value !== nextContext.value) {
+      if (!Object.is(prevValue, nextValue)) {
         return [
           {
             name: "Context",
-            prev: simpleValueSerialization(prevContext.value),
-            next: simpleValueSerialization(nextContext.value),
+            prev: simpleValueSerialization(prevValue),
+            next: simpleValueSerialization(nextValue),
+            diff: objectDiff(prevValue, nextValue),
           },
         ];
       }
@@ -262,11 +265,12 @@ export function createReactDevtoolsHookHandlers(
       for (const [context, prevValue] of prevContexts) {
         const nextValue = nextContexts.get(context);
 
-        if (prevValue !== nextValue) {
+        if (!Object.is(prevValue, nextValue)) {
           changes.push({
             name: context.displayName || "Context",
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
+            diff: objectDiff(prevValue, nextValue),
           });
         }
       }
@@ -283,7 +287,7 @@ export function createReactDevtoolsHookHandlers(
     prev: MemoizedState = null,
     next: MemoizedState = null,
     hookNames: string[]
-  ): TransferHookStateChange[] | undefined {
+  ): TransferNamedEntryChange[] | undefined {
     if (prev === null || next === null) {
       return;
     }
@@ -305,12 +309,16 @@ export function createReactDevtoolsHookHandlers(
       // So filter hooks by this attribute. With hookNames can distinguish
       // these hooks.
       if (next.queue) {
-        if (prev.memoizedState !== next.memoizedState) {
+        const prevValue = prev.memoizedState;
+        const nextValue = next.memoizedState;
+
+        if (!Object.is(prevValue, nextValue)) {
           changes.push({
             index,
             name: hookNames[index],
-            prev: simpleValueSerialization(prev.memoizedState),
-            next: simpleValueSerialization(next.memoizedState),
+            prev: simpleValueSerialization(prevValue),
+            next: simpleValueSerialization(nextValue),
+            diff: objectDiff(prevValue, nextValue),
           });
         }
       }
@@ -321,44 +329,6 @@ export function createReactDevtoolsHookHandlers(
     }
 
     return changes.length > 0 ? changes : undefined;
-  }
-
-  function simpleValueSerialization(value: any) {
-    switch (typeof value) {
-      case "boolean":
-      case "undefined":
-      case "number":
-      case "bigint":
-      case "symbol":
-        return String(value);
-
-      case "function":
-        return "ƒn";
-
-      case "string":
-        return value.length > 20 ? value.slice(0, 20) + "…" : value;
-
-      case "object":
-        if (value === null) {
-          return String(value);
-        }
-
-        if (Array.isArray(value)) {
-          return value.length ? "[…]" : "[]";
-        }
-
-        if (value.constructor === Object) {
-          for (const key in value) {
-            if (hasOwnProperty.call(value, key)) {
-              return "{…}";
-            }
-          }
-
-          return "{}";
-        }
-
-        return Object.prototype.toString.call(value);
-    }
   }
 
   function getChangedKeys(prev: MemoizedState, next: MemoizedState) {
@@ -374,6 +344,7 @@ export function createReactDevtoolsHookHandlers(
           name: key,
           prev: simpleValueSerialization(prev[key]),
           next: simpleValueSerialization(next[key]),
+          diff: objectDiff(prev[key], next[key]),
         });
       }
     }

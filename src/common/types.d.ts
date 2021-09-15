@@ -14,22 +14,28 @@ declare module "common-types" {
     ownerId: number; // Owner (if available)
   };
 
-  export type TransferNamedEntryChange = {
+  export type TransferValueDiff = {
     name: string;
-    prev: string;
-    next: string;
+    prev?: string;
+    next?: string;
   };
-  export type TransferHookStateChange = {
-    index: number;
+  export type TransferObjectDiff = {
+    keys: number;
+    diffKeys: number;
+    sample: TransferValueDiff[];
+  };
+  export type TransferNamedEntryChange = {
+    index?: number;
     name: string;
     prev: string;
     next: string;
+    path?: string[];
+    diff?: TransferObjectDiff | false;
   };
   export type TransferFiberChanges = {
     props?: TransferNamedEntryChange[];
-    state?: TransferNamedEntryChange[];
     context?: TransferNamedEntryChange[];
-    hooks?: TransferHookStateChange[];
+    state?: TransferNamedEntryChange[];
   };
 
   export interface BaseMessage {
