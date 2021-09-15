@@ -32,7 +32,6 @@ export function simpleValueSerialization(value: any) {
         return value.length ? "[…]" : "[]";
       }
 
-      if (typeof value.$$typeof === "symbol") debugger;
       if (
         typeof value.$$typeof === "symbol" &&
         String(value.$$typeof) === "Symbol(react.element)"

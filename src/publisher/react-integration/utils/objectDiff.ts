@@ -47,7 +47,7 @@ export function objectDiff(
         }
       }
     }
-    diffKeys > 0 && console.log({ keys, diffKeys, sample });
+
     return diffKeys > 0 ? { keys, diffKeys, sample } : false;
   }
 
