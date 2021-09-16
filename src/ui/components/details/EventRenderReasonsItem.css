@@ -3,30 +3,28 @@
 }
 
 .event-render-reason td {
-  padding-left: 2px;
-  padding-right: 2px;
+  vertical-align: baseline;
+  padding: 4px 2px;
+  line-height: 16px;
   color: #444;
 }
-.event-render-reason td:first-child {
-  min-width: 8ex;
-  text-align: right;
-  padding-left: 4px;
-}
 
-.event-render-reason__type {
-  vertical-align: top;
+.event-render-reason .event-render-reason__type {
+  padding-left: 10px;
+  line-height: 14px;
 }
 .event-render-reason__type-badge {
-  background-color: #d6daf3;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  color: #666;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: monospace;
+  background-color: #e48e8e;
+  color: white;
 }
 
 .event-render-reason__value-change {
   width: 100%;
-  line-height: 16px;
+  line-height: 12px;
   padding-top: 3px;
 }
 
@@ -35,6 +33,10 @@
   background-color: #ecf3ed;
   padding: 2px 4px;
   border-radius: 4px;
+}
+.event-render-reason__value-change code.removed {
+  background-color: #f3ecec;
+  color: #e24646;
 }
 
 .event-render-reason__diff-bracket {
@@ -82,4 +84,20 @@
   padding-left: 12px;
   font-size: 10px;
   color: #aaa;
+}
+
+.event-render-reason__value-change-path {
+  font-size: 11px;
+  color: #888;
+}
+.event-render-reason__value-change-path-more {
+  cursor: pointer;
+  padding: 3px 3px;
+  outline: 1px solid white;
+  border-radius: 3px;
+  background-color: #eee;
+  font-size: 10px;
+}
+.event-render-reason__value-change-path-more:hover {
+  background-color: #ddd;
 }

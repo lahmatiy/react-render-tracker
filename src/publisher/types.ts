@@ -434,6 +434,9 @@ export type ReactInterationApi = {
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
+export type ReactDispatcherTrapApi = {
+  getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
+};
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 
 export type RecordEventHandler = (

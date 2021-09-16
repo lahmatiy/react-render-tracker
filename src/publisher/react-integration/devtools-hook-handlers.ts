@@ -17,6 +17,7 @@ import {
   ReactDevtoolsHookHandlers,
   RecordEventHandler,
   ReactContext,
+  ReactDispatcherTrapApi,
 } from "../types";
 import { simpleValueSerialization } from "./utils/simpleValueSerialization";
 import { objectDiff } from "./utils/objectDiff";
@@ -43,6 +44,7 @@ export function createReactDevtoolsHookHandlers(
     removeRootPseudoKey,
     shouldFilterFiber,
   }: CoreApi,
+  { getHookPath }: ReactDispatcherTrapApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
   const { HostRoot, SuspenseComponent, OffscreenComponent, ContextProvider } =
@@ -109,7 +111,7 @@ export function createReactDevtoolsHookHandlers(
     untrackFibersSet.clear();
   }
 
-  function getChangeDescription(
+  function getComponentChange(
     prevFiber: Fiber,
     nextFiber: Fiber
   ): TransferFiberChanges | null {
@@ -140,7 +142,7 @@ export function createReactDevtoolsHookHandlers(
         : {
             // Functional component
             context: getFunctionContextChangedKeys(nextFiber),
-            state: getChangedHooksState(
+            state: getChangedStateHooks(
               prevFiber.memoizedState,
               nextFiber.memoizedState,
               _debugHookTypes || []
@@ -283,7 +285,7 @@ export function createReactDevtoolsHookHandlers(
     return;
   }
 
-  function getChangedHooksState(
+  function getChangedStateHooks(
     prev: MemoizedState = null,
     next: MemoizedState = null,
     hookNames: string[]
@@ -315,6 +317,7 @@ export function createReactDevtoolsHookHandlers(
         if (!Object.is(prevValue, nextValue)) {
           changes.push({
             index,
+            path: getHookPath(next.queue.dispatch),
             name: hookNames[index],
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
@@ -644,7 +647,7 @@ export function createReactDevtoolsHookHandlers(
         commitId: currentCommitId,
         fiberId,
         ...getDurations(fiber),
-        changes: getChangeDescription(alternate, fiber),
+        changes: getComponentChange(alternate, fiber),
       });
 
       updateContextsForFiber(fiber);
@@ -657,7 +660,7 @@ export function createReactDevtoolsHookHandlers(
     prevFiber: Fiber,
     parentFiber: Fiber | null
   ) {
-    const id = getFiberIdThrows(nextFiber);
+    const id = getOrGenerateFiberId(nextFiber);
     const shouldIncludeInTree = !shouldFilterFiber(nextFiber);
     const isSuspense = nextFiber.tag === SuspenseComponent;
     const isProvider = nextFiber.tag === ContextProvider;

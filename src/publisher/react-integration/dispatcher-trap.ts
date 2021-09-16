@@ -1,7 +1,7 @@
-import { ReactInternals, RecordEventHandler } from "../types";
-import { CoreApi } from "./core";
+import { ReactDispatcherTrapApi, ReactInternals } from "../types";
 
 type Dispatcher = any;
+type DispatchFn = (state: any) => any;
 
 function extractHookPath() {
   const stack = String(new Error().stack).split("\n").slice(4);
@@ -17,78 +17,84 @@ function extractHookPath() {
     path.unshift(hookName);
   }
 
+  // console.log(String(new Error().stack).split("\n"));
   // console.log(path);
   return path.length ? path : undefined;
 }
 
 export function dispatcherTrap(
-  renderer: ReactInternals,
-  recordEvent: RecordEventHandler,
-  { getFiberIdThrows }: CoreApi
-) {
+  renderer: ReactInternals
+): ReactDispatcherTrapApi {
   let currentDispatcher: Dispatcher | null = null;
   const knownDispatcher = new Set();
-  const patchedHookFn = new Map();
+  const patchedHookFn = new WeakMap<
+    DispatchFn,
+    { fn: DispatchFn; path: string[] | undefined }
+  >();
 
-  function patchUseEffect(dispatcher: Dispatcher) {
-    const orig = dispatcher.useEffect;
+  // function patchUseEffect(dispatcher: Dispatcher) {
+  //   const orig = dispatcher.useEffect;
 
-    dispatcher.useEffect = function (create: any, deps?: any[]) {
-      const fiber = renderer.getCurrentFiber();
-      const path = extractHookPath();
-      const wrappedCreate = () => {
-        const destroy = create();
-        const fiberId = getFiberIdThrows(fiber);
+  //   dispatcher.useEffect = function (create: any, deps?: any[]) {
+  //     const fiber = renderer.getCurrentFiber();
+  //     const path = trackHookLocation();
+  //     const wrappedCreate = () => {
+  //       const destroy = create();
+  //       const fiberId = getOrGenerateFiberId(fiber);
 
-        recordEvent({
-          op: "effect-create",
-          commitId: -1,
-          fiberId,
-          path,
-        });
+  //       recordEvent({
+  //         op: "effect-create",
+  //         commitId: -1,
+  //         fiberId,
+  //         path,
+  //       });
 
-        if (typeof destroy === "function") {
-          return () => {
-            recordEvent({
-              op: "effect-destroy",
-              commitId: -1,
-              fiberId,
-              path,
-            });
+  //       if (typeof destroy === "function") {
+  //         return () => {
+  //           recordEvent({
+  //             op: "effect-destroy",
+  //             commitId: -1,
+  //             fiberId,
+  //             path,
+  //           });
 
-            return destroy();
-          };
-        }
+  //           return destroy();
+  //         };
+  //       }
 
-        return destroy;
-      };
+  //       return destroy;
+  //     };
 
-      orig(wrappedCreate, deps);
-    };
-  }
+  //     orig(wrappedCreate, deps);
+  //   };
+  // }
 
-  function patchUseState(dispatcher: Dispatcher) {
-    const orig = dispatcher.useState;
+  function patchStateHook(hookName: string, dispatcher: Dispatcher) {
+    const orig = dispatcher[hookName];
 
-    dispatcher.useState = function (...args: any[]) {
-      const [state, setState] = orig(...args);
+    dispatcher[hookName] = function (...args: any[]) {
+      const [state, dispatch] = orig(...args);
 
-      if (!patchedHookFn.has(setState)) {
-        // console.log("useState", renderer.getCurrentFiber(), new Error().stack);
-        patchedHookFn.set(setState, (...ua: any[]) => {
-          // console.log("setState", new Error().stack, ...ua);
-          return setState(...ua);
+      if (!patchedHookFn.has(dispatch)) {
+        patchedHookFn.set(dispatch, {
+          path: extractHookPath(),
+          fn: (...args: any[]) => {
+            // console.log("dispatch", new Error().stack, ...args);
+            return dispatch(...args);
+          },
         });
       }
 
-      return [state, patchedHookFn.get(setState)];
+      return [state, patchedHookFn.get(dispatch)?.fn];
     };
   }
+
   function patchDispatcher(dispatcher: Dispatcher) {
     if (dispatcher && !knownDispatcher.has(dispatcher)) {
       knownDispatcher.add(dispatcher);
-      patchUseState(dispatcher);
-      patchUseEffect(dispatcher);
+      patchStateHook("useState", dispatcher);
+      patchStateHook("useReducer", dispatcher);
+      // patchUseEffect(dispatcher);
     }
 
     return dispatcher;
@@ -102,4 +108,10 @@ export function dispatcherTrap(
       currentDispatcher = patchDispatcher(value);
     },
   });
+
+  return {
+    getHookPath(dispatch: DispatchFn) {
+      return patchedHookFn.get(dispatch)?.path;
+    },
+  };
 }

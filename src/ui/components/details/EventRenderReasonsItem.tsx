@@ -1,5 +1,6 @@
 import * as React from "react";
 import { TransferNamedEntryChange, TransferObjectDiff } from "../../types";
+import FiberId from "../common/FiberId";
 
 interface EventRenderReasonsItemProps {
   type: "prop" | "state" | "context";
@@ -13,7 +14,7 @@ function plural(value: number, one: string, many: string) {
 function SimpleDiff({ data }: { data: { prev?: any; next?: any } }) {
   return (
     <>
-      <code>{data.prev}</code>
+      <code className="removed">{data.prev}</code>
       &nbsp;→&nbsp;
       <code>{data.next}</code>
     </>
@@ -65,7 +66,7 @@ function ExtendedDiff({ diff }: { diff: TransferObjectDiff }) {
               className="event-render-reason__diff-line removed"
             >
               {key}
-              <code>{entry.prev}</code>
+              <code className="removed">{entry.prev}</code>
             </div>
           );
         }
@@ -85,6 +86,33 @@ function ExtendedDiff({ diff }: { diff: TransferObjectDiff }) {
   );
 }
 
+function CallStack({ path }: { path: string[] }) {
+  const [collapsed, setCollapsed] = React.useState(true);
+  const isFit = path.length === 2 && path[1].length < 12;
+
+  if (collapsed && path.length > 1 && !isFit) {
+    return (
+      <span className="event-render-reason__value-change-path">
+        {path[0] + " → "}
+        <span
+          className="event-render-reason__value-change-path-more"
+          onClick={() => setCollapsed(false)}
+        >
+          …{path.length - 1} more…
+        </span>
+        {" → "}
+      </span>
+    );
+  }
+
+  return (
+    <span className="event-render-reason__value-change-path">
+      {path.join(" → ")}
+      {" → "}
+    </span>
+  );
+}
+
 const EventRenderReasonsItem = ({
   type,
   data,
@@ -95,10 +123,14 @@ const EventRenderReasonsItem = ({
         return (
           <tr key={index} className="event-render-reason">
             <td className="event-render-reason__type">
-              <span className="event-render-reason__type-badge">{type}</span>
+              <span className="event-render-reason__type-badge">
+                {type[0].toUpperCase()}
+              </span>
             </td>
             <td className="event-render-reason__value-change">
-              {row.name + " "}
+              {row.path && <CallStack path={row.path} />}
+              {row.name}
+              {typeof row.index === "number" && <FiberId id={row.index} />}{" "}
               {typeof row.diff === "object" ? (
                 <ExtendedDiff diff={row.diff} />
               ) : (

@@ -1,16 +1,8 @@
 import { TransferObjectDiff } from "../../types";
+import { isPlainObject } from "./isPlainObject";
 import { simpleValueSerialization } from "./simpleValueSerialization";
 
 const { hasOwnProperty } = Object.prototype;
-
-function isPlainObject(value: any) {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    value.constructor === Object &&
-    typeof value.$$typeof !== "symbol"
-  );
-}
 
 export function objectDiff(
   prev: any,
