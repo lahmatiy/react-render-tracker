@@ -15,6 +15,14 @@ function plural(value: number, one: string, many: string) {
   return value === 1 ? `${value} ${one}` : `${value} ${many}`;
 }
 
+function ShallowEqual() {
+  return (
+    <span className="event-render-reason__shallow-equal">
+      Shallow equal (no difference in entries)
+    </span>
+  );
+}
+
 function SimpleDiff({ data }: { data: { prev?: any; next?: any } }) {
   return (
     <>
@@ -182,6 +190,7 @@ const EventRenderReasonsItem = ({
               ) : (
                 "prev" in entry && <SimpleDiff data={entry} />
               )}
+              {entry.diff === false && <ShallowEqual />}
             </td>
           </tr>
         );
