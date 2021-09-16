@@ -21,12 +21,17 @@ import {
 } from "../types";
 import { simpleValueSerialization } from "./utils/simpleValueSerialization";
 import { objectDiff } from "./utils/objectDiff";
+import { arrayDiff } from "./utils/arrayDiff";
 
 type ContextDescriptor = {
   legacy: boolean;
   value: any;
 };
 type HookContexts = Map<ReactContext<any>, any>;
+
+function valueDiff(prev: any, next: any) {
+  return Array.isArray(prev) ? arrayDiff(prev, next) : objectDiff(prev, next);
+}
 
 export function createReactDevtoolsHookHandlers(
   {
@@ -224,7 +229,7 @@ export function createReactDevtoolsHookHandlers(
             name: "Context",
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
-            diff: objectDiff(prevValue, nextValue),
+            diff: valueDiff(prevValue, nextValue),
           },
         ];
       }
@@ -272,7 +277,7 @@ export function createReactDevtoolsHookHandlers(
             name: context.displayName || "Context",
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
-            diff: objectDiff(prevValue, nextValue),
+            diff: valueDiff(prevValue, nextValue),
           });
         }
       }
@@ -321,7 +326,7 @@ export function createReactDevtoolsHookHandlers(
             name: hookNames[index],
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
-            diff: objectDiff(prevValue, nextValue),
+            diff: valueDiff(prevValue, nextValue),
           });
         }
       }
@@ -347,7 +352,7 @@ export function createReactDevtoolsHookHandlers(
           name: key,
           prev: simpleValueSerialization(prev[key]),
           next: simpleValueSerialization(next[key]),
-          diff: objectDiff(prev[key], next[key]),
+          diff: valueDiff(prev[key], next[key]),
         });
       }
     }

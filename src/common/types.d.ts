@@ -24,13 +24,20 @@ declare module "common-types" {
     diffKeys: number;
     sample: TransferValueDiff[];
   };
+  export type TransferArrayDiff = {
+    prevLength: number;
+    nextLength: number;
+    eqLeft: number;
+    eqRight: number;
+  };
   export type TransferNamedEntryChange = {
     index?: number;
     name: string;
     prev: string;
     next: string;
+    location?: string;
     path?: string[];
-    diff?: TransferObjectDiff | false;
+    diff?: TransferObjectDiff | TransferArrayDiff | false;
   };
   export type TransferFiberChanges = {
     props?: TransferNamedEntryChange[];

@@ -1,5 +1,9 @@
 import * as React from "react";
-import { TransferNamedEntryChange, TransferObjectDiff } from "../../types";
+import {
+  TransferArrayDiff,
+  TransferNamedEntryChange,
+  TransferObjectDiff,
+} from "../../types";
 import FiberId from "../common/FiberId";
 
 interface EventRenderReasonsItemProps {
@@ -21,20 +25,24 @@ function SimpleDiff({ data }: { data: { prev?: any; next?: any } }) {
   );
 }
 
-function ExtendedDiff({ diff }: { diff: TransferObjectDiff }) {
+function ObjectDiff({ diff }: { diff: TransferObjectDiff }) {
   const sampleSize = diff.sample.length;
   const restKeys = diff.keys - sampleSize;
   const restNotes =
     diff.diffKeys > sampleSize
       ? diff.keys === diff.diffKeys
-        ? restKeys === 1
-          ? "… the rest 1 entry is also changed"
-          : `… other ${restKeys} entries are also changed`
-        : `… the rest ${diff.diffKeys - sampleSize} of ${
-            diff.keys - sampleSize
-          } entries are changed`
+        ? `… the rest ${plural(
+            restKeys,
+            "entry is",
+            "entries are"
+          )} also changed`
+        : `… ${diff.diffKeys - sampleSize} of the rest ${plural(
+            diff.keys - sampleSize,
+            "entry is",
+            "entries are"
+          )} also changed`
       : diff.keys > diff.diffKeys
-      ? `… the rest ${plural(
+      ? `… all the rest ${plural(
           diff.keys - sampleSize,
           "entry has",
           "entries have"
@@ -86,6 +94,38 @@ function ExtendedDiff({ diff }: { diff: TransferObjectDiff }) {
   );
 }
 
+function ArrayDiff({
+  entry,
+  diff,
+}: {
+  entry: TransferNamedEntryChange;
+  diff: TransferArrayDiff;
+}) {
+  const restChanges =
+    diff.eqLeft > 0 || diff.eqRight > 0
+      ? `${diff.eqLeft > 0 ? `first ${diff.eqLeft}` : ""}${
+          diff.eqLeft > 0 && diff.eqRight > 0 ? " and " : ""
+        }${diff.eqRight > 0 ? `last ${diff.eqRight}` : ""}${
+          diff.eqLeft + diff.eqRight === 1 ? " element is" : " elements are"
+        } equal`
+      : "";
+
+  return (
+    <>
+      <SimpleDiff data={entry} />
+      {diff.prevLength !== diff.nextLength && (
+        <div className="event-render-reason__diff-line">
+          <span className="key">{"length "}</span>
+          <SimpleDiff data={{ prev: diff.prevLength, next: diff.nextLength }} />
+        </div>
+      )}
+      {restChanges && (
+        <span className="event-render-reason__diff-rest">{restChanges}</span>
+      )}
+    </>
+  );
+}
+
 function CallStack({ path }: { path: string[] }) {
   const [collapsed, setCollapsed] = React.useState(true);
   const isFit = path.length === 2 && path[1].length < 12;
@@ -119,7 +159,7 @@ const EventRenderReasonsItem = ({
 }: EventRenderReasonsItemProps) => {
   return (
     <>
-      {data.map((row, index) => {
+      {data.map((entry, index) => {
         return (
           <tr key={index} className="event-render-reason">
             <td className="event-render-reason__type">
@@ -128,13 +168,19 @@ const EventRenderReasonsItem = ({
               </span>
             </td>
             <td className="event-render-reason__value-change">
-              {row.path && <CallStack path={row.path} />}
-              {row.name}
-              {typeof row.index === "number" && <FiberId id={row.index} />}{" "}
-              {typeof row.diff === "object" ? (
-                <ExtendedDiff diff={row.diff} />
+              {entry.path && <CallStack path={entry.path} />}
+              {entry.name}
+              {typeof entry.index === "number" && (
+                <FiberId id={entry.index} />
+              )}{" "}
+              {typeof entry.diff === "object" ? (
+                "keys" in entry.diff ? (
+                  <ObjectDiff diff={entry.diff} />
+                ) : (
+                  <ArrayDiff diff={entry.diff} entry={entry} />
+                )
               ) : (
-                "prev" in row && <SimpleDiff data={row} />
+                "prev" in entry && <SimpleDiff data={entry} />
               )}
             </td>
           </tr>
