@@ -22,6 +22,7 @@ import {
 import { simpleValueSerialization } from "./utils/simpleValueSerialization";
 import { objectDiff } from "./utils/objectDiff";
 import { arrayDiff } from "./utils/arrayDiff";
+import { getDisplayName } from "./utils/getDisplayName";
 
 type ContextDescriptor = {
   legacy: boolean;
@@ -274,7 +275,7 @@ export function createReactDevtoolsHookHandlers(
 
         if (!Object.is(prevValue, nextValue)) {
           changes.push({
-            name: context.displayName || "Context",
+            name: getDisplayName(context, "Context"),
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
             diff: valueDiff(prevValue, nextValue),

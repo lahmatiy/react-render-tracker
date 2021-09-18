@@ -3,6 +3,9 @@
 - Fixed crash when used for React prior 16.9 because of another internals for dependencies (context)
 - Improved object diff for update events
 - Added hook call stack for `useState` and `useReducer` hooks
+- Improved display names to visually distinguish fibers with the same name:
+  - `Button`, `Button'2`, `Button'3`...
+  - `Context.Provider` → `AnonymousContext.Provider`, `AnonymousContext'2.Provider`...
 
 ## 0.3.0 (September 8, 2021)
 

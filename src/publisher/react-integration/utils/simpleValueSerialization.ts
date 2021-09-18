@@ -1,3 +1,5 @@
+import { getDisplayNameFromJsx } from "./getDisplayNameFromJsx";
+
 const { hasOwnProperty } = Object.prototype;
 
 function isPlainObject(value: any) {
@@ -36,24 +38,7 @@ export function simpleValueSerialization(value: any) {
         typeof value.$$typeof === "symbol" &&
         String(value.$$typeof) === "Symbol(react.element)"
       ) {
-        let name;
-        switch (typeof value.type) {
-          case "string":
-            name = value.type;
-            break;
-          case "function":
-            name = value.type.displayName || value.type.name || "Anonymous";
-            break;
-          case "symbol":
-            switch (String(value.type)) {
-              case "Symbol(react.fragment)":
-                name = "";
-                break;
-            }
-            break;
-          default:
-            name = "[unknown]";
-        }
+        const name = getDisplayNameFromJsx(value.type);
 
         return `<${name}${Object.keys(value.props).length > 0 ? " …" : ""}/>`;
       }

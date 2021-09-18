@@ -338,20 +338,15 @@ export function getInternalReactConstants(version: string) {
           case PROVIDER_SYMBOL_STRING: {
             // 16.3.0 exposed the context object as "context"
             // PR #12501 changed it to "_context" for 16.3.1+
-            // NOTE Keep in sync with inspectElementRaw()
             const resolvedContext = fiber.type._context || fiber.type.context;
-            return `${resolvedContext.displayName || "Context"}.Provider`;
+            return `${getDisplayName(resolvedContext, "Context")}.Provider`;
           }
           case CONTEXT_NUMBER:
           case CONTEXT_SYMBOL_STRING: {
             // 16.3-16.5 read from "type" because the Consumer is the actual context object.
             // 16.6+ should read from "type._context" because Consumer can be different (in DEV).
-            // NOTE Keep in sync with inspectElementRaw()
             const resolvedContext = fiber.type._context || fiber.type;
-
-            // NOTE: TraceUpdatesBackendManager depends on the name ending in '.Consumer'
-            // If you change the name, figure out a more resilient way to detect it.
-            return `${resolvedContext.displayName || "Context"}.Consumer`;
+            return `${getDisplayName(resolvedContext, "Context")}.Consumer`;
           }
           case STRICT_MODE_NUMBER:
           case STRICT_MODE_SYMBOL_STRING:
