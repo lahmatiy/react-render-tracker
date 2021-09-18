@@ -86,6 +86,7 @@ const TreeLeafCaptionInner = React.memo(
       updatesCount,
       selfTime,
       totalTime,
+      warnings,
     } = fiber;
 
     const name = getFiberNameHighlight(displayName, match);
@@ -134,6 +135,7 @@ const TreeLeafCaptionInner = React.memo(
           </span>
           {key !== null && <FiberKey fiber={fiber} />}
           <FiberId id={id} />
+          {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
           {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
           {updatesCount > 0 && (
             <span

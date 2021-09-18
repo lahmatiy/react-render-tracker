@@ -9,6 +9,7 @@ export interface MessageFiber extends TransferFiber {
   updatesCount: number;
   selfTime: number;
   totalTime: number;
+  warnings: number;
 }
 
 export interface FiberEvent {

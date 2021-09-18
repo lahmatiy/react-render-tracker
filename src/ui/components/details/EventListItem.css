@@ -95,6 +95,20 @@
   transition: 0.2s;
   transition-property: opacity, transform;
 }
+.event-list-item__changes.has-warnings::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -2px;
+  margin-left: 3px;
+  width: 12px;
+  height: 12px;
+  background: url("./img/warning-exc-sign.svg") no-repeat center #e6d55f;
+  background-size: 8px;
+  background-clip: content-box;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
 .event-list-item__changes:hover::before {
   opacity: 1;
 }

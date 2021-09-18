@@ -2,7 +2,12 @@ import * as React from "react";
 import { getSubscriber } from "rempl";
 import { SubscribeMap, useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
-import { FiberEvent, Message, MessageFiber } from "../types";
+import {
+  FiberEvent,
+  Message,
+  MessageFiber,
+  TransferNamedEntryChange,
+} from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";
 
 interface EventsContext {
@@ -222,6 +227,10 @@ function markUpdated(map: Map<number, number>, id: number, type: number) {
   }
 }
 
+function isShallowEqual(entry: TransferNamedEntryChange) {
+  return entry.diff === false;
+}
+
 const UPDATE_SELF /*        */ = 0b00000001;
 const UPDATE_OWNER /*       */ = 0b00000010;
 const UPDATE_PARENT /*      */ = 0b00000100;
@@ -254,6 +263,7 @@ export function processEvents(
           mounted: true,
           events: [],
           updatesCount: 0,
+          warnings: 0,
           selfTime: event.selfTime,
           totalTime: event.totalTime,
         };
@@ -297,14 +307,24 @@ export function processEvents(
           updatesCount: fiber.updatesCount + 1,
           selfTime: fiber.selfTime + event.selfTime,
           totalTime: fiber.totalTime + event.totalTime,
+          warnings:
+            fiber.warnings +
+            Number(
+              (event.changes?.context
+                ? event.changes.context.some(isShallowEqual)
+                : false) ||
+                (event.changes?.state
+                  ? event.changes.state.some(isShallowEqual)
+                  : false)
+            ),
         };
 
         break;
 
-      case "effect-create":
-      case "effect-destroy":
-        fiber = fiberById.get(event.fiberId)!;
-        break;
+      // case "effect-create":
+      // case "effect-destroy":
+      //   fiber = fiberById.get(event.fiberId)!;
+      //   break;
 
       default:
         continue;

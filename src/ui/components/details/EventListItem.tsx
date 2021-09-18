@@ -4,6 +4,7 @@ import FiberId from "../common/FiberId";
 import FiberKey from "../common/FiberKey";
 import { formatDuration } from "../../utils/duration";
 import { Event, MessageFiber } from "../../types";
+import { TransferNamedEntryChange } from "common-types";
 
 interface EventListItemProps {
   fiber: MessageFiber;
@@ -21,27 +22,34 @@ const opTooltip: Record<Event["op"], string> = {
   "effect-destroy": "Destroy effect",
 };
 
+function isShallowEqual(entry: TransferNamedEntryChange) {
+  return entry.diff === false;
+}
+
 function getChanges(event: Event) {
   if (event.op !== "update" || event.changes === null) {
     return null;
   }
 
-  const reasons: string[] = [];
   const { context, props, state } = event.changes;
+  const reasons: string[] = [];
+  let hasShallowEqual = false;
 
   if (context) {
     reasons.push("context");
+    hasShallowEqual ||= context.some(isShallowEqual);
   }
 
   if (state) {
     reasons.push("state");
+    hasShallowEqual ||= state.some(isShallowEqual);
   }
 
   if (props) {
     reasons.push("props");
   }
 
-  return reasons.length > 0 ? reasons : null;
+  return reasons.length > 0 ? { reasons, hasShallowEqual } : null;
 }
 
 const EventListItem = ({
@@ -54,7 +62,8 @@ const EventListItem = ({
   const [expanded, setIsCollapsed] = React.useState(false);
   const changes = getChanges(event);
   const isUpdateTrigger =
-    changes !== null && (changes.length > 1 || changes[0] !== "props");
+    changes !== null &&
+    (changes.reasons.length > 1 || changes.reasons[0] !== "props");
 
   return (
     <>
@@ -104,12 +113,14 @@ const EventListItem = ({
           {changes !== null && (
             <span
               className={
-                "event-list-item__changes" + (expanded ? " expanded" : "")
+                "event-list-item__changes" +
+                (expanded ? " expanded" : "") +
+                (changes.hasShallowEqual ? " has-warnings" : "")
               }
               onClick={() => setIsCollapsed(expanded => !expanded)}
             >
               <span style={{ color: "#999" }}>Changes in</span>{" "}
-              {changes.join(", ")}
+              {changes.reasons.join(", ")}
             </span>
           )}
           {(event.op === "effect-create" || event.op === "effect-destroy") &&

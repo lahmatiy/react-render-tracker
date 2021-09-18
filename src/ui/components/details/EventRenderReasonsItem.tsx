@@ -39,12 +39,12 @@ function ObjectDiff({ diff }: { diff: TransferObjectDiff }) {
   const restNotes =
     diff.diffKeys > sampleSize
       ? diff.keys === diff.diffKeys
-        ? `… the rest ${plural(
+        ? `… all the rest ${plural(
             restKeys,
             "entry is",
             "entries are"
           )} also changed`
-        : `… ${diff.diffKeys - sampleSize} of the rest ${plural(
+        : `… +${diff.diffKeys - sampleSize} of the rest ${plural(
             diff.keys - sampleSize,
             "entry is",
             "entries are"
@@ -169,30 +169,24 @@ const EventRenderReasonsItem = ({
     <>
       {data.map((entry, index) => {
         return (
-          <tr key={index} className="event-render-reason">
-            <td className="event-render-reason__type">
-              <span className="event-render-reason__type-badge">
-                {type[0].toUpperCase()}
-              </span>
-            </td>
-            <td className="event-render-reason__value-change">
-              {entry.path && <CallStack path={entry.path} />}
-              {entry.name}
-              {typeof entry.index === "number" && (
-                <FiberId id={entry.index} />
-              )}{" "}
-              {typeof entry.diff === "object" ? (
-                "keys" in entry.diff ? (
-                  <ObjectDiff diff={entry.diff} />
-                ) : (
-                  <ArrayDiff diff={entry.diff} entry={entry} />
-                )
+          <div key={index} className="event-render-reason">
+            <span className="event-render-reason__type-badge">{type}</span>{" "}
+            {entry.path && <CallStack path={entry.path} />}
+            {entry.name}
+            {typeof entry.index === "number" && (
+              <FiberId id={entry.index} />
+            )}{" "}
+            {typeof entry.diff === "object" ? (
+              "keys" in entry.diff ? (
+                <ObjectDiff diff={entry.diff} />
               ) : (
-                "prev" in entry && <SimpleDiff data={entry} />
-              )}
-              {entry.diff === false && <ShallowEqual />}
-            </td>
-          </tr>
+                <ArrayDiff diff={entry.diff} entry={entry} />
+              )
+            ) : (
+              "prev" in entry && <SimpleDiff data={entry} />
+            )}
+            {entry.diff === false && <ShallowEqual />}
+          </div>
         );
       })}
     </>

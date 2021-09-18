@@ -14,19 +14,17 @@ const EventRenderReasons = ({ changes }: EventRenderReasonsProps) => {
   return (
     <tr className="event-render-reasons">
       <td colSpan={4}>
-        <table className="event-render-reasons__list">
-          <tbody>
-            {changes.props && (
-              <EventRenderReasonsItem data={changes.props} type="prop" />
-            )}
-            {changes.context && (
-              <EventRenderReasonsItem data={changes.context} type="context" />
-            )}
-            {changes.state && (
-              <EventRenderReasonsItem data={changes.state} type="state" />
-            )}
-          </tbody>
-        </table>
+        <div className="event-render-reasons__list">
+          {changes.props && (
+            <EventRenderReasonsItem data={changes.props} type="prop" />
+          )}
+          {changes.context && (
+            <EventRenderReasonsItem data={changes.context} type="context" />
+          )}
+          {changes.state && (
+            <EventRenderReasonsItem data={changes.state} type="state" />
+          )}
+        </div>
       </td>
     </tr>
   );
