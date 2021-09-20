@@ -1,6 +1,6 @@
 import { getDisplayNameFromJsx } from "./getDisplayNameFromJsx";
 
-const { hasOwnProperty } = Object.prototype;
+const { hasOwnProperty, toString } = Object.prototype;
 
 function isPlainObject(value: any) {
   return (
@@ -53,6 +53,14 @@ export function simpleValueSerialization(value: any) {
         return "{}";
       }
 
-      return Object.prototype.toString.call(value);
+      const tagString = toString.call(value).slice(8, -1);
+
+      if (tagString === "Object") {
+        const constructor = Object.getPrototypeOf(value).constructor;
+
+        return `${constructor.displayName || constructor.name || ""}{…}`;
+      }
+
+      return `${tagString}{…}`;
   }
 }
