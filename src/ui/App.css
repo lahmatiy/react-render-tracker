@@ -15,3 +15,17 @@
     "render-tree details"
     "statusbar statusbar";
 }
+
+.app-waiting-for-react {
+  grid-area: render-tree;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #888;
+  visibility: hidden;
+  opacity: 0;
+}
+.app-waiting-for-react.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: 0.5s opacity;
+}

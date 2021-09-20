@@ -9,6 +9,29 @@ import {
   SelectionContextProvider,
 } from "./utils/selection";
 import { EventsContextProvider } from "./utils/events";
+import { useFiberChildren } from "./utils/fiber-maps";
+
+function WaitingForReact() {
+  const [visible, setVisible] = React.useState(false);
+  const children = useFiberChildren(0);
+
+  // Delay appearing to give a chance to receive some events before
+  // displaying awaiting caption
+  React.useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (children.length) {
+    return null;
+  }
+
+  return (
+    <div className={"app-waiting-for-react" + (visible ? " visible" : "")}>
+      Waiting for a React&apos;s render root to be mount...
+    </div>
+  );
+}
 
 function App() {
   const [filterPattern, setFilterPattern] = React.useState("");
@@ -37,6 +60,7 @@ function App() {
               />
 
               <FindMatchContextProvider pattern={filterPattern}>
+                <WaitingForReact />
                 <RenderTree
                   rootId={0}
                   groupByParent={groupByParent}
