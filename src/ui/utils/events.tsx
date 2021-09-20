@@ -63,6 +63,7 @@ export function EventsContextProvider({
         fiberById.set(id, {
           ...fiber,
           events: [],
+          warnings: 0,
           updatesCount: 0,
           totalTime: 0,
           selfTime: 0,
