@@ -176,7 +176,8 @@ export function createReactDevtoolsHookHandlers(
 
       case ElementTypeFunction:
       case ElementTypeMemo:
-      case ElementTypeForwardRef: {
+      case ElementTypeForwardRef:
+      case ElementTypeContext: {
         const id = getFiberIdThrows(fiber);
         const contexts = getContextsForFunctionFiber(fiber);
 
