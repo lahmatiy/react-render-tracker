@@ -5,6 +5,7 @@ import {
   ElementTypeFunction,
   ElementTypeMemo,
   ElementTypeHostRoot,
+  ElementTypeContext,
 } from "./utils/constants";
 import type { CoreApi } from "./core";
 import {
@@ -127,7 +128,8 @@ export function createReactDevtoolsHookHandlers(
       type !== ElementTypeClass &&
       type !== ElementTypeFunction &&
       type !== ElementTypeMemo &&
-      type !== ElementTypeForwardRef
+      type !== ElementTypeForwardRef &&
+      type !== ElementTypeContext
     ) {
       return null;
     }
