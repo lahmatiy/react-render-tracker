@@ -37,9 +37,14 @@ declare module "rempl" {
     ): T extends "tree-changes"
       ? {
           subscribe(callback: (data: treeChangesData | null) => void): void;
+          onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
           getRemoteMethod<T extends string>(
             method: T
-          ): T extends "getEvents" ? treeChangesGetEventsMethod : never;
+          ): T extends "getEvents"
+            ? treeChangesGetEventsMethod & {
+                available: boolean;
+              }
+            : never;
         }
       : never;
   }

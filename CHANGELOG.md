@@ -8,6 +8,7 @@
   - `Context.Provider` → `AnonymousContext.Provider`, `AnonymousContext'2.Provider`...
 - Added output for received bytes of events data in status bar
 - Fixed an issue with solutions like `react-refresh` that might not work when using RRT without React Devtools
+- Fixed an issue where in some cases events were not loaded because the `getEvents()` remote method is not yet available
 
 ## 0.3.0 (September 8, 2021)
 

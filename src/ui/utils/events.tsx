@@ -120,6 +120,12 @@ export function EventsContextProvider({
     const channel = getSubscriber().ns("tree-changes");
     const remoteLoadEvents = channel.getRemoteMethod("getEvents");
 
+    channel.onRemoteMethodsChanged(methods => {
+      if (methods.includes("getEvents")) {
+        loadEvents();
+      }
+    });
+
     const TROTTLE = false;
     const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
     let loadingStartOffset = 0;
@@ -132,7 +138,7 @@ export function EventsContextProvider({
       loadEvents();
     };
     const loadEvents = () => {
-      if (loading) {
+      if (loading || !remoteLoadEvents.available) {
         return;
       }
 
