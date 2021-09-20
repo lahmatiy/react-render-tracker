@@ -37,6 +37,7 @@ declare module "common-types" {
     next: string;
     location?: string;
     path?: string[];
+    paths?: Array<string[] | undefined>;
     diff?: TransferObjectDiff | TransferArrayDiff | false;
   };
   export type TransferFiberChanges = {

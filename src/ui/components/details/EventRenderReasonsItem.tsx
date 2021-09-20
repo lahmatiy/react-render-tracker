@@ -17,8 +17,11 @@ function plural(value: number, one: string, many: string) {
 
 function ShallowEqual() {
   return (
-    <span className="event-render-reason__shallow-equal">
-      Shallow equal (no difference in entries)
+    <span
+      className="event-render-reason__shallow-equal"
+      title="No difference in entries. In case of props or context, a value memoization might be effective. In case of state, additional checking before changing the state can be effective."
+    >
+      Shallow equal
     </span>
   );
 }
@@ -134,8 +137,14 @@ function ArrayDiff({
   );
 }
 
-function CallStack({ path }: { path: string[] }) {
-  const [collapsed, setCollapsed] = React.useState(true);
+function CallStack({
+  path,
+  expanded = false,
+}: {
+  path: string[];
+  expanded?: boolean;
+}) {
+  const [collapsed, setCollapsed] = React.useState(!expanded);
   const isFit = path.length === 2 && path[1].length < 12;
 
   if (collapsed && path.length > 1 && !isFit) {
@@ -161,6 +170,36 @@ function CallStack({ path }: { path: string[] }) {
   );
 }
 
+function CallStackList({ paths }: { paths: Array<string[] | undefined> }) {
+  const [collapsed, setCollapsed] = React.useState(true);
+
+  if (paths.length < 2) {
+    return paths[0] ? <CallStack path={paths[0]} /> : null;
+  }
+
+  if (collapsed) {
+    return (
+      <span
+        className="event-render-reason__value-change-show-paths"
+        onClick={() => setCollapsed(false)}
+      >
+        …{paths.length} paths…
+      </span>
+    );
+  }
+
+  return (
+    <ol className="event-render-reason__value-change-path-list">
+      {paths.map((path, index) => (
+        <li key={index}>
+          {path && <CallStack path={path} />}
+          useContext(…)
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 const EventRenderReasonsItem = ({
   type,
   data,
@@ -172,6 +211,7 @@ const EventRenderReasonsItem = ({
           <div key={index} className="event-render-reason">
             <span className="event-render-reason__type-badge">{type}</span>{" "}
             {entry.path && <CallStack path={entry.path} />}
+            {entry.paths && <CallStackList paths={entry.paths} />}
             {entry.name}
             {typeof entry.index === "number" && (
               <FiberId id={entry.index} />

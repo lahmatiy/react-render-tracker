@@ -51,7 +51,7 @@ export function createReactDevtoolsHookHandlers(
     removeRootPseudoKey,
     shouldFilterFiber,
   }: CoreApi,
-  { getHookPath }: ReactDispatcherTrapApi,
+  { getHookPath, getFiberUseContextPaths }: ReactDispatcherTrapApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
   const { HostRoot, SuspenseComponent, OffscreenComponent, ContextProvider } =
@@ -281,6 +281,9 @@ export function createReactDevtoolsHookHandlers(
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
             diff: valueDiff(prevValue, nextValue),
+            paths: getFiberUseContextPaths(fiber, context)?.map(
+              entry => entry.path
+            ),
           });
         }
       }

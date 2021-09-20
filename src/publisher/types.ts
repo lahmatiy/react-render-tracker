@@ -436,6 +436,10 @@ export type ReactInterationApi = {
 };
 export type ReactDispatcherTrapApi = {
   getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
+  getFiberUseContextPaths: (
+    fiber: Fiber,
+    context: ReactContext<any>
+  ) => Array<{ path: string[] | undefined }> | undefined;
 };
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 
