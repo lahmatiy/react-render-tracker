@@ -6,11 +6,11 @@ import {
 } from "./constants";
 import { getDisplayName } from "./getDisplayName";
 
-function resolveDisplayName(value: any) {
-  return typeof value === "function"
-    ? getDisplayName(value)
-    : getDisplayNameFromJsx(value);
-}
+// function resolveDisplayName(value: any) {
+//   return typeof value === "function"
+//     ? getDisplayName(value)
+//     : getDisplayNameFromJsx(value);
+// }
 
 export function getDisplayNameFromJsx(type: any) {
   let name = "";
@@ -31,16 +31,16 @@ export function getDisplayNameFromJsx(type: any) {
             name = "";
             break;
           case MEMO_SYMBOL_STRING:
-            name = resolveDisplayName(type.type);
-            break;
+          //   name = resolveDisplayName(type.type);
+          //   break;
           case FORWARD_REF_SYMBOL_STRING:
-            name = resolveDisplayName(type.render);
-            break;
-          case LAZY_SYMBOL_STRING:
-            name = getDisplayName(type._ctor);
+          //   name = resolveDisplayName(type.render);
+          //   break;
+          case LAZY_SYMBOL_STRING: // _ctor
+            name = getDisplayName(type);
             break;
           default:
-            name = "String(type.$$typeof)";
+            name = String(type.$$typeof);
         }
     }
   }
