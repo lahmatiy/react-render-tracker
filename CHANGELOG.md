@@ -6,6 +6,7 @@
 - Improved display names to visually distinguish fibers with the same name:
   - `Button`, `Button'2`, `Button'3`...
   - `Context.Provider` → `AnonymousContext.Provider`, `AnonymousContext'2.Provider`...
+- Added output for received bytes of events data in status bar
 
 ## 0.3.0 (September 8, 2021)
 

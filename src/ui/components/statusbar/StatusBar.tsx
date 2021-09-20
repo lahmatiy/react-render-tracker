@@ -6,11 +6,23 @@ function plural(num: number, single: string, multiple = single + "s") {
   return `${num} ${num === 1 ? single : multiple}`;
 }
 
+function bytesFormatted(value: number) {
+  const units = [" bytes", "Kb", "MB"];
+
+  while (value > 1024 && units.length > 1) {
+    value /= 1024;
+    units.shift();
+  }
+
+  return `${units.length === 3 ? value : value.toFixed(1)}${units[0]}`;
+}
+
 const StatusBar = () => {
   const {
     loadingStartOffset,
     loadedEventsCount,
     totalEventsCount,
+    bytesReceived,
     mountCount,
     unmountCount,
     updateCount,
@@ -23,7 +35,9 @@ const StatusBar = () => {
     <div className="statusbar">
       <span className="statusbar__summary">
         {totalEventsCount > 0
-          ? plural(loadedEventsCount, "event")
+          ? `${plural(loadedEventsCount, "event")} (${bytesFormatted(
+              bytesReceived
+            )})`
           : "No events"}
         {fiberCount > 0
           ? ` for ${plural(fiberCount, "component instance")}`

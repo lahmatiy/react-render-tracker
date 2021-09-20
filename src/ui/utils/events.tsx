@@ -1,4 +1,5 @@
 import * as React from "react";
+import { stringifyInfo } from "@discoveryjs/json-ext";
 import { getSubscriber } from "rempl";
 import { SubscribeMap, useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
@@ -15,6 +16,7 @@ interface EventsContext {
   loadingStartOffset: number;
   loadedEventsCount: number;
   totalEventsCount: number;
+  bytesReceived: number;
   mountCount: number;
   unmountCount: number;
   updateCount: number;
@@ -26,6 +28,7 @@ const createEventsContextValue = (): EventsContext => ({
   loadingStartOffset: 0,
   loadedEventsCount: 0,
   totalEventsCount: 0,
+  bytesReceived: 0,
   mountCount: 0,
   unmountCount: 0,
   updateCount: 0,
@@ -94,6 +97,7 @@ export function EventsContextProvider({
         loadingStartOffset: 0,
         loadedEventsCount: 0,
         totalEventsCount: state.totalEventsCount - state.events.length,
+        bytesReceived: 0,
         mountCount: 0,
         unmountCount: 0,
         updateCount: 0,
@@ -150,6 +154,7 @@ export function EventsContextProvider({
           lastLoadedOffset += eventsChunk.length;
 
           if (eventsChunk.length > 0) {
+            const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
               maps
@@ -163,6 +168,7 @@ export function EventsContextProvider({
                 events: state.events,
                 loadedEventsCount: state.loadedEventsCount + eventsChunk.length,
                 totalEventsCount: totalEventsCount - eventsSince.current,
+                bytesReceived: state.bytesReceived + bytesReceived,
                 mountCount: state.mountCount + mountCount,
                 unmountCount: state.unmountCount + unmountCount,
                 updateCount: state.updateCount + updateCount,
