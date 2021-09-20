@@ -3,10 +3,9 @@
   padding-bottom: 0;
 }
 .event-render-reasons__list {
-  width: 100%;
-  border-collapse: collapse;
-  border-top: 1px solid #e8e8e8;
-  border-bottom: 1px solid #e8e8e8;
+  margin: 0 4px 4px 4px;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
   background: #f7f7f7;
   font-size: 12px;
 }

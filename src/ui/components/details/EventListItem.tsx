@@ -35,6 +35,10 @@ function getChanges(event: Event) {
   const reasons: string[] = [];
   let hasShallowEqual = false;
 
+  if (props) {
+    reasons.push("props");
+  }
+
   if (context) {
     reasons.push("context");
     hasShallowEqual ||= context.some(isShallowEqual);
@@ -43,10 +47,6 @@ function getChanges(event: Event) {
   if (state) {
     reasons.push("state");
     hasShallowEqual ||= state.some(isShallowEqual);
-  }
-
-  if (props) {
-    reasons.push("props");
   }
 
   return reasons.length > 0 ? { reasons, hasShallowEqual } : null;

@@ -69,10 +69,12 @@
 }
 .event-list-item__changes.expanded {
   position: relative;
-  border-color: #e8e8e8;
+  border-color: #d0d0d0;
   border-bottom-color: transparent;
   background-color: #f7f7f7;
+  margin-top: -3px;
   margin-bottom: -1px;
+  padding-top: 2px;
   padding-bottom: 4px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;

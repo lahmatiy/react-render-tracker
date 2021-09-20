@@ -5,15 +5,10 @@
 .event-render-reason {
   vertical-align: baseline;
   padding: 4px;
-  padding-left: 16px;
   line-height: 16px;
   color: #444;
 }
 
-.event-render-reason .event-render-reason__type {
-  padding-left: 10px;
-  line-height: 14px;
-}
 .event-render-reason__type-badge {
   display: inline-block;
   vertical-align: middle;
@@ -25,7 +20,7 @@
   font-size: 9px;
   line-height: 10px;
   text-transform: uppercase;
-  border: 1px solid #e5e2bd;
+  border: 1px solid #cecbac;
   background-color: #f5f3de;
   color: #a09f6e;
 }
@@ -33,13 +28,13 @@
 .event-render-reason code {
   padding: 2px 4px;
   border-radius: 4px;
-  color: #1e9611;
+  color: #619c5c;
   background-color: #ecf3ed;
   font-family: Consolas, monospace;
 }
 .event-render-reason code.removed {
   background-color: #f3ecec;
-  color: #e24646;
+  color: #ca6a6a;
 }
 
 .event-render-reason__diff-bracket {
@@ -70,7 +65,7 @@
   opacity: 0.65;
 }
 .event-render-reason__diff-line.removed {
-  color: #e24646;
+  color: #ca6a6a;
 }
 .event-render-reason__diff-line.removed .key::before {
   content: "-";
