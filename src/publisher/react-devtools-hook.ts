@@ -11,6 +11,10 @@ type ReactDevtoolsHook = {
     priorityLevel: any
   ) => void;
   onPostCommitFiberRoot: (rendererId: number, root: FiberRoot) => void;
+
+  // Not used. It is declared to follow React Devtools hook's behaviour
+  // in order for other tools like react-render to work
+  renderers?: Map<any, any>;
 };
 
 /**
@@ -25,16 +29,29 @@ export function createReactDevtoolsHook(
   const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
+  // Not used. It is declared to follow React Devtools hook's behaviour
+  // in order for other tools like react-render to work
+  const renderers = new Map<number, ReactInternals>();
+
   const reactDevtoolsHook: ReactDevtoolsHook = {
     // This is a legacy flag.
     // React v16 checks the hook for this to ensure DevTools is new enough.
     supportsFiber: true,
 
+    // Not used. It is declared to follow React Devtools hook's behaviour
+    // in order for other tools like react-render to work
+    renderers,
+
     inject(renderer) {
-      const id =
-        typeof existing.inject === "function"
-          ? existing.inject(renderer)
-          : ++rendererSeedId;
+      let id = ++rendererSeedId;
+
+      if (typeof existing.inject === "function") {
+        id = existing.inject(renderer);
+      } else {
+        // Follow React Devtools hook's behaviour in order for other tools
+        // like react-render to work
+        renderers.set(id, renderer);
+      }
 
       if (typeof renderer.findFiberByHostInstance === "function") {
         rendererInterfaces.set(id, attachRenderer(renderer));
@@ -152,8 +169,10 @@ export function installReactDevtoolsHook(
     existingHook[MARKER] = MARKER;
 
     for (const [key, value] of Object.entries(hook)) {
-      delete existingHook[key];
-      existingHook[key] = value;
+      if (typeof value === "function") {
+        delete existingHook[key];
+        existingHook[key] = value;
+      }
     }
   } else {
     Object.defineProperty(target, hookName, {
