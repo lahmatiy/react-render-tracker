@@ -176,9 +176,7 @@ export function installReactDevtoolsHook(
     }
   } else {
     Object.defineProperty(target, hookName, {
-      // This property needs to be configurable for the test environment,
-      // else we won't be able to delete and recreate it between tests.
-      configurable: true,
+      configurable: false,
       enumerable: false,
       get() {
         return hook;

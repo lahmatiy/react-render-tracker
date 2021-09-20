@@ -9,6 +9,7 @@
   - `Context.Provider` → `AnonymousContext.Provider`, `AnonymousContext'2.Provider`...
 - Added output for received bytes of events data in status bar
 - Fixed an issue with solutions like `react-refresh` that might not work when using RRT without React Devtools
+- Defined `__REACT_DEVTOOLS_GLOBAL_HOOK__` as non-configurable like React Devtools does to avoid overriding the hook by other tools when React Devtools is not used
 - Fixed an issue where in some cases events were not loaded because the `getEvents()` remote method is not yet available
 - Fixed displaying changes in a context's Provider
 - Added "Waiting for React..." when no events have been received for some time since UI initialization
