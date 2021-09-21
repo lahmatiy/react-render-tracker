@@ -56,9 +56,11 @@ export function simpleValueSerialization(value: any) {
       const tagString = toString.call(value).slice(8, -1);
 
       if (tagString === "Object") {
-        const constructor = Object.getPrototypeOf(value).constructor;
+        const constructor = Object.getPrototypeOf(value)?.constructor;
 
-        return `${constructor.displayName || constructor.name || ""}{…}`;
+        if (typeof constructor === "function") {
+          return `${constructor.displayName || constructor.name || ""}{…}`;
+        }
       }
 
       return `${tagString}{…}`;
