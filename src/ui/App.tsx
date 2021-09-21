@@ -30,9 +30,11 @@ function WaitingForReady() {
   return (
     <div className={"app-waiting-for-react" + (visible ? " visible" : "")}>
       {totalEventsCount > 0
-        ? `Loading events (${Math.trunc(
-            (100 * loadedEventsCount) / totalEventsCount
-          )}%)...`
+        ? loadedEventsCount === totalEventsCount
+          ? "Rendering..."
+          : `Loading events (${Math.trunc(
+              (100 * loadedEventsCount) / totalEventsCount
+            )}%)...`
         : "Waiting for a React's render root to be mount..."}
     </div>
   );
