@@ -13,6 +13,8 @@
 - Fixed an issue where in some cases events were not loaded because the `getEvents()` remote method is not yet available
 - Fixed displaying changes in a context's Provider
 - Added "Waiting for React..." when no events have been received for some time since UI initialization
+- Significantly boosted events loading (up to 5-10 times)
+- Fixed issue when children or event log doesn't update in parent-child relationship mode
 
 ## 0.3.0 (September 8, 2021)
 

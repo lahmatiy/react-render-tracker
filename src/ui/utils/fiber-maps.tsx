@@ -61,6 +61,11 @@ type callback<V> = (value: V) => void;
 export class SubscribeMap<K, V> extends Map<K, V> {
   private subscriptionsMap = new Map<K, Set<{ fn: callback<V | null> }>>();
 
+  hasSubscriptions(id: K) {
+    const subscriptions = this.subscriptionsMap.get(id);
+    return subscriptions !== undefined && subscriptions.size > 0;
+  }
+
   subscribe(id: K, fn: callback<V>) {
     return subscribeById<K, callback<V>>(this.subscriptionsMap, id, fn);
   }

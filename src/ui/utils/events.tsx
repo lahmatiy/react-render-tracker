@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { stringifyInfo } from "@discoveryjs/json-ext";
 import { getSubscriber } from "rempl";
 import { SubscribeMap, useFiberMaps } from "./fiber-maps";
@@ -129,6 +130,7 @@ export function EventsContextProvider({
 
     const TROTTLE = false;
     const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
+    const mapsUpdates = new Map<number, number>();
     let loadingStartOffset = 0;
     let lastLoadedOffset = 0;
     let totalEventsCount = 0;
@@ -149,6 +151,8 @@ export function EventsContextProvider({
       }
 
       if (lastLoadedOffset >= totalEventsCount) {
+        // flush updates async
+        setTimeout(() => flushUpdatedMaps(mapsUpdates, maps), 0);
         loadingStartOffset = totalEventsCount;
         return;
       }
@@ -164,6 +168,7 @@ export function EventsContextProvider({
             const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
+              mapsUpdates,
               maps
             );
 
@@ -232,11 +237,18 @@ function removeFiber(map: Map<number, number[]>, id: number, fiberId: number) {
   }
 }
 
-function markUpdated(map: Map<number, number>, id: number, type: number) {
-  if (map.has(id)) {
-    map.set(id, (map.get(id) || 0) | type);
-  } else {
-    map.set(id, type);
+function markUpdated(
+  subscribeMap: SubscribeMap<number, any>,
+  id: number,
+  map: Map<number, number>,
+  type: number
+) {
+  if (subscribeMap.hasSubscriptions(id)) {
+    if (map.has(id)) {
+      map.set(id, (map.get(id) || 0) | type);
+    } else {
+      map.set(id, type);
+    }
   }
 }
 
@@ -244,14 +256,15 @@ function isShallowEqual(entry: TransferNamedEntryChange) {
   return entry.diff === false;
 }
 
-const UPDATE_SELF /*        */ = 0b00000001;
-const UPDATE_OWNER /*       */ = 0b00000010;
-const UPDATE_PARENT /*      */ = 0b00000100;
-const UPDATE_MOUNT_OWNER /* */ = 0b00001000;
-const UPDATE_MOUNT_PARENT /**/ = 0b00010000;
+const UPDATE_SELF /*               */ = 0b00000001;
+const UPDATE_OWNER /*              */ = 0b00000010;
+const UPDATE_OWNER_MOUNTED_ONLY /* */ = 0b00000100;
+const UPDATE_PARENT /*             */ = 0b00001000;
+const UPDATE_PARENT_MOUNTED_ONLY /**/ = 0b00010000;
 
 export function processEvents(
   events: Message[],
+  mapsUpdates: Map<number, number>,
   {
     fiberById,
     fibersByParentId,
@@ -260,7 +273,6 @@ export function processEvents(
     mountedFibersByOwnerId,
   }: ReturnType<typeof useFiberMaps>
 ) {
-  const updated = new Map<number, number>();
   let mountCount = 0;
   let unmountCount = 0;
   let updateCount = 0;
@@ -281,14 +293,29 @@ export function processEvents(
           totalTime: event.totalTime,
         };
 
-        markUpdated(updated, fiber.parentId, UPDATE_OWNER);
+        markUpdated(
+          fibersByParentId,
+          fiber.parentId,
+          mapsUpdates,
+          UPDATE_PARENT
+        );
         upsertFiber(fibersByParentId, fiber.parentId, fiber.id);
-        markUpdated(updated, fiber.parentId, UPDATE_MOUNT_OWNER);
+        markUpdated(
+          mountedFibersByParentId,
+          fiber.parentId,
+          mapsUpdates,
+          UPDATE_PARENT_MOUNTED_ONLY
+        );
         upsertFiber(mountedFibersByParentId, fiber.parentId, fiber.id);
 
-        markUpdated(updated, fiber.ownerId, UPDATE_OWNER);
+        markUpdated(fibersByOwnerId, fiber.ownerId, mapsUpdates, UPDATE_OWNER);
         upsertFiber(fibersByOwnerId, fiber.ownerId, fiber.id);
-        markUpdated(updated, fiber.ownerId, UPDATE_MOUNT_OWNER);
+        markUpdated(
+          mountedFibersByOwnerId,
+          fiber.ownerId,
+          mapsUpdates,
+          UPDATE_OWNER_MOUNTED_ONLY
+        );
         upsertFiber(mountedFibersByOwnerId, fiber.ownerId, fiber.id);
         break;
       }
@@ -302,10 +329,20 @@ export function processEvents(
           mounted: false,
         };
 
-        markUpdated(updated, fiber.ownerId, UPDATE_MOUNT_OWNER);
+        markUpdated(
+          mountedFibersByOwnerId,
+          fiber.ownerId,
+          mapsUpdates,
+          UPDATE_OWNER_MOUNTED_ONLY
+        );
         removeFiber(mountedFibersByOwnerId, fiber.ownerId, fiber.id);
 
-        markUpdated(updated, fiber.parentId, UPDATE_MOUNT_PARENT);
+        markUpdated(
+          mountedFibersByParentId,
+          fiber.parentId,
+          mapsUpdates,
+          UPDATE_PARENT_MOUNTED_ONLY
+        );
         removeFiber(mountedFibersByParentId, fiber.parentId, fiber.id);
 
         break;
@@ -343,20 +380,11 @@ export function processEvents(
         continue;
     }
 
-    markUpdated(updated, fiber.id, UPDATE_SELF);
+    markUpdated(fiberById, fiber.id, mapsUpdates, UPDATE_SELF);
     fiberById.set(event.fiberId, {
       ...fiber,
       events: fiber.events.concat(event),
     });
-  }
-
-  // console.log("updated", [...updated], events);
-  for (const [id, update] of updated) {
-    update & UPDATE_SELF && fiberById.notify(id);
-    update & UPDATE_OWNER && fibersByOwnerId.notify(id);
-    update & UPDATE_PARENT && fibersByParentId.notify(id);
-    update & UPDATE_MOUNT_OWNER && mountedFibersByOwnerId.notify(id);
-    update & UPDATE_MOUNT_PARENT && mountedFibersByParentId.notify(id);
   }
 
   return {
@@ -364,6 +392,29 @@ export function processEvents(
     unmountCount,
     updateCount,
   };
+}
+
+function flushUpdatedMaps(
+  mapsUpdates: Map<number, number>,
+  {
+    fiberById,
+    fibersByParentId,
+    fibersByOwnerId,
+    mountedFibersByParentId,
+    mountedFibersByOwnerId,
+  }: ReturnType<typeof useFiberMaps>
+) {
+  ReactDOM.unstable_batchedUpdates(() => {
+    for (const [id, update] of mapsUpdates) {
+      update & UPDATE_SELF && fiberById.notify(id);
+      update & UPDATE_OWNER && fibersByOwnerId.notify(id);
+      update & UPDATE_PARENT && fibersByParentId.notify(id);
+      update & UPDATE_OWNER_MOUNTED_ONLY && mountedFibersByOwnerId.notify(id);
+      update & UPDATE_PARENT_MOUNTED_ONLY && mountedFibersByParentId.notify(id);
+    }
+
+    mapsUpdates.clear();
+  });
 }
 
 export function useEventLog(
