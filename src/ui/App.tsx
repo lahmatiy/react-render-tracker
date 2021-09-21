@@ -8,12 +8,13 @@ import {
   SelectedIdConsumer,
   SelectionContextProvider,
 } from "./utils/selection";
-import { EventsContextProvider } from "./utils/events";
+import { EventsContextProvider, useEventsContext } from "./utils/events";
 import { useFiberChildren } from "./utils/fiber-maps";
 
-function WaitingForReact() {
+function WaitingForReady() {
   const [visible, setVisible] = React.useState(false);
   const children = useFiberChildren(0);
+  const { loadedEventsCount, totalEventsCount } = useEventsContext();
 
   // Delay appearing to give a chance to receive some events before
   // displaying awaiting caption
@@ -22,13 +23,17 @@ function WaitingForReact() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (children.length) {
+  if (children.length > 0) {
     return null;
   }
 
   return (
     <div className={"app-waiting-for-react" + (visible ? " visible" : "")}>
-      Waiting for a React&apos;s render root to be mount...
+      {totalEventsCount > 0
+        ? `Loading events (${Math.trunc(
+            (100 * loadedEventsCount) / totalEventsCount
+          )}%)...`
+        : "Waiting for a React's render root to be mount..."}
     </div>
   );
 }
@@ -60,7 +65,7 @@ function App() {
               />
 
               <FindMatchContextProvider pattern={filterPattern}>
-                <WaitingForReact />
+                <WaitingForReady />
                 <RenderTree
                   rootId={0}
                   groupByParent={groupByParent}

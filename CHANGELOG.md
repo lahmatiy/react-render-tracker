@@ -12,7 +12,7 @@
 - Defined `__REACT_DEVTOOLS_GLOBAL_HOOK__` as non-configurable like React Devtools does to avoid overriding the hook by other tools when React Devtools is not used
 - Fixed an issue where in some cases events were not loaded because the `getEvents()` remote method is not yet available
 - Fixed displaying changes in a context's Provider
-- Added "Waiting for React..." when no events have been received for some time since UI initialization
+- Added "Waiting for..." message when no events have been received for some time since UI initialization or initial event loading in progress
 - Significantly boosted events loading (up to 5-10 times)
 - Fixed issue when children or event log doesn't update in parent-child relationship mode
 
