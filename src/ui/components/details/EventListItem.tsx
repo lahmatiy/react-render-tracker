@@ -3,15 +3,18 @@ import EventRenderReasons from "./EventRenderReasons";
 import FiberId from "../common/FiberId";
 import FiberKey from "../common/FiberKey";
 import { formatDuration } from "../../utils/duration";
-import { Event, MessageFiber } from "../../types";
+import { Event } from "../../types";
 import { TransferNamedEntryChange } from "common-types";
+import { useFiber } from "../../utils/fiber-maps";
 
 interface EventListItemProps {
-  fiber: MessageFiber;
+  fiberId: number;
   event: Event;
   showTimings: boolean;
   prevConjunction: boolean;
   nextConjunction: boolean;
+  rootTrigger?: boolean;
+  indirectRootTrigger?: boolean;
 }
 
 const opTooltip: Record<Event["op"], string> = {
@@ -52,22 +55,50 @@ function getChanges(event: Event) {
   return reasons.length > 0 ? { reasons, hasShallowEqual } : null;
 }
 
+const Fiber = ({ fiberId, op }: { fiberId: number; op: Event["op"] }) => {
+  const fiber = useFiber(fiberId);
+
+  if (!fiber) {
+    return null;
+  }
+
+  return (
+    <>
+      <span
+        className={
+          "event-list-item__name" +
+          (op === "unmount" ? " event-list-item__name_unmounted" : "")
+        }
+      >
+        {fiber.displayName}
+      </span>
+      {fiber.key !== null && <FiberKey fiber={fiber} />}
+      <FiberId id={fiber.id} />
+    </>
+  );
+};
+
 const EventListItem = ({
-  fiber,
+  fiberId,
   event,
   showTimings,
   prevConjunction,
   nextConjunction,
+  rootTrigger,
+  indirectRootTrigger,
 }: EventListItemProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
   const changes = getChanges(event);
-  const isUpdateTrigger =
-    changes !== null &&
-    (changes.reasons.length > 1 || changes.reasons[0] !== "props");
+  const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
 
   return (
     <>
-      <tr className="event-list-item">
+      <tr
+        className={
+          "event-list-item" +
+          (rootTrigger ? " event-list-item_root-trigger" : "")
+        }
+      >
         {showTimings && (
           <>
             <td className="event-list-item__time" title="Self time">
@@ -100,16 +131,7 @@ const EventListItem = ({
               title={"Update trigger"}
             />
           )}
-          <span
-            className={
-              "event-list-item__name" +
-              (event.op === "unmount" ? " event-list-item__name_unmounted" : "")
-            }
-          >
-            {fiber.displayName || (!fiber.ownerId ? "Render root" : "Unknown")}
-          </span>
-          {fiber.key !== null && <FiberKey fiber={fiber} />}
-          <FiberId id={fiber.id} />{" "}
+          <Fiber fiberId={fiberId} op={event.op} />{" "}
           {changes !== null && (
             <span
               className={
@@ -130,7 +152,15 @@ const EventListItem = ({
         </td>
       </tr>
       {event.op === "update" && expanded && (
-        <EventRenderReasons changes={event.changes} />
+        <EventRenderReasons
+          changes={event.changes}
+          nextConjunction={nextConjunction}
+        />
+      )}
+      {indirectRootTrigger && (
+        <tr>
+          <td className="event-list-item__indirect-root-trigger"></td>
+        </tr>
       )}
     </>
   );

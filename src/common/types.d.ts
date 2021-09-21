@@ -70,6 +70,7 @@ declare module "common-types" {
     totalTime: number;
     selfTime: number;
     changes: TransferFiberChanges | null;
+    trigger?: number;
   }
 
   export interface CreateEffectFiberMessage extends BaseMessage {

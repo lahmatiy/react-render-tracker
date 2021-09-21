@@ -5,7 +5,7 @@ export type Event = Message;
 
 export interface MessageFiber extends TransferFiber {
   mounted: boolean;
-  events: Event[];
+  events: FiberEvent[];
   updatesCount: number;
   selfTime: number;
   totalTime: number;
@@ -13,6 +13,8 @@ export interface MessageFiber extends TransferFiber {
 }
 
 export interface FiberEvent {
-  fiber: MessageFiber;
+  fiberId: number;
   event: Event;
+  trigger: FiberEvent | null;
+  triggeredByOwner: boolean;
 }

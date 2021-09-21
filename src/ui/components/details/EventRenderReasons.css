@@ -1,8 +1,25 @@
-.event-render-reasons > td {
+.event-render-reasons__wrapper {
+  position: relative;
   padding-top: 0;
   padding-bottom: 0;
 }
+.event-render-reasons__wrapper_next::before {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 3px;
+  background-color: #efe6a9;
+  background-clip: padding-box;
+  border: solid rgba(255, 255, 255, 0.65);
+  border-width: 0 1px;
+}
+
 .event-render-reasons__list {
+  position: relative;
+  z-index: 0;
   margin: 0 4px 4px 4px;
   border: 1px solid #d0d0d0;
   border-radius: 3px;

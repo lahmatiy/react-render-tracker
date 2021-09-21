@@ -49,11 +49,15 @@ const publishEventsDebounced = debounce(
   { maxWait: 50 }
 );
 export const recordEvent: RecordEventHandler = payload => {
+  const id = eventIdSeed++;
+
   events.push({
-    id: eventIdSeed++,
-    timestamp: getTimestamp(),
+    id,
+    timestamp: Math.trunc(getTimestamp()),
     ...payload,
   });
 
   publishEventsDebounced();
+
+  return id;
 };

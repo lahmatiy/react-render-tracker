@@ -46,6 +46,7 @@ export function EventsContextProvider({
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
+  const allFiberEvents = React.useRef<FiberEvent[]>([]).current;
   const eventsSince = React.useRef(0);
   const maps = useFiberMaps();
   const {
@@ -109,13 +110,19 @@ export function EventsContextProvider({
     for (const { map, id } of updates) {
       map.notify(id);
     }
-  }, [fiberById]);
+  }, [
+    fiberById,
+    fibersByParentId,
+    mountedFibersByParentId,
+    fibersByOwnerId,
+    mountedFibersByOwnerId,
+  ]);
   const value = React.useMemo(
     () => ({
       ...state,
       clearAllEvents,
     }),
-    [state, fiberById]
+    [state, clearAllEvents]
   );
 
   React.useEffect(() => {
@@ -168,6 +175,7 @@ export function EventsContextProvider({
             const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
+              allFiberEvents,
               mapsUpdates,
               maps
             );
@@ -177,7 +185,6 @@ export function EventsContextProvider({
 
               return {
                 ...state,
-                events: state.events,
                 loadedEventsCount: state.loadedEventsCount + eventsChunk.length,
                 totalEventsCount: totalEventsCount - eventsSince.current,
                 bytesReceived: state.bytesReceived + bytesReceived,
@@ -264,6 +271,7 @@ const UPDATE_PARENT_MOUNTED_ONLY /**/ = 0b00010000;
 
 export function processEvents(
   events: Message[],
+  allFiberEvents: FiberEvent[],
   mapsUpdates: Map<number, number>,
   {
     fiberById,
@@ -277,6 +285,9 @@ export function processEvents(
   let unmountCount = 0;
   let updateCount = 0;
 
+  let fiberEventIndex = allFiberEvents.length;
+  allFiberEvents.length += events.length;
+
   for (const event of events) {
     let fiber: MessageFiber;
 
@@ -285,6 +296,9 @@ export function processEvents(
         mountCount++;
         fiber = {
           ...event.fiber,
+          displayName:
+            event.fiber.displayName ||
+            (!event.fiber.ownerId ? "Render root" : "Unknown"),
           mounted: true,
           events: [],
           updatesCount: 0,
@@ -380,10 +394,22 @@ export function processEvents(
         continue;
     }
 
+    const trigger =
+      (event.op === "update" &&
+        event.trigger !== undefined &&
+        allFiberEvents[event.trigger]) ||
+      null;
+    const fiberEvent: FiberEvent = (allFiberEvents[fiberEventIndex++] = {
+      fiberId: event.fiberId,
+      event,
+      trigger,
+      triggeredByOwner: trigger !== null && trigger.fiberId === fiber.ownerId,
+    });
+
     markUpdated(fiberById, fiber.id, mapsUpdates, UPDATE_SELF);
     fiberById.set(event.fiberId, {
       ...fiber,
-      events: fiber.events.concat(event),
+      events: fiber.events.concat(fiberEvent),
     });
   }
 
@@ -437,9 +463,7 @@ export function useEventLog(
       const fiber = fiberById.get(id);
 
       if (fiber) {
-        for (const event of fiber.events) {
-          events.push({ fiber, event });
-        }
+        events.push(...fiber.events);
       }
     }
 

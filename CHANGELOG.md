@@ -15,6 +15,7 @@
 - Added "Waiting for..." message when no events have been received for some time since UI initialization or initial event loading in progress
 - Significantly boosted events loading (up to 5-10 times)
 - Fixed issue when children or event log doesn't update in parent-child relationship mode
+- Added displaying of the updated component that caused the selected component to be updated (if not itself)
 
 ## 0.3.0 (September 8, 2021)
 

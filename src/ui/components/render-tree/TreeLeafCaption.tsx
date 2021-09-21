@@ -130,9 +130,7 @@ const TreeLeafCaptionInner = React.memo(
           {setExpanded && (
             <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
           )}
-          <span className="tree-leaf-caption__name">
-            {name || (!ownerId && "Render root") || "Unknown"}
-          </span>
+          <span className="tree-leaf-caption__name">{name}</span>
           {key !== null && <FiberKey fiber={fiber} />}
           <FiberId id={id} />
           {warnings > 0 && <span className="tree-leaf-caption__warnings" />}

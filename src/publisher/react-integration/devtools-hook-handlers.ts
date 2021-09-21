@@ -68,7 +68,8 @@ export function createReactDevtoolsHookHandlers(
   const idToOwnerId = new Map<number, number>();
   const idToClassContexts = new Map<number, ContextDescriptor>();
   const idToFunctionContexts = new Map<number, HookContexts>();
-  const commitContextValue = new Map();
+  const commitUpdatedFiberIds = new Map<number, number | undefined>();
+  const commitContextValue = new Map<ReactContext<any>, any>();
   let currentRootId = -1;
   let currentCommitId = -1;
   let commitIdSeed = 0;
@@ -653,15 +654,21 @@ export function createReactDevtoolsHookHandlers(
 
     if (alternate !== null && didFiberRender(alternate, fiber)) {
       const fiberId = getFiberIdThrows(fiber);
-
-      recordEvent({
+      const ownerId = getFiberOwnerId(fiber);
+      const triggerEventId =
+        fiber.memoizedProps !== alternate.memoizedProps
+          ? commitUpdatedFiberIds.get(ownerId)
+          : undefined;
+      const eventId = recordEvent({
         op: "update",
         commitId: currentCommitId,
         fiberId,
         ...getDurations(fiber),
         changes: getComponentChange(alternate, fiber),
+        trigger: triggerEventId,
       });
 
+      commitUpdatedFiberIds.set(fiberId, triggerEventId || eventId);
       updateContextsForFiber(fiber);
     }
   }
@@ -865,6 +872,7 @@ export function createReactDevtoolsHookHandlers(
 
     // We're done here
     currentCommitId = -1;
+    commitUpdatedFiberIds.clear();
     commitContextValue.clear();
     unmountedFiberIds.clear();
     unmountedFiberIdsByOwnerId.clear();

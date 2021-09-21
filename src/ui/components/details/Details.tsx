@@ -36,8 +36,7 @@ const Details = ({
           {fiber ? (
             <>
               <span className={"details__header-component-name"}>
-                {fiber.displayName ||
-                  (!fiber.ownerId ? "Render root" : "Unknown")}
+                {fiber.displayName}
               </span>
               <FiberId id={fiber.id} />
             </>
@@ -62,6 +61,7 @@ const Details = ({
           key={[rootId, groupByParent, showUnmounted, showSubtreeEvents].join(
             "-"
           )}
+          rootId={rootId}
           events={events}
           showTimings={showTimings}
         />
