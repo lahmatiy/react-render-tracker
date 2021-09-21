@@ -16,6 +16,7 @@
 - Significantly boosted events loading (up to 5-10 times)
 - Fixed issue when children or event log doesn't update in parent-child relationship mode
 - Added displaying of the updated component that caused the selected component to be updated (if not itself)
+- Changed default for displaying the list of events, initially do not show events for component's subtree
 
 ## 0.3.0 (September 8, 2021)
 

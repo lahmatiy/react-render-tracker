@@ -23,7 +23,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.details__header .button-toggle {
+.details__subtree-toggle {
   padding-top: 2px;
   padding-bottom: 3px;
+  color: #888;
+  font-size: 10px;
+}
+.details__subtree-toggle:hover,
+.details__subtree-toggle.active {
+  color: #3ca8c3;
+  background: #e8e8e8;
+}
+.details__subtree-toggle::after {
+  padding: 0 4px;
+  content: "include subtree";
 }

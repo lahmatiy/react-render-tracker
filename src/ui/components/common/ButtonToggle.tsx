@@ -5,6 +5,7 @@ interface ButtonToggleProps {
   isActive: boolean;
   onChange: (fn: (state: boolean) => boolean) => void;
   tooltip: string;
+  className?: string;
 }
 
 const ButtonToggle = ({
@@ -12,6 +13,7 @@ const ButtonToggle = ({
   isActive,
   onChange,
   tooltip,
+  className,
 }: ButtonToggleProps) => {
   const handleClick = () => {
     onChange((prev: boolean) => !prev);
@@ -19,7 +21,9 @@ const ButtonToggle = ({
 
   return (
     <button
-      className={`button-toggle ${isActive ? "active" : ""}`}
+      className={`button-toggle${isActive ? " active" : ""}${
+        className ? " " + className : ""
+      }`}
       onClick={handleClick}
       title={tooltip}
     >

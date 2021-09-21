@@ -19,7 +19,7 @@ const Details = ({
   showUnmounted = true,
   showTimings = false,
 }: DetailsProps) => {
-  const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(true);
+  const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(false);
   const fiber = useFiber(rootId);
   const events = useEventLog(
     rootId,
@@ -32,7 +32,7 @@ const Details = ({
     <div className="details">
       <div className="details__header">
         <div className="details__header-caption">
-          Events of {showSubtreeEvents && "subtree of"}{" "}
+          Events of{" "}
           {fiber ? (
             <>
               <span className={"details__header-component-name"}>
@@ -48,10 +48,11 @@ const Details = ({
           icon={SubtreeToggle}
           isActive={showSubtreeEvents}
           onChange={setShowSubtreeEvents}
+          className="details__subtree-toggle"
           tooltip={
             showSubtreeEvents
               ? "Show component's events only"
-              : "Show component and its subtree components events"
+              : "Include events for descendant components of selected component"
           }
         />
       </div>
