@@ -48,7 +48,7 @@ function ObjectDiff({ diff }: { diff: TransferObjectDiff }) {
             "entries are"
           )} also changed`
         : `… +${diff.diffKeys - sampleSize} of the rest ${plural(
-            diff.keys - sampleSize,
+            diff.diffKeys - sampleSize,
             "entry is",
             "entries are"
           )} also changed`
