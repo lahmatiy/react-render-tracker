@@ -10,7 +10,7 @@ React Render Tracker (RRT) presents component’s tree state over the time and a
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
 
-![Demo](https://user-images.githubusercontent.com/270491/132439005-2525b8a6-c9f4-4171-b37a-39b0f3ed666c.png)
+![Demo](https://user-images.githubusercontent.com/270491/134596102-9466d10e-30c0-4412-9e9d-562d5eb30695.png)
 
 Features:
 
@@ -105,7 +105,7 @@ Open a URL that will displayed in a console (e.g. `Server listen on http://local
 
 ## Acknowledgments
 
-The prototype of React Render Tracker was crafted during the Microsoft's hackathon on July 2021. Thanks to Dana Janoskova (@DJanoskova), Dmitrii Samsonov (@user1736), Yury Tomilin (@r04423), Maksym Kharchenko (@Bon4ik) and Raluca Vasiliu (@kubayaya) to working on it.
+The prototype of React Render Tracker was crafted during the Microsoft's hackathon on July 2021. Thanks to the team working on it: Dana Janoskova (@DJanoskova), Dmitrii Samsonov (@user1736), Yury Tomilin (@r04423), Maksym Kharchenko (@Bon4ik) and Raluca Vasiliu (@kubayaya).
 
 Thanks to React Devtools authors which integration with React internals became a basis for integration implementation in React Render Tracker.
 
