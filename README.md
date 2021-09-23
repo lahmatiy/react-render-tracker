@@ -1,8 +1,10 @@
 [![NPM version](https://img.shields.io/npm/v/react-render-tracker.svg)](https://www.npmjs.com/package/react-render-tracker)
 
-# React render tracker
+# React Render Tracker
 
-React render tracker – a tool to discover performance issues related to unintended re-renders
+React Render Tracker – a tool to discover performance issues related to unintended re-renders.
+
+React Render Tracker (RRT) demonstrates component’s tree state over time with a log of events related to a selected component (fiber) or its subtree. It doesn't provide a complete state of the components, but a difference between their states. That's why it's not a replacement for React Devtools, but a compliment to it with a focus on investigation for changes (like mounts, updates and unmounts) in app's component tree and their causes.
 
 > STATUS: MVP / proof of concept
 >
@@ -12,41 +14,66 @@ React render tracker – a tool to discover performance issues related to uninte
 
 Features:
 
-- Cumulative state of component's tree including unmounted components (can be hidden by a toggle in the top right corner) and number of updates (re-renders)
-- Two types of hierarchy in component's tree: owner-based (created by, better for render tracking, that's by default) and parent-based (composed by)
-- Event log for a component or its subtree, grouped by a React's commit of batch of rendering work, with some details on changes in components like context, state and props
-- Self and total (including subtree rendering) cumulative time or all component renders (hidden by default, use toggle in the right top corner to enable it)
+- The state of component's tree over time including unmounted components (can be hidden by a toggle in the top right corner) and number of updates (re-renders)
+- Two types of component's tree hierarchy: owner-based (how component are created, that's better for updates tracking, this by default) and parent-based (how components are mounted)
+- Event log for a selected component (with the option to include a subtree component's events), grouped by a React's batch of work (commit), with details on changes in context, state and props
+- Displaying which component (fiber) is responsible for selected component update
+- Self and subtree rendering timings (hidden by default, use toggle in the right top corner to enable it)
 - Overall stats on events and component instances in status bar
 - More to come... (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6))
 
 ## How to use
 
-### Option 1 – Using with browser's devtools
+All you need to do is add a single `<script>` to the HTML page and open the user interface to inspect your React app.
 
-1. Add to your html file a script before a React app:
+First of all the `<script>` should be added before a React app. This script will add a special object to the global which is using by React for providing to the tool its internals for analysis (React Devtools does the same). As soon as React library is loaded and attached to the tool, RRT starts collecting data about what is going on in React's internals.
+
+> NOTE: Multiple React library instances are not supported yet. In this case, the behavior of the RRT is unpredictable.
 
 ```html
 <script src="path/to/react-render-tracker.js"></script>
 ```
 
-> NOTE: A path for a bundle in the npm package is `dist/react-render-tracker.js`
+> NOTE: A path for a bundle in the NPM package is `dist/react-render-tracker.js`
 
-You can use CDN services to include script with no installation:
+You can use a CDN service to include script with no installation from NPM:
+
+- unpkg
 
 ```html
-<!-- unpkg -->
 <script src="https://unpkg.com/react-render-tracker"></script>
-<!-- jsdelivr -->
+```
+
+- jsDelivr
+
+```html
 <script src="https://cdn.jsdelivr.net/npm/react-render-tracker"></script>
 ```
 
-2. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
+Next, you need to open the user interface, one of the ways that best suits your case.
 
-3. Open your html page and browser's devtools, open Rempl tab. That's it.
+### Option 0 - Open UI right in the page
 
-### Option 2 – Using with a web-socket server
+To avoid any additional installs you may just add `data-config="inpage:true"` attribute to the `<script>`. In this case, the UI will be shown right in the page of your application. That's the simplest way to try React Render Tracker in action. However, UI will perform in the same thread as your React application which may be not a good option from a performance perspective for large scale apps.
 
-Since project is based on [Rempl](https://github.com/rempl/rempl), it's also possible to use other hosts, e.g. [rempl-cli](https://github.com/rempl/rempl-cli) to launch a server. In this case, it is possible to inspect a react application launched in any web view with web sockets support.
+```html
+<script
+  src="https://unpkg.com/react-render-tracker"
+  data-config="inpage:true"
+></script>
+```
+
+### Option 1 – Using with browser's devtools
+
+1. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
+
+2. Open location of your React app, then open browser's devtools and find Rempl tab here. Click it. That's it.
+
+> NOTE: If your React application and browser's devtools were opened before Rempl extension is installed, you need to close and open browser's devtools as well as reload the page with React application.
+
+### Option 2 – Open UI in another tab, or browser, or device...
+
+The most universal way for a remote inspection of your React app using React Render Tracker is use special server as a connection point (between the app and React Render Tracker UI). Since RRT is based on [Rempl](https://github.com/rempl/rempl), it's work with [rempl-cli](https://github.com/rempl/rempl-cli) which is using to launch a such kind of server. In this case, it's become possible to inspect a React application launched in any web view with a WebSocket support. In fact, you can inspect a React application running in a browser with no devtools support, or Electron, or VS Code etc.
 
 1. Run following commands:
 
@@ -57,19 +84,15 @@ Since project is based on [Rempl](https://github.com/rempl/rempl), it's also pos
 
 This will launch a Rempl server on port `8177`. Use `--port` option to specify any other port. See more option with `rempl --help` command.
 
-2. Add to your html file a script before a React app:
-
-```html
-<script src="path/to/react-render-tracker.js"></script>
-```
-
-3. Add `<meta>` tag with specified origin of the Rempl server:
+2. Add `<meta>` tag with specified origin of the Rempl server:
 
 ```html
 <meta name="rempl:server" content="localhost:8177" />
 ```
 
-4. Open your html and url of Rempl server. You should see connected instance of React render tracker, click on it to see UI.
+3. Open your application. Open Rempl server location in an evergreen browser on your choice, e.g. `http://localhost:8177` which is by default. You should see connected instances of React Render Tracker, select one to see the UI.
+
+> NOTE: During MVP phase cross-browser support is not guarantee. Feel free to open an issue if something doesn't work in non-Chromium browser you use.
 
 ## How to start playground locally
 
@@ -78,7 +101,13 @@ npm install
 npm start
 ```
 
-Open a URL displayed in console (e.g. `Server listen on http://localhost:3000`).
+Open a URL that will displayed in a console (e.g. `Server listen on http://localhost:3000`).
+
+## Acknowledgments
+
+The prototype of React Render Tracker was crafted during the Microsoft's hackathon on July 2021. Thanks to Dana Janoskova (@DJanoskova), Dmitrii Samsonov (@user1736), Yury Tomilin (@r04423), Maksym Kharchenko (@Bon4ik) and Raluca Vasiliu (@kubayaya) to working on it.
+
+Thanks to React Devtools authors which integration with React internals became a basis for integration implementation in React Render Tracker.
 
 ## License
 
