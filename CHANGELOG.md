@@ -1,24 +1,24 @@
-## next
+## 0.4.0 (September 23, 2021)
 
-- Fixed crash when used for React prior 16.9 because of another internals for dependencies (context)
-- Improved object diff for update events
+- Added displaying of the updated component that caused the selected component to be updated (if not itself)
 - Added hook call stack for `useState` and `useReducer` hooks
 - Added hook call stacks for `useContext` hook
+- Added output for received bytes of events data in status bar
+- Added "Waiting for..." splash block when no events have been received for some time since UI initialization or initial events loading in progress
+- Added support for `data-config="inpage:true"` attribute on injected `<script>` to open UI right in the page
+- Significantly boosted events loading (up to 5-10 times)
+- Reduced bundle size from 414Kb to 319Kb by eliminating duplicate of `rempl`
+- Improved object diff for update events
 - Improved display names to visually distinguish fibers with the same name:
   - `Button`, `Button'2`, `Button'3`...
   - `Context.Provider` → `AnonymousContext.Provider`, `AnonymousContext'2.Provider`...
-- Added output for received bytes of events data in status bar
+- Changed default for displaying the list of events, initially do not show events for component's subtree
+- Fixed crash when used for React prior 16.9 because of another internals for dependencies (context)
 - Fixed an issue with solutions like `react-refresh` that might not work when using RRT without React Devtools
-- Defined `__REACT_DEVTOOLS_GLOBAL_HOOK__` as non-configurable like React Devtools does to avoid overriding the hook by other tools when React Devtools is not used
+- Fixed overriding the hook by other tools when React Devtools is not used by defining `__REACT_DEVTOOLS_GLOBAL_HOOK__` as non-configurable like React Devtools does
 - Fixed an issue where in some cases events were not loaded because the `getEvents()` remote method is not yet available
 - Fixed displaying changes in a context's Provider
-- Added "Waiting for..." message when no events have been received for some time since UI initialization or initial event loading in progress
-- Significantly boosted events loading (up to 5-10 times)
 - Fixed issue when children or event log doesn't update in parent-child relationship mode
-- Added displaying of the updated component that caused the selected component to be updated (if not itself)
-- Changed default for displaying the list of events, initially do not show events for component's subtree
-- Reduced bundle size from 414Kb to 319Kb by eliminating duplicate of `rempl`
-- Added support for `data-config="inpage:true"` attribute on injected `<script>` to open UI right in the page
 
 ## 0.3.0 (September 8, 2021)
 
