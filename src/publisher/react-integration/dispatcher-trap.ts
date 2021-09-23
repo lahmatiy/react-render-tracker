@@ -3,6 +3,7 @@ import {
   ReactContext,
   ReactDispatcherTrapApi,
   ReactInternals,
+  RerenderState,
 } from "../types";
 
 type Dispatcher = any;
@@ -10,7 +11,7 @@ type DispatchFn = (state: any) => any;
 type UseContextPathMap = Map<
   ReactContext<any>,
   Map<number, { path: string[] | undefined }>
->;
+> & { count: number };
 
 function extractHookPath() {
   const stack = String(new Error().stack).split("\n").slice(4);
@@ -36,14 +37,17 @@ export function dispatcherTrap(
 ): ReactDispatcherTrapApi {
   let currentDispatcher: Dispatcher | null = null;
   let currentFiber: Fiber | null = null;
-  let currentUseContext: UseContextPathMap | null = null;
-  let useContextCallIndex = 0;
+  let currentFiberTrackUseContext = false;
+  let currentFiberUseContext: UseContextPathMap | null = null;
+  // let currentFiberRerenderState: RerenderState | null = null;
   const knownDispatcher = new Set();
+  const ignoreDispatcherTransition = new Set();
   const patchedHookFn = new WeakMap<
     DispatchFn,
     { fn: DispatchFn; path: string[] | undefined }
   >();
   const useContextPaths = new WeakMap<Fiber, UseContextPathMap>();
+  const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
 
   // function patchUseEffect(dispatcher: Dispatcher) {
   //   const orig = dispatcher.useEffect;
@@ -89,9 +93,22 @@ export function dispatcherTrap(
       const [state, dispatch] = orig(...args);
 
       if (!patchedHookFn.has(dispatch)) {
+        // const hookOwnerFiber = currentFiber;
         patchedHookFn.set(dispatch, {
           path: extractHookPath(),
           fn: (...args: any[]) => {
+            // if (
+            //   !currentFiberRerenderState &&
+            //   currentFiber !== null &&
+            //   (currentFiber === hookOwnerFiber ||
+            //     currentFiber?.alternate === hookOwnerFiber)
+            // ) {
+            //   currentFiberRerenderState = {
+            //     state: currentFiber.memoizedState,
+            //   };
+            // }
+            // console.log(hookName, currentFiberRerenderState);
+
             // console.log("dispatch", new Error().stack, ...args);
             return dispatch(...args);
           },
@@ -108,31 +125,23 @@ export function dispatcherTrap(
     dispatcher.useContext = (context: ReactContext<any>, ...args: any[]) => {
       const value = orig(context, ...args);
 
-      if (currentUseContext === null) {
-        if (useContextPaths.has(currentFiber as Fiber)) {
-          currentUseContext = useContextPaths.get(
-            currentFiber as Fiber
-          ) as UseContextPathMap;
-        } else {
-          currentUseContext = new Map();
-          useContextPaths.set(currentFiber as Fiber, currentUseContext);
+      if (currentFiberTrackUseContext) {
+        if (currentFiberUseContext === null) {
+          currentFiberUseContext = Object.assign(new Map(), { count: 0 });
+          useContextPaths.set(currentFiber as Fiber, currentFiberUseContext);
         }
-      }
 
-      let contextPaths = currentUseContext.get(context);
+        let contextPaths = currentFiberUseContext.get(context);
 
-      if (!contextPaths) {
-        contextPaths = new Map();
-        currentUseContext.set(context, contextPaths);
-      }
+        if (contextPaths === undefined) {
+          contextPaths = new Map();
+          currentFiberUseContext.set(context, contextPaths);
+        }
 
-      if (!contextPaths.has(useContextCallIndex)) {
-        contextPaths.set(useContextCallIndex, {
+        contextPaths.set(currentFiberUseContext.count++, {
           path: extractHookPath(),
         });
       }
-
-      useContextCallIndex++;
 
       return value;
     };
@@ -141,6 +150,23 @@ export function dispatcherTrap(
   function patchDispatcher(dispatcher: Dispatcher) {
     if (dispatcher && !knownDispatcher.has(dispatcher)) {
       knownDispatcher.add(dispatcher);
+
+      // ContextOnlyDispatcher has a single guard function for each hook,
+      // detecting it by comparing two random hooks for equality
+      if (dispatcher.useMemo === dispatcher.useState) {
+        ignoreDispatcherTransition.add(dispatcher);
+      }
+      // In dev mode InvalidNestedHooksDispatcher* are used, that's the only
+      // dispatchers which is changing current dispatcher for another InvalidNestedHooksDispatcher.
+      // Detecting such dispatchers by testing a source of the readContext() method
+      // which has just a single additional call for warnInvalidContextAccess().
+      // We can't rely on a function name since it can be mangled.
+      else if (
+        /warnInvalidContextAccess\(\)/.test(dispatcher.readContext.toString())
+      ) {
+        ignoreDispatcherTransition.add(dispatcher);
+      }
+
       patchStateHook("useState", dispatcher);
       patchStateHook("useReducer", dispatcher);
       patchUseContextHook(dispatcher);
@@ -154,11 +180,41 @@ export function dispatcherTrap(
     get: () => {
       return currentDispatcher;
     },
-    set: value => {
-      currentFiber = renderer.getCurrentFiber();
-      useContextCallIndex = 0;
-      currentUseContext = null;
-      currentDispatcher = patchDispatcher(value);
+    set: nextDispatcher => {
+      const nextCurrentFiber = renderer.getCurrentFiber();
+      // const prevDispatcher = currentDispatcher;
+
+      currentDispatcher = patchDispatcher(nextDispatcher);
+
+      // render
+      if (nextCurrentFiber !== currentFiber) {
+        currentFiber = nextCurrentFiber;
+
+        // track contexts on mount only
+        currentFiberTrackUseContext =
+          currentFiber !== null && currentFiber.alternate === null;
+        currentFiberUseContext = null;
+        // currentFiberRerenderState = null;
+        // rerenderStates.delete(currentFiber as Fiber);
+      }
+      // re-render
+      // else if (
+      //   currentFiber !== null &&
+      //   !ignoreDispatcherTransition.has(prevDispatcher) &&
+      //   !ignoreDispatcherTransition.has(nextDispatcher)
+      // ) {
+      //   if (currentFiberRerenderState) {
+      //     if (rerenderStates.has(currentFiber)) {
+      //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
+      //     } else {
+      //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
+      //     }
+      //   }
+
+      //   currentFiberTrackUseContext = false;
+      //   currentFiberUseContext = null;
+      //   currentFiberRerenderState = null;
+      // }
     },
   });
 
@@ -166,8 +222,15 @@ export function dispatcherTrap(
     getHookPath(dispatch: DispatchFn) {
       return patchedHookFn.get(dispatch)?.path;
     },
+    getFiberRerenders(fiber: Fiber) {
+      return rerenderStates.get(fiber);
+    },
     getFiberUseContextPaths(fiber: Fiber, context: ReactContext<any>) {
-      const contextPaths = useContextPaths.get(fiber)?.get(context);
+      const contextPaths = (
+        useContextPaths.get(fiber) ||
+        useContextPaths.get(fiber.alternate as Fiber)
+      )?.get(context);
+
       return contextPaths ? [...contextPaths.values()] : undefined;
     },
   };

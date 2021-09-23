@@ -9,7 +9,7 @@ export type ReactInternals = {
   reconcilerVersion?: string;
   version?: string;
   currentDispatcherRef: any;
-  getCurrentFiber: () => Fiber;
+  getCurrentFiber: () => Fiber | null;
   rendererPackageName: string;
   findFiberByHostInstance: (hostInstance: NativeType) => Fiber | null;
 };
@@ -419,6 +419,10 @@ export type InspectedElementPayload =
   | InspectElementNoChange
   | InspectElementNotFound;
 
+export type RerenderState = {
+  state: MemoizedState;
+};
+
 export type ReactDevtoolsHookHandlers = {
   handleCommitFiberRoot: (fiber: Fiber, commitPriority?: number) => void;
   handleCommitFiberUnmount: (fiber: Fiber) => void;
@@ -436,6 +440,7 @@ export type ReactInterationApi = {
 };
 export type ReactDispatcherTrapApi = {
   getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
+  getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   getFiberUseContextPaths: (
     fiber: Fiber,
     context: ReactContext<any>
