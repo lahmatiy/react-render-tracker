@@ -4,7 +4,7 @@
 
 React Render Tracker – a tool to discover performance issues related to unintended re-renders.
 
-React Render Tracker (RRT) demonstrates component’s tree state over time with a log of events related to a selected component (fiber) or its subtree. It doesn't provide a complete state of the components, but a difference between their states. That's why it's not a replacement for React Devtools, but a compliment to it with a focus on investigation for changes (like mounts, updates and unmounts) in app's component tree and their causes.
+React Render Tracker (RRT) presents component’s tree state over the time and an event log related to a selected component (fiber) or its subtree. It doesn't provide a complete state of the components, but the difference between their states. It's not a replacement for React Devtools, but a compliment to it with a focus on investigation for changes in app's component tree (like mounts, updates and unmounts) and their causes.
 
 > STATUS: MVP / proof of concept
 >
@@ -52,7 +52,7 @@ You can use a CDN service to include script with no installation from NPM:
 
 Next, you need to open the user interface, one of the ways that best suits your case.
 
-### Option 0 - Open UI right in the page
+### Option #0 - Open UI right in the page
 
 To avoid any additional installs you may just add `data-config="inpage:true"` attribute to the `<script>`. In this case, the UI will be shown right in the page of your application. That's the simplest way to try React Render Tracker in action. However, UI will perform in the same thread as your React application which may be not a good option from a performance perspective for large scale apps.
 
@@ -63,7 +63,7 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 ></script>
 ```
 
-### Option 1 – Using with browser's devtools
+### Option #1 – Using with browser's devtools
 
 1. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
 
@@ -71,7 +71,7 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 
 > NOTE: If your React application and browser's devtools were opened before Rempl extension is installed, you need to close and open browser's devtools as well as reload the page with React application.
 
-### Option 2 – Open UI in another tab, or browser, or device...
+### Option #2 – Open UI in another tab, or browser, or device...
 
 The most universal way for a remote inspection of your React app using React Render Tracker is use special server as a connection point (between the app and React Render Tracker UI). Since RRT is based on [Rempl](https://github.com/rempl/rempl), it's work with [rempl-cli](https://github.com/rempl/rempl-cli) which is using to launch a such kind of server. In this case, it's become possible to inspect a React application launched in any web view with a WebSocket support. In fact, you can inspect a React application running in a browser with no devtools support, or Electron, or VS Code etc.
 
