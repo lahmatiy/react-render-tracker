@@ -9,6 +9,9 @@ declare module "rempl" {
     ) => void
   ): Publisher;
   export function getSubscriber(): Subscriber;
+  export function getHost(): {
+    activate(): void;
+  };
 
   type treeChangesData = { count: number };
   type treeChangesGetEventsMethod = (

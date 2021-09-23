@@ -15,7 +15,7 @@ declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
 
 export const publisher = rempl.createPublisher(
-  "react-render-tracker",
+  "React Render Tracker",
   (settings, callback) => {
     if (__DEV__) {
       const { origin } = new URL(import.meta.url);

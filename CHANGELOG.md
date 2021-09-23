@@ -18,6 +18,7 @@
 - Added displaying of the updated component that caused the selected component to be updated (if not itself)
 - Changed default for displaying the list of events, initially do not show events for component's subtree
 - Reduced bundle size from 414Kb to 319Kb by eliminating duplicate of `rempl`
+- Added support for `data-config="inpage:true"` attribute on injected `<script>` to open UI right in the page
 
 ## 0.3.0 (September 8, 2021)
 
