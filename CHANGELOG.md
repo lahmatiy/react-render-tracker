@@ -17,6 +17,7 @@
 - Fixed issue when children or event log doesn't update in parent-child relationship mode
 - Added displaying of the updated component that caused the selected component to be updated (if not itself)
 - Changed default for displaying the list of events, initially do not show events for component's subtree
+- Reduced bundle size from 414Kb to 319Kb by eliminating duplicate of `rempl`
 
 ## 0.3.0 (September 8, 2021)
 

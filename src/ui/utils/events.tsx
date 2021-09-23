@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { stringifyInfo } from "@discoveryjs/json-ext";
-import { getSubscriber } from "rempl";
+import { remoteSubscriber } from "../rempl-subscriber";
 import { SubscribeMap, useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
 import {
@@ -126,7 +126,7 @@ export function EventsContextProvider({
   );
 
   React.useEffect(() => {
-    const channel = getSubscriber().ns("tree-changes");
+    const channel = remoteSubscriber.ns("tree-changes");
     const remoteLoadEvents = channel.getRemoteMethod("getEvents");
 
     channel.onRemoteMethodsChanged(methods => {
