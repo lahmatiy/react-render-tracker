@@ -1,0 +1,37 @@
+.fiber-info {
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.fiber-info__header {
+  color: #444;
+  font-size: 13px;
+  line-height: 15px;
+}
+
+.fiber-info-section {
+  margin: 8px 0 0 8px;
+}
+.fiber-info-section__header {
+  margin-left: -8px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  line-height: 12px;
+  font-size: 10px;
+  color: #999;
+}
+.fiber-info-section__header-no-data {
+  color: #bbb;
+}
+.fiber-info-section__header-no-data::before {
+  content: " – ";
+}
+
+.fiber-info-fiber-context-name {
+  display: inline-block;
+  color: var(--primary);
+}
+.fiber-info-fiber-context-reads {
+  margin-left: 8px;
+}

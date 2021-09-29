@@ -4,14 +4,24 @@ declare module "common-types" {
   // or to enable/disable certain functionality.
   export type FiberType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
+  export type TransferFiberContext = {
+    name: string;
+    providerId?: number;
+    reads?: Array<{
+      index: number;
+      path: string[] | undefined;
+    }>;
+  };
+
   export type TransferFiber = {
     id: number;
     type: FiberType;
     key: number | string | null;
+    ownerId: number; // Owner (if available)
+    parentId: number;
     displayName: string | null;
     hocDisplayNames: string[] | null;
-    parentId: number;
-    ownerId: number; // Owner (if available)
+    contexts: TransferFiberContext[] | null;
   };
 
   export type TransferValueDiff = {
@@ -30,6 +40,10 @@ declare module "common-types" {
     eqLeft: number;
     eqRight: number;
   };
+  export type TransferChangeDiff =
+    | TransferObjectDiff
+    | TransferArrayDiff
+    | false;
   export type TransferNamedEntryChange = {
     index?: number;
     name: string;
@@ -38,11 +52,18 @@ declare module "common-types" {
     location?: string;
     path?: string[];
     paths?: Array<string[] | undefined>;
-    diff?: TransferObjectDiff | TransferArrayDiff | false;
+    diff?: TransferChangeDiff;
+  };
+  export type TransferContextChange = {
+    name: string;
+    providerId?: number;
+    prev: string;
+    next: string;
+    diff?: TransferChangeDiff;
   };
   export type TransferFiberChanges = {
     props?: TransferNamedEntryChange[];
-    context?: TransferNamedEntryChange[];
+    context?: TransferContextChange[];
     state?: TransferNamedEntryChange[];
   };
 

@@ -1,19 +1,26 @@
 .details {
   grid-area: details;
-  overflow: auto;
-  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-left: 1px solid #ddd;
 }
-.details__header {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+
+.details__info-section {
+  min-height: 40px;
+  max-height: 50%;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.details__event-list-header {
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
   background-color: #f4f4f4;
 }
-.details__header-caption {
+.details__event-list-header-caption {
   flex: 1;
   padding-left: 4px;
   text-align: left;
@@ -24,10 +31,12 @@
   text-overflow: ellipsis;
 }
 .details__subtree-toggle {
+  align-items: baseline;
   padding-top: 2px;
   padding-bottom: 3px;
   color: #888;
   font-size: 10px;
+  line-height: 16px;
 }
 .details__subtree-toggle:hover,
 .details__subtree-toggle.active {
@@ -35,6 +44,14 @@
   background: #e8e8e8;
 }
 .details__subtree-toggle::after {
-  padding: 0 4px;
+  padding: 0 0 0 4px;
   content: "include subtree";
+  position: relative;
+  top: 1px;
+}
+
+.details__event-list {
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
 }

@@ -18,3 +18,8 @@ export interface FiberEvent {
   trigger: FiberEvent | null;
   triggeredByOwner: boolean;
 }
+
+export interface ValueTransition {
+  prev?: any;
+  next?: any;
+}

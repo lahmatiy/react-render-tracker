@@ -3,8 +3,11 @@ import EventRenderReasons from "./EventRenderReasons";
 import FiberId from "../common/FiberId";
 import FiberKey from "../common/FiberKey";
 import { formatDuration } from "../../utils/duration";
-import { Event } from "../../types";
-import { TransferNamedEntryChange } from "common-types";
+import {
+  Event,
+  TransferNamedEntryChange,
+  TransferContextChange,
+} from "../../types";
 import { useFiber } from "../../utils/fiber-maps";
 
 interface EventListItemProps {
@@ -25,7 +28,9 @@ const opTooltip: Record<Event["op"], string> = {
   "effect-destroy": "Destroy effect",
 };
 
-function isShallowEqual(entry: TransferNamedEntryChange) {
+function isShallowEqual(
+  entry: TransferNamedEntryChange | TransferContextChange
+) {
   return entry.diff === false;
 }
 
@@ -153,6 +158,7 @@ const EventListItem = ({
       </tr>
       {event.op === "update" && expanded && (
         <EventRenderReasons
+          fiberId={fiberId}
           changes={event.changes}
           nextConjunction={nextConjunction}
         />

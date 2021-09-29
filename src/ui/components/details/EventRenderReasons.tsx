@@ -1,13 +1,19 @@
 import * as React from "react";
 import { UpdateFiberMessage } from "../../types";
-import EventRenderReasonsItem from "./EventRenderReasonsItem";
+import {
+  ContextChange,
+  PropChange,
+  StateChange,
+} from "./EventRenderReasonsItem";
 
 interface EventRenderReasonsProps {
+  fiberId: number;
   changes: UpdateFiberMessage["changes"];
   nextConjunction: boolean;
 }
 
 const EventRenderReasons = ({
+  fiberId,
   changes,
   nextConjunction,
 }: EventRenderReasonsProps) => {
@@ -25,15 +31,18 @@ const EventRenderReasons = ({
         }
       >
         <div className="event-render-reasons__list">
-          {changes.props && (
-            <EventRenderReasonsItem data={changes.props} type="prop" />
-          )}
-          {changes.context && (
-            <EventRenderReasonsItem data={changes.context} type="context" />
-          )}
-          {changes.state && (
-            <EventRenderReasonsItem data={changes.state} type="state" />
-          )}
+          {changes.props &&
+            changes.props.map((entry, index) => (
+              <PropChange key={index} entry={entry} />
+            ))}
+          {changes.context &&
+            changes.context.map((entry, index) => (
+              <ContextChange key={index} entry={entry} fiberId={fiberId} />
+            ))}
+          {changes.state &&
+            changes.state.map((entry, index) => (
+              <StateChange key={index} entry={entry} />
+            ))}
         </div>
       </td>
     </tr>

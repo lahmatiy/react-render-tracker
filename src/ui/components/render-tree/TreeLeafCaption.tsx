@@ -81,6 +81,7 @@ const TreeLeafCaptionInner = React.memo(
       ownerId,
       displayName,
       hocDisplayNames,
+      contexts,
       events,
       mounted,
       updatesCount,
@@ -138,9 +139,17 @@ const TreeLeafCaptionInner = React.memo(
           {updatesCount > 0 && (
             <span
               className="tree-leaf-caption__update-count"
-              title="Number of updates (re-renders)"
+              title="Number of updates"
             >
               {updatesCount}
+            </span>
+          )}
+          {Array.isArray(contexts) && (
+            <span
+              className="tree-leaf-caption__context-count"
+              title="Number of used contexts"
+            >
+              {contexts.length}
             </span>
           )}
         </div>

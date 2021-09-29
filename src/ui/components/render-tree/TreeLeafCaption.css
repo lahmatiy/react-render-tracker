@@ -93,18 +93,23 @@
   transition-property: color;
 }
 
-.tree-leaf-caption__update-count {
+.tree-leaf-caption__update-count,
+.tree-leaf-caption__context-count {
   display: inline-block;
   margin-left: 4px;
   padding: 3px 4px 2.3px;
   font-size: 10px;
   line-height: 10px;
   min-width: 16px;
-  background: #eaeac7;
   border-radius: 3px;
+  background: #eaeac7;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
   color: #949c35;
   text-align: center;
+}
+.tree-leaf-caption__context-count {
+  background: #eadcea;
+  color: #ca8fd0;
 }
 
 .tree-leaf-caption__warnings {

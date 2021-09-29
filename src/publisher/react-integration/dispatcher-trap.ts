@@ -1,5 +1,6 @@
 import {
   Fiber,
+  FiberDispatcherContext,
   ReactContext,
   ReactDispatcherTrapApi,
   ReactInternals,
@@ -8,12 +9,12 @@ import {
 
 type Dispatcher = any;
 type DispatchFn = (state: any) => any;
-type UseContextPathMap = Map<
-  ReactContext<any>,
-  Map<number, { index: number; path: string[] | undefined }>
-> & { count: number };
+type UseContextPathMap = Map<ReactContext<any>, FiberDispatcherContext> & {
+  count: number;
+};
 type FiberDispatcherInfo = {
   contexts: UseContextPathMap | null;
+  memos: any[] | null;
 };
 
 function extractHookPath() {
@@ -49,7 +50,6 @@ export function dispatcherTrap(
     DispatchFn,
     { fn: DispatchFn; path: string[] | undefined }
   >();
-  const useContextPaths = new WeakMap<Fiber, UseContextPathMap>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
 
   // function patchUseEffect(dispatcher: Dispatcher) {
@@ -134,22 +134,34 @@ export function dispatcherTrap(
         if (currentFiberUseContext === null) {
           currentFiberUseContext = currentFiberCollectInfo.contexts =
             Object.assign(new Map(), { count: 0 });
-          useContextPaths.set(currentFiber as Fiber, currentFiberUseContext);
         }
 
-        const contextIndex = currentFiberUseContext.count++;
-        let contextPaths = currentFiberUseContext.get(context);
+        const useContextIndex = currentFiberUseContext.count++;
+        let contextInfo = currentFiberUseContext.get(context);
 
-        if (contextPaths === undefined) {
-          contextPaths = new Map();
-          currentFiberUseContext.set(context, contextPaths);
+        if (contextInfo === undefined) {
+          contextInfo = {
+            context,
+            reads: [],
+          };
+          currentFiberUseContext.set(context, contextInfo);
         }
 
-        contextPaths.set(contextIndex, {
-          index: contextIndex,
+        contextInfo.reads.push({
+          index: useContextIndex,
           path: extractHookPath(),
         });
       }
+
+      return value;
+    };
+  }
+
+  function patchMemoHook(hookName: string, dispatcher: Dispatcher) {
+    const orig = dispatcher[hookName];
+
+    dispatcher[hookName] = (...args: any[]) => {
+      const value = orig(...args);
 
       return value;
     };
@@ -177,6 +189,8 @@ export function dispatcherTrap(
 
       patchStateHook("useState", dispatcher);
       patchStateHook("useReducer", dispatcher);
+      patchMemoHook("useMemo", dispatcher);
+      patchMemoHook("useCallback", dispatcher);
       patchUseContextHook(dispatcher);
       // patchUseEffect(dispatcher);
     }
@@ -206,6 +220,7 @@ export function dispatcherTrap(
               currentFiber,
               (currentFiberCollectInfo = {
                 contexts: null,
+                memos: null,
               })
             );
           }
@@ -241,12 +256,12 @@ export function dispatcherTrap(
     getFiberRerenders(fiber: Fiber) {
       return rerenderStates.get(fiber);
     },
-    getFiberUseContextPaths(fiber: Fiber, context: ReactContext<any>) {
-      const contextPaths = (
+    getFiberContexts(fiber: Fiber) {
+      const contexts = (
         fiberInfo.get(fiber) || fiberInfo.get(fiber.alternate as Fiber)
-      )?.contexts?.get(context);
+      )?.contexts;
 
-      return contextPaths ? [...contextPaths.values()] : undefined;
+      return contexts ? [...contexts.values()] : undefined;
     },
   };
 }

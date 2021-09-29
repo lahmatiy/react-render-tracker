@@ -9,6 +9,11 @@
   color: #444;
 }
 
+.event-render-reason__context-name {
+  display: inline-block;
+  color: var(--primary);
+}
+
 .event-render-reason__type-badge {
   display: inline-block;
   vertical-align: middle;

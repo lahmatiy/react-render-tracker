@@ -423,6 +423,14 @@ export type RerenderState = {
   state: MemoizedState;
 };
 
+export type FiberDispatcherContext = {
+  context: ReactContext<any>;
+  reads: Array<{
+    index: number;
+    path: string[] | undefined;
+  }>;
+};
+
 export type ReactDevtoolsHookHandlers = {
   handleCommitFiberRoot: (fiber: Fiber, commitPriority?: number) => void;
   handleCommitFiberUnmount: (fiber: Fiber) => void;
@@ -441,10 +449,7 @@ export type ReactInterationApi = {
 export type ReactDispatcherTrapApi = {
   getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
-  getFiberUseContextPaths: (
-    fiber: Fiber,
-    context: ReactContext<any>
-  ) => Array<{ path: string[] | undefined }> | undefined;
+  getFiberContexts: (fiber: Fiber) => FiberDispatcherContext[] | undefined;
 };
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 

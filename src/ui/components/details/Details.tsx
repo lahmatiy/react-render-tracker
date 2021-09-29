@@ -1,8 +1,9 @@
 import * as React from "react";
 import { SubtreeToggle } from "../common/icons";
 import ButtonToggle from "../common/ButtonToggle";
-import EventList from "./EventList";
 import FiberId from "../common/FiberId";
+import FiberInfo from "./FiberInfo";
+import EventList from "./EventList";
 import { useFiber } from "../../utils/fiber-maps";
 import { useEventLog } from "../../utils/events";
 
@@ -30,14 +31,15 @@ const Details = ({
 
   return (
     <div className="details">
-      <div className="details__header">
-        <div className="details__header-caption">
+      <div className="details__info-section">
+        <FiberInfo fiberId={rootId} />
+      </div>
+      <div className="details__event-list-header">
+        <div className="details__event-list-header-caption">
           Events of{" "}
           {fiber ? (
             <>
-              <span className={"details__header-component-name"}>
-                {fiber.displayName}
-              </span>
+              {fiber.displayName}
               <FiberId id={fiber.id} />
             </>
           ) : (
@@ -57,15 +59,17 @@ const Details = ({
         />
       </div>
       {events && (
-        <EventList
-          // key used to reset state of visible records on component & settings change
-          key={[rootId, groupByParent, showUnmounted, showSubtreeEvents].join(
-            "-"
-          )}
-          rootId={rootId}
-          events={events}
-          showTimings={showTimings}
-        />
+        <div className="details__event-list">
+          <EventList
+            // key used to reset state of visible records on component & settings change
+            key={[rootId, groupByParent, showUnmounted, showSubtreeEvents].join(
+              "-"
+            )}
+            rootId={rootId}
+            events={events}
+            showTimings={showTimings}
+          />
+        </div>
       )}
     </div>
   );
