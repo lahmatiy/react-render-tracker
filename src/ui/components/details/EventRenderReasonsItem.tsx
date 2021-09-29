@@ -40,25 +40,25 @@ function ObjectDiff({ diff }: { diff: TransferObjectDiff }) {
   const sampleSize = diff.sample.length;
   const restKeys = diff.keys - sampleSize;
   const restNotes =
-    diff.diffKeys > sampleSize
-      ? diff.keys === diff.diffKeys
-        ? `… all the rest ${plural(
-            restKeys,
-            "entry is",
-            "entries are"
-          )} also changed`
-        : `… +${diff.diffKeys - sampleSize} of the rest ${plural(
-            diff.diffKeys - sampleSize,
-            "entry is",
-            "entries are"
-          )} also changed`
-      : diff.keys > diff.diffKeys
+    restKeys === 0
+      ? false
+      : diff.diffKeys <= sampleSize
       ? `… all the rest ${plural(
-          diff.keys - sampleSize,
+          restKeys,
           "entry has",
           "entries have"
         )} not changed`
-      : false;
+      : diff.keys === diff.diffKeys
+      ? `… all the rest ${plural(
+          restKeys,
+          "entry is",
+          "entries are"
+        )} also changed`
+      : `… ${diff.diffKeys - sampleSize} of the rest ${plural(
+          restKeys,
+          "entry",
+          "entries"
+        )} ${diff.diffKeys - sampleSize === 1 ? "is" : "are"} also changed`;
 
   return (
     <>

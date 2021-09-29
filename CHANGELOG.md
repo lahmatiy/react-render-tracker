@@ -1,3 +1,7 @@
+## next
+
+- Fixed object diff rest changes notes
+
 ## 0.4.0 (September 23, 2021)
 
 - Added displaying of the updated component that caused the selected component to be updated (if not itself)
