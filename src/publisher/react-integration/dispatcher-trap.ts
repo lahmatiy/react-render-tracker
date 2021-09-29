@@ -10,8 +10,11 @@ type Dispatcher = any;
 type DispatchFn = (state: any) => any;
 type UseContextPathMap = Map<
   ReactContext<any>,
-  Map<number, { path: string[] | undefined }>
+  Map<number, { index: number; path: string[] | undefined }>
 > & { count: number };
+type FiberDispatcherInfo = {
+  contexts: UseContextPathMap | null;
+};
 
 function extractHookPath() {
   const stack = String(new Error().stack).split("\n").slice(4);
@@ -37,9 +40,9 @@ export function dispatcherTrap(
 ): ReactDispatcherTrapApi {
   let currentDispatcher: Dispatcher | null = null;
   let currentFiber: Fiber | null = null;
-  let currentFiberTrackUseContext = false;
-  let currentFiberUseContext: UseContextPathMap | null = null;
+  let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   // let currentFiberRerenderState: RerenderState | null = null;
+  const fiberInfo = new WeakMap<Fiber, FiberDispatcherInfo>();
   const knownDispatcher = new Set();
   const ignoreDispatcherTransition = new Set();
   const patchedHookFn = new WeakMap<
@@ -125,12 +128,16 @@ export function dispatcherTrap(
     dispatcher.useContext = (context: ReactContext<any>, ...args: any[]) => {
       const value = orig(context, ...args);
 
-      if (currentFiberTrackUseContext) {
+      if (currentFiberCollectInfo !== null) {
+        let currentFiberUseContext = currentFiberCollectInfo.contexts;
+
         if (currentFiberUseContext === null) {
-          currentFiberUseContext = Object.assign(new Map(), { count: 0 });
+          currentFiberUseContext = currentFiberCollectInfo.contexts =
+            Object.assign(new Map(), { count: 0 });
           useContextPaths.set(currentFiber as Fiber, currentFiberUseContext);
         }
 
+        const contextIndex = currentFiberUseContext.count++;
         let contextPaths = currentFiberUseContext.get(context);
 
         if (contextPaths === undefined) {
@@ -138,7 +145,8 @@ export function dispatcherTrap(
           currentFiberUseContext.set(context, contextPaths);
         }
 
-        contextPaths.set(currentFiberUseContext.count++, {
+        contextPaths.set(contextIndex, {
+          index: contextIndex,
           path: extractHookPath(),
         });
       }
@@ -182,39 +190,47 @@ export function dispatcherTrap(
     },
     set: nextDispatcher => {
       const nextCurrentFiber = renderer.getCurrentFiber();
-      // const prevDispatcher = currentDispatcher;
+      const prevDispatcher = currentDispatcher;
 
       currentDispatcher = patchDispatcher(nextDispatcher);
 
       // render
       if (nextCurrentFiber !== currentFiber) {
         currentFiber = nextCurrentFiber;
+        currentFiberCollectInfo = null;
 
-        // track contexts on mount only
-        currentFiberTrackUseContext =
-          currentFiber !== null && currentFiber.alternate === null;
-        currentFiberUseContext = null;
+        if (currentFiber !== null) {
+          // collect info on mount only
+          if (currentFiber.alternate === null) {
+            fiberInfo.set(
+              currentFiber,
+              (currentFiberCollectInfo = {
+                contexts: null,
+              })
+            );
+          }
+        }
+
         // currentFiberRerenderState = null;
         // rerenderStates.delete(currentFiber as Fiber);
       }
       // re-render
-      // else if (
-      //   currentFiber !== null &&
-      //   !ignoreDispatcherTransition.has(prevDispatcher) &&
-      //   !ignoreDispatcherTransition.has(nextDispatcher)
-      // ) {
-      //   if (currentFiberRerenderState) {
-      //     if (rerenderStates.has(currentFiber)) {
-      //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
-      //     } else {
-      //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
-      //     }
-      //   }
+      else if (
+        currentFiber !== null &&
+        !ignoreDispatcherTransition.has(prevDispatcher) &&
+        !ignoreDispatcherTransition.has(nextDispatcher)
+      ) {
+        //   if (currentFiberRerenderState) {
+        //     if (rerenderStates.has(currentFiber)) {
+        //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
+        //     } else {
+        //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
+        //     }
+        //   }
 
-      //   currentFiberTrackUseContext = false;
-      //   currentFiberUseContext = null;
-      //   currentFiberRerenderState = null;
-      // }
+        // avoid collecting info on re-renders
+        currentFiberCollectInfo = null;
+      }
     },
   });
 
@@ -227,9 +243,8 @@ export function dispatcherTrap(
     },
     getFiberUseContextPaths(fiber: Fiber, context: ReactContext<any>) {
       const contextPaths = (
-        useContextPaths.get(fiber) ||
-        useContextPaths.get(fiber.alternate as Fiber)
-      )?.get(context);
+        fiberInfo.get(fiber) || fiberInfo.get(fiber.alternate as Fiber)
+      )?.contexts?.get(context);
 
       return contextPaths ? [...contextPaths.values()] : undefined;
     },
