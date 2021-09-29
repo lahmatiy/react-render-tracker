@@ -9,6 +9,7 @@ import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
 import { CallStack, CallStackList } from "./CallStack";
 import { Diff } from "./Diff";
+import { FiberLink } from "./FiberLink";
 
 function Change({
   type,
@@ -80,11 +81,12 @@ export function ContextChange({
         )
       }
       name={
-        <span className="event-render-reason__context-name">
-          {entry.name || "UnknownContext"}
-        </span>
+        typeof entry.providerId === "number" ? (
+          <FiberLink id={entry.providerId} name={entry.name} />
+        ) : (
+          entry.name || "UnknownContext"
+        )
       }
-      index={entry.providerId}
       diff={entry.diff}
       values={entry}
     />

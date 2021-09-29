@@ -1,13 +1,26 @@
 .fiber-info {
-  padding: 4px 8px;
+  padding: 6px 8px 6px;
   font-size: 12px;
   line-height: 14px;
 }
 
 .fiber-info__header {
   color: #444;
-  font-size: 13px;
-  line-height: 15px;
+  font-size: 14px;
+  line-height: 16px;
+}
+.fiber-info__header-notes {
+  margin-top: 1px;
+  font-size: 10px;
+  line-height: 12px;
+  color: #bbb;
+}
+.fiber-info__header-notes .details-fiber-link__name {
+  color: #999;
+  text-decoration-color: #9995;
+}
+.fiber-info__header-notes .fiber-id {
+  margin-left: 3px;
 }
 
 .fiber-info-section {
@@ -28,10 +41,13 @@
   content: " – ";
 }
 
-.fiber-info-fiber-context-name {
-  display: inline-block;
-  color: var(--primary);
-}
-.fiber-info-fiber-context-reads {
+.fiber-info-fiber-context__reads {
   margin-left: 8px;
+}
+.fiber-info-fiber-context__no-provider {
+  color: #a33;
+}
+.fiber-info-fiber-context__no-provider::before {
+  content: " – ";
+  color: #ccc;
 }

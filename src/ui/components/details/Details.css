@@ -7,7 +7,6 @@
 }
 
 .details__info-section {
-  min-height: 40px;
   max-height: 50%;
   overflow: auto;
   overscroll-behavior: contain;
