@@ -9,6 +9,18 @@
   font-size: 14px;
   line-height: 16px;
 }
+.fiber-info__header-type-badge {
+  display: inline-block;
+  padding: 4px 4px 3px;
+  margin-top: -3px;
+  margin-bottom: 3px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 10px;
+  text-transform: uppercase;
+  background-color: #d9ecd1;
+  color: #88a06f;
+}
 .fiber-info__header-notes {
   margin-top: 1px;
   font-size: 10px;

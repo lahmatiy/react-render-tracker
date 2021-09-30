@@ -1,10 +1,10 @@
 import { FiberType } from "../../types";
 import {
   ElementTypeClass,
-  ElementTypeForwardRef,
   ElementTypeFunction,
   ElementTypeMemo,
-} from "./constants";
+  ElementTypeForwardRef,
+} from "../../../common/constants";
 
 export function separateDisplayNameAndHOCs(
   displayName: string | null,

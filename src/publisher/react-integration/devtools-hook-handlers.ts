@@ -1,12 +1,13 @@
 import { separateDisplayNameAndHOCs } from "./utils/separateDisplayNameAndHOCs";
 import {
   ElementTypeClass,
-  ElementTypeForwardRef,
   ElementTypeFunction,
   ElementTypeMemo,
+  ElementTypeForwardRef,
+  ElementTypeProvider,
+  ElementTypeConsumer,
   ElementTypeHostRoot,
-  ElementTypeContext,
-} from "./utils/constants";
+} from "../../common/constants";
 import type { CoreApi } from "./core";
 import {
   Fiber,
@@ -147,7 +148,8 @@ export function createReactDevtoolsHookHandlers(
       type !== ElementTypeFunction &&
       type !== ElementTypeMemo &&
       type !== ElementTypeForwardRef &&
-      type !== ElementTypeContext
+      type !== ElementTypeProvider &&
+      type !== ElementTypeConsumer
     ) {
       return null;
     }
@@ -195,7 +197,8 @@ export function createReactDevtoolsHookHandlers(
       case ElementTypeFunction:
       case ElementTypeMemo:
       case ElementTypeForwardRef:
-      case ElementTypeContext: {
+      case ElementTypeProvider:
+      case ElementTypeConsumer: {
         const id = getFiberIdThrows(fiber);
         const contexts = getContextsForFunctionFiber(fiber);
 

@@ -4,6 +4,7 @@ import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
 import { CallStackList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
+import { fiberTypeName } from "../../../common/constants";
 
 interface IFiberInfo {
   fiberId: number;
@@ -128,6 +129,9 @@ function FiberInfo({ fiberId }: IFiberInfo) {
 
   return (
     <div className="fiber-info">
+      <span className="fiber-info__header-type-badge">
+        {fiberTypeName[fiber.type]}
+      </span>
       <div className="fiber-info__header">
         {fiber.displayName}
         <FiberId id={fiber.id} />

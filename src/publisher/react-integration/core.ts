@@ -1,17 +1,6 @@
 import { getInternalReactConstants } from "./utils/getInternalReactConstants";
 import { getFiberFlags } from "./utils/getFiberFlags";
 import {
-  ElementTypeClass,
-  ElementTypeContext,
-  ElementTypeForwardRef,
-  ElementTypeFunction,
-  ElementTypeHostComponent,
-  ElementTypeMemo,
-  ElementTypeOtherOrUnknown,
-  ElementTypeProfiler,
-  ElementTypeHostRoot,
-  ElementTypeSuspense,
-  ElementTypeSuspenseList,
   CONCURRENT_MODE_NUMBER,
   CONCURRENT_MODE_SYMBOL_STRING,
   CONTEXT_NUMBER,
@@ -25,6 +14,20 @@ import {
   STRICT_MODE_SYMBOL_STRING,
 } from "./utils/constants.js";
 import { ReactInternals, Fiber, NativeType } from "../types";
+import {
+  ElementTypeClass,
+  ElementTypeFunction,
+  ElementTypeForwardRef,
+  ElementTypeMemo,
+  ElementTypeProvider,
+  ElementTypeConsumer,
+  ElementTypeHostRoot,
+  ElementTypeHostComponent,
+  ElementTypeSuspense,
+  ElementTypeSuspenseList,
+  ElementTypeProfiler,
+  ElementTypeOtherOrUnknown,
+} from "../../common/constants";
 
 export type CoreApi = ReturnType<typeof createIntegrationCore>;
 
@@ -166,9 +169,11 @@ export function createIntegrationCore(renderer: ReactInternals) {
         switch (typeSymbol) {
           case PROVIDER_NUMBER:
           case PROVIDER_SYMBOL_STRING:
+            return ElementTypeProvider;
+
           case CONTEXT_NUMBER:
           case CONTEXT_SYMBOL_STRING:
-            return ElementTypeContext;
+            return ElementTypeConsumer;
 
           case PROFILER_NUMBER:
           case PROFILER_SYMBOL_STRING:
