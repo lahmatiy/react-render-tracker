@@ -31,6 +31,9 @@
 .tree-leaf:first-child .tree-leaf-caption.render-root + div {
   margin-top: 1px;
 }
+.tree-leaf-caption.pinned:not(.render-root) {
+  border-bottom: 1px solid #ddd;
+}
 
 .tree-leaf-caption:hover {
   background-color: #eee;
@@ -40,9 +43,25 @@
 }
 .tree-leaf-caption.selected {
   background-color: #dde8f4;
+  cursor: default;
 }
 .tree-leaf-caption.selected.render-root {
   background-color: #deebf7;
+}
+.tree-leaf-caption.pinned .tree-leaf-caption__main {
+  width: 0;
+  overflow: hidden;
+}
+.tree-leaf-caption.pinned .tree-leaf-caption__main::before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 13px;
+  height: 14px;
+  margin: -1px -15px 0 3px;
+  background-image: url("./img/pin.svg");
+  background-position: top center;
+  background-size: 14px;
 }
 
 .tree-leaf-caption__timings {
@@ -66,7 +85,7 @@
 .tree-leaf-caption__main {
   flex: 1;
   padding: var(--padding-main);
-  padding-left: calc(var(--depth, 0) * 15px + var(--no-timing-padding));
+  padding-left: calc(var(--depth, 0) * 14px + var(--no-timing-padding));
 }
 
 .tree-leaf-caption .highlight {
@@ -126,4 +145,20 @@
   background-clip: content-box;
   border-radius: 3px;
   border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.tree-leaf-caption__unpin-button {
+  margin: 2px 1px 2px;
+  padding: 0px 4px;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.75);
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.tree-leaf-caption__unpin-button:hover {
+  opacity: 1;
 }

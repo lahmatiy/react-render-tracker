@@ -2,6 +2,7 @@
   display: grid;
   grid-template:
     "toolbar" auto
+    "render-tree-header" auto
     "render-tree" 1fr
     "statusbar" auto;
   height: 100vh;
@@ -12,6 +13,7 @@
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "toolbar toolbar"
+    "render-tree-header details"
     "render-tree details"
     "statusbar statusbar";
 }

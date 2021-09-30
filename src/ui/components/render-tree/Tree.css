@@ -9,3 +9,9 @@
   display: table;
   min-width: 100%;
 }
+.render-tree__no-children {
+  padding: 4px 20px;
+  font-size: 11px;
+  color: #aaa;
+  user-select: none;
+}

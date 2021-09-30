@@ -1,0 +1,30 @@
+.render-tree-header {
+  background: white;
+}
+.render-tree-header__path {
+  padding: 3px 6px;
+  background-color: #f6f6f6;
+  border-bottom: 1px solid #ddd;
+  font-size: 11px;
+  line-height: 15px;
+  color: #888;
+}
+.render-tree-header__path::before {
+  content: "Pinned path: ";
+}
+.render-tree-header-fiber-link {
+  display: inline-block;
+}
+.render-tree-header-fiber-link:not(:last-child)::after {
+  content: "\a0→\a0";
+  color: #aaa;
+}
+.render-tree-header-fiber-link__name {
+  text-decoration: underline;
+  text-decoration-color: #8885;
+  color: #777;
+  cursor: pointer;
+}
+.render-tree-header-fiber-link__name:hover {
+  color: #555;
+}

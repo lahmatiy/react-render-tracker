@@ -28,9 +28,17 @@ const Tree = ({
     <div className="render-tree">
       <div className="render-tree__content">
         <TreeViewSettingsContext.Provider value={viewSettings}>
-          {children.map(childId => (
-            <TreeLeaf key={childId} fiberId={childId} />
-          ))}
+          {rootId !== 0 && children.length === 0 ? (
+            <div className="render-tree__no-children">No children yet</div>
+          ) : (
+            children.map(childId => (
+              <TreeLeaf
+                key={childId}
+                fiberId={childId}
+                depth={rootId === 0 ? 0 : 2}
+              />
+            ))
+          )}
         </TreeViewSettingsContext.Provider>
       </div>
     </div>

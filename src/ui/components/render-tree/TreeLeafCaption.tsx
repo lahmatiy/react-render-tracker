@@ -7,11 +7,13 @@ import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
 import { useSelectionState } from "../../utils/selection";
 import { formatDuration } from "../../utils/duration";
+import { usePinnedContext } from "../../utils/pinned";
 
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
   depth?: number;
-  expanded: boolean;
+  pinned?: boolean;
+  expanded?: boolean;
   setExpanded?: (value: boolean) => void;
   showTimings: boolean;
 }
@@ -19,6 +21,7 @@ interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
   match: [offset: number, length: number] | null;
   selected: boolean;
   onSelect: (id: number) => void;
+  onPin: (id: number) => void;
 }
 
 function getFiberNameHighlight(
@@ -42,12 +45,14 @@ function getFiberNameHighlight(
 const TreeLeafCaption = ({
   fiber,
   depth = 0,
-  expanded,
+  pinned = false,
+  expanded = false,
   setExpanded,
   showTimings,
 }: TreeLeafCaptionProps) => {
   const { id, displayName } = fiber;
   const { selected, select } = useSelectionState(id);
+  const { pin } = usePinnedContext();
   const match = useFindMatch(id, displayName);
 
   return (
@@ -57,6 +62,8 @@ const TreeLeafCaption = ({
       match={match}
       selected={selected}
       onSelect={select}
+      pinned={pinned}
+      onPin={pin}
       expanded={expanded}
       setExpanded={setExpanded}
       showTimings={showTimings}
@@ -71,7 +78,9 @@ const TreeLeafCaptionInner = React.memo(
     match,
     selected,
     onSelect,
-    expanded,
+    pinned,
+    onPin,
+    expanded = false,
     setExpanded,
     showTimings,
   }: TreeLeafCaptionInnerProps) => {
@@ -96,6 +105,7 @@ const TreeLeafCaptionInner = React.memo(
     const classes = ["tree-leaf-caption"];
     for (const [cls, add] of Object.entries({
       selected,
+      pinned,
       unmounted: !mounted,
       "render-root": isRenderRoot,
       "no-events": events.length === 0,
@@ -110,12 +120,17 @@ const TreeLeafCaptionInner = React.memo(
       event.stopPropagation();
       onSelect(id);
     };
+    const handlePin = (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onPin(id);
+    };
 
     return (
       <div
         className={classes.join(" ")}
         style={{ "--depth": depth } as React.CSSProperties}
         onClick={handleSelect}
+        onDoubleClick={handlePin}
       >
         {showTimings && (
           <div className="tree-leaf-caption__timings">
@@ -153,6 +168,14 @@ const TreeLeafCaptionInner = React.memo(
             </span>
           )}
         </div>
+        {pinned && (
+          <button
+            className="tree-leaf-caption__unpin-button"
+            onClick={() => onPin(0)}
+          >
+            Unpin
+          </button>
+        )}
       </div>
     );
   }

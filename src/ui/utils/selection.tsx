@@ -88,11 +88,10 @@ export const SelectedIdConsumer = ({
 export const useSelectionState = (id: number) => {
   const { selectedId, subscribeToIdState, select } = useSelectionContext();
   const [state, setState] = React.useState(id === selectedId);
-  const selectThis = React.useCallback(() => select(id), []);
 
   React.useEffect(() => subscribeToIdState(id, setState), [id]);
 
-  return { selected: state, select: selectThis };
+  return { selected: state, select };
 };
 
 export const useSelectionId = (id: number) => {

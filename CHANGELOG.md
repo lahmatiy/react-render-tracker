@@ -2,6 +2,7 @@
 
 - Fixed object diff rest changes notes
 - Fixed context hook paths duplication in case of re-renders
+- Added pin subtree feature by double click on fiber tree leaf
 
 ## 0.4.0 (September 23, 2021)
 

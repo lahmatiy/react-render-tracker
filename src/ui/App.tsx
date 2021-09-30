@@ -1,6 +1,7 @@
 import * as React from "react";
 import Toolbar from "./components/toolbar/Toolbar";
-import RenderTree from "./components/render-tree/Tree";
+import FiberTree from "./components/render-tree/Tree";
+import FiberTreeHeader from "./components/render-tree/TreeHeader";
 import Details from "./components/details/Details";
 import StatusBar from "./components/statusbar/StatusBar";
 import { FindMatchContextProvider } from "./utils/find-match";
@@ -10,6 +11,7 @@ import {
 } from "./utils/selection";
 import { EventsContextProvider, useEventsContext } from "./utils/events";
 import { useFiberChildren } from "./utils/fiber-maps";
+import { PinnedContextProvider, PinnedIdConsumer } from "./utils/pinned";
 
 function WaitingForReady() {
   const [visible, setVisible] = React.useState(false);
@@ -68,12 +70,25 @@ function App() {
 
               <FindMatchContextProvider pattern={filterPattern}>
                 <WaitingForReady />
-                <RenderTree
-                  rootId={0}
-                  groupByParent={groupByParent}
-                  showUnmounted={showUnmounted}
-                  showTimings={showTimings}
-                />
+                <PinnedContextProvider>
+                  <PinnedIdConsumer>
+                    {(pinnedId: number) => (
+                      <>
+                        <FiberTreeHeader
+                          rootId={pinnedId}
+                          groupByParent={groupByParent}
+                          showTimings={showTimings}
+                        />
+                        <FiberTree
+                          rootId={pinnedId}
+                          groupByParent={groupByParent}
+                          showUnmounted={showUnmounted}
+                          showTimings={showTimings}
+                        />
+                      </>
+                    )}
+                  </PinnedIdConsumer>
+                </PinnedContextProvider>
               </FindMatchContextProvider>
 
               {selectedId !== null && (

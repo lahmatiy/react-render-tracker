@@ -9,7 +9,7 @@ export function FiberLink({ id, name }: { id: number; name: string | null }) {
     <span className="details-fiber-link">
       <span
         className="details-fiber-link__name"
-        onClick={!selected ? select : undefined}
+        onClick={!selected ? () => select(id) : undefined}
       >
         {name || "Unknown"}
       </span>
