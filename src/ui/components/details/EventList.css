@@ -1,8 +1,3 @@
-.fiber-event-list {
-  width: 100%;
-  border-collapse: collapse;
-}
-
 .fiber-event-list__no-events {
   padding: 1em 2ex;
   text-align: center;

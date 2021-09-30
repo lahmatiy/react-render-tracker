@@ -119,9 +119,7 @@ const EventList = ({ rootId, events, showTimings }: EventListProps) => {
           </button>
         </div>
       )}
-      <table className="fiber-event-list">
-        <tbody>{fiberEvents}</tbody>
-      </table>
+      <div className="fiber-event-list">{fiberEvents}</div>
     </>
   );
 };

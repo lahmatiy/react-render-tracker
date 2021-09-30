@@ -1,15 +1,15 @@
-.event-render-reasons__wrapper {
+.event-render-reasons {
   position: relative;
-  padding-top: 0;
-  padding-bottom: 0;
+  padding-top: 1px;
+  padding-bottom: 4px;
 }
-.event-render-reasons__wrapper_next::before {
+.event-render-reasons_next::before {
   content: "";
   position: absolute;
   display: block;
   top: 0;
   bottom: 0;
-  left: 10px;
+  left: 22px;
   width: 3px;
   background-color: #efe6a9;
   background-clip: padding-box;
@@ -20,7 +20,7 @@
 .event-render-reasons__list {
   position: relative;
   z-index: 0;
-  margin: 0 4px 4px 4px;
+  margin: 0 4px 0 31px;
   border: 1px solid #d0d0d0;
   border-radius: 3px;
   background: #f7f7f7;

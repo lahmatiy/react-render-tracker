@@ -98,44 +98,37 @@ const EventListItem = ({
 
   return (
     <>
-      <tr
+      <div
+        data-type={event.op}
         className={
           "event-list-item" +
           (rootTrigger ? " event-list-item_root-trigger" : "")
         }
       >
-        {showTimings && (
-          <>
-            <td className="event-list-item__time" title="Self time">
-              {(event.op === "mount" || event.op === "update") &&
-                formatDuration(event.selfTime)}
-            </td>
-            <td className="event-list-item__time" title="Total time">
-              {(event.op === "mount" || event.op === "update") &&
-                formatDuration(event.totalTime)}
-            </td>
-          </>
-        )}
-        <td className="event-list-item__dots">
-          <span
-            className={
-              "event-list-item__dot" +
-              (prevConjunction ? " event-list-item__dot_prev" : "") +
-              (nextConjunction ? " event-list-item__dot_next" : "")
-            }
-            title={opTooltip[event.op]}
-            data-type={event.op}
-          >
-            {"\xa0"}
-          </span>
-        </td>
-        <td className="event-list-item__main">
+        <div className="event-list-item__dots">
           {event.op === "update" && isUpdateTrigger && (
-            <span
+            <div
               className="event-list-item__update-trigger"
               title={"Update trigger"}
             />
           )}
+          <div className="event-list-item__dot" title={opTooltip[event.op]} />
+          {prevConjunction && <div className="event-list-item__dots-prev" />}
+          {nextConjunction && <div className="event-list-item__dots-next" />}
+        </div>
+        {showTimings && (
+          <>
+            <div className="event-list-item__time" title="Self time">
+              {(event.op === "mount" || event.op === "update") &&
+                formatDuration(event.selfTime)}
+            </div>
+            <div className="event-list-item__time" title="Total time">
+              {(event.op === "mount" || event.op === "update") &&
+                formatDuration(event.totalTime)}
+            </div>
+          </>
+        )}
+        <div className="event-list-item__main">
           <Fiber fiberId={fiberId} op={event.op} />{" "}
           {changes !== null && (
             <span
@@ -146,7 +139,7 @@ const EventListItem = ({
               }
               onClick={() => setIsCollapsed(expanded => !expanded)}
             >
-              <span style={{ color: "#999" }}>Changes in</span>{" "}
+              <span style={{ color: "#999" }}>Changed</span>{" "}
               {changes.reasons.join(", ")}
             </span>
           )}
@@ -154,8 +147,8 @@ const EventListItem = ({
           event.path
             ? event.path.join(" → ")
             : ""}
-        </td>
-      </tr>
+        </div>
+      </div>
       {event.op === "update" && expanded && (
         <EventRenderReasons
           fiberId={fiberId}
@@ -164,9 +157,7 @@ const EventListItem = ({
         />
       )}
       {indirectRootTrigger && (
-        <tr>
-          <td className="event-list-item__indirect-root-trigger"></td>
-        </tr>
+        <div className="event-list-item__indirect-root-trigger" />
       )}
     </>
   );
