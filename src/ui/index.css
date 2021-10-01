@@ -1,4 +1,5 @@
 @import url("./App.css");
+@import url("./components/misc/WaitingForReady.css");
 @import url("./components/common/ButtonToggle.css");
 @import url("./components/common/FiberHocNames.css");
 @import url("./components/common/FiberId.css");
