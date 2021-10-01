@@ -4,6 +4,7 @@
   scroll-behavior: smooth;
   overscroll-behavior: contain;
   position: relative;
+  transform: translateZ(0);
 }
 .render-tree__content {
   margin-top: -1px;

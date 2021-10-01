@@ -4,6 +4,7 @@
   flex-direction: column;
   overflow: hidden;
   border-left: 1px solid #ddd;
+  transform: translateZ(0);
 }
 
 .details__info-section {
