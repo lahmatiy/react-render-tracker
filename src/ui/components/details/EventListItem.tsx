@@ -9,6 +9,7 @@ import {
   TransferContextChange,
 } from "../../types";
 import { useFiber } from "../../utils/fiber-maps";
+import { useSelectionState } from "../../utils/selection";
 
 interface EventListItemProps {
   fiberId: number;
@@ -62,6 +63,7 @@ function getChanges(event: Event) {
 
 const Fiber = ({ fiberId, op }: { fiberId: number; op: Event["op"] }) => {
   const fiber = useFiber(fiberId);
+  const { selected, select } = useSelectionState(fiberId);
 
   if (!fiber) {
     return null;
@@ -72,8 +74,12 @@ const Fiber = ({ fiberId, op }: { fiberId: number; op: Event["op"] }) => {
       <span
         className={
           "event-list-item__name" +
-          (op === "unmount" ? " event-list-item__name_unmounted" : "")
+          (op === "unmount" ? " event-list-item__name_unmounted" : "") +
+          (selected
+            ? " event-list-item__name_selected"
+            : " event-list-item__name_link")
         }
+        onClick={!selected ? () => select(fiberId) : undefined}
       >
         {fiber.displayName}
       </span>
@@ -139,8 +145,12 @@ const EventListItem = ({
               }
               onClick={() => setIsCollapsed(expanded => !expanded)}
             >
-              <span style={{ color: "#999" }}>Changed</span>{" "}
-              {changes.reasons.join(", ")}
+              {"± "}
+              {changes.reasons.map(reason => (
+                <span key={reason} className="event-list-item__changes-reason">
+                  {reason}
+                </span>
+              ))}
             </span>
           )}
           {(event.op === "effect-create" || event.op === "effect-destroy") &&
