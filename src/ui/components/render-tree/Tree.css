@@ -1,6 +1,7 @@
 .render-tree {
   grid-area: render-tree;
   overflow: auto;
+  scroll-behavior: smooth;
   overscroll-behavior: contain;
   position: relative;
 }

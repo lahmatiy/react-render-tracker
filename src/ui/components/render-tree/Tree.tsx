@@ -1,7 +1,38 @@
 import * as React from "react";
+import computeScrollIntoView from "compute-scroll-into-view";
 import { useFiberChildren } from "../../utils/fiber-maps";
-import { TreeViewSettings, TreeViewSettingsContext } from "./contexts";
+import { useSelectedId } from "../../utils/selection";
+import {
+  TreeViewSettings,
+  TreeViewSettingsContext,
+  useTreeViewSettingsContext,
+} from "./contexts";
 import TreeLeaf from "./TreeLeaf";
+
+const ScrollSelectedToViewIfNeeded = () => {
+  const { selectedId } = useSelectedId();
+  const { getFiberElement } = useTreeViewSettingsContext();
+
+  React.useEffect(() => {
+    if (selectedId !== null) {
+      const element = getFiberElement(selectedId);
+
+      if (element !== null) {
+        const actions = computeScrollIntoView(element, {
+          scrollMode: "if-needed",
+          block: "nearest",
+          inline: "nearest",
+        });
+
+        if (actions) {
+          element.scrollIntoView({ block: "nearest", inline: "nearest" });
+        }
+      }
+    }
+  }, [selectedId, getFiberElement]);
+
+  return null;
+};
 
 const Tree = ({
   rootId = 0,
@@ -15,14 +46,20 @@ const Tree = ({
   showTimings?: boolean;
 }) => {
   const children = useFiberChildren(rootId, groupByParent, showUnmounted);
-  const viewSettings = React.useMemo<TreeViewSettings>(
-    () => ({
+  const viewSettings = React.useMemo<TreeViewSettings>(() => {
+    const fiberElementById = new Map<number, HTMLElement>();
+
+    return {
+      setFiberElement: (id, element) =>
+        element
+          ? fiberElementById.set(id, element)
+          : fiberElementById.delete(id),
+      getFiberElement: id => fiberElementById.get(id) || null,
       groupByParent,
       showUnmounted,
       showTimings,
-    }),
-    [groupByParent, showUnmounted, showTimings]
-  );
+    };
+  }, [groupByParent, showUnmounted, showTimings]);
 
   return (
     <div className="render-tree">
@@ -39,6 +76,7 @@ const Tree = ({
               />
             ))
           )}
+          <ScrollSelectedToViewIfNeeded />
         </TreeViewSettingsContext.Provider>
       </div>
     </div>

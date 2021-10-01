@@ -1,7 +1,9 @@
 .tree-leaf-caption {
   --padding-time: 2px 4px 1px;
   --padding-main: 1px 5px;
-  --no-timing-padding: 0px;
+  --no-timing-padding: 2px;
+  --scroll-margin-top: 23px;
+  --scroll-margin-left: 2px;
 
   display: flex;
   box-sizing: border-box;
@@ -12,13 +14,15 @@
   cursor: pointer;
 }
 
-.tree-leaf-caption.no-timings {
-  --no-timing-padding: 2px;
+.tree-leaf-caption.timings {
+  --no-timing-padding: 0px;
+  --scroll-margin-left: 90px;
 }
 
 .tree-leaf-caption.render-root {
   --padding-time: 1px 4px 0px;
   --padding-main: 0px 5px;
+  --scroll-margin-top: 0;
 
   position: sticky;
   top: -1px;
@@ -27,9 +31,6 @@
   background-color: #f4f4f4;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
-}
-.tree-leaf:first-child .tree-leaf-caption.render-root + div {
-  margin-top: 1px;
 }
 .tree-leaf-caption.pinned:not(.render-root) {
   border-bottom: 1px solid #ddd;
@@ -86,6 +87,12 @@
   flex: 1;
   padding: var(--padding-main);
   padding-left: calc(var(--depth, 0) * 14px + var(--no-timing-padding));
+}
+.tree-leaf-caption__main-content {
+  display: inline-block;
+  padding-right: 4px;
+  scroll-margin-top: var(--scroll-margin-top);
+  scroll-margin-left: var(--scroll-margin-left);
 }
 
 .tree-leaf-caption .highlight {

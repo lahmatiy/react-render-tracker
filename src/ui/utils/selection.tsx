@@ -77,12 +77,9 @@ export const SelectedIdConsumer = ({
 }: {
   children: (selectedId: number | null) => JSX.Element;
 }) => {
-  const { selectedId, subscribe } = useSelectionContext();
-  const [state, setState] = React.useState(selectedId);
+  const { selectedId } = useSelectedId();
 
-  React.useEffect(() => subscribe(setState), []);
-
-  return children(state);
+  return children(selectedId);
 };
 
 export const useSelectionState = (id: number) => {
@@ -94,11 +91,11 @@ export const useSelectionState = (id: number) => {
   return { selected: state, select };
 };
 
-export const useSelectionId = (id: number) => {
-  const { selectedId, subscribe } = useSelectionContext();
-  const [state, setState] = React.useState<number | null>(selectedId);
+export const useSelectedId = () => {
+  const { selectedId, subscribe, select } = useSelectionContext();
+  const [state, setState] = React.useState(selectedId);
 
-  React.useEffect(() => subscribe(setState), [id]);
+  React.useEffect(() => subscribe(setState), []);
 
-  return state;
+  return { selectedId: state, select };
 };

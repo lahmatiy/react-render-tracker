@@ -3,6 +3,7 @@
 - Fixed object diff rest changes notes
 - Fixed context hook paths duplication in case of re-renders
 - Added pin subtree feature by double click on fiber tree leaf
+- Added auto scrolling to viewport for fiber tree's selected leaf if needed
 
 ## 0.4.0 (September 23, 2021)
 

@@ -9,7 +9,7 @@ export interface TreeLeafProps {
 }
 
 const TreeLeaf = React.memo(({ fiberId, depth = 0 }: TreeLeafProps) => {
-  const { groupByParent, showUnmounted, showTimings } =
+  const { setFiberElement, groupByParent, showUnmounted, showTimings } =
     useTreeViewSettingsContext();
   const fiber = useFiber(fiberId);
   const children = useFiberChildren(fiberId, groupByParent, showUnmounted);
@@ -28,6 +28,7 @@ const TreeLeaf = React.memo(({ fiberId, depth = 0 }: TreeLeafProps) => {
         expanded={expanded}
         setExpanded={hasChildren ? setExpanded : undefined}
         showTimings={showTimings}
+        setFiberElement={setFiberElement}
       />
 
       {expanded &&

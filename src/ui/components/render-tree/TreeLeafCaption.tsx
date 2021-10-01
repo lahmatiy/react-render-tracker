@@ -9,6 +9,8 @@ import { useSelectionState } from "../../utils/selection";
 import { formatDuration } from "../../utils/duration";
 import { usePinnedContext } from "../../utils/pinned";
 
+const noop = () => undefined;
+
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
   depth?: number;
@@ -16,6 +18,7 @@ interface TreeLeafCaptionProps {
   expanded?: boolean;
   setExpanded?: (value: boolean) => void;
   showTimings: boolean;
+  setFiberElement?: (id: number, element: HTMLElement | null) => void;
 }
 interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
   match: [offset: number, length: number] | null;
@@ -49,6 +52,7 @@ const TreeLeafCaption = ({
   expanded = false,
   setExpanded,
   showTimings,
+  setFiberElement,
 }: TreeLeafCaptionProps) => {
   const { id, displayName } = fiber;
   const { selected, select } = useSelectionState(id);
@@ -67,6 +71,7 @@ const TreeLeafCaption = ({
       expanded={expanded}
       setExpanded={setExpanded}
       showTimings={showTimings}
+      setFiberElement={setFiberElement}
     />
   );
 };
@@ -83,6 +88,7 @@ const TreeLeafCaptionInner = React.memo(
     expanded = false,
     setExpanded,
     showTimings,
+    setFiberElement = noop,
   }: TreeLeafCaptionInnerProps) => {
     const {
       id,
@@ -109,7 +115,7 @@ const TreeLeafCaptionInner = React.memo(
       unmounted: !mounted,
       "render-root": isRenderRoot,
       "no-events": events.length === 0,
-      "no-timings": !showTimings,
+      timings: showTimings,
     })) {
       if (add) {
         classes.push(cls);
@@ -143,30 +149,35 @@ const TreeLeafCaptionInner = React.memo(
           </div>
         )}
         <div className="tree-leaf-caption__main">
-          {setExpanded && (
-            <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
-          )}
-          <span className="tree-leaf-caption__name">{name}</span>
-          {key !== null && <FiberKey fiber={fiber} />}
-          <FiberId id={id} />
-          {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
-          {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
-          {updatesCount > 0 && (
-            <span
-              className="tree-leaf-caption__update-count"
-              title="Number of updates"
-            >
-              {updatesCount}
-            </span>
-          )}
-          {Array.isArray(contexts) && (
-            <span
-              className="tree-leaf-caption__context-count"
-              title="Number of used contexts"
-            >
-              {contexts.length}
-            </span>
-          )}
+          <div
+            className="tree-leaf-caption__main-content"
+            ref={element => setFiberElement(id, element)}
+          >
+            {setExpanded && (
+              <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+            )}
+            <span className="tree-leaf-caption__name">{name}</span>
+            {key !== null && <FiberKey fiber={fiber} />}
+            <FiberId id={id} />
+            {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
+            {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
+            {updatesCount > 0 && (
+              <span
+                className="tree-leaf-caption__update-count"
+                title="Number of updates"
+              >
+                {updatesCount}
+              </span>
+            )}
+            {Array.isArray(contexts) && (
+              <span
+                className="tree-leaf-caption__context-count"
+                title="Number of used contexts"
+              >
+                {contexts.length}
+              </span>
+            )}
+          </div>
         </div>
         {pinned && (
           <button
