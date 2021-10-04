@@ -5,17 +5,15 @@ import {
   subscribeById,
   useComputeSubscription,
 } from "./subscription";
+import { Tree } from "./tree";
 
 interface FiberMapsContext {
   fiberById: SubscribeMap<number, MessageFiber>;
-  fibersByParentId: SubscribeMap<number, number[]>;
-  fibersByOwnerId: SubscribeMap<number, number[]>;
-  mountedFibersByParentId: SubscribeMap<number, number[]>;
-  mountedFibersByOwnerId: SubscribeMap<number, number[]>;
-  selectChildrenMap: (
-    groupByParent: boolean,
-    includeUnmounted: boolean
-  ) => SubscribeMap<number, number[]>;
+  parentTree: Tree;
+  parentTreeIncludeUnmounted: Tree;
+  ownerTree: Tree;
+  ownerTreeIncludeUnmounted: Tree;
+  selectTree: (groupByParent: boolean, includeUnmounted: boolean) => Tree;
 }
 
 const FiberMapsContext = React.createContext<FiberMapsContext>({} as any);
@@ -27,25 +25,25 @@ export function FiberMapsContextProvider({
 }) {
   const value: FiberMapsContext = React.useMemo(() => {
     const fiberById = new SubscribeMap<number, MessageFiber>();
-    const fibersByParentId = new SubscribeMap<number, number[]>();
-    const fibersByOwnerId = new SubscribeMap<number, number[]>();
-    const mountedFibersByParentId = new SubscribeMap<number, number[]>();
-    const mountedFibersByOwnerId = new SubscribeMap<number, number[]>();
+    const parentTree = new Tree();
+    const parentTreeIncludeUnmounted = new Tree();
+    const ownerTree = new Tree();
+    const ownerTreeIncludeUnmounted = new Tree();
 
     return {
       fiberById,
-      fibersByParentId,
-      fibersByOwnerId,
-      mountedFibersByParentId,
-      mountedFibersByOwnerId,
-      selectChildrenMap(groupByParent, includeUnmounted) {
+      parentTree,
+      parentTreeIncludeUnmounted,
+      ownerTree,
+      ownerTreeIncludeUnmounted,
+      selectTree(groupByParent, includeUnmounted) {
         return groupByParent
           ? includeUnmounted
-            ? fibersByParentId
-            : mountedFibersByParentId
+            ? parentTreeIncludeUnmounted
+            : parentTree
           : includeUnmounted
-          ? fibersByOwnerId
-          : mountedFibersByOwnerId;
+          ? ownerTreeIncludeUnmounted
+          : ownerTree;
       },
     };
   }, []);
@@ -60,6 +58,7 @@ export function FiberMapsContextProvider({
 type callback<V> = (value: V) => void;
 export class SubscribeMap<K, V> extends Map<K, V> {
   private subscriptionsMap = new Map<K, Set<{ fn: callback<V | null> }>>();
+  private awaitingNotify = new Set<K>();
 
   hasSubscriptions(id: K) {
     const subscriptions = this.subscriptionsMap.get(id);
@@ -72,6 +71,24 @@ export class SubscribeMap<K, V> extends Map<K, V> {
 
   notify(id: K) {
     return notifyById(this.subscriptionsMap, id, this.get(id) || null);
+  }
+
+  set(key: K, value: V) {
+    this.awaitingNotify.add(key);
+    return super.set(key, value);
+  }
+
+  delete(key: K): boolean {
+    this.awaitingNotify.delete(key);
+    return this.delete(key);
+  }
+
+  flushUpdates() {
+    for (const key of this.awaitingNotify) {
+      notifyById(this.subscriptionsMap, key, this.get(key) || null);
+    }
+
+    this.awaitingNotify.clear();
   }
 }
 
@@ -97,17 +114,18 @@ export const useFiberChildren = (
   groupByParent = false,
   includeUnmounted = false
 ) => {
-  const { selectChildrenMap } = useFiberMaps();
-  const map = selectChildrenMap(groupByParent, includeUnmounted);
+  const { selectTree } = useFiberMaps();
+  const tree = selectTree(groupByParent, includeUnmounted);
+  const leaf = tree.getOrCreate(fiberId);
 
   const compute = React.useCallback(
-    () => map.get(fiberId) || EMPTY_CHILDREN,
-    [map, fiberId]
+    () => leaf.children || EMPTY_CHILDREN,
+    [leaf.lastChild]
   );
 
   const subscribe = React.useCallback(
-    requestRecompute => map.subscribe(fiberId, requestRecompute),
-    [map, fiberId]
+    requestRecompute => leaf.subscribe(requestRecompute),
+    [leaf]
   );
 
   return useComputeSubscription(compute, subscribe);

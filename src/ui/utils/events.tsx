@@ -49,13 +49,8 @@ export function EventsContextProvider({
   const allFiberEvents = React.useRef<FiberEvent[]>([]).current;
   const eventsSince = React.useRef(0);
   const maps = useFiberMaps();
-  const {
-    fiberById,
-    fibersByParentId,
-    fibersByOwnerId,
-    mountedFibersByParentId,
-    mountedFibersByOwnerId,
-  } = maps;
+  const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
+    maps;
   const clearAllEvents = React.useCallback(() => {
     const updates: { map: SubscribeMap<number, any>; id: number }[] = [];
 
@@ -71,23 +66,10 @@ export function EventsContextProvider({
           selfTime: 0,
         });
       }
-    }
 
-    for (const [id, children] of fibersByParentId) {
-      const mountedChildrenOnly = mountedFibersByParentId.get(id) || [];
-
-      if (children.length !== mountedChildrenOnly.length) {
-        updates.push({ map: fibersByParentId, id });
-        fibersByParentId.set(id, mountedChildrenOnly);
-      }
-    }
-
-    for (const [id, children] of fibersByOwnerId) {
-      const mountedChildrenOnly = mountedFibersByOwnerId.get(id) || [];
-
-      if (children.length !== mountedChildrenOnly.length) {
-        updates.push({ map: fibersByOwnerId, id });
-        fibersByOwnerId.set(id, mountedChildrenOnly);
+      if (!fiber.mounted) {
+        parentTreeIncludeUnmounted.delete(fiber.id);
+        ownerTreeIncludeUnmounted.delete(fiber.id);
       }
     }
 
@@ -110,13 +92,10 @@ export function EventsContextProvider({
     for (const { map, id } of updates) {
       map.notify(id);
     }
-  }, [
-    fiberById,
-    fibersByParentId,
-    mountedFibersByParentId,
-    fibersByOwnerId,
-    mountedFibersByOwnerId,
-  ]);
+
+    parentTreeIncludeUnmounted.flushNotify();
+    ownerTreeIncludeUnmounted.flushNotify();
+  }, [fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted]);
   const value = React.useMemo(
     () => ({
       ...state,
@@ -227,47 +206,9 @@ export function EventsContextProvider({
   );
 }
 
-function upsertFiber(map: Map<number, number[]>, id: number, fiberId: number) {
-  if (map.has(id)) {
-    map.set(id, (map.get(id) || []).concat(fiberId));
-  } else {
-    map.set(id, [fiberId]);
-  }
-}
-
-function removeFiber(map: Map<number, number[]>, id: number, fiberId: number) {
-  if (map.has(id)) {
-    map.set(
-      id,
-      (map.get(id) || []).filter(childId => childId !== fiberId)
-    );
-  }
-}
-
-function markUpdated(
-  subscribeMap: SubscribeMap<number, any>,
-  id: number,
-  map: Map<number, number>,
-  type: number
-) {
-  if (subscribeMap.hasSubscriptions(id)) {
-    if (map.has(id)) {
-      map.set(id, (map.get(id) || 0) | type);
-    } else {
-      map.set(id, type);
-    }
-  }
-}
-
 function isShallowEqual(entry: TransferNamedEntryChange) {
   return entry.diff === false;
 }
-
-const UPDATE_SELF /*               */ = 0b00000001;
-const UPDATE_OWNER /*              */ = 0b00000010;
-const UPDATE_OWNER_MOUNTED_ONLY /* */ = 0b00000100;
-const UPDATE_PARENT /*             */ = 0b00001000;
-const UPDATE_PARENT_MOUNTED_ONLY /**/ = 0b00010000;
 
 export function processEvents(
   events: Message[],
@@ -275,10 +216,10 @@ export function processEvents(
   mapsUpdates: Map<number, number>,
   {
     fiberById,
-    fibersByParentId,
-    fibersByOwnerId,
-    mountedFibersByParentId,
-    mountedFibersByOwnerId,
+    parentTree,
+    parentTreeIncludeUnmounted,
+    ownerTree,
+    ownerTreeIncludeUnmounted,
   }: ReturnType<typeof useFiberMaps>
 ) {
   let mountCount = 0;
@@ -307,30 +248,11 @@ export function processEvents(
           totalTime: event.totalTime,
         };
 
-        markUpdated(
-          fibersByParentId,
-          fiber.parentId,
-          mapsUpdates,
-          UPDATE_PARENT
-        );
-        upsertFiber(fibersByParentId, fiber.parentId, fiber.id);
-        markUpdated(
-          mountedFibersByParentId,
-          fiber.parentId,
-          mapsUpdates,
-          UPDATE_PARENT_MOUNTED_ONLY
-        );
-        upsertFiber(mountedFibersByParentId, fiber.parentId, fiber.id);
+        parentTree.add(fiber.id, fiber.parentId);
+        parentTreeIncludeUnmounted.add(fiber.id, fiber.parentId);
+        ownerTree.add(fiber.id, fiber.ownerId);
+        ownerTreeIncludeUnmounted.add(fiber.id, fiber.ownerId);
 
-        markUpdated(fibersByOwnerId, fiber.ownerId, mapsUpdates, UPDATE_OWNER);
-        upsertFiber(fibersByOwnerId, fiber.ownerId, fiber.id);
-        markUpdated(
-          mountedFibersByOwnerId,
-          fiber.ownerId,
-          mapsUpdates,
-          UPDATE_OWNER_MOUNTED_ONLY
-        );
-        upsertFiber(mountedFibersByOwnerId, fiber.ownerId, fiber.id);
         break;
       }
 
@@ -343,21 +265,8 @@ export function processEvents(
           mounted: false,
         };
 
-        markUpdated(
-          mountedFibersByOwnerId,
-          fiber.ownerId,
-          mapsUpdates,
-          UPDATE_OWNER_MOUNTED_ONLY
-        );
-        removeFiber(mountedFibersByOwnerId, fiber.ownerId, fiber.id);
-
-        markUpdated(
-          mountedFibersByParentId,
-          fiber.parentId,
-          mapsUpdates,
-          UPDATE_PARENT_MOUNTED_ONLY
-        );
-        removeFiber(mountedFibersByParentId, fiber.parentId, fiber.id);
+        parentTree.delete(fiber.id);
+        ownerTree.delete(fiber.id);
 
         break;
       }
@@ -406,7 +315,6 @@ export function processEvents(
       triggeredByOwner: trigger !== null && trigger.fiberId === fiber.ownerId,
     });
 
-    markUpdated(fiberById, fiber.id, mapsUpdates, UPDATE_SELF);
     fiberById.set(event.fiberId, {
       ...fiber,
       events: fiber.events.concat(fiberEvent),
@@ -424,20 +332,18 @@ function flushUpdatedMaps(
   mapsUpdates: Map<number, number>,
   {
     fiberById,
-    fibersByParentId,
-    fibersByOwnerId,
-    mountedFibersByParentId,
-    mountedFibersByOwnerId,
+    parentTree,
+    parentTreeIncludeUnmounted,
+    ownerTree,
+    ownerTreeIncludeUnmounted,
   }: ReturnType<typeof useFiberMaps>
 ) {
   ReactDOM.unstable_batchedUpdates(() => {
-    for (const [id, update] of mapsUpdates) {
-      update & UPDATE_SELF && fiberById.notify(id);
-      update & UPDATE_OWNER && fibersByOwnerId.notify(id);
-      update & UPDATE_PARENT && fibersByParentId.notify(id);
-      update & UPDATE_OWNER_MOUNTED_ONLY && mountedFibersByOwnerId.notify(id);
-      update & UPDATE_PARENT_MOUNTED_ONLY && mountedFibersByParentId.notify(id);
-    }
+    fiberById.flushUpdates();
+    parentTree.flushNotify();
+    parentTreeIncludeUnmounted.flushNotify();
+    ownerTree.flushNotify();
+    ownerTreeIncludeUnmounted.flushNotify();
 
     mapsUpdates.clear();
   });
@@ -449,11 +355,11 @@ export function useEventLog(
   includeUnmounted: boolean,
   includeSubtree: boolean
 ) {
-  const { fiberById, selectChildrenMap } = useFiberMaps();
-  const childrenMap = selectChildrenMap(groupByParent, includeUnmounted);
+  const { fiberById, selectTree } = useFiberMaps();
+  const tree = selectTree(groupByParent, includeUnmounted);
   const subtree = React.useMemo(
     () => new Map<number, () => void>(),
-    [fiberId, includeSubtree, fiberById, childrenMap]
+    [fiberId, includeSubtree, fiberById, tree]
   );
 
   const compute = React.useCallback((): FiberEvent[] => {
@@ -474,7 +380,7 @@ export function useEventLog(
     requestRecompute => {
       // subtree
       if (includeSubtree) {
-        return subscribeSubtree(fiberId, childrenMap, (added, removed) => {
+        return subscribeSubtree(fiberId, tree, (added, removed) => {
           for (const id of added) {
             if (!subtree.has(id)) {
               subtree.set(id, fiberById.subscribe(id, requestRecompute));

@@ -1,7 +1,11 @@
 import * as React from "react";
 import debounce from "lodash.debounce";
 
-export function subscribeById<I, T>(map: Map<I, Set<{ fn: T }>>, id: I, fn: T) {
+export type Subscriptions<T> = Set<{ fn: T }>;
+export type SubscriptionsMap<I, T> = Map<I, Subscriptions<T>>;
+const EmptySet = new Set();
+
+export function subscribeById<I, T>(map: SubscriptionsMap<I, T>, id: I, fn: T) {
   let subscriptions = map.get(id);
 
   if (typeof subscriptions === "undefined") {
@@ -12,7 +16,7 @@ export function subscribeById<I, T>(map: Map<I, Set<{ fn: T }>>, id: I, fn: T) {
   return subscribe(subscriptions, fn);
 }
 
-export function subscribe<T>(subscriptions: Set<{ fn: T }>, fn: T) {
+export function subscribe<T>(subscriptions: Subscriptions<T>, fn: T) {
   let entry: { fn: T } | undefined = { fn };
   subscriptions.add(entry);
 
@@ -23,15 +27,15 @@ export function subscribe<T>(subscriptions: Set<{ fn: T }>, fn: T) {
 }
 
 export function notifyById<I, T extends (...args: any[]) => void>(
-  map: Map<I, Iterable<{ fn: T }>>,
+  map: SubscriptionsMap<I, T>,
   id: I,
   ...args: Parameters<T>
 ) {
-  return notify(map.get(id) || [], ...args);
+  return notify(map.get(id) || (EmptySet as Subscriptions<T>), ...args);
 }
 
 export function notify<T extends (...args: any[]) => void>(
-  subscriptions: Iterable<{ fn: T }>,
+  subscriptions: Subscriptions<T>,
   ...args: Parameters<T>
 ) {
   for (const { fn } of subscriptions) {
@@ -49,12 +53,11 @@ export function useSubscription(subscribe: () => () => void) {
     subscriptionRef.current?.();
     subscriptionRef.current = undefined;
   }, []);
-  const subscription = React.useMemo(subscribe, [subscribe]);
 
-  if (subscriptionRef.current !== subscription) {
+  subscriptionRef.current = React.useMemo(() => {
     unsubscribe();
-    subscriptionRef.current = subscription;
-  }
+    return subscribe();
+  }, [subscribe]);
 
   React.useEffect(() => unsubscribe, []);
 }
