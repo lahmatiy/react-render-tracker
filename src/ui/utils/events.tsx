@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { stringifyInfo } from "@discoveryjs/json-ext";
 import { remoteSubscriber } from "../rempl-subscriber";
-import { SubscribeMap, useFiberMaps } from "./fiber-maps";
+import { useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
 import {
   FiberEvent,
@@ -10,7 +10,7 @@ import {
   MessageFiber,
   TransferNamedEntryChange,
 } from "../types";
-import { useDebouncedComputeSubscription } from "./subscription";
+import { flushNotify, useDebouncedComputeSubscription } from "./subscription";
 
 interface EventsContext {
   events: Message[];
@@ -52,11 +52,8 @@ export function EventsContextProvider({
   const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
     maps;
   const clearAllEvents = React.useCallback(() => {
-    const updates: { map: SubscribeMap<number, any>; id: number }[] = [];
-
     for (const [id, fiber] of fiberById) {
       if (fiber.events.length > 0) {
-        updates.push({ map: fiberById, id });
         fiberById.set(id, {
           ...fiber,
           events: [],
@@ -89,12 +86,7 @@ export function EventsContextProvider({
       };
     });
 
-    for (const { map, id } of updates) {
-      map.notify(id);
-    }
-
-    parentTreeIncludeUnmounted.flushNotify();
-    ownerTreeIncludeUnmounted.flushNotify();
+    flushNotify();
   }, [fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted]);
   const value = React.useMemo(
     () => ({
@@ -116,7 +108,6 @@ export function EventsContextProvider({
 
     const TROTTLE = false;
     const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
-    const mapsUpdates = new Map<number, number>();
     let loadingStartOffset = 0;
     let lastLoadedOffset = 0;
     let totalEventsCount = 0;
@@ -138,7 +129,7 @@ export function EventsContextProvider({
 
       if (lastLoadedOffset >= totalEventsCount) {
         // flush updates async
-        setTimeout(() => flushUpdatedMaps(mapsUpdates, maps), 0);
+        setTimeout(() => flushUpdatedMaps(), 0);
         loadingStartOffset = totalEventsCount;
         return;
       }
@@ -155,7 +146,6 @@ export function EventsContextProvider({
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
               allFiberEvents,
-              mapsUpdates,
               maps
             );
 
@@ -213,9 +203,9 @@ function isShallowEqual(entry: TransferNamedEntryChange) {
 export function processEvents(
   events: Message[],
   allFiberEvents: FiberEvent[],
-  mapsUpdates: Map<number, number>,
   {
     fiberById,
+    fibersByTypeId,
     parentTree,
     parentTreeIncludeUnmounted,
     ownerTree,
@@ -248,6 +238,7 @@ export function processEvents(
           totalTime: event.totalTime,
         };
 
+        fibersByTypeId.add(fiber.typeId, fiber.id);
         parentTree.add(fiber.id, fiber.parentId);
         parentTreeIncludeUnmounted.add(fiber.id, fiber.parentId);
         ownerTree.add(fiber.id, fiber.ownerId);
@@ -328,24 +319,9 @@ export function processEvents(
   };
 }
 
-function flushUpdatedMaps(
-  mapsUpdates: Map<number, number>,
-  {
-    fiberById,
-    parentTree,
-    parentTreeIncludeUnmounted,
-    ownerTree,
-    ownerTreeIncludeUnmounted,
-  }: ReturnType<typeof useFiberMaps>
-) {
+function flushUpdatedMaps() {
   ReactDOM.unstable_batchedUpdates(() => {
-    fiberById.flushUpdates();
-    parentTree.flushNotify();
-    parentTreeIncludeUnmounted.flushNotify();
-    ownerTree.flushNotify();
-    ownerTreeIncludeUnmounted.flushNotify();
-
-    mapsUpdates.clear();
+    flushNotify();
   });
 }
 

@@ -13,6 +13,7 @@ declare module "common-types" {
   export type TransferFiber = {
     id: number;
     type: FiberType;
+    typeId: number;
     key: number | string | null;
     ownerId: number; // Owner (if available)
     parentId: number;

@@ -91,7 +91,10 @@ export function createReactDevtoolsHookHandlers(
   let currentRootId = -1;
   let currentCommitId = -1;
   let commitIdSeed = 0;
+  let typeIdSeed = 1;
 
+  const fiberTypeId = new WeakMap<any, number>();
+  const fiberTypeIdNonWeakRef = new Map<symbol, Record<string, any>>();
   const unmountedFiberIds = new Set<number>();
   const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
   const unmountedFiberIdBeforeSiblingId = new Map<number, number>();
@@ -420,6 +423,30 @@ export function createReactDevtoolsHookHandlers(
     return null;
   }
 
+  function getFiberTypeId(type: any): number {
+    if (type === null) {
+      return 0;
+    }
+
+    if (typeof type !== "object" && typeof type !== "function") {
+      const replacement = fiberTypeIdNonWeakRef.get(type);
+
+      if (replacement === undefined) {
+        fiberTypeIdNonWeakRef.set(type, (type = {}));
+      } else {
+        type = replacement;
+      }
+    }
+
+    let typeId = fiberTypeId.get(type);
+
+    if (typeId === undefined) {
+      fiberTypeId.set(type, (typeId = typeIdSeed++));
+    }
+
+    return typeId;
+  }
+
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
     const id = getOrGenerateFiberId(fiber);
@@ -429,6 +456,7 @@ export function createReactDevtoolsHookHandlers(
       transferFiber = {
         id,
         type: ElementTypeHostRoot,
+        typeId: 0,
         key: null,
         ownerId: 0,
         parentId: 0,
@@ -437,7 +465,7 @@ export function createReactDevtoolsHookHandlers(
         contexts: getFiberContexts(fiber),
       };
     } else {
-      const { key } = fiber;
+      const { key, type } = fiber;
       const elementType = getElementTypeForFiber(fiber);
       const parentId = parentFiber ? getFiberIdThrows(parentFiber) : 0;
       const ownerId = getFiberOwnerId(fiber);
@@ -450,6 +478,7 @@ export function createReactDevtoolsHookHandlers(
       transferFiber = {
         id,
         type: elementType,
+        typeId: getFiberTypeId(type),
         key: key === null ? null : String(key),
         ownerId: ownerId !== -1 ? ownerId : currentRootId,
         parentId,

@@ -1,5 +1,11 @@
 import debounce from "lodash.debounce";
-import { notify, subscribe, Subscriptions } from "./subscription";
+import {
+  awaitNotify,
+  notify,
+  stopAwatingNotify,
+  subscribe,
+  Subscriptions,
+} from "./subscription";
 
 export function getSubtreeIds(id: number, childrenMap: Map<number, number[]>) {
   const subtree = new Set<number>([id]);
@@ -139,8 +145,7 @@ export function findDelta(prev: Set<number>, next: Set<number>) {
 // }
 export class Tree {
   root: TreeNode = new TreeNode(0);
-  nodes = new Map<number, TreeNode>();
-  awaitNotify = new Set<TreeNode>();
+  nodes = new Map<number, TreeNode>([[0, this.root]]);
 
   getOrCreate(id: number): TreeNode {
     let node = this.nodes.get(id);
@@ -157,7 +162,7 @@ export class Tree {
     const parent = this.getOrCreate(parentId);
 
     node.parent = parent;
-    this.awaitNotify.add(parent);
+    awaitNotify(parent);
   }
 
   delete(id: number) {
@@ -169,17 +174,17 @@ export class Tree {
 
     for (const child of node.descendants()) {
       this.nodes.delete(child.id);
-      this.awaitNotify.delete(child);
+      stopAwatingNotify(child);
       child.reset(true);
     }
 
     if (node.parent) {
-      this.awaitNotify.add(node.parent);
+      awaitNotify(node.parent);
     }
 
     if (id !== 0) {
       this.nodes.delete(id);
-      this.awaitNotify.delete(node);
+      stopAwatingNotify(node);
     }
 
     node.reset();
@@ -191,12 +196,11 @@ export class Tree {
     return node.subscribe(fn);
   }
 
-  flushNotify() {
-    for (const node of this.awaitNotify) {
-      node.notify();
-    }
-
-    this.awaitNotify.clear();
+  walk(fn: (node: TreeNode) => void, start?: number) {
+    this.root.walk(fn, this.nodes.get(start as number));
+  }
+  walkBack(fn: (node: TreeNode) => void, start?: number) {
+    this.root.walkBack(fn, this.nodes.get(start as number));
   }
 }
 
@@ -272,29 +276,60 @@ export class TreeNode {
     this.#parent = newParent;
   }
 
-  walk(fn: (node: TreeNode) => void) {
-    let cursor = this.firstChild;
+  walk(fn: (node: TreeNode) => void | true, start?: TreeNode) {
+    let cursor = start || this;
 
-    while (cursor !== null && cursor !== this) {
-      fn(cursor);
+    do {
+      let nextNode = cursor.firstChild;
 
-      let nextNode: TreeNode | null = cursor.firstChild || cursor.nextSibling;
+      while (nextNode === null) {
+        if (cursor === this) {
+          return;
+        }
 
-      if (nextNode === null) {
-        do {
-          nextNode = cursor.nextSibling;
-          cursor = cursor.parent as TreeNode;
-        } while (nextNode === null && cursor !== this);
+        nextNode = cursor.nextSibling;
+
+        if (nextNode === null) {
+          if (cursor.parent === null) {
+            return;
+          }
+
+          cursor = cursor.parent;
+        }
       }
 
       cursor = nextNode;
-    }
+    } while (fn(cursor) !== true);
+  }
+
+  walkBack(fn: (node: TreeNode) => void | true, start?: TreeNode) {
+    let cursor = start || null;
+
+    do {
+      let prevNode = cursor !== null ? cursor.prevSibling : this.lastChild;
+
+      if (prevNode !== null) {
+        while (prevNode.lastChild !== null) {
+          prevNode = prevNode.lastChild;
+        }
+
+        cursor = prevNode;
+      } else if (cursor !== null) {
+        cursor = cursor.parent;
+      }
+
+      if (cursor === null || cursor === this) {
+        return;
+      }
+    } while (fn(cursor) !== true);
   }
 
   descendants() {
     const subtree: TreeNode[] = [];
 
-    this.walk(node => subtree.push(node));
+    this.walk(node => {
+      subtree.push(node);
+    });
 
     return subtree;
   }

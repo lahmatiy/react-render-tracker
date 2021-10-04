@@ -1,13 +1,17 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
-import { useFiberMaps } from "../../utils/fiber-maps";
+import { useFiberMaps, useTypeIdFibers } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
+import { ChevronUp, ChevronDown } from "../common/icons";
+import { fiberTypeName } from "../../../common/constants";
+import { useSelectedId } from "../../utils/selection";
 import { CallStackList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
-import { fiberTypeName } from "../../../common/constants";
 
 interface IFiberInfo {
   fiberId: number;
+  groupByParent: boolean;
+  showUnmounted: boolean;
 }
 
 interface IFiberInfoSection {
@@ -119,7 +123,77 @@ function FiberHeaderNotes({ fiber }: { fiber?: MessageFiber }) {
   );
 }
 
-function FiberInfo({ fiberId }: IFiberInfo) {
+function InstanceSwitcher({
+  fiberId,
+  typeId,
+  groupByParent,
+  showUnmounted,
+}: {
+  fiberId: number;
+  typeId: number;
+  groupByParent: boolean;
+  showUnmounted: boolean;
+}) {
+  const typeInstances = useTypeIdFibers(typeId);
+  const { select } = useSelectedId();
+  const { selectTree } = useFiberMaps();
+  const tree = selectTree(groupByParent, showUnmounted);
+  const typeInstancesSet = React.useMemo(
+    () => new Set(typeInstances),
+    [typeInstances]
+  );
+  const index = React.useMemo(() => {
+    let result = 1;
+
+    tree.walkBack(node => {
+      result += typeInstancesSet.has(node.id) ? 1 : 0;
+    }, fiberId);
+
+    return result;
+  }, [tree, typeInstancesSet, fiberId]);
+
+  return (
+    <div className="fiber-info-instance-switcher">
+      {`${index} / ${typeInstances.length} | `}
+      <button
+        className="fiber-info-instance-switcher__button"
+        onClick={() => {
+          tree.walkBack(
+            node => {
+              if (typeInstancesSet.has(node.id)) {
+                select(node.id);
+                return true;
+              }
+              return;
+            },
+            index > 1 ? fiberId : undefined
+          );
+        }}
+      >
+        {ChevronUp}
+      </button>
+      <button
+        className="fiber-info-instance-switcher__button"
+        onClick={() => {
+          tree.walk(
+            node => {
+              if (typeInstancesSet.has(node.id)) {
+                select(node.id);
+                return true;
+              }
+              return;
+            },
+            index < typeInstances.length ? fiberId : undefined
+          );
+        }}
+      >
+        {ChevronDown}
+      </button>
+    </div>
+  );
+}
+
+const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
   const { fiberById } = useFiberMaps();
   const fiber = fiberById.get(fiberId);
 
@@ -129,6 +203,12 @@ function FiberInfo({ fiberId }: IFiberInfo) {
 
   return (
     <div className="fiber-info">
+      <InstanceSwitcher
+        fiberId={fiberId}
+        typeId={fiber.typeId}
+        groupByParent={groupByParent}
+        showUnmounted={showUnmounted}
+      />
       <span className="fiber-info__header-type-badge">
         {fiberTypeName[fiber.type]}
       </span>
@@ -146,6 +226,9 @@ function FiberInfo({ fiberId }: IFiberInfo) {
       {false && <MemoizationSection fiber={fiber as MessageFiber} />}
     </div>
   );
-}
+};
 
-export default FiberInfo;
+const FiberInfoMemo = React.memo(FiberInfo);
+FiberInfoMemo.displayName = "FiberInfo";
+
+export default FiberInfoMemo;

@@ -63,3 +63,25 @@
   content: " – ";
   color: #ccc;
 }
+
+.fiber-info-instance-switcher {
+  float: right;
+  color: #888;
+}
+.fiber-info-instance-switcher__button {
+  vertical-align: middle;
+  padding: 2px 2px;
+  margin-top: -2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+.fiber-info-instance-switcher__button:hover {
+  color: #333;
+}
+.fiber-info-instance-switcher__button svg {
+  vertical-align: middle;
+  height: 12px;
+  margin: -2px 0 0;
+}

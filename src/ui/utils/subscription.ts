@@ -3,6 +3,7 @@ import debounce from "lodash.debounce";
 
 export type Subscriptions<T> = Set<{ fn: T }>;
 export type SubscriptionsMap<I, T> = Map<I, Subscriptions<T>>;
+
 const EmptySet = new Set();
 
 export function subscribeById<I, T>(map: SubscriptionsMap<I, T>, id: I, fn: T) {
@@ -41,6 +42,36 @@ export function notify<T extends (...args: any[]) => void>(
   for (const { fn } of subscriptions) {
     fn(...args);
   }
+}
+
+//
+// Awaiting notify
+//
+
+type NotifySubject = { notify(): void };
+const awaitingNotify = new Set<NotifySubject>();
+
+export function awaitNotify(subject: NotifySubject) {
+  awaitingNotify.add(subject);
+}
+export function stopAwatingNotify(subject: NotifySubject) {
+  awaitingNotify.delete(subject);
+}
+export function flushNotify(subject?: NotifySubject) {
+  if (subject) {
+    if (awaitingNotify.has(subject)) {
+      subject.notify();
+      awaitingNotify.delete(subject);
+    }
+
+    return;
+  }
+
+  for (const subject of awaitingNotify) {
+    subject.notify();
+  }
+
+  awaitingNotify.clear();
 }
 
 // Handle subscription right.
@@ -131,7 +162,7 @@ export function useComputeSubscription<T>(
     acceptRecomputeRequestsRef.current = true;
     valueToReturn = compute();
 
-    setState({
+    Object.assign(state, {
       compute,
       subscribe,
       value: valueToReturn,

@@ -32,7 +32,11 @@ const Details = ({
   return (
     <div className="details">
       <div className="details__info-section">
-        <FiberInfo fiberId={rootId} />
+        <FiberInfo
+          fiberId={rootId}
+          groupByParent={groupByParent}
+          showUnmounted={showUnmounted}
+        />
       </div>
       <div className="details__event-list-header">
         <div className="details__event-list-header-caption">
