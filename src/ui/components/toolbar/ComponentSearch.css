@@ -1,19 +1,27 @@
-.component-filter {
+.component-search {
+  flex: 1;
   display: flex;
   align-items: center;
-  width: 100%;
+}
+.component-search::after {
+  content: "";
+  display: inline-block;
+  height: 20px;
+  border-right: 1px solid #ddd;
+  align-self: center;
 }
 
-.component-filter svg {
+.component-search svg {
   color: var(--icon);
   width: 15px;
   vertical-align: middle;
+  margin-left: 6px;
 }
 
-.component-filter input {
+.component-search input {
   box-sizing: border-box;
   width: 100%;
-  padding: 5px 10px;
+  padding: 5px 6px;
   border: none;
   outline: none;
   font: inherit;

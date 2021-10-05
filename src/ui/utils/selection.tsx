@@ -1,13 +1,22 @@
 import * as React from "react";
 import { notify, notifyById, subscribe, subscribeById } from "./subscription";
 
-type idChangeCallback = (id: number | null) => void;
-type stateChangeCallback = (state: boolean) => void;
+type IdChangeCallback = (id: number | null) => void;
+type StateChangeCallback = (state: boolean) => void;
+type HistoryChangeCallback = (state: SelectionHistoryState) => void;
 interface Selection {
   selectedId: number | null;
   select: (nextSelectedId: number | null) => void;
   subscribe: (fn: (value: number) => void) => () => void;
-  subscribeToIdState: (id: number, fn: stateChangeCallback) => () => void;
+  subscribeToIdState: (id: number, fn: StateChangeCallback) => () => void;
+  historyState: SelectionHistoryState;
+  subscribeToHistoryState(fn: HistoryChangeCallback): void;
+}
+interface SelectionHistoryState {
+  hasPrev: boolean;
+  prev(): void;
+  hasNext: boolean;
+  next(): void;
 }
 
 const SelectionContext = React.createContext<Selection>({} as any);
@@ -18,18 +27,52 @@ export const SelectionContextProvider = ({
   children: React.ReactNode;
 }) => {
   const value: Selection = React.useMemo(() => {
+    function createHistoryState() {
+      const hasPrev = historyIndex > 0;
+      const hasNext = historyIndex < history.length - 1;
+
+      return {
+        hasPrev,
+        prev() {
+          if (hasPrev) {
+            selectInternal(history[--historyIndex]);
+            notify(historySubscriptions, (historyState = createHistoryState()));
+          }
+        },
+        hasNext,
+        next() {
+          if (hasNext) {
+            selectInternal(history[++historyIndex]);
+            notify(historySubscriptions, (historyState = createHistoryState()));
+          }
+        },
+      };
+    }
+
     let selectedId: number | null = null;
-    const subscriptions = new Set<{ fn: idChangeCallback }>();
+    let historyIndex = -1;
+    const history: number[] = [];
+    let historyState: SelectionHistoryState = createHistoryState();
+    const subscriptions = new Set<{ fn: IdChangeCallback }>();
+    const historySubscriptions = new Set<{ fn: HistoryChangeCallback }>();
     const stateSubscriptionsById = new Map<
       number,
-      Set<{ fn: stateChangeCallback }>
+      Set<{ fn: StateChangeCallback }>
     >();
     const select: Selection["select"] = nextSelectedId => {
-      const prevSelectedId = selectedId;
-
-      if (nextSelectedId === prevSelectedId) {
+      if (nextSelectedId === selectedId) {
         return;
       }
+
+      selectInternal(nextSelectedId);
+
+      if (nextSelectedId !== null) {
+        history.splice(++historyIndex, history.length, nextSelectedId);
+        notify(historySubscriptions, (historyState = createHistoryState()));
+      }
+    };
+    const selectInternal = (nextSelectedId: number | null) => {
+      const prevSelectedId = selectedId;
 
       selectedId = nextSelectedId;
 
@@ -56,11 +99,19 @@ export const SelectionContextProvider = ({
         return subscribe(subscriptions, fn);
       },
       subscribeToIdState(id, fn) {
-        return subscribeById<number, stateChangeCallback>(
+        return subscribeById<number, StateChangeCallback>(
           stateSubscriptionsById,
           id,
           fn
         );
+      },
+
+      // history
+      get historyState() {
+        return historyState;
+      },
+      subscribeToHistoryState(fn) {
+        return subscribe(historySubscriptions, fn);
       },
     };
   }, []);
@@ -89,6 +140,15 @@ export const useSelectionState = (id: number) => {
   React.useEffect(() => subscribeToIdState(id, setState), [id]);
 
   return { selected: state, select };
+};
+
+export const useSelectionHistoryState = () => {
+  const { historyState, subscribeToHistoryState } = useSelectionContext();
+  const [state, setState] = React.useState(historyState);
+
+  React.useEffect(() => subscribeToHistoryState(setState), []);
+
+  return state;
 };
 
 export const useSelectedId = () => {

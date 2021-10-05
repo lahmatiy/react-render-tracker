@@ -4,6 +4,8 @@
 - Fixed context hook paths duplication in case of re-renders
 - Added pin subtree feature by double click on fiber tree leaf
 - Added auto scrolling to viewport for fiber tree's selected leaf if needed
+- Added an iteration over instances of the same type as selected fiber on fiber info card
+- Added a selection history navigation
 
 ## 0.4.0 (September 23, 2021)
 

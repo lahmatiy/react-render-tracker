@@ -6,14 +6,3 @@
   background-color: rgba(255, 255, 255, 0.75);
   line-height: 22px;
 }
-
-.toolbar > div {
-  flex: 1;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-}
-
-.toolbar > div + div {
-  border-left: 1px var(--border) solid;
-}

@@ -17,7 +17,8 @@
 @import url("./components/render-tree/TreeLeaf.css");
 @import url("./components/render-tree/TreeLeafCaption.css");
 @import url("./components/statusbar/StatusBar.css");
-@import url("./components/toolbar/ComponentFilter.css");
+@import url("./components/toolbar/ComponentSearch.css");
+@import url("./components/toolbar/SelectionHistoryNavigation.css");
 @import url("./components/toolbar/Toolbar.css");
 
 html,

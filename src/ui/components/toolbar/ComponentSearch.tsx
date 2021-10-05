@@ -1,18 +1,18 @@
 import * as React from "react";
 import { Search } from "../common/icons";
 
-interface ComponentFilterProps {
+interface ComponentSearchProps {
   onChange: (pattern: string) => void;
   value: string;
 }
 
-const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
+const ComponentSearch = ({ onChange, value }: ComponentSearchProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
 
   return (
-    <div className="component-filter">
+    <div className="component-search">
       {Search}
       <input
         type="text"
@@ -24,4 +24,4 @@ const ComponentFilter = ({ onChange, value }: ComponentFilterProps) => {
   );
 };
 
-export default ComponentFilter;
+export default ComponentSearch;

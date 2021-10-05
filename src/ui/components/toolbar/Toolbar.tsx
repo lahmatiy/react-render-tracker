@@ -1,15 +1,14 @@
 import * as React from "react";
-
+import ComponentSearch from "./ComponentSearch";
+import ButtonToggle from "../common/ButtonToggle";
+import { useEventsContext } from "../../utils/events";
+import SelectionHistoryNavigation from "./SelectionHistoryNavigation";
 import {
   ToggleGrouping,
   ToggleUnmounted,
   ClearEventLog,
   ToggleTimings,
 } from "../common/icons";
-
-import ComponentFilter from "./ComponentFilter";
-import ButtonToggle from "../common/ButtonToggle";
-import { useEventsContext } from "../../utils/events";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -37,7 +36,8 @@ const Toolbar = ({
 
   return (
     <div className="toolbar">
-      <ComponentFilter onChange={onFilterPatternChange} value={filterPattern} />
+      <SelectionHistoryNavigation />
+      <ComponentSearch onChange={onFilterPatternChange} value={filterPattern} />
       <ButtonToggle
         icon={ToggleGrouping}
         isActive={groupByParent}
