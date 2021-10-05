@@ -14,6 +14,7 @@ import { Tree } from "./tree";
 interface FiberMapsContext {
   fiberById: SubscribeMap<number, MessageFiber>;
   fibersByTypeId: SubsetSplit<number, number>;
+  fibersByProviderId: SubsetSplit<number, number>;
   parentTree: Tree;
   parentTreeIncludeUnmounted: Tree;
   ownerTree: Tree;
@@ -31,6 +32,7 @@ export function FiberMapsContextProvider({
   const value: FiberMapsContext = React.useMemo(() => {
     const fiberById = new SubscribeMap<number, MessageFiber>();
     const fibersByTypeId = new SubsetSplit<number, number>();
+    const fibersByProviderId = new SubsetSplit<number, number>();
     const parentTree = new Tree();
     const parentTreeIncludeUnmounted = new Tree();
     const ownerTree = new Tree();
@@ -39,6 +41,7 @@ export function FiberMapsContextProvider({
     return {
       fiberById,
       fibersByTypeId,
+      fibersByProviderId,
       parentTree,
       parentTreeIncludeUnmounted,
       ownerTree,
@@ -216,6 +219,23 @@ export const useFiberChildren = (
 export const useTypeIdFibers = (typeId: number) => {
   const { fibersByTypeId } = useFiberMaps();
   const subset = fibersByTypeId.get(typeId);
+
+  const compute = React.useCallback(
+    () => subset.value || EMPTY_ARRAY,
+    [subset]
+  );
+
+  const subscribe = React.useCallback(
+    requestRecompute => subset.subscribe(requestRecompute),
+    [subset]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};
+
+export const useProviderCustomers = (providerId: number) => {
+  const { fibersByProviderId } = useFiberMaps();
+  const subset = fibersByProviderId.get(providerId);
 
   const compute = React.useCallback(
     () => subset.value || EMPTY_ARRAY,

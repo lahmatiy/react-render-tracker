@@ -206,6 +206,7 @@ export function processEvents(
   {
     fiberById,
     fibersByTypeId,
+    fibersByProviderId,
     parentTree,
     parentTreeIncludeUnmounted,
     ownerTree,
@@ -243,6 +244,14 @@ export function processEvents(
         parentTreeIncludeUnmounted.add(fiber.id, fiber.parentId);
         ownerTree.add(fiber.id, fiber.ownerId);
         ownerTreeIncludeUnmounted.add(fiber.id, fiber.ownerId);
+
+        if (fiber.contexts) {
+          for (const { providerId } of fiber.contexts) {
+            if (typeof providerId === "number") {
+              fibersByProviderId.add(providerId, fiber.id);
+            }
+          }
+        }
 
         break;
       }

@@ -1,9 +1,13 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
-import { useFiberMaps, useTypeIdFibers } from "../../utils/fiber-maps";
+import {
+  useFiberMaps,
+  useProviderCustomers,
+  useTypeIdFibers,
+} from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
 import { ChevronUp, ChevronDown } from "../common/icons";
-import { fiberTypeName } from "../../../common/constants";
+import { ElementTypeProvider, fiberTypeName } from "../../../common/constants";
 import { useSelectedId } from "../../utils/selection";
 import { CallStackList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
@@ -18,10 +22,6 @@ interface IFiberInfoSection {
   header: string;
   emptyText?: string;
   children?: JSX.Element | string | null;
-}
-
-interface IFiberMemoizationSection {
-  fiber: MessageFiber;
 }
 
 function FiberInfoSection({ header, emptyText, children }: IFiberInfoSection) {
@@ -80,7 +80,17 @@ function FiberContexts({ fiber }: { fiber: MessageFiber }) {
   );
 }
 
-function MemoizationSection({}: IFiberMemoizationSection) {
+function ConsumersSection({ fiber }: { fiber: MessageFiber }) {
+  const fibers = useProviderCustomers(fiber.id);
+
+  return (
+    <FiberInfoSection header="Consumers">
+      <>{fibers.length}</>
+    </FiberInfoSection>
+  );
+}
+
+function MemoizationSection() {
   return <FiberInfoSection header="Memoization">TBD</FiberInfoSection>;
 }
 
@@ -227,7 +237,8 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
           <FiberContexts fiber={fiber} />
         </FiberInfoSection>
       )}
-      {false && <MemoizationSection fiber={fiber as MessageFiber} />}
+      {fiber.type === ElementTypeProvider && <ConsumersSection fiber={fiber} />}
+      {false && <MemoizationSection />}
     </div>
   );
 };
