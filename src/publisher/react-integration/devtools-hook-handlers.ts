@@ -394,7 +394,7 @@ export function createReactDevtoolsHookHandlers(
     return changedKeys.length > 0 ? changedKeys : undefined;
   }
 
-  function getFiberContexts(fiber: Fiber) {
+  function getFiberContexts(fiber: Fiber, fiberType: number) {
     if (fiber.stateNode !== null) {
       const context = getContextsForClassFiber(fiber);
 
@@ -406,6 +406,17 @@ export function createReactDevtoolsHookHandlers(
         {
           providerId: commitContext.get(context.context)?.providerId,
           name: getDisplayName(context.context, "Context"),
+        },
+      ];
+    }
+
+    if (fiberType === ElementTypeConsumer) {
+      const context = fiber.type._context;
+
+      return [
+        {
+          providerId: commitContext.get(context)?.providerId,
+          name: getDisplayName(context, "Context"),
         },
       ];
     }
@@ -462,7 +473,7 @@ export function createReactDevtoolsHookHandlers(
         parentId: 0,
         displayName: null,
         hocDisplayNames: null,
-        contexts: getFiberContexts(fiber),
+        contexts: getFiberContexts(fiber, ElementTypeHostRoot),
       };
     } else {
       const { key, type } = fiber;
@@ -484,7 +495,7 @@ export function createReactDevtoolsHookHandlers(
         parentId,
         displayName,
         hocDisplayNames,
-        contexts: getFiberContexts(fiber),
+        contexts: getFiberContexts(fiber, elementType),
       };
     }
 
