@@ -22,7 +22,7 @@
 }
 .details__event-list-header-caption {
   flex: 1;
-  padding-left: 4px;
+  padding-left: 8px;
   text-align: left;
   font-size: 11px;
   color: #888;

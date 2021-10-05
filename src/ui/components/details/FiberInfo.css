@@ -13,6 +13,7 @@
   display: inline-block;
   padding: 4px 4px 3px;
   margin-top: -3px;
+  margin-left: -3px;
   margin-bottom: 3px;
   border-radius: 3px;
   font-size: 9px;
@@ -64,23 +65,32 @@
   color: #ccc;
 }
 
-.fiber-info-instance-switcher {
+.fiber-info-instance-iterator {
+  margin-top: -2px;
+  margin-right: -4px;
   float: right;
-  color: #888;
+  color: #999;
+  display: flex;
+  align-items: center;
 }
-.fiber-info-instance-switcher__button {
+.fiber-info-instance-iterator__buttons {
+  margin-left: 6px;
+  padding-left: 2px;
+  border-left: 1px solid #ccc;
+}
+.fiber-info-instance-iterator__button {
   vertical-align: middle;
   padding: 2px 2px;
   margin-top: -2px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #777;
 }
-.fiber-info-instance-switcher__button:hover {
-  color: #333;
+.fiber-info-instance-iterator__button:hover {
+  color: #222;
 }
-.fiber-info-instance-switcher__button svg {
+.fiber-info-instance-iterator__button svg {
   vertical-align: middle;
   height: 12px;
   margin: -2px 0 0;

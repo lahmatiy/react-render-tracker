@@ -1,10 +1,8 @@
 import * as React from "react";
 import { SubtreeToggle } from "../common/icons";
 import ButtonToggle from "../common/ButtonToggle";
-import FiberId from "../common/FiberId";
 import FiberInfo from "./FiberInfo";
 import EventList from "./EventList";
-import { useFiber } from "../../utils/fiber-maps";
 import { useEventLog } from "../../utils/events";
 
 interface DetailsProps {
@@ -21,7 +19,6 @@ const Details = ({
   showTimings = false,
 }: DetailsProps) => {
   const [showSubtreeEvents, setShowSubtreeEvents] = React.useState(false);
-  const fiber = useFiber(rootId);
   const events = useEventLog(
     rootId,
     groupByParent,
@@ -39,17 +36,7 @@ const Details = ({
         />
       </div>
       <div className="details__event-list-header">
-        <div className="details__event-list-header-caption">
-          Events of{" "}
-          {fiber ? (
-            <>
-              {fiber.displayName}
-              <FiberId id={fiber.id} />
-            </>
-          ) : (
-            "Unknown"
-          )}
-        </div>
+        <div className="details__event-list-header-caption">Events</div>
         <ButtonToggle
           icon={SubtreeToggle}
           isActive={showSubtreeEvents}

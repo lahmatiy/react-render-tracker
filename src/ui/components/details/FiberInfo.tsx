@@ -153,42 +153,46 @@ function InstanceSwitcher({
   }, [tree, typeInstancesSet, fiberId]);
 
   return (
-    <div className="fiber-info-instance-switcher">
-      {`${index} / ${typeInstances.length} | `}
-      <button
-        className="fiber-info-instance-switcher__button"
-        onClick={() => {
-          tree.walkBack(
-            node => {
-              if (typeInstancesSet.has(node.id)) {
-                select(node.id);
-                return true;
-              }
-              return;
-            },
-            index > 1 ? fiberId : undefined
-          );
-        }}
-      >
-        {ChevronUp}
-      </button>
-      <button
-        className="fiber-info-instance-switcher__button"
-        onClick={() => {
-          tree.walk(
-            node => {
-              if (typeInstancesSet.has(node.id)) {
-                select(node.id);
-                return true;
-              }
-              return;
-            },
-            index < typeInstances.length ? fiberId : undefined
-          );
-        }}
-      >
-        {ChevronDown}
-      </button>
+    <div className="fiber-info-instance-iterator">
+      <span className="fiber-info-instance-iterator__label">
+        {index} / {typeInstances.length}
+      </span>
+      <span className="fiber-info-instance-iterator__buttons">
+        <button
+          className="fiber-info-instance-iterator__button"
+          onClick={() => {
+            tree.walkBack(
+              node => {
+                if (typeInstancesSet.has(node.id)) {
+                  select(node.id);
+                  return true;
+                }
+                return;
+              },
+              index > 1 ? fiberId : undefined
+            );
+          }}
+        >
+          {ChevronUp}
+        </button>
+        <button
+          className="fiber-info-instance-iterator__button"
+          onClick={() => {
+            tree.walk(
+              node => {
+                if (typeInstancesSet.has(node.id)) {
+                  select(node.id);
+                  return true;
+                }
+                return;
+              },
+              index < typeInstances.length ? fiberId : undefined
+            );
+          }}
+        >
+          {ChevronDown}
+        </button>
+      </span>
     </div>
   );
 }
