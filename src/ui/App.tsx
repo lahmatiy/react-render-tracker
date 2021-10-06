@@ -28,18 +28,18 @@ function App() {
               className="app"
               data-has-selected={selectedId !== null || undefined}
             >
-              <Toolbar
-                onFilterPatternChange={setFilterPattern}
-                filterPattern={filterPattern}
-                onGroupingChange={setGroupByParent}
-                groupByParent={groupByParent}
-                onShowUnmounted={setShowUnmounted}
-                showUnmounted={showUnmounted}
-                onShowTimings={setShowTimings}
-                showTimings={showTimings}
-              />
+              <FindMatchContextProvider>
+                <Toolbar
+                  onFilterPatternChange={setFilterPattern}
+                  filterPattern={filterPattern}
+                  onGroupingChange={setGroupByParent}
+                  groupByParent={groupByParent}
+                  onShowUnmounted={setShowUnmounted}
+                  showUnmounted={showUnmounted}
+                  onShowTimings={setShowTimings}
+                  showTimings={showTimings}
+                />
 
-              <FindMatchContextProvider pattern={filterPattern}>
                 <WaitingForReady />
                 <PinnedContextProvider>
                   <PinnedIdConsumer>

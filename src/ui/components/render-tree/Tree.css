@@ -4,12 +4,12 @@
   scroll-behavior: smooth;
   overscroll-behavior: contain;
   position: relative;
-  transform: translateZ(0);
 }
 .render-tree__content {
+  position: absolute;
   margin-top: -1px;
-  display: table;
   min-width: 100%;
+  transform: translateZ(0);
 }
 .render-tree__no-children {
   padding: 4px 20px;

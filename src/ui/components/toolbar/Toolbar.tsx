@@ -37,7 +37,12 @@ const Toolbar = ({
   return (
     <div className="toolbar">
       <SelectionHistoryNavigation />
-      <ComponentSearch onChange={onFilterPatternChange} value={filterPattern} />
+      <ComponentSearch
+        groupByParent={groupByParent}
+        showUnmounted={showUnmounted}
+        onChange={onFilterPatternChange}
+        value={filterPattern}
+      />
       <ButtonToggle
         icon={ToggleGrouping}
         isActive={groupByParent}

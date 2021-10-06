@@ -6,7 +6,7 @@ type StateChangeCallback = (state: boolean) => void;
 type HistoryChangeCallback = (state: SelectionHistoryState) => void;
 interface Selection {
   selectedId: number | null;
-  select: (nextSelectedId: number | null) => void;
+  select: (nextSelectedId: number | null, pushHistory?: boolean) => void;
   subscribe: (fn: (value: number) => void) => () => void;
   subscribeToIdState: (id: number, fn: StateChangeCallback) => () => void;
   historyState: SelectionHistoryState;
@@ -35,6 +35,11 @@ export const SelectionContextProvider = ({
         hasPrev,
         prev() {
           if (hasPrev) {
+            if (selectedId !== null && history[historyIndex] !== selectedId) {
+              history.push(selectedId);
+              historyIndex++;
+            }
+
             selectInternal(history[--historyIndex]);
             notify(historySubscriptions, (historyState = createHistoryState()));
           }
@@ -51,7 +56,7 @@ export const SelectionContextProvider = ({
 
     let selectedId: number | null = null;
     let historyIndex = -1;
-    const history: number[] = [];
+    let history: number[] = [];
     let historyState: SelectionHistoryState = createHistoryState();
     const subscriptions = new Set<{ fn: IdChangeCallback }>();
     const historySubscriptions = new Set<{ fn: HistoryChangeCallback }>();
@@ -59,17 +64,29 @@ export const SelectionContextProvider = ({
       number,
       Set<{ fn: StateChangeCallback }>
     >();
-    const select: Selection["select"] = nextSelectedId => {
+    const select: Selection["select"] = (
+      nextSelectedId,
+      pushHistory = true
+    ) => {
       if (nextSelectedId === selectedId) {
         return;
       }
 
-      selectInternal(nextSelectedId);
-
       if (nextSelectedId !== null) {
-        history.splice(++historyIndex, history.length, nextSelectedId);
+        history = history.slice(0, historyIndex + 1);
+
+        if (pushHistory) {
+          if (selectedId !== null && history[historyIndex] !== selectedId) {
+            history.push(selectedId);
+          }
+
+          historyIndex = history.push(nextSelectedId) - 1;
+        }
+
         notify(historySubscriptions, (historyState = createHistoryState()));
       }
+
+      selectInternal(nextSelectedId);
     };
     const selectInternal = (nextSelectedId: number | null) => {
       const prevSelectedId = selectedId;

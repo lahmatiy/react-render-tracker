@@ -131,30 +131,24 @@ export function findDelta(prev: Set<number>, next: Set<number>) {
     }
   }
 }
-
-// const alwaysAccept = () => true;
-// export function createPrevGetter() {}
-// export function createNextGetter(
-//   children: Map<number, number[]>,
-//   parentRef: "parentId" | "ownerId"
-// ) {
-//   return function (
-//     fromId: number | null,
-//     accept: (fiber: MessageFiber) => boolean = alwaysAccept
-//   ) {};
-// }
 export class Tree {
   root: TreeNode = new TreeNode(0);
   nodes = new Map<number, TreeNode>([[0, this.root]]);
+  subscriptions: Subscriptions<() => void> = new Set();
 
   getOrCreate(id: number): TreeNode {
     let node = this.nodes.get(id);
 
     if (node === undefined) {
       this.nodes.set(id, (node = new TreeNode(id)));
+      awaitNotify(this);
     }
 
     return node;
+  }
+
+  has(id: number) {
+    return this.nodes.has(id);
   }
 
   add(id: number, parentId: number) {
@@ -184,10 +178,18 @@ export class Tree {
 
     if (id !== 0) {
       this.nodes.delete(id);
+      awaitNotify(this);
       stopAwatingNotify(node);
     }
 
     node.reset();
+  }
+
+  subscribe(fn: () => void) {
+    subscribe(this.subscriptions, fn);
+  }
+  notify() {
+    notify(this.subscriptions);
   }
 
   subscribeById(id: number, fn: TreeNodeSubscription) {
@@ -196,11 +198,50 @@ export class Tree {
     return node.subscribe(fn);
   }
 
-  walk(fn: (node: TreeNode) => void, start?: number) {
-    this.root.walk(fn, this.nodes.get(start as number));
+  walk(
+    fn: (node: TreeNode) => boolean | void,
+    start: number | null = null,
+    end: number | null = null
+  ) {
+    return this.root.walk(
+      fn,
+      start !== null ? this.nodes.get(start as number) : null,
+      end !== null ? this.nodes.get(end as number) : null
+    );
   }
-  walkBack(fn: (node: TreeNode) => void, start?: number) {
-    this.root.walkBack(fn, this.nodes.get(start as number));
+  walkBack(
+    fn: (node: TreeNode) => boolean | void,
+    start: number | null = null,
+    end: number | null = null
+  ) {
+    return this.root.walkBack(
+      fn,
+      start !== null ? this.nodes.get(start) : null,
+      end !== null ? this.nodes.get(end) : null
+    );
+  }
+
+  find(
+    accept: (node: TreeNode) => boolean,
+    start: number | null = null,
+    roundtrip?: boolean
+  ) {
+    return this.root.find(
+      accept,
+      start !== null ? this.nodes.get(start as number) : null,
+      roundtrip
+    );
+  }
+  findBack(
+    accept: (node: TreeNode) => boolean,
+    start: number | null = null,
+    roundtrip?: boolean
+  ) {
+    return this.root.findBack(
+      accept,
+      start !== null ? this.nodes.get(start as number) : null,
+      roundtrip
+    );
   }
 }
 
@@ -276,7 +317,11 @@ export class TreeNode {
     this.#parent = newParent;
   }
 
-  walk(fn: (node: TreeNode) => void | true, start?: TreeNode) {
+  walk(
+    fn: (node: TreeNode) => boolean | void,
+    start: TreeNode | null = null,
+    end: TreeNode | null = null
+  ) {
     let cursor = start || this;
 
     do {
@@ -284,14 +329,14 @@ export class TreeNode {
 
       while (nextNode === null) {
         if (cursor === this) {
-          return;
+          return null;
         }
 
         nextNode = cursor.nextSibling;
 
         if (nextNode === null) {
           if (cursor.parent === null) {
-            return;
+            return null;
           }
 
           cursor = cursor.parent;
@@ -299,10 +344,20 @@ export class TreeNode {
       }
 
       cursor = nextNode;
-    } while (fn(cursor) !== true);
+
+      if (fn(cursor) === true) {
+        return cursor;
+      }
+    } while (cursor !== end);
+
+    return null;
   }
 
-  walkBack(fn: (node: TreeNode) => void | true, start?: TreeNode) {
+  walkBack(
+    fn: (node: TreeNode) => boolean | void,
+    start: TreeNode | null = null,
+    end: TreeNode | null = null
+  ) {
     let cursor = start || null;
 
     do {
@@ -319,9 +374,39 @@ export class TreeNode {
       }
 
       if (cursor === null || cursor === this) {
-        return;
+        return null;
       }
-    } while (fn(cursor) !== true);
+
+      if (fn(cursor) === true) {
+        return cursor;
+      }
+    } while (cursor !== end);
+
+    return null;
+  }
+
+  find(
+    accept: (node: TreeNode) => boolean,
+    start: TreeNode | null = null,
+    roundtrip = true
+  ) {
+    if (start !== null && roundtrip) {
+      return this.walk(accept, start) || this.walk(accept, null, start);
+    }
+
+    return this.walk(accept);
+  }
+
+  findBack(
+    accept: (node: TreeNode) => boolean,
+    start: TreeNode | null = null,
+    roundtrip = true
+  ) {
+    if (start !== null && roundtrip) {
+      return this.walkBack(accept, start) || this.walkBack(accept, null, start);
+    }
+
+    return this.walkBack(accept);
   }
 
   descendants() {

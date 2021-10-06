@@ -12,24 +12,22 @@ import TreeLeaf from "./TreeLeaf";
 const ScrollSelectedToViewIfNeeded = () => {
   const { selectedId } = useSelectedId();
   const { getFiberElement } = useTreeViewSettingsContext();
+  const element =
+    selectedId !== null ? getFiberElement(selectedId) || null : null;
 
   React.useEffect(() => {
-    if (selectedId !== null) {
-      const element = getFiberElement(selectedId);
+    if (element !== null) {
+      const actions = computeScrollIntoView(element, {
+        scrollMode: "if-needed",
+        block: "nearest",
+        inline: "nearest",
+      });
 
-      if (element !== null) {
-        const actions = computeScrollIntoView(element, {
-          scrollMode: "if-needed",
-          block: "nearest",
-          inline: "nearest",
-        });
-
-        if (actions) {
-          element.scrollIntoView({ block: "nearest", inline: "nearest" });
-        }
+      if (actions.length) {
+        element.scrollIntoView({ block: "start", inline: "nearest" });
       }
     }
-  }, [selectedId, getFiberElement]);
+  }, [element]);
 
   return null;
 };

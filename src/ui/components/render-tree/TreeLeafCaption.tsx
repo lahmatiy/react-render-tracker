@@ -14,100 +14,71 @@ const noop = () => undefined;
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
   depth?: number;
+  showTimings: boolean;
   pinned?: boolean;
   expanded?: boolean;
   setExpanded?: (value: boolean) => void;
-  showTimings: boolean;
   setFiberElement?: (id: number, element: HTMLElement | null) => void;
 }
-interface TreeLeafCaptionInnerProps extends TreeLeafCaptionProps {
-  match: [offset: number, length: number] | null;
-  selected: boolean;
-  onSelect: (id: number) => void;
-  onPin: (id: number) => void;
+interface TreeLeafCaptionMainProps {
+  fiber: MessageFiber;
+  expanded?: boolean;
+  setExpanded?: (value: boolean) => void;
+  setFiberElement?: (id: number, element: HTMLElement | null) => void;
 }
-
-function getFiberNameHighlight(
-  name: string | null,
-  range: [number, number] | null
-) {
-  if (name === null || range === null) {
-    return name;
-  }
-
-  const [offset, length] = range;
-  return (
-    <>
-      {name.slice(0, offset)}
-      <span className="highlight">{name.slice(offset, offset + length)}</span>
-      {name.slice(offset + length)}
-    </>
-  );
+interface TreeLeafCaptionContainerProps {
+  fiber: MessageFiber;
+  depth?: number;
+  showTimings: boolean;
+  pinned?: boolean;
+  content: React.ReactNode;
 }
 
 const TreeLeafCaption = ({
   fiber,
   depth = 0,
+  showTimings,
   pinned = false,
   expanded = false,
   setExpanded,
-  showTimings,
   setFiberElement,
 }: TreeLeafCaptionProps) => {
-  const { id, displayName } = fiber;
-  const { selected, select } = useSelectionState(id);
-  const { pin } = usePinnedContext();
-  const match = useFindMatch(id, displayName);
+  const content = React.useMemo(
+    () => (
+      <TreeLeafCaptionMain
+        fiber={fiber}
+        expanded={expanded}
+        setExpanded={setExpanded}
+        setFiberElement={setFiberElement}
+      />
+    ),
+    [fiber, expanded, setExpanded, setFiberElement]
+  );
 
   return (
-    <TreeLeafCaptionInner
+    <TreeLeafCaptionContainer
       fiber={fiber}
       depth={depth}
-      match={match}
-      selected={selected}
-      onSelect={select}
       pinned={pinned}
-      onPin={pin}
-      expanded={expanded}
-      setExpanded={setExpanded}
       showTimings={showTimings}
-      setFiberElement={setFiberElement}
+      content={content}
     />
   );
 };
 
-const TreeLeafCaptionInner = React.memo(
+const TreeLeafCaptionContainer = React.memo(
   ({
     fiber,
     depth,
-    match,
-    selected,
-    onSelect,
     pinned,
-    onPin,
-    expanded = false,
-    setExpanded,
     showTimings,
-    setFiberElement = noop,
-  }: TreeLeafCaptionInnerProps) => {
-    const {
-      id,
-      key,
-      ownerId,
-      displayName,
-      hocDisplayNames,
-      contexts,
-      events,
-      mounted,
-      updatesCount,
-      selfTime,
-      totalTime,
-      warnings,
-    } = fiber;
+    content,
+  }: TreeLeafCaptionContainerProps) => {
+    const { id, ownerId, events, mounted, selfTime, totalTime } = fiber;
+    const { selected, select } = useSelectionState(fiber.id);
+    const { pin } = usePinnedContext();
 
-    const name = getFiberNameHighlight(displayName, match);
     const isRenderRoot = ownerId === 0;
-
     const classes = ["tree-leaf-caption"];
     for (const [cls, add] of Object.entries({
       selected,
@@ -124,11 +95,11 @@ const TreeLeafCaptionInner = React.memo(
 
     const handleSelect = (event: React.MouseEvent) => {
       event.stopPropagation();
-      onSelect(id);
+      select(id);
     };
     const handlePin = (event: React.MouseEvent) => {
       event.stopPropagation();
-      onPin(id);
+      pin(id);
     };
 
     return (
@@ -148,41 +119,13 @@ const TreeLeafCaptionInner = React.memo(
             </span>
           </div>
         )}
-        <div className="tree-leaf-caption__main">
-          <div
-            className="tree-leaf-caption__main-content"
-            ref={element => setFiberElement(id, element)}
-          >
-            {setExpanded && (
-              <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
-            )}
-            <span className="tree-leaf-caption__name">{name}</span>
-            {key !== null && <FiberKey fiber={fiber} />}
-            <FiberId id={id} />
-            {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
-            {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
-            {updatesCount > 0 && (
-              <span
-                className="tree-leaf-caption__update-count"
-                title="Number of updates"
-              >
-                {updatesCount}
-              </span>
-            )}
-            {Array.isArray(contexts) && (
-              <span
-                className="tree-leaf-caption__context-count"
-                title="Number of used contexts"
-              >
-                {contexts.length}
-              </span>
-            )}
-          </div>
-        </div>
+
+        {content}
+
         {pinned && (
           <button
             className="tree-leaf-caption__unpin-button"
-            onClick={() => onPin(0)}
+            onClick={() => pin(0)}
           >
             Unpin
           </button>
@@ -191,7 +134,74 @@ const TreeLeafCaptionInner = React.memo(
     );
   }
 );
+TreeLeafCaptionContainer.displayName = "TreeLeafCaptionContainer";
 
-TreeLeafCaptionInner.displayName = "TreeLeafCaptionInner";
+const TreeLeafCaptionMain = ({
+  fiber,
+  expanded = false,
+  setExpanded,
+  setFiberElement = noop,
+}: TreeLeafCaptionMainProps) => {
+  const { id, key, hocDisplayNames, contexts, updatesCount, warnings } = fiber;
+
+  const setMainElementRef = React.useCallback(
+    element => setFiberElement(id, element),
+    [setFiberElement]
+  );
+
+  return (
+    <div className="tree-leaf-caption__main">
+      <div className="tree-leaf-caption__main-content" ref={setMainElementRef}>
+        {setExpanded && (
+          <ButtonExpand expanded={expanded} setExpanded={setExpanded} />
+        )}
+        <DisplayName displayName={fiber.displayName} />
+        {key !== null && <FiberKey fiber={fiber} />}
+        <FiberId id={id} />
+        {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
+        {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
+        {updatesCount > 0 && (
+          <span
+            className="tree-leaf-caption__update-count"
+            title="Number of updates"
+          >
+            {updatesCount}
+          </span>
+        )}
+        {Array.isArray(contexts) && (
+          <span
+            className="tree-leaf-caption__context-count"
+            title="Number of used contexts"
+          >
+            {contexts.length}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const DisplayName = ({ displayName }: { displayName: string | null }) => {
+  const match = useFindMatch(displayName);
+  let startStr = displayName;
+  let matchStr = "";
+  let endStr = "";
+
+  if (displayName !== null && match !== null) {
+    const [offset, length] = match;
+
+    startStr = displayName.slice(0, offset);
+    matchStr = displayName.slice(offset, offset + length);
+    endStr = displayName.slice(offset + length);
+  }
+
+  return (
+    <span className="tree-leaf-caption__name">
+      {startStr}
+      <span className="highlight">{matchStr}</span>
+      {endStr}
+    </span>
+  );
+};
 
 export default TreeLeafCaption;
