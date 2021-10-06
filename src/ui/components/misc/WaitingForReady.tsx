@@ -7,11 +7,9 @@ export default function WaitingForReady() {
   const children = useFiberChildren(0);
   const { loadedEventsCount, totalEventsCount } = useEventsContext();
 
-  // Delay appearing to give a chance to receive some events before
-  // displaying awaiting caption
+  // Use effect to trigger a transition
   React.useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 1000);
-    return () => clearTimeout(timer);
+    setVisible(true);
   }, []);
 
   if (children.length > 0) {

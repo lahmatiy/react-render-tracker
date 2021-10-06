@@ -141,6 +141,13 @@ export function EventsContextProvider({
         (eventsChunk: Message[]) => {
           lastLoadedOffset += eventsChunk.length;
 
+          // call load events to make sure there are no more events
+          if (TROTTLE) {
+            setTimeout(finalizeLoading, 250);
+          } else {
+            finalizeLoading();
+          }
+
           if (eventsChunk.length > 0) {
             const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
             const { mountCount, unmountCount, updateCount } = processEvents(
@@ -162,13 +169,6 @@ export function EventsContextProvider({
                 updateCount: state.updateCount + updateCount,
               };
             });
-          }
-
-          // call load events to make sure there are no more events
-          if (TROTTLE) {
-            setTimeout(finalizeLoading, 250);
-          } else {
-            requestAnimationFrame(finalizeLoading);
           }
         }
       );

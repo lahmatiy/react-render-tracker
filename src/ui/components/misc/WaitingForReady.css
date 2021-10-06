@@ -9,5 +9,5 @@
 .waiting-for-ready.visible {
   visibility: visible;
   opacity: 1;
-  transition: 0.5s opacity;
+  transition: 0.5s 1s opacity;
 }
