@@ -1,3 +1,4 @@
+import React from "react";
 import debounce from "lodash.debounce";
 import {
   awaitNotify,
@@ -5,6 +6,7 @@ import {
   stopAwatingNotify,
   subscribe,
   Subscriptions,
+  useSubscription,
 } from "./subscription";
 
 export function getSubtreeIds(id: number, childrenMap: Map<number, number[]>) {
@@ -186,7 +188,7 @@ export class Tree {
   }
 
   subscribe(fn: () => void) {
-    subscribe(this.subscriptions, fn);
+    return subscribe(this.subscriptions, fn);
   }
   notify() {
     notify(this.subscriptions);
@@ -448,4 +450,15 @@ export class TreeNode {
     this.nextSibling = null;
     this.prevSibling = null;
   }
+}
+
+export function useTreeUpdateSubscription(tree: Tree) {
+  const [state, setState] = React.useState(0);
+
+  useSubscription(
+    () => tree.subscribe(() => setState(state => state + 1)),
+    [tree]
+  );
+
+  return state;
 }

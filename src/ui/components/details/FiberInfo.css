@@ -84,10 +84,13 @@
   margin-top: -2px;
   background: none;
   border: none;
-  cursor: pointer;
-  color: #777;
+  color: #666;
 }
-.fiber-info-instance-iterator__button:hover {
+.fiber-info-instance-iterator__button[disabled] {
+  color: #ccc;
+}
+.fiber-info-instance-iterator__button:not([disabled]):hover {
+  cursor: pointer;
   color: #222;
 }
 .fiber-info-instance-iterator__button svg {

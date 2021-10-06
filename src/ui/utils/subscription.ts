@@ -78,7 +78,7 @@ export function flushNotify(subject?: NotifySubject) {
 // We can't just use useEffect(() => subscribe()), since effect invocation
 // is delayed until mount. This requires to recompute (already computed) value
 // when effect fires, otherwise the value may be out of sync.
-export function useSubscription(subscribe: () => () => void) {
+export function useSubscription(subscribe: () => () => void, deps: any[]) {
   const subscriptionRef = React.useRef<() => void>();
   const unsubscribe = React.useCallback(() => {
     subscriptionRef.current?.();
@@ -88,7 +88,7 @@ export function useSubscription(subscribe: () => () => void) {
   subscriptionRef.current = React.useMemo(() => {
     unsubscribe();
     return subscribe();
-  }, [subscribe]);
+  }, deps);
 
   React.useEffect(() => unsubscribe, []);
 }
@@ -135,14 +135,12 @@ export function useComputeSubscription<T>(
 
   // subscribe to changes
   useSubscription(
-    React.useCallback(
-      () =>
-        subscribe(() => {
-          isRecomputeNeededRef.current = acceptRecomputeRequestsRef.current;
-          syncStateValue();
-        }, acceptRecomputeRequestsRef.current),
-      [subscribe]
-    )
+    () =>
+      subscribe(() => {
+        isRecomputeNeededRef.current = acceptRecomputeRequestsRef.current;
+        syncStateValue();
+      }, acceptRecomputeRequestsRef.current),
+    [subscribe]
   );
 
   // We can't invoke setState() until fiber is mounted.

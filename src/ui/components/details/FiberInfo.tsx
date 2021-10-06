@@ -1,16 +1,13 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
-import {
-  useFiberMaps,
-  useProviderCustomers,
-  useTypeIdFibers,
-} from "../../utils/fiber-maps";
+import { useFiberMaps, useProviderCustomers } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
 import { ChevronUp, ChevronDown } from "../common/icons";
 import { ElementTypeProvider, fiberTypeName } from "../../../common/constants";
 import { useSelectedId } from "../../utils/selection";
 import { CallStackList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
+import { useTreeUpdateSubscription } from "../../utils/tree";
 
 interface IFiberInfo {
   fiberId: number;
@@ -144,61 +141,73 @@ function InstanceSwitcher({
   groupByParent: boolean;
   showUnmounted: boolean;
 }) {
-  const typeInstances = useTypeIdFibers(typeId);
   const { select } = useSelectedId();
-  const { selectTree } = useFiberMaps();
+  const { selectTree, fiberById } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
-  const typeInstancesSet = React.useMemo(
-    () => new Set(typeInstances),
-    [typeInstances]
-  );
-  const index = React.useMemo(() => {
-    let result = 1;
+  const treeUpdate = useTreeUpdateSubscription(tree);
 
-    tree.walkBack(node => {
-      result += typeInstancesSet.has(node.id) ? 1 : 0;
-    }, fiberId);
+  const { index, total } = React.useMemo(() => {
+    let index = 0;
+    let total = 0;
 
-    return result;
-  }, [tree, typeInstancesSet, fiberId]);
+    tree.walk(node => {
+      if (fiberById.get(node.id)?.typeId === typeId) {
+        total++;
+
+        if (fiberId === node.id) {
+          index = total;
+        }
+      }
+    });
+
+    return { index, total };
+  }, [tree, treeUpdate, fiberId]);
+
+  const disableButtons = total === 0 || (total === 1 && index === 1);
 
   return (
     <div className="fiber-info-instance-iterator">
       <span className="fiber-info-instance-iterator__label">
-        {index} / {typeInstances.length}
+        {index || "–"} / {total}
       </span>
       <span className="fiber-info-instance-iterator__buttons">
         <button
           className="fiber-info-instance-iterator__button"
-          onClick={() => {
-            tree.walkBack(
-              node => {
-                if (typeInstancesSet.has(node.id)) {
-                  select(node.id);
-                  return true;
+          disabled={disableButtons}
+          onClick={
+            disableButtons
+              ? undefined
+              : () => {
+                  const node = tree.findBack(
+                    node => fiberById.get(node.id)?.typeId === typeId,
+                    fiberId
+                  );
+
+                  if (node !== null) {
+                    select(node.id);
+                  }
                 }
-                return;
-              },
-              index > 1 ? fiberId : undefined
-            );
-          }}
+          }
         >
           {ChevronUp}
         </button>
         <button
           className="fiber-info-instance-iterator__button"
-          onClick={() => {
-            tree.walk(
-              node => {
-                if (typeInstancesSet.has(node.id)) {
-                  select(node.id);
-                  return true;
+          disabled={disableButtons}
+          onClick={
+            disableButtons
+              ? undefined
+              : () => {
+                  const node = tree.find(
+                    node => fiberById.get(node.id)?.typeId === typeId,
+                    fiberId
+                  );
+
+                  if (node !== null) {
+                    select(node.id);
+                  }
                 }
-                return;
-              },
-              index < typeInstances.length ? fiberId : undefined
-            );
-          }}
+          }
         >
           {ChevronDown}
         </button>

@@ -4,6 +4,7 @@ import { useFiberMaps } from "../../utils/fiber-maps";
 import { useFindMatchContext } from "../../utils/find-match";
 import { useSelectedId } from "../../utils/selection";
 import { ChevronUp, ChevronDown, Search } from "../common/icons";
+import { useTreeUpdateSubscription } from "../../utils/tree";
 
 interface ComponentSearchProps {
   groupByParent: boolean;
@@ -27,7 +28,7 @@ const MatchesNavigation = ({
   const { match, setPattern } = useFindMatchContext();
   const { selectTree, fiberById } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
-  const [treeUpdate, setTreeUpdate] = React.useState(0);
+  const treeUpdate = useTreeUpdateSubscription(tree);
   const [matches, setMatches] = React.useState<{
     index: number;
     total: number;
@@ -62,15 +63,14 @@ const MatchesNavigation = ({
 
     autoselect.current = false;
     setMatches({ index, total });
-
-    return tree.subscribe(() => setTreeUpdate(state => state + 1));
   }, [selectedId, match, tree, treeUpdate, pattern]);
 
   if (matches === null) {
     return null;
   }
 
-  const disableButtons = matches.index > 0 && matches.total < 2;
+  const disableButtons =
+    matches.total === 0 || (matches.total === 1 && matches.index === 1);
 
   return (
     <div className="component-search-matches-iterator">
