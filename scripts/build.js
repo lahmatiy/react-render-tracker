@@ -40,10 +40,13 @@ async function buildSubscriber(config, configCSS) {
     bundle: true,
     sourcemap: true,
     format: "esm",
-    // loader: { ".js": "jsx" },
-    define: { __CSS__: JSON.stringify(css.outputFiles[0].text) },
     write: false,
     ...config,
+    define: {
+      ...(config && config.define),
+      __CSS__: JSON.stringify(css.outputFiles[0].text),
+      // "process.env.NODE_ENV": '"production"',
+    },
   });
 
   if (result.outputFiles && result.outputFiles.length) {
@@ -58,10 +61,11 @@ async function buildPublisher(config) {
     sourcemap: true,
     format: "esm",
     write: false,
+    ...config,
     define: {
       __DEV__: true,
+      ...(config && config.define),
     },
-    ...config,
   });
 
   if (result.outputFiles && result.outputFiles.length) {
@@ -82,6 +86,7 @@ if (require.main === module) {
       }
     );
     buildPublisher({
+      logLevel: "info",
       write: true,
       outfile: "dist/react-render-tracker.js",
       format: "iife",
