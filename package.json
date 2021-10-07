@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@discoveryjs/json-ext": "^0.5.5",
-    "compute-scroll-into-view": "^1.0.17",
     "lodash.debounce": "^4.0.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

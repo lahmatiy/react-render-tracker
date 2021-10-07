@@ -1,13 +1,13 @@
 import * as React from "react";
-import computeScrollIntoView from "compute-scroll-into-view";
 import { useFiberChildren } from "../../utils/fiber-maps";
 import { useSelectedId } from "../../utils/selection";
+import { getBoundingRect, getOverflowParent } from "../../utils/layout";
+import TreeLeaf from "./TreeLeaf";
 import {
   TreeViewSettings,
   TreeViewSettingsContext,
   useTreeViewSettingsContext,
 } from "./contexts";
-import TreeLeaf from "./TreeLeaf";
 
 const ScrollSelectedToViewIfNeeded = () => {
   const { selectedId } = useSelectedId();
@@ -17,15 +17,45 @@ const ScrollSelectedToViewIfNeeded = () => {
 
   React.useEffect(() => {
     if (element !== null) {
-      const actions = computeScrollIntoView(element, {
-        scrollMode: "if-needed",
-        block: "nearest",
-        inline: "nearest",
-      });
+      const viewportEl = getOverflowParent(element);
+      const elementRect = getBoundingRect(element, viewportEl);
+      const scrollMarginTop =
+        parseInt(
+          getComputedStyle(element).getPropertyValue("scroll-margin-top"),
+          10
+        ) || 0;
+      const scrollMarginLeft =
+        parseInt(
+          getComputedStyle(element).getPropertyValue("scroll-margin-left"),
+          10
+        ) || 0;
 
-      if (actions.length) {
-        element.scrollIntoView({ block: "start", inline: "nearest" });
+      const { scrollTop, scrollLeft, clientWidth, clientHeight } =
+        viewportEl as HTMLElement;
+      const viewportTop = scrollTop + scrollMarginTop;
+      const viewportLeft = scrollLeft + scrollMarginLeft;
+      const viewportRight = scrollLeft + clientWidth;
+      const viewportBottom = scrollTop + clientHeight;
+      const elementTop = scrollTop + elementRect.top;
+      const elementLeft = scrollLeft + elementRect.left;
+      const elementRight = elementLeft + elementRect.width;
+      // const elementBottom = elementTop + elementRect.height;
+      let scrollToTop = scrollTop;
+      let scrollToLeft = scrollLeft;
+
+      if (elementTop < viewportTop || elementTop > viewportBottom) {
+        scrollToTop = elementTop - scrollMarginTop;
       }
+
+      if (elementLeft < viewportLeft) {
+        scrollToLeft = elementLeft - scrollMarginLeft;
+      } else if (elementRight > viewportRight) {
+        scrollToLeft =
+          Math.max(elementLeft, scrollLeft - (elementRight - viewportRight)) -
+          scrollMarginLeft;
+      }
+
+      viewportEl?.scrollTo(scrollToLeft, scrollToTop);
     }
   }, [element]);
 
