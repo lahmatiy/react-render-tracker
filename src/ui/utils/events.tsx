@@ -129,7 +129,7 @@ export function EventsContextProvider({
 
       if (lastLoadedOffset >= totalEventsCount) {
         // flush updates async
-        setTimeout(() => flushUpdatedMaps(), 0);
+        setTimeout(() => flushUpdatedMaps(), 16);
         loadingStartOffset = totalEventsCount;
         return;
       }
