@@ -1,4 +1,5 @@
 import * as React from "react";
+import debounce from "lodash.debounce";
 import { useFiberMaps } from "../../utils/fiber-maps";
 import { useFindMatchContext } from "../../utils/find-match";
 import { useSelectedId } from "../../utils/selection";
@@ -19,7 +20,7 @@ const SearchMatchesNav = ({
 }) => {
   const { selectedId, select } = useSelectedId();
   const { pinnedId } = usePinnedId();
-  const { match, setPattern } = useFindMatchContext();
+  const { match } = useFindMatchContext();
   const { selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
   const treeUpdate = useTreeUpdateSubscription(tree);
@@ -27,13 +28,19 @@ const SearchMatchesNav = ({
     index: number;
     total: number;
   } | null>(null);
+  const selectDebounced = React.useMemo(
+    () =>
+      debounce(id => select(id, false), 100, {
+        maxWait: 200,
+      }),
+    []
+  );
 
   React.useEffect(() => {
     let firstMatchId: number | null = null;
     let index = 0;
     let total = 0;
 
-    setPattern(pattern);
     tree.get(pinnedId)?.walk(node => {
       if (match(node.fiber?.displayName || null) !== null) {
         total++;
@@ -49,7 +56,7 @@ const SearchMatchesNav = ({
     });
 
     if (autoselect.current && total > 0 && index === 0) {
-      select(firstMatchId, false);
+      selectDebounced(firstMatchId);
       index = 1;
     }
 

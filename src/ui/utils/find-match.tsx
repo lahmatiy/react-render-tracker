@@ -1,4 +1,5 @@
 import * as React from "react";
+import debounce from "lodash.debounce";
 import { notifyById, subscribeById, Subscriptions } from "./subscription";
 
 type MatchResult = [offset: number, length: number] | null;
@@ -20,7 +21,21 @@ export const FindMatchContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [pattern, setPatternState] = React.useState("");
+  const applyPattern = React.useMemo(
+    () =>
+      debounce(
+        () => {
+          for (const value of awaitingNotify) {
+            notifyById(subscriptions, value, matches.get(value) || null);
+          }
+
+          awaitingNotify.clear();
+        },
+        75,
+        { maxWait: 350 }
+      ),
+    []
+  );
   const { subscriptions, awaitingNotify, matches, matchValue, setPattern } =
     React.useMemo(() => {
       const subscriptions = new Map<
@@ -63,7 +78,7 @@ export const FindMatchContextProvider = ({
           }
         }
 
-        setPatternState(pattern);
+        applyPattern();
       };
 
       return {
@@ -94,15 +109,6 @@ export const FindMatchContextProvider = ({
       },
     };
   }, []);
-
-  // flush awaiting updates
-  React.useEffect(() => {
-    for (const value of awaitingNotify) {
-      notifyById(subscriptions, value, matches.get(value) || null);
-    }
-
-    awaitingNotify.clear();
-  }, [pattern]);
 
   return (
     <FindMatchContext.Provider value={value}>
