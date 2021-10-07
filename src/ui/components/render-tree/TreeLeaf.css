@@ -1,3 +1,6 @@
+.tree-leaf.render-root {
+  --scroll-margin-top: 23px;
+}
 .tree-leaf.render-root:not(:last-child) {
   border-bottom: 1px solid #ddd;
 }

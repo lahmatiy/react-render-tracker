@@ -29,15 +29,6 @@ body {
   font-family: Arial, sans-serif;
   font-size: 14px;
   line-height: 21px;
-  color: var(--text);
+  color: #333;
   background-color: transparent;
-}
-
-:root {
-  --text: #323334;
-  --text-muted: #a1a1a1;
-  --icon: #999999;
-  --primary: #0279c9;
-  --brand: #3fc1e2;
-  --border: rgba(234, 234, 234, 1);
 }

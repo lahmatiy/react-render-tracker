@@ -1,7 +1,4 @@
 .tree-leaf-caption {
-  --scroll-margin-top: 23px;
-  --scroll-margin-left: 2px;
-
   display: flex;
   box-sizing: border-box;
   border: solid transparent;
@@ -13,12 +10,8 @@
   cursor: pointer;
 }
 
-.tree-leaf-caption.timings {
-  --scroll-margin-left: 90px;
-}
-
 .tree-leaf-caption.render-root {
-  --scroll-margin-top: 0;
+  --scroll-margin-top: 0px;
 
   border-top: none;
   border-color: #ddd;
@@ -87,13 +80,14 @@
 
 .tree-leaf-caption__main {
   flex: 1;
-  padding-left: calc(2px + var(--depth, 0) * 14px);
+  padding-left: calc(var(--depth, 0) * 14px);
 }
 .tree-leaf-caption__main-content {
   display: inline-block;
+  padding-left: 2px;
   padding-right: 4px;
-  scroll-margin-top: var(--scroll-margin-top);
-  scroll-margin-left: var(--scroll-margin-left);
+  scroll-margin-top: var(--scroll-margin-top, 0px);
+  scroll-margin-left: var(--scroll-margin-left, 0px);
 }
 
 .tree-leaf-caption .highlight {
@@ -104,7 +98,7 @@
 
 .tree-leaf-caption__name {
   margin-left: 17px;
-  color: var(--primary);
+  color: #0279c9;
 }
 .tree-leaf-caption.no-events .tree-leaf-caption__name {
   color: #90bce5;
@@ -113,7 +107,7 @@
   color: #666;
 }
 .tree-leaf-caption.unmounted .tree-leaf-caption__name {
-  color: var(--text-muted);
+  color: #aaa;
   text-decoration: line-through;
   text-decoration-color: #888;
   transition: 0.25s;

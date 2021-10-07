@@ -15,7 +15,10 @@
   flex-basis: 0;
   min-width: 14px;
   margin-left: 6px;
-  color: var(--icon);
+  color: #ccc;
+}
+.component-search:focus-within > svg {
+  color: #999;
 }
 
 .component-search input {
@@ -30,38 +33,5 @@
   color: inherit;
 }
 .component-search input::placeholder {
-  color: #aaa;
-}
-
-.component-search-matches-iterator {
-  padding: 6px;
-  white-space: nowrap;
-  font-size: 12px;
-  line-height: 12px;
-  color: #888;
-}
-.component-search-matches-iterator__buttons {
-  margin-left: 6px;
-  padding-left: 2px;
-  border-left: 1px solid #ccc;
-}
-.component-search-matches-iterator__button {
-  vertical-align: middle;
-  padding: 2px 2px;
-  margin-top: -2px;
-  background: none;
-  border: none;
-  color: #777;
-}
-.component-search-matches-iterator__button[disabled] {
   color: #ccc;
-}
-.component-search-matches-iterator__button:not([disabled]):hover {
-  cursor: pointer;
-  color: #222;
-}
-.component-search-matches-iterator__button svg {
-  vertical-align: middle;
-  height: 12px;
-  margin: -2px 0 0;
 }

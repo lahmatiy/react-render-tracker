@@ -11,7 +11,7 @@
 
 .event-render-reason__context-name {
   display: inline-block;
-  color: var(--primary);
+  color: #0279c9;
 }
 
 .event-render-reason__type-badge {

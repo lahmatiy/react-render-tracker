@@ -2,6 +2,9 @@
   grid-area: render-tree;
   position: relative;
 }
+.render-tree.timings {
+  --scroll-margin-left: 90px;
+}
 .render-tree.timings::before {
   content: "";
   position: absolute;

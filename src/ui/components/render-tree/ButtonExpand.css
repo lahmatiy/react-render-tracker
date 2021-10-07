@@ -13,7 +13,7 @@
   display: inline-block;
   width: 13px;
   height: 13px;
-  color: var(--icon);
+  color: #999;
   background-image: url("./ButtonExpand.svg");
   background-position: center;
   background-size: 13px;

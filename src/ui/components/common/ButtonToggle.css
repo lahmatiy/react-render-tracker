@@ -11,11 +11,11 @@
   height: 16px;
   width: 16px;
   vertical-align: middle;
-  color: var(--text-muted);
+  color: #aaa;
   transition: 0.2s;
 }
 
 .button-toggle.active svg,
 .button-toggle:hover svg {
-  color: var(--brand);
+  color: #3fc1e2;
 }

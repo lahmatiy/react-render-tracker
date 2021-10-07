@@ -69,7 +69,7 @@
   color: #0279c9;
 }
 .event-list-item__name_unmounted {
-  color: var(--text-muted);
+  color: #aaa;
   text-decoration: line-through;
   text-decoration-color: #888;
 }
