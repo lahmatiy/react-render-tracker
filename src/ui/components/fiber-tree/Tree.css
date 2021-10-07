@@ -1,11 +1,11 @@
-.render-tree {
-  grid-area: render-tree;
+.fiber-tree {
+  grid-area: fiber-tree;
   position: relative;
 }
-.render-tree.timings {
+.fiber-tree.timings {
   --scroll-margin-left: 90px;
 }
-.render-tree.timings::before {
+.fiber-tree.timings::before {
   content: "";
   position: absolute;
   top: 0;
@@ -19,23 +19,23 @@
   pointer-events: none;
 }
 
-.render-tree__scroll-area {
+.fiber-tree__scroll-area {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   overflow: auto;
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; */
   overscroll-behavior: contain;
 }
 
-.render-tree__content {
+.fiber-tree__content {
   position: absolute;
   min-width: 100%;
   transform: translateZ(0);
 }
-.render-tree__no-children {
+.fiber-tree__no-children {
   padding: 4px 20px;
   font-size: 11px;
   color: #aaa;

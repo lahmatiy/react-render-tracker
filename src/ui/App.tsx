@@ -1,7 +1,7 @@
 import * as React from "react";
 import Toolbar from "./components/toolbar/Toolbar";
-import FiberTree from "./components/render-tree/Tree";
-import FiberTreeHeader from "./components/render-tree/TreeHeader";
+import FiberTree from "./components/fiber-tree/Tree";
+import FiberTreeHeader from "./components/fiber-tree/TreeHeader";
 import Details from "./components/details/Details";
 import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";

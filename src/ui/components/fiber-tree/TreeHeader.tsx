@@ -15,9 +15,9 @@ function FiberLink({
   pin: (id: number) => void;
 }) {
   return (
-    <span className="render-tree-header-fiber-link">
+    <span className="fiber-tree-header-fiber-link">
       <span
-        className="render-tree-header-fiber-link__name"
+        className="fiber-tree-header-fiber-link__name"
         onClick={() => pin(id)}
       >
         {name || "Unknown"}
@@ -58,7 +58,7 @@ function FiberPath({
     return null;
   }
 
-  return <div className="render-tree-header__path">{path}</div>;
+  return <div className="fiber-tree-header__path">{path}</div>;
 }
 
 const FiberTreeHeader = React.memo(
@@ -78,7 +78,7 @@ const FiberTreeHeader = React.memo(
     }
 
     return (
-      <div className="render-tree-header">
+      <div className="fiber-tree-header">
         <FiberPath fiber={fiber} groupByParent={groupByParent} />
         <TreeLeafCaption
           key={rootId}

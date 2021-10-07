@@ -1,7 +1,7 @@
-.render-tree-header {
+.fiber-tree-header {
   background: white;
 }
-.render-tree-header__path {
+.fiber-tree-header__path {
   max-height: 50px;
   overflow: auto;
   padding: 3px 6px;
@@ -11,22 +11,22 @@
   line-height: 15px;
   color: #888;
 }
-.render-tree-header__path::before {
+.fiber-tree-header__path::before {
   content: "Pinned path: ";
 }
-.render-tree-header-fiber-link {
+.fiber-tree-header-fiber-link {
   display: inline-block;
 }
-.render-tree-header-fiber-link:not(:last-child)::after {
+.fiber-tree-header-fiber-link:not(:last-child)::after {
   content: "\a0→\a0";
   color: #aaa;
 }
-.render-tree-header-fiber-link__name {
+.fiber-tree-header-fiber-link__name {
   text-decoration: underline;
   text-decoration-color: #8885;
   color: #777;
   cursor: pointer;
 }
-.render-tree-header-fiber-link__name:hover {
+.fiber-tree-header-fiber-link__name:hover {
   color: #555;
 }

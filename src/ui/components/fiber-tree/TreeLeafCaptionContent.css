@@ -1,0 +1,70 @@
+.tree-leaf-caption.pinned .tree-leaf-caption__main {
+  width: 0;
+  overflow: hidden;
+}
+
+.tree-leaf-caption__main {
+  flex: 1;
+  padding-left: calc(var(--depth, 0) * 14px);
+}
+.tree-leaf-caption__main-content {
+  display: inline-block;
+  padding-left: 19px;
+  padding-right: 4px;
+  scroll-margin-top: var(--scroll-margin-top, 0px);
+  scroll-margin-left: var(--scroll-margin-left, 0px);
+}
+
+.tree-leaf-caption-content__name {
+  position: relative;
+}
+.tree-leaf-caption-content__name.no-events {
+  color: #90bce5;
+}
+.tree-leaf-caption-content__name.unmounted {
+  color: #aaa;
+  text-decoration: line-through;
+  text-decoration-color: #888;
+  transition: 0.25s;
+  transition-property: color;
+}
+.tree-leaf-caption-content__highlight {
+  margin: 0 0 -2px;
+  border-bottom: 2px solid #e0bf08;
+}
+
+.tree-leaf-caption__update-count,
+.tree-leaf-caption__context-count {
+  display: inline-block;
+  min-width: 16px;
+  margin-left: 2px;
+  padding: 3px 4px 2.3px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  background-color: #eaeac7;
+  background-clip: padding-box;
+  color: #949c35;
+  font-size: 10px;
+  line-height: 10px;
+  text-align: center;
+}
+.tree-leaf-caption__context-count {
+  background-color: #eadcea;
+  color: #ca8fd0;
+}
+
+.tree-leaf-caption__warnings {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -1px;
+  margin-left: 3px;
+  margin-right: -1px;
+  width: 11px;
+  height: 11px;
+  background: url("./img/warning-exc-sign.svg") no-repeat center #eab439;
+  background-size: 7px;
+  background-clip: content-box;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
