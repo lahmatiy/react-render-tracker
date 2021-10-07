@@ -1,3 +1,6 @@
-.render-tree__content > .tree-leaf > :last-child {
-  padding-bottom: 1px;
+.tree-leaf.render-root:not(:last-child) {
+  border-bottom: 1px solid #ddd;
+}
+.tree-leaf-caption.render-root + .tree-leaf {
+  margin-top: 1px;
 }

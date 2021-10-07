@@ -125,7 +125,10 @@ const TreeLeafCaptionContainer = React.memo(
         {pinned && (
           <button
             className="tree-leaf-caption__unpin-button"
-            onClick={() => pin(0)}
+            onClick={event => {
+              event.stopPropagation();
+              pin(0);
+            }}
           >
             Unpin
           </button>

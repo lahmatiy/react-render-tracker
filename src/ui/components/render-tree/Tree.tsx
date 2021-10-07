@@ -60,22 +60,24 @@ const Tree = ({
   }, [groupByParent, showUnmounted, showTimings]);
 
   return (
-    <div className="render-tree">
-      <div className="render-tree__content">
-        <TreeViewSettingsContext.Provider value={viewSettings}>
-          {rootId !== 0 && children.length === 0 ? (
-            <div className="render-tree__no-children">No children yet</div>
-          ) : (
-            children.map(childId => (
-              <TreeLeaf
-                key={childId}
-                fiberId={childId}
-                depth={rootId === 0 ? 0 : 2}
-              />
-            ))
-          )}
-          <ScrollSelectedToViewIfNeeded />
-        </TreeViewSettingsContext.Provider>
+    <div className={"render-tree" + (showTimings ? " timings" : "")}>
+      <div className="render-tree__scroll-area">
+        <div className="render-tree__content">
+          <TreeViewSettingsContext.Provider value={viewSettings}>
+            {rootId !== 0 && children.length === 0 ? (
+              <div className="render-tree__no-children">No children yet</div>
+            ) : (
+              children.map(childId => (
+                <TreeLeaf
+                  key={childId}
+                  fiberId={childId}
+                  depth={rootId === 0 ? 0 : 1}
+                />
+              ))
+            )}
+            <ScrollSelectedToViewIfNeeded />
+          </TreeViewSettingsContext.Provider>
+        </div>
       </div>
     </div>
   );

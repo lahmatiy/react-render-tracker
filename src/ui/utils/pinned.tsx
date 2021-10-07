@@ -1,5 +1,5 @@
 import * as React from "react";
-import { notify, subscribe } from "./subscription";
+import { notify, subscribe, useSubscription } from "./subscription";
 
 type idChangeCallback = (id: number) => void;
 interface Pinned {
@@ -56,7 +56,16 @@ export const PinnedIdConsumer = ({
   const { pinnedId, subscribe } = usePinnedContext();
   const [state, setState] = React.useState(pinnedId);
 
-  React.useEffect(() => subscribe(setState), []);
+  useSubscription(() => subscribe(setState));
 
   return children(state);
+};
+
+export const usePinnedId = () => {
+  const { pinnedId, subscribe, pin } = usePinnedContext();
+  const [state, setState] = React.useState(pinnedId);
+
+  useSubscription(() => subscribe(setState));
+
+  return { pinnedId: state, pin };
 };

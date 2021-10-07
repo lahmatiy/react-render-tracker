@@ -1,53 +1,55 @@
 .tree-leaf-caption {
-  --padding-time: 2px 4px 1px;
-  --padding-main: 1px 5px;
-  --no-timing-padding: 2px;
   --scroll-margin-top: 23px;
   --scroll-margin-left: 2px;
 
   display: flex;
   box-sizing: border-box;
+  border: solid transparent;
+  border-width: 1px 0;
+  background-color: white;
   white-space: nowrap;
   font-size: 12px;
   line-height: 20px;
-  background-color: white;
   cursor: pointer;
 }
 
 .tree-leaf-caption.timings {
-  --no-timing-padding: 0px;
   --scroll-margin-left: 90px;
 }
 
 .tree-leaf-caption.render-root {
-  --padding-time: 1px 4px 0px;
-  --padding-main: 0px 5px;
   --scroll-margin-top: 0;
 
-  position: sticky;
-  top: -1px;
-  margin-top: -1px;
-  z-index: 2;
+  border-top: none;
+  border-color: #ddd;
   background-color: #f4f4f4;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
 }
-.tree-leaf-caption.pinned:not(.render-root) {
-  border-bottom: 1px solid #ddd;
+.render-tree .tree-leaf-caption.render-root {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  margin-bottom: -1px;
+}
+.tree-leaf-caption.pinned:not(.render-root):not(.selected) {
+  border-bottom-color: #ddd;
 }
 
 .tree-leaf-caption:hover {
   background-color: #eee;
 }
-.tree-leaf-caption:hover:not(.render-root):not(.selected) {
-  box-shadow: -1px 0 0 1px #e6e6e6 inset;
+.tree-leaf-caption:hover:not(.selected) {
+  border-color: #e6e6e6;
 }
 .tree-leaf-caption.selected {
   background-color: #dde8f4;
+  border-color: #cfdeef;
   cursor: default;
 }
 .tree-leaf-caption.selected.render-root {
   background-color: #deebf7;
+}
+.tree-leaf-caption.pinned {
+  border-top-color: transparent;
 }
 .tree-leaf-caption.pinned .tree-leaf-caption__main {
   width: 0;
@@ -59,34 +61,33 @@
   vertical-align: middle;
   width: 13px;
   height: 14px;
-  margin: -1px -15px 0 3px;
+  margin: -1px -15px 0 2px;
   background-image: url("./img/pin.svg");
   background-position: top center;
   background-size: 14px;
 }
 
 .tree-leaf-caption__timings {
-  flex-basis: 90px;
   position: sticky;
   left: 0;
   z-index: 1;
+  margin: -1px 0;
+  border: inherit;
   background-color: inherit;
 }
 .tree-leaf-caption__time {
   display: inline-block;
   box-sizing: border-box;
   width: 45px;
-  padding: var(--padding-time);
+  padding: 1px 5px 0 0;
   text-align: right;
-  border-right: 1px solid #ddd;
   font-size: 10px;
   color: #888;
 }
 
 .tree-leaf-caption__main {
   flex: 1;
-  padding: var(--padding-main);
-  padding-left: calc(var(--depth, 0) * 14px + var(--no-timing-padding));
+  padding-left: calc(2px + var(--depth, 0) * 14px);
 }
 .tree-leaf-caption__main-content {
   display: inline-block;
@@ -122,19 +123,20 @@
 .tree-leaf-caption__update-count,
 .tree-leaf-caption__context-count {
   display: inline-block;
-  margin-left: 4px;
+  min-width: 16px;
+  margin-left: 2px;
   padding: 3px 4px 2.3px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  background-color: #eaeac7;
+  background-clip: padding-box;
+  color: #949c35;
   font-size: 10px;
   line-height: 10px;
-  min-width: 16px;
-  border-radius: 3px;
-  background: #eaeac7;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
-  color: #949c35;
   text-align: center;
 }
 .tree-leaf-caption__context-count {
-  background: #eadcea;
+  background-color: #eadcea;
   color: #ca8fd0;
 }
 

@@ -22,26 +22,27 @@ function App() {
   return (
     <EventsContextProvider>
       <SelectionContextProvider>
-        <SelectedIdConsumer>
-          {(selectedId: number | null) => (
-            <div
-              className="app"
-              data-has-selected={selectedId !== null || undefined}
-            >
-              <FindMatchContextProvider>
-                <Toolbar
-                  onFilterPatternChange={setFilterPattern}
-                  filterPattern={filterPattern}
-                  onGroupingChange={setGroupByParent}
-                  groupByParent={groupByParent}
-                  onShowUnmounted={setShowUnmounted}
-                  showUnmounted={showUnmounted}
-                  onShowTimings={setShowTimings}
-                  showTimings={showTimings}
-                />
+        <PinnedContextProvider>
+          <SelectedIdConsumer>
+            {(selectedId: number | null) => (
+              <div
+                className="app"
+                data-has-selected={selectedId !== null || undefined}
+              >
+                <FindMatchContextProvider>
+                  <Toolbar
+                    onFilterPatternChange={setFilterPattern}
+                    filterPattern={filterPattern}
+                    onGroupingChange={setGroupByParent}
+                    groupByParent={groupByParent}
+                    onShowUnmounted={setShowUnmounted}
+                    showUnmounted={showUnmounted}
+                    onShowTimings={setShowTimings}
+                    showTimings={showTimings}
+                  />
 
-                <WaitingForReady />
-                <PinnedContextProvider>
+                  <WaitingForReady />
+
                   <PinnedIdConsumer>
                     {(pinnedId: number) => (
                       <>
@@ -59,21 +60,21 @@ function App() {
                       </>
                     )}
                   </PinnedIdConsumer>
-                </PinnedContextProvider>
-              </FindMatchContextProvider>
+                </FindMatchContextProvider>
 
-              {selectedId !== null && (
-                <Details
-                  rootId={selectedId}
-                  groupByParent={groupByParent}
-                  showUnmounted={showUnmounted}
-                  showTimings={showTimings}
-                />
-              )}
-              <StatusBar />
-            </div>
-          )}
-        </SelectedIdConsumer>
+                {selectedId !== null && (
+                  <Details
+                    rootId={selectedId}
+                    groupByParent={groupByParent}
+                    showUnmounted={showUnmounted}
+                    showTimings={showTimings}
+                  />
+                )}
+                <StatusBar />
+              </div>
+            )}
+          </SelectedIdConsumer>
+        </PinnedContextProvider>
       </SelectionContextProvider>
     </EventsContextProvider>
   );

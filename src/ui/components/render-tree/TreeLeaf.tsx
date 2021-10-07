@@ -21,7 +21,7 @@ const TreeLeaf = React.memo(({ fiberId, depth = 0 }: TreeLeafProps) => {
   }
 
   return (
-    <div className="tree-leaf">
+    <div className={"tree-leaf" + (fiber.ownerId === 0 ? " render-root" : "")}>
       <TreeLeafCaption
         depth={Math.max(depth - 1, 0)}
         fiber={fiber}

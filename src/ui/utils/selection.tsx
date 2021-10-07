@@ -1,5 +1,13 @@
 import * as React from "react";
-import { notify, notifyById, subscribe, subscribeById } from "./subscription";
+import {
+  notify,
+  notifyById,
+  subscribe,
+  subscribeById,
+  Subscriptions,
+  SubscriptionsMap,
+  useSubscription,
+} from "./subscription";
 
 type IdChangeCallback = (id: number | null) => void;
 type StateChangeCallback = (state: boolean) => void;
@@ -10,7 +18,7 @@ interface Selection {
   subscribe: (fn: (value: number) => void) => () => void;
   subscribeToIdState: (id: number, fn: StateChangeCallback) => () => void;
   historyState: SelectionHistoryState;
-  subscribeToHistoryState(fn: HistoryChangeCallback): void;
+  subscribeToHistoryState(fn: HistoryChangeCallback): () => void;
 }
 interface SelectionHistoryState {
   hasPrev: boolean;
@@ -58,12 +66,13 @@ export const SelectionContextProvider = ({
     let historyIndex = -1;
     let history: number[] = [];
     let historyState: SelectionHistoryState = createHistoryState();
-    const subscriptions = new Set<{ fn: IdChangeCallback }>();
-    const historySubscriptions = new Set<{ fn: HistoryChangeCallback }>();
-    const stateSubscriptionsById = new Map<
+    const subscriptions: Subscriptions<IdChangeCallback> = new Set();
+    const historySubscriptions: Subscriptions<HistoryChangeCallback> =
+      new Set();
+    const stateSubscriptionsById: SubscriptionsMap<
       number,
-      Set<{ fn: StateChangeCallback }>
-    >();
+      StateChangeCallback
+    > = new Map();
     const select: Selection["select"] = (
       nextSelectedId,
       pushHistory = true
@@ -154,7 +163,7 @@ export const useSelectionState = (id: number) => {
   const { selectedId, subscribeToIdState, select } = useSelectionContext();
   const [state, setState] = React.useState(id === selectedId);
 
-  React.useEffect(() => subscribeToIdState(id, setState), [id]);
+  useSubscription(() => subscribeToIdState(id, setState), [id]);
 
   return { selected: state, select };
 };
@@ -163,7 +172,7 @@ export const useSelectionHistoryState = () => {
   const { historyState, subscribeToHistoryState } = useSelectionContext();
   const [state, setState] = React.useState(historyState);
 
-  React.useEffect(() => subscribeToHistoryState(setState), []);
+  useSubscription(() => subscribeToHistoryState(setState));
 
   return state;
 };
@@ -172,7 +181,7 @@ export const useSelectedId = () => {
   const { selectedId, subscribe, select } = useSelectionContext();
   const [state, setState] = React.useState(selectedId);
 
-  React.useEffect(() => subscribe(setState), []);
+  useSubscription(() => subscribe(setState));
 
   return { selectedId: state, select };
 };

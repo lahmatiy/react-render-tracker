@@ -8,6 +8,7 @@ import { useSelectedId } from "../../utils/selection";
 import { CallStackList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
 import { useTreeUpdateSubscription } from "../../utils/tree";
+import { usePinnedId } from "../../utils/pinned";
 
 interface IFiberInfo {
   fiberId: number;
@@ -142,7 +143,8 @@ function InstanceSwitcher({
   showUnmounted: boolean;
 }) {
   const { select } = useSelectedId();
-  const { selectTree, fiberById } = useFiberMaps();
+  const { pinnedId } = usePinnedId();
+  const { selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
   const treeUpdate = useTreeUpdateSubscription(tree);
 
@@ -150,8 +152,8 @@ function InstanceSwitcher({
     let index = 0;
     let total = 0;
 
-    tree.walk(node => {
-      if (fiberById.get(node.id)?.typeId === typeId) {
+    tree.get(pinnedId)?.walk(node => {
+      if (node.fiber?.typeId === typeId) {
         total++;
 
         if (fiberId === node.id) {
@@ -161,7 +163,7 @@ function InstanceSwitcher({
     });
 
     return { index, total };
-  }, [tree, treeUpdate, fiberId]);
+  }, [tree, treeUpdate, pinnedId, fiberId]);
 
   const disableButtons = total === 0 || (total === 1 && index === 1);
 
@@ -174,40 +176,32 @@ function InstanceSwitcher({
         <button
           className="fiber-info-instance-iterator__button"
           disabled={disableButtons}
-          onClick={
-            disableButtons
-              ? undefined
-              : () => {
-                  const node = tree.findBack(
-                    node => fiberById.get(node.id)?.typeId === typeId,
-                    fiberId
-                  );
+          onClick={() => {
+            const node = tree.findBack(
+              node => node.id !== fiberId && node.fiber?.typeId === typeId,
+              fiberId
+            );
 
-                  if (node !== null) {
-                    select(node.id);
-                  }
-                }
-          }
+            if (node !== null) {
+              select(node.id);
+            }
+          }}
         >
           {ChevronUp}
         </button>
         <button
           className="fiber-info-instance-iterator__button"
           disabled={disableButtons}
-          onClick={
-            disableButtons
-              ? undefined
-              : () => {
-                  const node = tree.find(
-                    node => fiberById.get(node.id)?.typeId === typeId,
-                    fiberId
-                  );
+          onClick={() => {
+            const node = tree.find(
+              node => node.id !== fiberId && node.fiber?.typeId === typeId,
+              fiberId
+            );
 
-                  if (node !== null) {
-                    select(node.id);
-                  }
-                }
-          }
+            if (node !== null) {
+              select(node.id);
+            }
+          }}
         >
           {ChevronDown}
         </button>

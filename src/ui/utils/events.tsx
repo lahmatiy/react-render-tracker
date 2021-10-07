@@ -226,6 +226,7 @@ export function processEvents(
     switch (event.op) {
       case "mount": {
         mountCount++;
+
         fiber = {
           ...event.fiber,
           displayName:
@@ -258,8 +259,8 @@ export function processEvents(
 
       case "unmount": {
         unmountCount++;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        fiber = fiberById.get(event.fiberId)!;
+
+        fiber = fiberById.get(event.fiberId) as MessageFiber;
         fiber = {
           ...fiber,
           mounted: false,
@@ -273,8 +274,8 @@ export function processEvents(
 
       case "update":
         updateCount++;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        fiber = fiberById.get(event.fiberId)!;
+
+        fiber = fiberById.get(event.fiberId) as MessageFiber;
         fiber = {
           ...fiber,
           updatesCount: fiber.updatesCount + 1,
@@ -315,10 +316,16 @@ export function processEvents(
       triggeredByOwner: trigger !== null && trigger.fiberId === fiber.ownerId,
     });
 
-    fiberById.set(event.fiberId, {
+    fiber = {
       ...fiber,
       events: fiber.events.concat(fiberEvent),
-    });
+    };
+
+    fiberById.set(event.fiberId, fiber);
+    parentTree.setFiber(fiber.id, fiber);
+    parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+    ownerTree.setFiber(fiber.id, fiber);
+    ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
   }
 
   return {

@@ -1,10 +1,8 @@
 import * as React from "react";
 import debounce from "lodash.debounce";
-import { useFiberMaps } from "../../utils/fiber-maps";
 import { useFindMatchContext } from "../../utils/find-match";
-import { useSelectedId } from "../../utils/selection";
-import { ChevronUp, ChevronDown, Search } from "../common/icons";
-import { useTreeUpdateSubscription } from "../../utils/tree";
+import { Search } from "../common/icons";
+import SearchMatchesNav from "./SearchMatchesNav";
 
 interface ComponentSearchProps {
   groupByParent: boolean;
@@ -12,126 +10,6 @@ interface ComponentSearchProps {
   onChange: (pattern: string) => void;
   value: string;
 }
-
-const MatchesNavigation = ({
-  groupByParent,
-  showUnmounted,
-  autoselect,
-  pattern,
-}: {
-  groupByParent: boolean;
-  showUnmounted: boolean;
-  autoselect: React.MutableRefObject<boolean>;
-  pattern: string;
-}) => {
-  const { selectedId, select } = useSelectedId();
-  const { match, setPattern } = useFindMatchContext();
-  const { selectTree, fiberById } = useFiberMaps();
-  const tree = selectTree(groupByParent, showUnmounted);
-  const treeUpdate = useTreeUpdateSubscription(tree);
-  const [matches, setMatches] = React.useState<{
-    index: number;
-    total: number;
-  } | null>(null);
-
-  React.useEffect(() => {
-    let firstMatchId: number | null = null;
-    let index = 0;
-    let total = 0;
-
-    setPattern(pattern);
-    tree.walk(node => {
-      const fiber = fiberById.get(node.id);
-
-      if (fiber !== undefined && match(fiber.displayName)) {
-        total++;
-
-        if (node.id === selectedId) {
-          index = total;
-        }
-
-        if (firstMatchId === null) {
-          firstMatchId = node.id;
-        }
-      }
-    });
-
-    if (autoselect.current && total > 0 && index === 0) {
-      select(firstMatchId, false);
-      index = 1;
-    }
-
-    autoselect.current = false;
-    setMatches({ index, total });
-  }, [selectedId, match, tree, treeUpdate, pattern]);
-
-  if (matches === null) {
-    return null;
-  }
-
-  const disableButtons =
-    matches.total === 0 || (matches.total === 1 && matches.index === 1);
-
-  return (
-    <div className="component-search-matches-iterator">
-      <span className="component-search-matches-iterator__label">
-        {matches.total
-          ? `${matches.index || "–"} / ${matches.total}`
-          : "No matches"}
-      </span>
-      <span className="component-search-matches-iterator__buttons">
-        <button
-          className="component-search-matches-iterator__button"
-          disabled={disableButtons}
-          onClick={
-            disableButtons
-              ? undefined
-              : () => {
-                  const node = tree.findBack(node => {
-                    const fiber = fiberById.get(node.id);
-
-                    return (
-                      fiber !== undefined && match(fiber.displayName) !== null
-                    );
-                  }, selectedId);
-
-                  if (node) {
-                    select(node.id, false);
-                  }
-                }
-          }
-        >
-          {ChevronUp}
-        </button>
-        <button
-          className="component-search-matches-iterator__button"
-          disabled={disableButtons}
-          onClick={
-            disableButtons
-              ? undefined
-              : () => {
-                  const node = tree.find(node => {
-                    const fiber = fiberById.get(node.id);
-
-                    return (
-                      fiber !== undefined && match(fiber.displayName) !== null
-                    );
-                  }, selectedId);
-
-                  console.log(node);
-
-                  if (node) {
-                    select(node.id, false);
-                  }
-                }
-          }
-        >
-          {ChevronDown}
-        </button>
-      </span>
-    </div>
-  );
-};
 
 const ComponentSearch = ({
   groupByParent,
@@ -160,7 +38,7 @@ const ComponentSearch = ({
       {Search}
       <input type="text" placeholder="Find component" onChange={handleChange} />
       {pattern && (
-        <MatchesNavigation
+        <SearchMatchesNav
           groupByParent={groupByParent}
           showUnmounted={showUnmounted}
           autoselect={autoselectRef}

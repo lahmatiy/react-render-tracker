@@ -1,13 +1,34 @@
 .render-tree {
   grid-area: render-tree;
-  overflow: auto;
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;
   position: relative;
 }
+.render-tree.timings::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 44px;
+  bottom: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 46px;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  pointer-events: none;
+}
+
+.render-tree__scroll-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  /* scroll-behavior: smooth; */
+  overscroll-behavior: contain;
+}
+
 .render-tree__content {
   position: absolute;
-  margin-top: -1px;
   min-width: 100%;
   transform: translateZ(0);
 }

@@ -8,6 +8,7 @@ import {
   Subscriptions,
   useSubscription,
 } from "./subscription";
+import { MessageFiber } from "../types";
 
 export function getSubtreeIds(id: number, childrenMap: Map<number, number[]>) {
   const subtree = new Set<number>([id]);
@@ -153,12 +154,25 @@ export class Tree {
     return this.nodes.has(id);
   }
 
+  get(id: number) {
+    return this.nodes.get(id);
+  }
+
   add(id: number, parentId: number) {
     const node = this.getOrCreate(id);
     const parent = this.getOrCreate(parentId);
 
     node.parent = parent;
     awaitNotify(parent);
+  }
+
+  setFiber(id: number, fiber: MessageFiber) {
+    const node = this.nodes.get(id);
+
+    if (node !== undefined) {
+      node.fiber = fiber;
+      awaitNotify(this);
+    }
   }
 
   delete(id: number) {
@@ -250,13 +264,16 @@ export class Tree {
 type TreeNodeSubscription = (node: TreeNode) => void;
 export class TreeNode {
   id: number;
+  fiber: MessageFiber | null = null;
 
   #parent: TreeNode | null = null;
   #children: number[] | null = null;
   firstChild: TreeNode | null = null;
   lastChild: TreeNode | null = null;
-  nextSibling: TreeNode | null = null;
   prevSibling: TreeNode | null = null;
+  nextSibling: TreeNode | null = null;
+  prev: TreeNode | null = null;
+  next: TreeNode | null = null;
 
   subscriptions: Subscriptions<TreeNodeSubscription> = new Set();
 
@@ -299,11 +316,21 @@ export class TreeNode {
         this.nextSibling.prevSibling = this.prevSibling;
       }
 
+      if (this.prev !== null) {
+        this.prev.next = this.next;
+      }
+
+      if (this.next !== null) {
+        this.next.prev = this.prev;
+      }
+
       oldParent.#children = null;
     }
 
     if (newParent !== null) {
       const lastChild = newParent.lastChild;
+      const prevNext = newParent.last || newParent;
+
       this.prevSibling = newParent.lastChild;
       newParent.lastChild = this;
 
@@ -313,10 +340,41 @@ export class TreeNode {
         newParent.firstChild = this;
       }
 
+      if (prevNext.next !== null) {
+        prevNext.next.prev = this;
+      }
+
+      this.next = prevNext.next;
+      prevNext.next = this;
+      this.prev = prevNext;
+
       newParent.#children = null;
     }
 
     this.#parent = newParent;
+  }
+
+  get last(): TreeNode | null {
+    let cursor: TreeNode = this;
+
+    while (cursor.lastChild !== null) {
+      cursor = cursor.lastChild;
+    }
+
+    return cursor !== this ? cursor : null;
+  }
+  get nextSkipDescendant(): TreeNode | null {
+    let cursor: TreeNode | null = this;
+
+    while (cursor !== null) {
+      if (cursor.nextSibling !== null) {
+        return cursor.nextSibling;
+      }
+
+      cursor = cursor.parent;
+    }
+
+    return null;
   }
 
   walk(
@@ -324,33 +382,24 @@ export class TreeNode {
     start: TreeNode | null = null,
     end: TreeNode | null = null
   ) {
-    let cursor = start || this;
+    let cursor: TreeNode | null = start || this;
+    end = end || this.last;
 
-    do {
-      let nextNode = cursor.firstChild;
+    if (cursor !== this && fn(this) === true) {
+      return this;
+    }
 
-      while (nextNode === null) {
-        if (cursor === this) {
-          return null;
-        }
-
-        nextNode = cursor.nextSibling;
-
-        if (nextNode === null) {
-          if (cursor.parent === null) {
-            return null;
-          }
-
-          cursor = cursor.parent;
-        }
-      }
-
-      cursor = nextNode;
-
+    while (cursor !== null) {
       if (fn(cursor) === true) {
         return cursor;
       }
-    } while (cursor !== end);
+
+      if (cursor === end) {
+        break;
+      }
+
+      cursor = cursor.next;
+    }
 
     return null;
   }
@@ -360,29 +409,24 @@ export class TreeNode {
     start: TreeNode | null = null,
     end: TreeNode | null = null
   ) {
-    let cursor = start || null;
+    let cursor: TreeNode | null = start || this.last || this;
+    end = end || this;
 
-    do {
-      let prevNode = cursor !== null ? cursor.prevSibling : this.lastChild;
-
-      if (prevNode !== null) {
-        while (prevNode.lastChild !== null) {
-          prevNode = prevNode.lastChild;
-        }
-
-        cursor = prevNode;
-      } else if (cursor !== null) {
-        cursor = cursor.parent;
-      }
-
-      if (cursor === null || cursor === this) {
-        return null;
-      }
-
+    while (cursor !== null) {
       if (fn(cursor) === true) {
         return cursor;
       }
-    } while (cursor !== end);
+
+      if (cursor === end) {
+        break;
+      }
+
+      cursor = cursor.prev;
+    }
+
+    if (cursor !== this && fn(this) === true) {
+      return this;
+    }
 
     return null;
   }
@@ -447,8 +491,10 @@ export class TreeNode {
     this.#children = null;
     this.firstChild = null;
     this.lastChild = null;
-    this.nextSibling = null;
     this.prevSibling = null;
+    this.nextSibling = null;
+    this.prev = null;
+    this.next = null;
   }
 }
 

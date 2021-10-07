@@ -1,0 +1,32 @@
+.component-search-matches-nav {
+  padding: 6px;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 12px;
+  color: #888;
+}
+.component-search-matches-nav__buttons {
+  margin-left: 6px;
+  padding-left: 2px;
+  border-left: 1px solid #ccc;
+}
+.component-search-matches-nav__button {
+  vertical-align: middle;
+  padding: 2px 2px;
+  margin-top: -2px;
+  background: none;
+  border: none;
+  color: #777;
+}
+.component-search-matches-nav__button[disabled] {
+  color: #ccc;
+}
+.component-search-matches-nav__button:not([disabled]):hover {
+  cursor: pointer;
+  color: #222;
+}
+.component-search-matches-nav__button svg {
+  vertical-align: middle;
+  height: 12px;
+  margin: -2px 0 0;
+}
