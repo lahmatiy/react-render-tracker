@@ -20,7 +20,7 @@ export const publisher = rempl.createPublisher(
     if (__DEV__) {
       const { origin } = new URL(import.meta.url);
 
-      fetch(`${origin}/subscriber.js?xxx`)
+      fetch(`${origin}/subscriber.js`)
         .then(res => res.text())
         .then(script => callback(null, "script", script));
     } else {
