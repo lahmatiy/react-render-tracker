@@ -182,10 +182,15 @@ export class Tree {
       return;
     }
 
-    for (const child of node.descendants()) {
-      this.nodes.delete(child.id);
-      stopAwatingNotify(child);
-      child.reset(true);
+    node.next = node.last;
+    if (node.next) {
+      node.next.prev = node;
+    }
+
+    for (const descendant of node.descendants()) {
+      this.nodes.delete(descendant.id);
+      stopAwatingNotify(descendant);
+      descendant.reset(true);
     }
 
     if (node.parent) {
@@ -459,7 +464,9 @@ export class TreeNode {
     const subtree: TreeNode[] = [];
 
     this.walk(node => {
-      subtree.push(node);
+      if (node !== this) {
+        subtree.push(node);
+      }
     });
 
     return subtree;
