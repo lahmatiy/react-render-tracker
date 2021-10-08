@@ -6,6 +6,7 @@ import { useTreeViewSettingsContext } from "./contexts";
 export const ScrollSelectedIntoViewIfNeeded = () => {
   const { selectedId } = useSelectedId();
   const { getFiberElement } = useTreeViewSettingsContext();
+  const { groupByParent, showUnmounted } = useTreeViewSettingsContext();
 
   React.useEffect(() => {
     const element =
@@ -52,7 +53,7 @@ export const ScrollSelectedIntoViewIfNeeded = () => {
 
       viewportEl?.scrollTo(scrollToLeft, scrollToTop);
     }
-  }, [selectedId]);
+  }, [selectedId, groupByParent, showUnmounted]);
 
   return null;
 };
