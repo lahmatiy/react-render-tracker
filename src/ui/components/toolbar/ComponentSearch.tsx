@@ -1,49 +1,58 @@
 import * as React from "react";
 import debounce from "lodash.debounce";
 import { useFindMatchContext } from "../../utils/find-match";
-import { Search } from "../common/icons";
+import { Cancel, Search } from "../common/icons";
 import SearchMatchesNav from "./SearchMatchesNav";
 
 interface ComponentSearchProps {
   groupByParent: boolean;
   showUnmounted: boolean;
-  onChange: (pattern: string) => void;
-  value: string;
 }
 
 const ComponentSearch = ({
   groupByParent,
   showUnmounted,
-  onChange,
 }: ComponentSearchProps) => {
   const autoselectRef = React.useRef(false);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
   const { setPattern: setContextPattern } = useFindMatchContext();
   const [pattern, setPattern] = React.useState("");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     autoselectRef.current = true;
     setContextPattern(e.target.value);
     setPattern(e.target.value);
-    onChangeDebounced(e.target.value);
   };
-  const onChangeDebounced = React.useMemo(
-    () =>
-      debounce(onChange, 50, {
-        maxWait: 75,
-      }),
-    [onChange]
-  );
 
   return (
     <div className="component-search">
       {Search}
-      <input type="text" placeholder="Find component" onChange={handleChange} />
+      <input
+        ref={inputRef}
+        placeholder="Find by display name"
+        onInput={handleInput}
+        value={pattern}
+      />
       {pattern && (
-        <SearchMatchesNav
-          groupByParent={groupByParent}
-          showUnmounted={showUnmounted}
-          autoselect={autoselectRef}
-          pattern={pattern}
-        />
+        <>
+          <SearchMatchesNav
+            groupByParent={groupByParent}
+            showUnmounted={showUnmounted}
+            autoselect={autoselectRef}
+            pattern={pattern}
+          />
+          <span className="component-search__buttons">
+            <button
+              className="component-search__button"
+              onClick={() => {
+                setContextPattern("");
+                setPattern("");
+                inputRef.current?.focus();
+              }}
+            >
+              {Cancel}
+            </button>
+          </span>
+        </>
       )}
     </div>
   );

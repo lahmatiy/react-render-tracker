@@ -12,8 +12,6 @@ import {
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
-  onFilterPatternChange: (pattern: string) => void;
-  filterPattern: string;
   onGroupingChange: BooleanToggle;
   groupByParent: boolean;
   onShowUnmounted: BooleanToggle;
@@ -23,8 +21,6 @@ interface ToolbarProps {
 }
 
 const Toolbar = ({
-  onFilterPatternChange,
-  filterPattern,
   onGroupingChange,
   groupByParent,
   onShowUnmounted,
@@ -40,8 +36,6 @@ const Toolbar = ({
       <ComponentSearch
         groupByParent={groupByParent}
         showUnmounted={showUnmounted}
-        onChange={onFilterPatternChange}
-        value={filterPattern}
       />
       <ButtonToggle
         icon={ToggleGrouping}

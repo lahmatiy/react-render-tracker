@@ -35,3 +35,28 @@
 .component-search input::placeholder {
   color: #ccc;
 }
+
+.component-search__buttons {
+  padding: 0px 4px 0px 4px;
+  margin-left: -4px;
+  border-left: 1px solid #ccc;
+  height: 15px;
+  box-sizing: content-box;
+}
+.component-search__button {
+  vertical-align: middle;
+  padding: 2px 2px;
+  margin-top: -10px;
+  background: none;
+  border: none;
+  color: #777;
+}
+.component-search__button:not([disabled]):hover {
+  cursor: pointer;
+  color: #222;
+}
+.component-search__button svg {
+  vertical-align: middle;
+  height: 12px;
+  margin: -2px 0 0;
+}

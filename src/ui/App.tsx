@@ -14,7 +14,6 @@ import { EventsContextProvider } from "./utils/events";
 import { PinnedContextProvider, PinnedIdConsumer } from "./utils/pinned";
 
 function App() {
-  const [filterPattern, setFilterPattern] = React.useState("");
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
   const [showTimings, setShowTimings] = React.useState(false);
@@ -31,8 +30,6 @@ function App() {
               >
                 <FindMatchContextProvider>
                   <Toolbar
-                    onFilterPatternChange={setFilterPattern}
-                    filterPattern={filterPattern}
                     onGroupingChange={setGroupByParent}
                     groupByParent={groupByParent}
                     onShowUnmounted={setShowUnmounted}

@@ -39,7 +39,7 @@ export const ClearEventLog = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="1.3"
     strokeLinecap="round"
     strokeLinejoin="round"
   >
@@ -117,5 +117,17 @@ export const Pin = (
     viewBox="0 0 24 24"
   >
     <path d="M 14.707031 2.2929688 L 13.292969 3.7070312 L 14.388672 4.8027344 L 8.1894531 9.7753906 L 6.7070312 8.2929688 L 5.2929688 9.7070312 L 9.09375 13.507812 L 3 19.599609 L 3 21 L 4.4003906 21 L 10.492188 14.90625 L 14.292969 18.707031 L 15.707031 17.292969 L 14.310547 15.896484 L 19.214844 9.6289062 L 20.292969 10.707031 L 21.707031 9.2929688 L 14.707031 2.2929688 z" />
+  </svg>
+);
+
+export const Cancel = (
+  <svg
+    width="16"
+    height="16"
+    fill="currentColor"
+    stroke="white"
+    viewBox="0 0 16 16"
+  >
+    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
   </svg>
 );
