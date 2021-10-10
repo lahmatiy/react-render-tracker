@@ -12,6 +12,7 @@
   gap: 2px 8px;
   margin-top: -2px;
   margin-left: -3px;
+  margin-right: -4px;
   margin-bottom: 2px;
 }
 .fiber-info-header-prelude__content {
@@ -38,6 +39,55 @@
   color: #88a06f;
 }
 
+.fiber-info-header-prelude__buttons {
+  display: flex;
+  padding-left: 2px;
+}
+.fiber-info-header-prelude__button {
+  vertical-align: middle;
+  padding: 2px 2px;
+  margin-top: -2px;
+  margin-bottom: -2px;
+  background: none;
+  border: none;
+  color: #666;
+}
+.fiber-info-header-prelude__button[disabled] {
+  color: #ccc;
+}
+.fiber-info-header-prelude__button:not([disabled]):hover {
+  cursor: pointer;
+  color: #222;
+}
+.fiber-info-header-prelude__button.selected {
+  background: #e8e8e8;
+  border-radius: 3px;
+}
+.fiber-info-header-prelude__button svg {
+  vertical-align: middle;
+  height: 12px;
+  margin: -3px 0 0;
+}
+
+.fiber-info-instance-iterator {
+  color: #999;
+  display: flex;
+  align-items: center;
+}
+.fiber-info-instance-iterator__label {
+  white-space: nowrap;
+  margin-right: 6px;
+}
+.fiber-info-instance-iterator .fiber-info-header-prelude__buttons {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  padding-right: 2px;
+  margin-right: 3px;
+}
+.fiber-info-instance-iterator .fiber-info-header-prelude__button svg {
+  width: 14px;
+}
+
 .fiber-info-header-notes {
   margin-top: 1px;
   font-size: 10px;
@@ -50,41 +100,4 @@
 }
 .fiber-info-header-notes .fiber-id {
   margin-left: 3px;
-}
-
-.fiber-info-instance-iterator {
-  margin-top: 0;
-  margin-right: -4px;
-  float: right;
-  color: #999;
-  display: flex;
-  align-items: center;
-}
-.fiber-info-instance-iterator__label {
-  white-space: nowrap;
-}
-.fiber-info-instance-iterator__buttons {
-  margin-left: 6px;
-  padding-left: 2px;
-  border-left: 1px solid #ccc;
-}
-.fiber-info-instance-iterator__button {
-  vertical-align: middle;
-  padding: 2px 2px;
-  margin-top: -2px;
-  background: none;
-  border: none;
-  color: #666;
-}
-.fiber-info-instance-iterator__button[disabled] {
-  color: #ccc;
-}
-.fiber-info-instance-iterator__button:not([disabled]):hover {
-  cursor: pointer;
-  color: #222;
-}
-.fiber-info-instance-iterator__button svg {
-  vertical-align: middle;
-  height: 12px;
-  margin: -2px 0 0;
 }

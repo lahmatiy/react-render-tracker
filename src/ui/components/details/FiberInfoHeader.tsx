@@ -2,7 +2,7 @@ import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
-import { ChevronUp, ChevronDown } from "../common/icons";
+import { ChevronUp, ChevronDown, Pin } from "../common/icons";
 import { fiberTypeName } from "../../../common/constants";
 import { useSelectedId } from "../../utils/selection";
 import { FiberLink } from "./FiberLink";
@@ -18,6 +18,9 @@ const FiberInfoHeaderPrelude = ({
   groupByParent: boolean;
   showUnmounted: boolean;
 }) => {
+  const { pinnedId, pin } = usePinnedId();
+  const pinned = fiber.id === pinnedId;
+
   return (
     <div className="fiber-info-header-prelude">
       <div className="fiber-info-header-prelude__content">
@@ -28,12 +31,25 @@ const FiberInfoHeaderPrelude = ({
           <span className="fiber-info-header-type-badge">Unmounted</span>
         )}
       </div>
-      <InstanceSwitcher
-        fiberId={fiber.id}
-        typeId={fiber.typeId}
-        groupByParent={groupByParent}
-        showUnmounted={showUnmounted}
-      />
+      <span className="fiber-info-header-prelude__buttons">
+        <InstanceSwitcher
+          fiberId={fiber.id}
+          typeId={fiber.typeId}
+          groupByParent={groupByParent}
+          showUnmounted={showUnmounted}
+        />
+        <button
+          className={
+            "fiber-info-header-prelude__button" + (pinned ? " selected" : "")
+          }
+          onClick={() => {
+            pin(!pinned ? fiber.id : 0);
+          }}
+          title={pinned ? "Unpin" : "Pin"}
+        >
+          {Pin}
+        </button>
+      </span>
     </div>
   );
 };
@@ -79,9 +95,9 @@ function InstanceSwitcher({
       <span className="fiber-info-instance-iterator__label">
         {index || "–"} / {total}
       </span>
-      <span className="fiber-info-instance-iterator__buttons">
+      <span className="fiber-info-header-prelude__buttons">
         <button
-          className="fiber-info-instance-iterator__button"
+          className="fiber-info-header-prelude__button"
           disabled={disableButtons}
           onClick={() => {
             const node = tree.findBack(
@@ -97,7 +113,7 @@ function InstanceSwitcher({
           {ChevronUp}
         </button>
         <button
-          className="fiber-info-instance-iterator__button"
+          className="fiber-info-header-prelude__button"
           disabled={disableButtons}
           onClick={() => {
             const node = tree.find(
