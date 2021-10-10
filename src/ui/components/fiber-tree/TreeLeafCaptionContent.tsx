@@ -60,7 +60,7 @@ const TreeLeafCaptionContent = ({
             {updatesCount}
           </span>
         )}
-        {Array.isArray(contexts) && (
+        {null && Array.isArray(contexts) && (
           <span
             className="tree-leaf-caption__context-count"
             title="Number of used contexts"

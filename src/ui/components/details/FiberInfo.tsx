@@ -214,7 +214,7 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
   const { fiberById } = useFiberMaps();
   const fiber = fiberById.get(fiberId);
 
-  if (!fiber) {
+  if (fiber === undefined) {
     return <div className="fiber-info">Fiber with #{fiberId} is not found</div>;
   }
 
@@ -234,13 +234,16 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
         <FiberId id={fiber.id} />
       </div>
       <FiberHeaderNotes fiber={fiber} />
+
       {false && <FiberInfoSection header="Timing"></FiberInfoSection>}
-      {fiber.contexts && (
+      {null && fiber.contexts && (
         <FiberInfoSection header="Contexts" emptyText="no contexts">
           <FiberContexts fiber={fiber} />
         </FiberInfoSection>
       )}
-      {fiber.type === ElementTypeProvider && <ConsumersSection fiber={fiber} />}
+      {null && fiber.type === ElementTypeProvider && (
+        <ConsumersSection fiber={fiber} />
+      )}
       {false && <MemoizationSection />}
     </div>
   );
