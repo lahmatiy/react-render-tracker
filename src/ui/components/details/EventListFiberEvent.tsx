@@ -1,19 +1,16 @@
 import * as React from "react";
 import EventRenderReasons from "./EventRenderReasons";
-import FiberId from "../common/FiberId";
-import FiberKey from "../common/FiberKey";
 import { formatDuration } from "../../utils/duration";
 import {
-  Event,
+  SourceEvent,
   TransferNamedEntryChange,
   TransferContextChange,
 } from "../../types";
-import { useFiber } from "../../utils/fiber-maps";
-import { useSelectionState } from "../../utils/selection";
+import { Fiber } from "./Fiber";
 
-interface EventListItemProps {
+interface EventListFiberEventProps {
   fiberId: number;
-  event: Event;
+  event: SourceEvent;
   showTimings: boolean;
   prevConjunction: boolean;
   nextConjunction: boolean;
@@ -21,12 +18,13 @@ interface EventListItemProps {
   indirectRootTrigger?: boolean;
 }
 
-const opTooltip: Record<Event["op"], string> = {
+const opTooltip: Record<SourceEvent["op"], string> = {
   mount: "Mount",
   update: "Update (re-render)",
   unmount: "Unmount",
   "effect-create": "Create effect",
   "effect-destroy": "Destroy effect",
+  "commit-start": "Commit start",
 };
 
 function isShallowEqual(
@@ -35,7 +33,7 @@ function isShallowEqual(
   return entry.diff === false;
 }
 
-function getChanges(event: Event) {
+function getChanges(event: SourceEvent) {
   if (event.op !== "update" || event.changes === null) {
     return null;
   }
@@ -61,35 +59,7 @@ function getChanges(event: Event) {
   return reasons.length > 0 ? { reasons, hasShallowEqual } : null;
 }
 
-const Fiber = ({ fiberId, op }: { fiberId: number; op: Event["op"] }) => {
-  const fiber = useFiber(fiberId);
-  const { selected, select } = useSelectionState(fiberId);
-
-  if (!fiber) {
-    return null;
-  }
-
-  return (
-    <>
-      <span
-        className={
-          "event-list-item__name" +
-          (op === "unmount" ? " event-list-item__name_unmounted" : "") +
-          (selected
-            ? " event-list-item__name_selected"
-            : " event-list-item__name_link")
-        }
-        onClick={!selected ? () => select(fiberId) : undefined}
-      >
-        {fiber.displayName}
-      </span>
-      {fiber.key !== null && <FiberKey fiber={fiber} />}
-      <FiberId id={fiber.id} />
-    </>
-  );
-};
-
-const EventListItem = ({
+const EventListFiberEvent = ({
   fiberId,
   event,
   showTimings,
@@ -97,7 +67,7 @@ const EventListItem = ({
   nextConjunction,
   rootTrigger,
   indirectRootTrigger,
-}: EventListItemProps) => {
+}: EventListFiberEventProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
   const changes = getChanges(event);
   const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
@@ -135,7 +105,7 @@ const EventListItem = ({
           </>
         )}
         <div className="event-list-item__main">
-          <Fiber fiberId={fiberId} op={event.op} />{" "}
+          <Fiber fiberId={fiberId} unmounted={event.op === "unmount"} />{" "}
           {changes !== null && (
             <span
               className={
@@ -153,10 +123,6 @@ const EventListItem = ({
               ))}
             </span>
           )}
-          {(event.op === "effect-create" || event.op === "effect-destroy") &&
-          event.path
-            ? event.path.join(" → ")
-            : ""}
         </div>
       </div>
       {event.op === "update" && expanded && (
@@ -173,4 +139,4 @@ const EventListItem = ({
   );
 };
 
-export default EventListItem;
+export default EventListFiberEvent;

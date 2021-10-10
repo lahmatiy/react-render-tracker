@@ -1,7 +1,8 @@
 import * as React from "react";
-import { FiberEvent } from "../../types";
+import { LinkedEvent } from "../../types";
 import { useEventLog } from "../../utils/events";
-import EventListItem from "./EventListItem";
+import EventListFiberEvent from "./EventListFiberEvent";
+import EventListCommitEvent from "./EvetListCommitEvent";
 
 interface EventListProps {
   rootId: number;
@@ -11,18 +12,22 @@ interface EventListProps {
 
 const SECTION_SIZE = 50;
 const SECTION_MIN_SIZE = 10;
-const EventList = ({ rootId, events, showTimings }: EventListProps) => {
+const EventList = ({
+  rootId: rootFiberId,
+  events,
+  showTimings,
+}: EventListProps) => {
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, events.length - SECTION_SIZE);
     return offset < SECTION_MIN_SIZE ? 0 : offset;
   });
   const eventElementMap = React.useMemo(
-    () => new WeakMap<FiberEvent, JSX.Element>(),
-    [rootId, showTimings]
+    () => new WeakMap<LinkedEvent, JSX.Element>(),
+    [rootFiberId, showTimings]
   );
   const getEventListItem = React.useCallback(
     (
-      fiberEvent: FiberEvent,
+      fiberEvent: LinkedEvent,
       prevConjunction: boolean,
       nextConjunction: boolean,
       rootTrigger: boolean,
@@ -40,24 +45,42 @@ const EventList = ({ rootId, events, showTimings }: EventListProps) => {
         return existing;
       }
 
-      const { fiberId, event } = fiberEvent;
-      const element = (
-        <EventListItem
-          key={event.id}
-          fiberId={fiberId}
-          event={event}
-          showTimings={showTimings}
-          prevConjunction={prevConjunction}
-          nextConjunction={nextConjunction}
-          rootTrigger={rootTrigger}
-          indirectRootTrigger={indirectRootTrigger}
-        />
-      );
+      const { target, targetId, event } = fiberEvent;
+      let element = null;
+
+      switch (target) {
+        case "commit":
+          element = (
+            <EventListCommitEvent
+              key={event.id}
+              commitId={targetId}
+              event={event}
+              showTimings={showTimings}
+              prevConjunction={prevConjunction}
+              nextConjunction={nextConjunction}
+            />
+          );
+          break;
+
+        default:
+          element = (
+            <EventListFiberEvent
+              key={event.id}
+              fiberId={targetId}
+              event={event}
+              showTimings={showTimings}
+              prevConjunction={prevConjunction}
+              nextConjunction={nextConjunction}
+              rootTrigger={rootTrigger}
+              indirectRootTrigger={indirectRootTrigger}
+            />
+          );
+      }
 
       eventElementMap.set(fiberEvent, element);
       return element;
     },
-    [rootId, showTimings]
+    [rootFiberId, showTimings]
   );
 
   if (events === null) {
@@ -68,9 +91,9 @@ const EventList = ({ rootId, events, showTimings }: EventListProps) => {
     return <div className="fiber-event-list__no-events">No events found</div>;
   }
 
-  const fiberEvents = [];
+  const listEvents = [];
   for (let i = startOffset; i < events.length; i++) {
-    const { fiberId, event, trigger, triggeredByOwner } = events[i];
+    const { target, targetId, event, trigger } = events[i];
     const prevCommitId = events[i - 1]?.event?.commitId;
     const nextCommitId = events[i + 1]?.event?.commitId;
     let prevConjunction =
@@ -79,18 +102,16 @@ const EventList = ({ rootId, events, showTimings }: EventListProps) => {
       event.commitId !== -1 && event.commitId === nextCommitId;
     let selfTriggered = false;
 
-    if (fiberId === rootId && event.op === "update") {
+    if (target === "fiber" && targetId === rootFiberId && "trigger" in event) {
       if (trigger !== null) {
-        fiberEvents.push(
-          getEventListItem(trigger, false, true, true, !triggeredByOwner)
-        );
+        listEvents.push(getEventListItem(trigger, false, true, true, true));
         prevConjunction = true;
       } else {
         selfTriggered = true;
       }
     }
 
-    fiberEvents.push(
+    listEvents.push(
       getEventListItem(
         events[i],
         prevConjunction,
@@ -119,7 +140,7 @@ const EventList = ({ rootId, events, showTimings }: EventListProps) => {
           </button>
         </div>
       )}
-      <div className="fiber-event-list">{fiberEvents}</div>
+      <div className="fiber-event-list">{listEvents}</div>
     </>
   );
 };

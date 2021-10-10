@@ -1,5 +1,6 @@
 import {
   Fiber,
+  FiberDispatchCall,
   FiberDispatcherContext,
   ReactContext,
   ReactDispatcherTrapApi,
@@ -42,6 +43,7 @@ export function dispatcherTrap(
   let currentDispatcher: Dispatcher | null = null;
   let currentFiber: Fiber | null = null;
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
+  let currentEffectFiber: Fiber | null = null;
   // let currentFiberRerenderState: RerenderState | null = null;
   const fiberInfo = new WeakMap<Fiber, FiberDispatcherInfo>();
   const knownDispatcher = new Set();
@@ -51,43 +53,48 @@ export function dispatcherTrap(
     { fn: DispatchFn; path: string[] | undefined }
   >();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
+  const dispatchCalls: FiberDispatchCall[] = [];
 
-  // function patchUseEffect(dispatcher: Dispatcher) {
-  //   const orig = dispatcher.useEffect;
+  function patchEffectHook(hookName: string, dispatcher: Dispatcher) {
+    const orig = dispatcher[hookName];
 
-  //   dispatcher.useEffect = function (create: any, deps?: any[]) {
-  //     const fiber = renderer.getCurrentFiber();
-  //     const path = trackHookLocation();
-  //     const wrappedCreate = () => {
-  //       const destroy = create();
-  //       const fiberId = getOrGenerateFiberId(fiber);
+    dispatcher[hookName] = function (create: any, deps?: any[]) {
+      const hookOwnerFiber = currentFiber;
+      // const path = trackHookLocation();
+      const wrappedCreate = () => {
+        currentEffectFiber = hookOwnerFiber;
 
-  //       recordEvent({
-  //         op: "effect-create",
-  //         commitId: -1,
-  //         fiberId,
-  //         path,
-  //       });
+        const destroy = create();
 
-  //       if (typeof destroy === "function") {
-  //         return () => {
-  //           recordEvent({
-  //             op: "effect-destroy",
-  //             commitId: -1,
-  //             fiberId,
-  //             path,
-  //           });
+        currentEffectFiber = null;
+        // const fiberId = getOrGenerateFiberId(fiber);
 
-  //           return destroy();
-  //         };
-  //       }
+        // recordEvent({
+        //   op: "effect-create",
+        //   commitId: -1,
+        //   fiberId,
+        //   path,
+        // });
 
-  //       return destroy;
-  //     };
+        if (typeof destroy === "function") {
+          return () => {
+            // recordEvent({
+            //   op: "effect-destroy",
+            //   commitId: -1,
+            //   fiberId,
+            //   path,
+            // });
 
-  //     orig(wrappedCreate, deps);
-  //   };
-  // }
+            return destroy();
+          };
+        }
+
+        return destroy;
+      };
+
+      return orig(wrappedCreate, deps);
+    };
+  }
 
   function patchStateHook(hookName: string, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
@@ -96,7 +103,8 @@ export function dispatcherTrap(
       const [state, dispatch] = orig(...args);
 
       if (!patchedHookFn.has(dispatch)) {
-        // const hookOwnerFiber = currentFiber;
+        const hookOwnerFiber = currentFiber as Fiber;
+
         patchedHookFn.set(dispatch, {
           path: extractHookPath(),
           fn: (...args: any[]) => {
@@ -111,6 +119,29 @@ export function dispatcherTrap(
             //   };
             // }
             // console.log(hookName, currentFiberRerenderState);
+            // console.log(
+            //   "dispatch",
+            //   hookOwnerFiberId,
+            //   currentFiber && getOrGenerateFiberId(currentFiber),
+            //   window.event?.type
+            // );
+            // console.dir(new Error());
+            // if (
+            //   !currentFiber &&
+            //   !currentEffectFiber &&
+            //   window.event?.type === "message"
+            // ) {
+            //   debugger;
+            // }
+
+            dispatchCalls.push({
+              fiber: hookOwnerFiber,
+              renderFiber: currentFiber,
+              effectFiber: currentEffectFiber,
+              event:
+                (!currentFiber && !currentEffectFiber && window.event?.type) ||
+                null,
+            });
 
             // console.log("dispatch", new Error().stack, ...args);
             return dispatch(...args);
@@ -191,8 +222,9 @@ export function dispatcherTrap(
       patchStateHook("useReducer", dispatcher);
       patchMemoHook("useMemo", dispatcher);
       patchMemoHook("useCallback", dispatcher);
+      patchEffectHook("useEffect", dispatcher);
+      patchEffectHook("useLayoutEffect", dispatcher);
       patchUseContextHook(dispatcher);
-      // patchUseEffect(dispatcher);
     }
 
     return dispatcher;
@@ -262,6 +294,9 @@ export function dispatcherTrap(
       )?.contexts;
 
       return contexts ? [...contexts.values()] : undefined;
+    },
+    flushDispatchCalls() {
+      return dispatchCalls.splice(0);
     },
   };
 }

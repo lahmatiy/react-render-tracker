@@ -5,7 +5,7 @@ import { remoteSubscriber } from "../rempl-subscriber";
 import { useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
 import {
-  FiberEvent,
+  LinkedEvent,
   Message,
   MessageFiber,
   TransferNamedEntryChange,
@@ -46,7 +46,7 @@ export function EventsContextProvider({
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
-  const allFiberEvents = React.useRef<FiberEvent[]>([]).current;
+  const allEvents = React.useRef<LinkedEvent[]>([]).current;
   const eventsSince = React.useRef(0);
   const maps = useFiberMaps();
   const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
@@ -152,7 +152,7 @@ export function EventsContextProvider({
             const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
-              allFiberEvents,
+              allEvents,
               maps
             );
 
@@ -202,8 +202,9 @@ function isShallowEqual(entry: TransferNamedEntryChange) {
 
 export function processEvents(
   events: Message[],
-  allFiberEvents: FiberEvent[],
+  allEvents: LinkedEvent[],
   {
+    commitById,
     fiberById,
     fibersByTypeId,
     fibersByProviderId,
@@ -217,8 +218,22 @@ export function processEvents(
   let unmountCount = 0;
   let updateCount = 0;
 
-  let fiberEventIndex = allFiberEvents.length;
-  allFiberEvents.length += events.length;
+  let fiberEventIndex = allEvents.length;
+  allEvents.length += events.length;
+
+  const linkEvent = <T extends LinkedEvent>(linkedEvent: T): T => {
+    const { event } = linkedEvent;
+    const trigger =
+      ("trigger" in event &&
+        event.trigger !== undefined &&
+        allEvents[event.trigger]) ||
+      null;
+
+    allEvents[fiberEventIndex++] = linkedEvent;
+    linkedEvent.trigger = trigger;
+
+    return linkedEvent;
+  };
 
   for (const event of events) {
     let fiber: MessageFiber;
@@ -300,25 +315,33 @@ export function processEvents(
       //   fiber = fiberById.get(event.fiberId)!;
       //   break;
 
+      case "commit-start":
+        commitById.set(event.commitId, {
+          start: linkEvent({
+            target: "commit",
+            targetId: event.commitId,
+            event,
+            trigger: null,
+          }),
+          finish: null,
+        });
+        continue;
+
       default:
         continue;
     }
 
-    const trigger =
-      (event.op === "update" &&
-        event.trigger !== undefined &&
-        allFiberEvents[event.trigger]) ||
-      null;
-    const fiberEvent: FiberEvent = (allFiberEvents[fiberEventIndex++] = {
-      fiberId: event.fiberId,
-      event,
-      trigger,
-      triggeredByOwner: trigger !== null && trigger.fiberId === fiber.ownerId,
-    });
-
     fiber = {
       ...fiber,
-      events: fiber.events.concat(fiberEvent),
+      events: fiber.events.concat(
+        linkEvent({
+          target: "fiber",
+          targetId: event.fiberId,
+          event,
+          trigger: null,
+          triggeredByOwner: false,
+        })
+      ),
     };
 
     fiberById.set(event.fiberId, fiber);
@@ -347,21 +370,33 @@ export function useEventLog(
   includeUnmounted: boolean,
   includeSubtree: boolean
 ) {
-  const { fiberById, selectTree } = useFiberMaps();
+  const { commitById, fiberById, selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, includeUnmounted);
   const subtree = React.useMemo(
     () => new Map<number, () => void>(),
     [fiberId, includeSubtree, fiberById, tree]
   );
 
-  const compute = React.useCallback((): FiberEvent[] => {
+  const compute = React.useCallback((): LinkedEvent[] => {
+    const commitIds = new Set<number>();
     const events = [];
 
     for (const id of subtree.keys()) {
       const fiber = fiberById.get(id);
 
       if (fiber) {
-        events.push(...fiber.events);
+        for (const linkedEvent of fiber.events) {
+          // commitIds.add(linkedEvent.event.commitId);
+          events.push(linkedEvent);
+        }
+      }
+    }
+
+    for (const commitId of commitIds) {
+      const commit = commitById.get(commitId);
+
+      if (commit) {
+        events.push(commit.start);
       }
     }
 

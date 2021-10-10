@@ -26,6 +26,7 @@ import { simpleValueSerialization } from "./utils/simpleValueSerialization";
 import { objectDiff } from "./utils/objectDiff";
 import { arrayDiff } from "./utils/arrayDiff";
 import { getDisplayName } from "./utils/getDisplayName";
+import { CommitTrigger } from "common-types";
 
 type ContextDescriptor =
   | {
@@ -52,6 +53,7 @@ export function createReactDevtoolsHookHandlers(
     getFiberIdThrows,
     getFiberIdUnsafe,
     getFiberOwnerId,
+    getFiberById,
     removeFiber,
     getElementTypeForFiber,
     getDisplayNameForFiber,
@@ -63,6 +65,7 @@ export function createReactDevtoolsHookHandlers(
   {
     getHookPath,
     getFiberContexts: getDispatcherFiberContexts,
+    flushDispatchCalls,
   }: ReactDispatcherTrapApi,
   recordEvent: RecordEventHandler
 ): ReactDevtoolsHookHandlers {
@@ -460,12 +463,13 @@ export function createReactDevtoolsHookHandlers(
 
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
-    const id = getOrGenerateFiberId(fiber);
+    const fiberId = getOrGenerateFiberId(fiber);
     let transferFiber: TransferFiber;
+    let triggerEventId: number | undefined;
 
     if (isRoot) {
       transferFiber = {
-        id,
+        id: fiberId,
         type: ElementTypeHostRoot,
         typeId: 0,
         key: null,
@@ -479,19 +483,22 @@ export function createReactDevtoolsHookHandlers(
       const { key, type } = fiber;
       const elementType = getElementTypeForFiber(fiber);
       const parentId = parentFiber ? getFiberIdThrows(parentFiber) : 0;
-      const ownerId = getFiberOwnerId(fiber);
+      const ownerIdCandidate = getFiberOwnerId(fiber);
+      const ownerId =
+        ownerIdCandidate !== -1 ? ownerIdCandidate : currentRootId;
 
       const { displayName, hocDisplayNames } = separateDisplayNameAndHOCs(
         getDisplayNameForFiber(fiber),
         elementType
       );
 
+      triggerEventId = commitUpdatedFiberIds.get(ownerId);
       transferFiber = {
-        id,
+        id: fiberId,
         type: elementType,
         typeId: getFiberTypeId(type),
         key: key === null ? null : String(key),
-        ownerId: ownerId !== -1 ? ownerId : currentRootId,
+        ownerId,
         parentId,
         displayName,
         hocDisplayNames,
@@ -499,33 +506,49 @@ export function createReactDevtoolsHookHandlers(
       };
     }
 
-    idToOwnerId.set(id, transferFiber.ownerId);
-    recordEvent({
+    idToOwnerId.set(fiberId, transferFiber.ownerId);
+
+    const eventId = recordEvent({
       op: "mount",
       commitId: currentCommitId,
-      fiberId: id,
+      fiberId,
       fiber: transferFiber,
       ...getDurations(fiber),
+      trigger: triggerEventId,
     });
 
+    commitUpdatedFiberIds.set(fiberId, triggerEventId ?? eventId);
     updateContextsForFiber(fiber);
   }
 
-  function recordUnmount(id: number) {
-    recordEvent({
+  function recordUnmount(fiberId: number) {
+    const ownerId = idToOwnerId.get(fiberId);
+    const triggerEventId = commitUpdatedFiberIds.get(ownerId as number);
+    const eventId = recordEvent({
       op: "unmount",
       commitId: currentCommitId,
-      fiberId: id,
+      fiberId,
+      trigger: triggerEventId,
     });
+
+    commitUpdatedFiberIds.set(fiberId, triggerEventId ?? eventId);
+    idToOwnerId.delete(fiberId);
+    idToClassContexts.delete(fiberId);
+    idToFunctionContexts.delete(fiberId);
+
+    const fiber = getFiberById(fiberId);
+    if (fiber !== null) {
+      untrackFiber(fiber);
+    }
   }
 
-  function recordSubtreeUnmount(id: number) {
-    unmountedFiberIds.delete(id);
-    recordUnmount(id);
+  function recordSubtreeUnmount(fiberId: number) {
+    unmountedFiberIds.delete(fiberId);
+    recordUnmount(fiberId);
 
-    const ownerUnmountedFiberIds = unmountedFiberIdsByOwnerId.get(id);
+    const ownerUnmountedFiberIds = unmountedFiberIdsByOwnerId.get(fiberId);
     if (ownerUnmountedFiberIds !== undefined) {
-      unmountedFiberIdsByOwnerId.delete(id);
+      unmountedFiberIdsByOwnerId.delete(fiberId);
 
       for (const fiberId of ownerUnmountedFiberIds) {
         recordSubtreeUnmount(fiberId);
@@ -533,8 +556,8 @@ export function createReactDevtoolsHookHandlers(
     }
   }
 
-  function recordPreviousSiblingUnmount(id: number) {
-    const siblingUnmountId = unmountedFiberIdBeforeSiblingId.get(id);
+  function recordPreviousSiblingUnmount(fiberId: number) {
+    const siblingUnmountId = unmountedFiberIdBeforeSiblingId.get(fiberId);
 
     if (siblingUnmountId !== undefined) {
       recordPreviousSiblingUnmount(siblingUnmountId);
@@ -542,8 +565,8 @@ export function createReactDevtoolsHookHandlers(
     }
   }
 
-  function recordLastChildUnmounts(id: number) {
-    const lastChildUnmountId = unmountedFiberIdForParentId.get(id);
+  function recordLastChildUnmounts(fiberId: number) {
+    const lastChildUnmountId = unmountedFiberIdForParentId.get(fiberId);
 
     if (lastChildUnmountId !== undefined) {
       recordPreviousSiblingUnmount(lastChildUnmountId);
@@ -603,10 +626,8 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (!fiber._debugNeedsRemount) {
-      idToOwnerId.delete(id);
-      idToClassContexts.delete(id);
-      idToFunctionContexts.delete(id);
-      untrackFiber(fiber);
+      // ???
+      // unmountedFiberIds.delete(id);
     }
   }
 
@@ -898,6 +919,40 @@ export function createReactDevtoolsHookHandlers(
     recordLastChildUnmounts(fiberId);
   }
 
+  function recordCommitStart() {
+    const dispatchCalls = flushDispatchCalls();
+    const triggers: CommitTrigger[] = [];
+
+    for (const call of dispatchCalls) {
+      if (call.effectFiber) {
+        triggers.push({
+          type: "effect",
+          fiberId: getOrGenerateFiberId(call.fiber),
+          relatedFiberId: getOrGenerateFiberId(call.fiber),
+        });
+      } else if (call.event) {
+        triggers.push({
+          type: "event",
+          fiberId: getOrGenerateFiberId(call.fiber),
+          event: call.event,
+        });
+      } else if (!call.renderFiber) {
+        triggers.push({
+          type: "unknown",
+          fiberId: getOrGenerateFiberId(call.fiber),
+        });
+      }
+    }
+
+    const eventId = recordEvent({
+      op: "commit-start",
+      commitId: currentCommitId,
+      triggers: [] && triggers, // FIXME: Don't send triggers for now
+    });
+
+    commitUpdatedFiberIds.set(currentRootId, eventId);
+  }
+
   function handleCommitFiberUnmount(fiber: Fiber) {
     // We can't traverse fibers after unmounting so instead
     // we rely on React telling us about each unmount.
@@ -950,6 +1005,8 @@ export function createReactDevtoolsHookHandlers(
     // TODO: relying on this seems a bit fishy.
     const wasMounted = Boolean(alternate?.memoizedState?.element);
     const isMounted = Boolean(current.memoizedState?.element);
+
+    recordCommitStart();
 
     if (!wasMounted && isMounted) {
       // Mount a new root.

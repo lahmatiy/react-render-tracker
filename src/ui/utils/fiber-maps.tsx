@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MessageFiber } from "../types";
+import { Commit, MessageFiber } from "../types";
 import {
   notifyById,
   subscribeById,
@@ -12,6 +12,7 @@ import {
 import { Tree } from "./tree";
 
 interface FiberMapsContext {
+  commitById: SubscribeMap<number, Commit>;
   fiberById: SubscribeMap<number, MessageFiber>;
   fibersByTypeId: SubsetSplit<number, number>;
   fibersByProviderId: SubsetSplit<number, number>;
@@ -30,6 +31,7 @@ export function FiberMapsContextProvider({
   children: React.ReactNode;
 }) {
   const value: FiberMapsContext = React.useMemo(() => {
+    const commitById = new SubscribeMap<number, Commit>();
     const fiberById = new SubscribeMap<number, MessageFiber>();
     const fibersByTypeId = new SubsetSplit<number, number>();
     const fibersByProviderId = new SubsetSplit<number, number>();
@@ -39,6 +41,7 @@ export function FiberMapsContextProvider({
     const ownerTreeIncludeUnmounted = new Tree();
 
     return {
+      commitById,
       fiberById,
       fibersByTypeId,
       fibersByProviderId,
@@ -179,6 +182,22 @@ export class SubsetSplit<K, V> extends Map<K, Subset<V>> {
     return this.delete(key);
   }
 }
+
+export const useCommit = (commitId: number) => {
+  const { commitById } = useFiberMaps();
+
+  const compute = React.useCallback(
+    () => commitById.get(commitId),
+    [commitById, commitId]
+  );
+
+  const subscribe = React.useCallback(
+    requestRecompute => commitById.subscribe(commitId, requestRecompute),
+    [commitById, commitId]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};
 
 export const useFiber = (fiberId: number) => {
   const { fiberById } = useFiberMaps();

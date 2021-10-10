@@ -386,39 +386,6 @@ export type InspectedElement = {
   rendererVersion: string | null;
 };
 
-export type InspectElementFullData = {
-  id: number;
-  responseID: number;
-  type: "full-data";
-  value: InspectedElement;
-};
-
-export type InspectElementHydratedPath = {
-  id: number;
-  responseID: number;
-  type: "hydrated-path";
-  path: Array<string | number>;
-  value: any;
-};
-
-export type InspectElementNoChange = {
-  id: number;
-  responseID: number;
-  type: "no-change";
-};
-
-export type InspectElementNotFound = {
-  id: number;
-  responseID: number;
-  type: "not-found";
-};
-
-export type InspectedElementPayload =
-  | InspectElementFullData
-  | InspectElementHydratedPath
-  | InspectElementNoChange
-  | InspectElementNotFound;
-
 export type RerenderState = {
   state: MemoizedState;
 };
@@ -429,6 +396,13 @@ export type FiberDispatcherContext = {
     index: number;
     path: string[] | undefined;
   }>;
+};
+
+export type FiberDispatchCall = {
+  fiber: Fiber;
+  renderFiber: Fiber | null;
+  effectFiber: Fiber | null;
+  event: string | null;
 };
 
 export type ReactDevtoolsHookHandlers = {
@@ -450,6 +424,7 @@ export type ReactDispatcherTrapApi = {
   getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   getFiberContexts: (fiber: Fiber) => FiberDispatcherContext[] | undefined;
+  flushDispatchCalls: () => FiberDispatchCall[];
 };
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 
