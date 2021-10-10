@@ -1,5 +1,4 @@
 import * as React from "react";
-import debounce from "lodash.debounce";
 import { useFindMatchContext } from "../../utils/find-match";
 import { Cancel, Search } from "../common/icons";
 import SearchMatchesNav from "./SearchMatchesNav";
