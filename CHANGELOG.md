@@ -1,4 +1,4 @@
-## next
+## 0.5.0 (October 10, 2021)
 
 - Added short info block for selected fiber
 - Added an iteration over fibers of the same type as selected fiber on fiber info card
