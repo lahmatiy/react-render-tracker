@@ -4,38 +4,6 @@
   line-height: 14px;
 }
 
-.fiber-info__header {
-  color: #444;
-  font-size: 14px;
-  line-height: 16px;
-}
-.fiber-info__header-type-badge {
-  display: inline-block;
-  padding: 4px 4px 3px;
-  margin-top: -3px;
-  margin-left: -3px;
-  margin-bottom: 3px;
-  border-radius: 3px;
-  font-size: 9px;
-  line-height: 10px;
-  text-transform: uppercase;
-  background-color: #d9ecd1;
-  color: #88a06f;
-}
-.fiber-info__header-notes {
-  margin-top: 1px;
-  font-size: 10px;
-  line-height: 12px;
-  color: #bbb;
-}
-.fiber-info__header-notes .details-fiber-link__name {
-  color: #999;
-  text-decoration-color: #9995;
-}
-.fiber-info__header-notes .fiber-id {
-  margin-left: 3px;
-}
-
 .fiber-info-section {
   margin: 8px 0 0 8px;
 }
@@ -63,38 +31,4 @@
 .fiber-info-fiber-context__no-provider::before {
   content: " – ";
   color: #ccc;
-}
-
-.fiber-info-instance-iterator {
-  margin-top: -2px;
-  margin-right: -4px;
-  float: right;
-  color: #999;
-  display: flex;
-  align-items: center;
-}
-.fiber-info-instance-iterator__buttons {
-  margin-left: 6px;
-  padding-left: 2px;
-  border-left: 1px solid #ccc;
-}
-.fiber-info-instance-iterator__button {
-  vertical-align: middle;
-  padding: 2px 2px;
-  margin-top: -2px;
-  background: none;
-  border: none;
-  color: #666;
-}
-.fiber-info-instance-iterator__button[disabled] {
-  color: #ccc;
-}
-.fiber-info-instance-iterator__button:not([disabled]):hover {
-  cursor: pointer;
-  color: #222;
-}
-.fiber-info-instance-iterator__button svg {
-  vertical-align: middle;
-  height: 12px;
-  margin: -2px 0 0;
 }

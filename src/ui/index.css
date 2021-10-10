@@ -6,6 +6,7 @@
 @import url("./components/common/FiberKey.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/FiberInfo.css");
+@import url("./components/details/FiberInfoHeader.css");
 @import url("./components/details/FiberLink.css");
 @import url("./components/details/EventList.css");
 @import url("./components/details/EventListFiberEvent.css");

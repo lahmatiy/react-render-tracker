@@ -2,7 +2,7 @@ import * as React from "react";
 import { LinkedEvent } from "../../types";
 import { useEventLog } from "../../utils/events";
 import EventListFiberEvent from "./EventListFiberEvent";
-import EventListCommitEvent from "./EvetListCommitEvent";
+import EventListCommitEvent from "./EventListCommitEvent";
 
 interface EventListProps {
   rootId: number;

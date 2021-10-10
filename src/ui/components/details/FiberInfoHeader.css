@@ -1,0 +1,90 @@
+.fiber-info-header {
+  color: #444;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.fiber-info-header-prelude {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px 8px;
+  margin-top: -2px;
+  margin-left: -3px;
+  margin-bottom: 2px;
+}
+.fiber-info-header-prelude__content {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  white-space: nowrap;
+}
+.fiber-info-header-type-badge {
+  display: inline-block;
+  padding: 4px 4px 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+  line-height: 10px;
+  text-transform: uppercase;
+  background-color: #eee;
+  color: #888;
+}
+.fiber-info-header-type-badge[data-type="type"] {
+  background-color: #d9ecd1;
+  color: #88a06f;
+}
+
+.fiber-info-header-notes {
+  margin-top: 1px;
+  font-size: 10px;
+  line-height: 12px;
+  color: #bbb;
+}
+.fiber-info-header-notes .details-fiber-link__name {
+  color: #999;
+  text-decoration-color: #9995;
+}
+.fiber-info-header-notes .fiber-id {
+  margin-left: 3px;
+}
+
+.fiber-info-instance-iterator {
+  margin-top: 0;
+  margin-right: -4px;
+  float: right;
+  color: #999;
+  display: flex;
+  align-items: center;
+}
+.fiber-info-instance-iterator__label {
+  white-space: nowrap;
+}
+.fiber-info-instance-iterator__buttons {
+  margin-left: 6px;
+  padding-left: 2px;
+  border-left: 1px solid #ccc;
+}
+.fiber-info-instance-iterator__button {
+  vertical-align: middle;
+  padding: 2px 2px;
+  margin-top: -2px;
+  background: none;
+  border: none;
+  color: #666;
+}
+.fiber-info-instance-iterator__button[disabled] {
+  color: #ccc;
+}
+.fiber-info-instance-iterator__button:not([disabled]):hover {
+  cursor: pointer;
+  color: #222;
+}
+.fiber-info-instance-iterator__button svg {
+  vertical-align: middle;
+  height: 12px;
+  margin: -2px 0 0;
+}
