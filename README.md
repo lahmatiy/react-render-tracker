@@ -10,7 +10,7 @@ React Render Tracker (RRT) presents component’s tree state over the time and a
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
 
-![Demo](https://user-images.githubusercontent.com/270491/134596102-9466d10e-30c0-4412-9e9d-562d5eb30695.png)
+![Demo](https://user-images.githubusercontent.com/270491/136706759-1a36ab59-cbde-4d30-878f-3e5f83b83312.png)
 
 Features:
 
