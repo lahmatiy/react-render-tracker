@@ -1,11 +1,16 @@
 ## next
 
+- Added short info block for selected fiber
+- Added an iteration over fibers of the same type as selected fiber on fiber info card
+- Added pin subtree feature (by double click on a fiber tree leaf or pin button on fiber info block in sidebar)
+- Added auto scrolling to viewport for selected leaf in fiber tree's if needed
+- Added a selection history navigation
+- Added auto selection for a fiber on search
+- Added displaying of the updated component that caused mount or unmount
+- Improved UI responsiveness and performance for app's with thousands of fibers
+- Improved markup of fiber's tree and event log
 - Fixed object diff rest changes notes
 - Fixed context hook paths duplication in case of re-renders
-- Added pin subtree feature by double click on fiber tree leaf
-- Added auto scrolling to viewport for fiber tree's selected leaf if needed
-- Added an iteration over instances of the same type as selected fiber on fiber info card
-- Added a selection history navigation
 
 ## 0.4.0 (September 23, 2021)
 
