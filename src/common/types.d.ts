@@ -64,48 +64,71 @@ declare module "common-types" {
     context?: TransferContextChange[];
     state?: TransferNamedEntryChange[];
   };
+  export type CommitTrigger = {
+    type: "event" | "effect" | "unknown";
+    fiberId: number;
+    relatedFiberId?: number;
+    event?: string;
+  };
 
   export interface BaseMessage {
     op: string;
     id: number;
     timestamp: number;
+  }
+
+  export interface CommitStart extends BaseMessage {
+    op: "commit-start";
     commitId: number;
-    fiberId: number;
+    triggers: CommitTrigger[];
   }
 
   export interface MountFiberMessage extends BaseMessage {
     op: "mount";
+    commitId: number;
+    fiberId: number;
     fiber: TransferFiber;
     totalTime: number;
     selfTime: number;
-  }
-
-  export interface UnmountFiberMessage extends BaseMessage {
-    op: "unmount";
+    trigger?: number;
   }
 
   export interface UpdateFiberMessage extends BaseMessage {
     op: "update";
+    commitId: number;
+    fiberId: number;
     totalTime: number;
     selfTime: number;
     changes: TransferFiberChanges | null;
     trigger?: number;
   }
 
+  export interface UnmountFiberMessage extends BaseMessage {
+    op: "unmount";
+    commitId: number;
+    fiberId: number;
+    trigger?: number;
+  }
+
   export interface CreateEffectFiberMessage extends BaseMessage {
     op: "effect-create";
+    commitId: number;
+    fiberId: number;
     path?: string[];
   }
 
   export interface DestroyEffectFiberMessage extends BaseMessage {
     op: "effect-destroy";
+    commitId: number;
+    fiberId: number;
     path?: string[];
   }
 
   export type Message =
+    | CommitStart
     | MountFiberMessage
-    | UnmountFiberMessage
     | UpdateFiberMessage
+    | UnmountFiberMessage
     | CreateEffectFiberMessage
     | DestroyEffectFiberMessage;
 }
