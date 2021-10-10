@@ -1,21 +1,24 @@
 .button-toggle {
-  display: block;
-  background: none;
-  border: none;
   padding: 6px;
+  background: none;
+  background-clip: padding-box;
+  border: none;
+  border-radius: 3px;
   cursor: pointer;
   line-height: 0;
+  color: #aaa;
+  transition: 0.2s;
+}
+.button-toggle.active {
+  color: #555;
+  background-color: #e8e8e8;
+}
+.button-toggle:hover {
+  color: #222;
 }
 
 .button-toggle svg {
   height: 16px;
   width: 16px;
   vertical-align: middle;
-  color: #aaa;
-  transition: 0.2s;
-}
-
-.button-toggle.active svg,
-.button-toggle:hover svg {
-  color: #3fc1e2;
 }

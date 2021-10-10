@@ -37,38 +37,40 @@ const Toolbar = ({
         groupByParent={groupByParent}
         showUnmounted={showUnmounted}
       />
-      <ButtonToggle
-        icon={ToggleGrouping}
-        isActive={groupByParent}
-        onChange={onGroupingChange}
-        tooltip={
-          groupByParent
-            ? "Switch to owner-ownee relationship view in component's tree"
-            : "Switch to parent-child relationship view in component's tree"
-        }
-      />
-      <ButtonToggle
-        icon={ToggleUnmounted}
-        isActive={showUnmounted}
-        onChange={onShowUnmounted}
-        tooltip={
-          showUnmounted
-            ? "Hide unmounted components"
-            : "Show unmounted components"
-        }
-      />
-      <ButtonToggle
-        icon={ToggleTimings}
-        isActive={showTimings}
-        onChange={onShowTimings}
-        tooltip={showTimings ? "Hide timings" : "Show timings"}
-      />
-      <ButtonToggle
-        icon={ClearEventLog}
-        isActive={false}
-        onChange={clearAllEvents}
-        tooltip={"Clear event log"}
-      />
+      <div className="toolbar__buttons">
+        <ButtonToggle
+          icon={ToggleGrouping}
+          isActive={groupByParent}
+          onChange={onGroupingChange}
+          tooltip={
+            groupByParent
+              ? "Switch to owner-ownee relationship view in component's tree"
+              : "Switch to parent-child relationship view in component's tree"
+          }
+        />
+        <ButtonToggle
+          icon={ToggleUnmounted}
+          isActive={showUnmounted}
+          onChange={onShowUnmounted}
+          tooltip={
+            showUnmounted
+              ? "Hide unmounted components"
+              : "Show unmounted components"
+          }
+        />
+        <ButtonToggle
+          icon={ToggleTimings}
+          isActive={showTimings}
+          onChange={onShowTimings}
+          tooltip={showTimings ? "Hide timings" : "Show timings"}
+        />
+        <ButtonToggle
+          icon={ClearEventLog}
+          isActive={false}
+          onChange={clearAllEvents}
+          tooltip={"Clear event log"}
+        />
+      </div>
     </div>
   );
 };
