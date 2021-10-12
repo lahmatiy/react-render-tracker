@@ -29,6 +29,7 @@ const TreeLeafCaptionContent = ({
     hocDisplayNames,
     contexts,
     updatesCount,
+    bailoutUpdatesCount,
     warnings,
   } = fiber;
 
@@ -60,7 +61,7 @@ const TreeLeafCaptionContent = ({
             {updatesCount}
           </span>
         )}
-        {null && Array.isArray(contexts) && (
+        {Array.isArray(contexts) && (
           <span
             className="tree-leaf-caption__context-count"
             title="Number of used contexts"

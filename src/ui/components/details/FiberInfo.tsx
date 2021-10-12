@@ -105,14 +105,12 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
       />
 
       {false && <FiberInfoSection header="Timing"></FiberInfoSection>}
-      {null && fiber.contexts && (
+      {fiber.contexts && (
         <FiberInfoSection header="Contexts" emptyText="no contexts">
           <FiberContexts fiber={fiber} />
         </FiberInfoSection>
       )}
-      {null && fiber.type === ElementTypeProvider && (
-        <ConsumersSection fiber={fiber} />
-      )}
+      {fiber.type === ElementTypeProvider && <ConsumersSection fiber={fiber} />}
       {false && <MemoizationSection />}
     </div>
   );
