@@ -34,6 +34,7 @@
 }
 
 .tree-leaf-caption__update-count,
+.tree-leaf-caption__update-bailout-count,
 .tree-leaf-caption__context-count {
   display: inline-block;
   min-width: 16px;
@@ -47,6 +48,10 @@
   font-size: 10px;
   line-height: 10px;
   text-align: center;
+}
+.tree-leaf-caption__update-bailout-count {
+  background-color: #ffbdbd;
+  color: #e1373e;
 }
 .tree-leaf-caption__context-count {
   background-color: #eadcea;

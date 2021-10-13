@@ -61,6 +61,14 @@ const TreeLeafCaptionContent = ({
             {updatesCount}
           </span>
         )}
+        {bailoutUpdatesCount > 0 && (
+          <span
+            className="tree-leaf-caption__update-bailout-count"
+            title="Number of update bailouts"
+          >
+            {bailoutUpdatesCount}
+          </span>
+        )}
         {Array.isArray(contexts) && (
           <span
             className="tree-leaf-caption__context-count"

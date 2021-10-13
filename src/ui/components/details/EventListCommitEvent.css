@@ -1,0 +1,43 @@
+.event-list-item[data-type="commit"] .event-list-item__main {
+  display: block;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.event-list-item[data-type="commit"] .event-list-item__dots {
+  --size: 7px;
+}
+
+.event-list-item__commit-name {
+  position: relative;
+  display: inline-block;
+  padding: 0px 4px;
+  margin: 4px 0 4px -21px;
+  font-size: 11px;
+  color: #999;
+  background: white;
+}
+.event-list-item__commit-triggers {
+  margin-left: 5px;
+  color: #aaa;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.event-list-item__commit-details {
+  position: relative;
+  margin: 2px 4px 4px 34px;
+  font-size: 12px;
+}
+.event-list-item__commit-details::before {
+  content: "";
+  position: absolute;
+  display: block;
+  top: -2px;
+  bottom: -4px;
+  left: -12px;
+  width: 3px;
+  background-color: #e8e8e8;
+  background-clip: padding-box;
+  border: solid rgba(255, 255, 255, 0.65);
+  border-width: 0 1px;
+}

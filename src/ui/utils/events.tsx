@@ -250,6 +250,7 @@ export function processEvents(
           mounted: true,
           events: [],
           updatesCount: 0,
+          bailoutUpdatesCount: 0,
           warnings: 0,
           selfTime: event.selfTime,
           totalTime: event.totalTime,
@@ -308,6 +309,14 @@ export function processEvents(
             ),
         };
 
+        break;
+
+      case "update-bailout":
+        fiber = fiberById.get(event.fiberId) as MessageFiber;
+        fiber = {
+          ...fiber,
+          bailoutUpdatesCount: fiber.bailoutUpdatesCount + 1,
+        };
         break;
 
       // case "effect-create":
@@ -386,7 +395,7 @@ export function useEventLog(
 
       if (fiber) {
         for (const linkedEvent of fiber.events) {
-          // commitIds.add(linkedEvent.event.commitId);
+          commitIds.add(linkedEvent.event.commitId);
           events.push(linkedEvent);
         }
       }

@@ -1,0 +1,23 @@
+.details-fiber__name {
+  display: inline-block;
+  color: #4f96d5;
+}
+
+.details-fiber__name_link {
+  text-decoration: underline;
+  text-decoration-color: #0279c955;
+  cursor: pointer;
+}
+.details-fiber__name_link:hover {
+  color: #0279c9;
+}
+.details-fiber__name_unmounted {
+  color: #aaa;
+  text-decoration: line-through;
+  text-decoration-color: #888;
+}
+
+.details-fiber .fiber-key {
+  position: relative;
+  top: -1px;
+}

@@ -162,7 +162,7 @@ export type OldDependencies = {
 type Lanes = number;
 type Flags = number;
 
-export type FiberRoot = any;
+export type FiberRoot = { current: Fiber };
 export type MemoizedState = any;
 export interface Fiber {
   // Tag identifying the type of fiber.
@@ -399,14 +399,16 @@ export type FiberDispatcherContext = {
 };
 
 export type FiberDispatchCall = {
+  root: FiberRoot;
   fiber: Fiber;
   renderFiber: Fiber | null;
   effectFiber: Fiber | null;
   event: string | null;
+  stack?: string;
 };
 
 export type ReactDevtoolsHookHandlers = {
-  handleCommitFiberRoot: (fiber: Fiber, commitPriority?: number) => void;
+  handleCommitFiberRoot: (fiber: FiberRoot, commitPriority?: number) => void;
   handleCommitFiberUnmount: (fiber: Fiber) => void;
   handlePostCommitFiberRoot: (fiber: Fiber) => void;
 };
@@ -424,7 +426,7 @@ export type ReactDispatcherTrapApi = {
   getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   getFiberContexts: (fiber: Fiber) => FiberDispatcherContext[] | undefined;
-  flushDispatchCalls: () => FiberDispatchCall[];
+  flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 

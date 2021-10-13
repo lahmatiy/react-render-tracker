@@ -19,14 +19,14 @@ export const Fiber = ({
   }
 
   return (
-    <>
+    <span className="details-fiber">
       <span
         className={
-          "event-list-item__name" +
-          (unmounted ? " event-list-item__name_unmounted" : "") +
+          "details-fiber__name" +
+          (unmounted ? " details-fiber__name_unmounted" : "") +
           (selected
-            ? " event-list-item__name_selected"
-            : " event-list-item__name_link")
+            ? " details-fiber__name_selected"
+            : " details-fiber__name_link")
         }
         onClick={!selected ? () => select(fiberId) : undefined}
       >
@@ -34,6 +34,6 @@ export const Fiber = ({
       </span>
       {fiber.key !== null && <FiberKey fiber={fiber} />}
       <FiberId id={fiber.id} />
-    </>
+    </span>
   );
 };

@@ -104,7 +104,9 @@ const EventList = ({
 
     if (target === "fiber" && targetId === rootFiberId && "trigger" in event) {
       if (trigger !== null) {
-        listEvents.push(getEventListItem(trigger, false, true, true, true));
+        listEvents.push(
+          getEventListItem(trigger, prevConjunction, true, true, true)
+        );
         prevConjunction = true;
       } else {
         selfTriggered = true;
