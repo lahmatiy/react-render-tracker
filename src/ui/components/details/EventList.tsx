@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LinkedEvent } from "../../types";
+import { LinkedEvent, SourceCommitEvent, SourceFiberEvent } from "../../types";
 import { useEventLog } from "../../utils/events";
 import EventListFiberEvent from "./EventListFiberEvent";
 import EventListCommitEvent from "./EventListCommitEvent";
@@ -30,7 +30,6 @@ const EventList = ({
       fiberEvent: LinkedEvent,
       prevConjunction: boolean,
       nextConjunction: boolean,
-      rootTrigger: boolean,
       indirectRootTrigger: boolean
     ) => {
       const existing = eventElementMap.get(fiberEvent);
@@ -39,7 +38,6 @@ const EventList = ({
         existing &&
         existing.props.prevConjunction === prevConjunction &&
         existing.props.nextConjunction === nextConjunction &&
-        existing.props.rootTrigger === rootTrigger &&
         existing.props.indirectRootTrigger === indirectRootTrigger
       ) {
         return existing;
@@ -54,7 +52,7 @@ const EventList = ({
             <EventListCommitEvent
               key={event.id}
               commitId={targetId}
-              event={event}
+              event={event as SourceCommitEvent}
               showTimings={showTimings}
               prevConjunction={prevConjunction}
               nextConjunction={nextConjunction}
@@ -67,11 +65,10 @@ const EventList = ({
             <EventListFiberEvent
               key={event.id}
               fiberId={targetId}
-              event={event}
+              event={event as SourceFiberEvent}
               showTimings={showTimings}
               prevConjunction={prevConjunction}
               nextConjunction={nextConjunction}
-              rootTrigger={rootTrigger}
               indirectRootTrigger={indirectRootTrigger}
             />
           );
@@ -100,27 +97,16 @@ const EventList = ({
       event.commitId !== -1 && event.commitId === prevCommitId;
     const nextConjunction =
       event.commitId !== -1 && event.commitId === nextCommitId;
-    let selfTriggered = false;
 
     if (target === "fiber" && targetId === rootFiberId && "trigger" in event) {
       if (trigger !== null) {
-        listEvents.push(
-          getEventListItem(trigger, prevConjunction, true, true, true)
-        );
+        listEvents.push(getEventListItem(trigger, prevConjunction, true, true));
         prevConjunction = true;
-      } else {
-        selfTriggered = true;
       }
     }
 
     listEvents.push(
-      getEventListItem(
-        events[i],
-        prevConjunction,
-        nextConjunction,
-        selfTriggered,
-        false
-      )
+      getEventListItem(events[i], prevConjunction, nextConjunction, false)
     );
   }
 
@@ -142,7 +128,14 @@ const EventList = ({
           </button>
         </div>
       )}
-      <div className="fiber-event-list">{listEvents}</div>
+      <div
+        className={
+          "fiber-event-list" +
+          (showTimings ? " fiber-event-list_show-timings" : "")
+        }
+      >
+        {listEvents}
+      </div>
     </>
   );
 };

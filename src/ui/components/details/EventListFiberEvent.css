@@ -1,15 +1,17 @@
 .event-list-item[data-type="fiber"] .event-list-item__main {
-  gap: 4px;
-  height: 23px;
-  padding: 0 4px 0 0;
+  gap: 3px 8px;
+  padding: 0 4px 2px 0;
   font-size: 12px;
   line-height: 15px;
   align-items: center;
 }
 
+.event-list-item[data-type="fiber"] .details-fiber {
+  padding: 4px 0 0;
+}
 .event-list-item[data-type="fiber"] .details-fiber__name_selected {
-  padding: 2px 8px 2px 23px;
-  margin: 0 -2px 0px -24px;
+  padding: 2px 8px 2px 25px;
+  margin: -3px -2px -3px -26px;
   border: 1px solid rgba(255, 255, 255, 0.65);
   border-radius: 10px;
   background-color: var(--selected-fiber-bg-color, #eee);
@@ -20,11 +22,14 @@
 .event-list-item__fiber-changes {
   display: inline-block;
   padding: 1px 6px 1px 2px;
+  margin-right: 2px;
+  margin-top: 2px;
   border: 1px solid transparent;
   border-radius: 3px;
   background-color: #f0f0f0;
   color: #999;
   cursor: pointer;
+  user-select: none;
 }
 .event-list-item__fiber-changes.expanded {
   position: relative;
@@ -32,8 +37,8 @@
   border-color: #d0d0d0;
   border-bottom-color: transparent;
   background-color: #f7f7f7;
-  margin-top: -1px;
-  margin-bottom: -3px;
+  margin-top: 1px;
+  margin-bottom: -4px;
   padding-top: 2px;
   padding-bottom: 5px;
   border-bottom-left-radius: 0;
@@ -82,6 +87,7 @@
 }
 .event-list-item__fiber-changes-reason {
   color: #555;
+  margin-left: 1px;
 }
 .event-list-item__fiber-changes-reason
   + .event-list-item__fiber-changes-reason::before {

@@ -49,5 +49,8 @@
 .details__event-list {
   flex: 1;
   overflow: auto;
+  overflow-y: scroll;
   overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
 }

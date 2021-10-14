@@ -84,6 +84,7 @@ export function createReactDevtoolsHookHandlers(
   const idToClassContexts = new Map<number, ContextDescriptor>();
   const idToFunctionContexts = new Map<number, HookContexts>();
   const commitUpdatedFiberIds = new Map<number, number | undefined>();
+  const commitTriggeredFibers = new Set();
   const commitContext = new Map<
     ReactContext<any>,
     {
@@ -97,6 +98,7 @@ export function createReactDevtoolsHookHandlers(
   let typeIdSeed = 1;
 
   const fiberTypeId = new WeakMap<any, number>();
+  const fiberRootId = new WeakMap<any, number>();
   const fiberTypeIdNonWeakRef = new Map<symbol, Record<string, any>>();
   const unmountedFiberIds = new Set<number>();
   const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
@@ -508,15 +510,18 @@ export function createReactDevtoolsHookHandlers(
 
     idToOwnerId.set(fiberId, transferFiber.ownerId);
 
+    const { selfTime, totalTime } = getDurations(fiber);
     const eventId = recordEvent({
       op: "mount",
       commitId: currentCommitId,
       fiberId,
       fiber: transferFiber,
-      ...getDurations(fiber),
+      selfTime,
+      totalTime,
       trigger: triggerEventId,
     });
 
+    fiberRootId.set(fiber, currentRootId);
     commitUpdatedFiberIds.set(fiberId, triggerEventId ?? eventId);
     updateContextsForFiber(fiber);
   }
@@ -777,17 +782,33 @@ export function createReactDevtoolsHookHandlers(
         fiber.memoizedProps !== alternate.memoizedProps
           ? commitUpdatedFiberIds.get(ownerId)
           : undefined;
+      const { selfTime, totalTime } = getDurations(fiber);
       const eventId = recordEvent({
         op: "update",
         commitId: currentCommitId,
         fiberId,
-        ...getDurations(fiber),
+        selfTime,
+        totalTime,
         changes: getComponentChange(alternate, fiber),
         trigger: triggerEventId,
       });
 
       commitUpdatedFiberIds.set(fiberId, triggerEventId || eventId);
       updateContextsForFiber(fiber);
+    } else if (alternate !== null && commitTriggeredFibers.has(fiber)) {
+      const fiberId = getFiberIdThrows(fiber);
+      const ownerId = getFiberOwnerId(fiber);
+      const triggerEventId =
+        fiber.memoizedProps !== alternate.memoizedProps
+          ? commitUpdatedFiberIds.get(ownerId)
+          : undefined;
+
+      recordEvent({
+        op: "update-bailout",
+        commitId: currentCommitId,
+        fiberId,
+        trigger: triggerEventId,
+      });
     }
   }
 
@@ -919,27 +940,41 @@ export function createReactDevtoolsHookHandlers(
     recordLastChildUnmounts(fiberId);
   }
 
-  function recordCommitStart() {
-    const dispatchCalls = flushDispatchCalls();
+  function recordCommitStart(root: FiberRoot, initialMount: boolean) {
+    const dispatchCalls = flushDispatchCalls(root);
     const triggers: CommitTrigger[] = [];
 
+    if (initialMount) {
+      triggers.push({
+        type: "initial-mount",
+        fiberId: currentRootId,
+      });
+    }
+
     for (const call of dispatchCalls) {
+      const stack = call.stack?.replace(/\n\s+at /g, "\n").replace(/^.+\n/, "");
+
+      commitTriggeredFibers.add(call.fiber);
+
       if (call.effectFiber) {
         triggers.push({
           type: "effect",
           fiberId: getOrGenerateFiberId(call.fiber),
-          relatedFiberId: getOrGenerateFiberId(call.fiber),
+          relatedFiberId: getOrGenerateFiberId(call.effectFiber),
+          stack,
         });
       } else if (call.event) {
         triggers.push({
           type: "event",
           fiberId: getOrGenerateFiberId(call.fiber),
           event: call.event,
+          stack,
         });
       } else if (!call.renderFiber) {
         triggers.push({
           type: "unknown",
           fiberId: getOrGenerateFiberId(call.fiber),
+          stack,
         });
       }
     }
@@ -947,7 +982,7 @@ export function createReactDevtoolsHookHandlers(
     const eventId = recordEvent({
       op: "commit-start",
       commitId: currentCommitId,
-      triggers: [] && triggers, // FIXME: Don't send triggers for now
+      triggers, // FIXME: Don't send triggers for now
     });
 
     commitUpdatedFiberIds.set(currentRootId, eventId);
@@ -1003,10 +1038,11 @@ export function createReactDevtoolsHookHandlers(
     // }
 
     // TODO: relying on this seems a bit fishy.
-    const wasMounted = Boolean(alternate?.memoizedState?.element);
+    const wasMounted =
+      alternate !== null && Boolean(alternate.memoizedState?.element);
     const isMounted = Boolean(current.memoizedState?.element);
 
-    recordCommitStart();
+    recordCommitStart(root, !wasMounted && isMounted);
 
     if (!wasMounted && isMounted) {
       // Mount a new root.
@@ -1029,6 +1065,7 @@ export function createReactDevtoolsHookHandlers(
 
     // We're done here
     currentCommitId = -1;
+    commitTriggeredFibers.clear();
     commitUpdatedFiberIds.clear();
     commitContext.clear();
     unmountedFiberIds.clear();

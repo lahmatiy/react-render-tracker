@@ -1,3 +1,21 @@
+.fiber-event-list {
+  flex: 1;
+  position: relative;
+}
+.fiber-event-list_show-timings::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 44px;
+  bottom: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 46px;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  pointer-events: none;
+}
+
 .fiber-event-list__no-events {
   padding: 1em 2ex;
   text-align: center;
@@ -7,7 +25,7 @@
 .fiber-event-list__show-more {
   display: flex;
   gap: 0 2px;
-  padding: 2px 2px 1px;
+  padding: 3px;
 }
 .fiber-event-list__show-more button {
   vertical-align: top;

@@ -128,9 +128,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
 
   // NOTICE Keep in sync with shouldFilterFiber() and other get*ForFiber methods
   function getElementTypeForFiber(fiber: Fiber) {
-    const { type, tag } = fiber;
-
-    switch (tag) {
+    switch (fiber.tag) {
       case ClassComponent:
       case IncompleteClassComponent:
         return ElementTypeClass;
@@ -164,9 +162,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
         return ElementTypeOtherOrUnknown;
 
       default:
-        const typeSymbol = getTypeSymbol(type);
-
-        switch (typeSymbol) {
+        switch (getTypeSymbol(fiber.type)) {
           case PROVIDER_NUMBER:
           case PROVIDER_SYMBOL_STRING:
             return ElementTypeProvider;
@@ -327,6 +323,10 @@ export function createIntegrationCore(renderer: ReactInternals) {
     fiberToId.delete(fiber.alternate as Fiber);
   }
 
+  function isFiberRoot(fiber: Fiber) {
+    return fiber.tag === HostRoot;
+  }
+
   function setRootPseudoKey(id: number, fiber: Fiber) {
     const name = getDisplayNameForRoot(fiber);
     const counter = rootDisplayNameCounter.get(name) || 0;
@@ -372,7 +372,6 @@ export function createIntegrationCore(renderer: ReactInternals) {
       case SimpleMemoComponent:
         // For types that execute user code, we check PerformedWork effect.
         // We don't reflect bailouts (either referential or sCU) in DevTools.
-        // eslint-disable-next-line no-bitwise
         return (getFiberFlags(nextFiber) & PerformedWork) === PerformedWork;
       // Note: ContextConsumer only gets PerformedWork effect in 16.3.3+
       // so it won't get highlighted with React 16.3.0 to 16.3.2.
@@ -400,6 +399,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
     getElementTypeForFiber,
     getDisplayNameForFiber,
     getDisplayNameForRoot,
+    isFiberRoot,
     setRootPseudoKey,
     getRootPseudoKey,
     removeRootPseudoKey,

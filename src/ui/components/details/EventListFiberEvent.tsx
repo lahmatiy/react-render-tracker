@@ -7,6 +7,7 @@ import {
 } from "../../types";
 import { Fiber } from "./Fiber";
 import EventListEntry from "./EventListEntry";
+import { useSelectionState } from "../../utils/selection";
 
 interface EventListFiberEventProps {
   fiberId: number;
@@ -14,7 +15,6 @@ interface EventListFiberEventProps {
   showTimings: boolean;
   prevConjunction: boolean;
   nextConjunction: boolean;
-  rootTrigger?: boolean;
   indirectRootTrigger?: boolean;
 }
 
@@ -56,10 +56,10 @@ const EventListFiberEvent = ({
   showTimings,
   prevConjunction,
   nextConjunction,
-  rootTrigger,
   indirectRootTrigger,
 }: EventListFiberEventProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
+  const { selected } = useSelectionState(fiberId);
   const changes = getChanges(event);
   const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
   const details = event.op === "update" && expanded && (
@@ -74,7 +74,7 @@ const EventListFiberEvent = ({
     <EventListEntry
       op={event.op}
       type="fiber"
-      details={details}
+      selected={selected}
       showTimings={showTimings}
       selfTime={
         event.op === "mount" || event.op === "update"
@@ -88,9 +88,9 @@ const EventListFiberEvent = ({
       }
       prevConjunction={prevConjunction}
       nextConjunction={nextConjunction}
-      rootTrigger={rootTrigger}
       updateTrigger={event.op === "update" && isUpdateTrigger}
       indirectRootTrigger={indirectRootTrigger}
+      details={details}
     >
       <Fiber fiberId={fiberId} unmounted={event.op === "unmount"} />{" "}
       {changes !== null && (

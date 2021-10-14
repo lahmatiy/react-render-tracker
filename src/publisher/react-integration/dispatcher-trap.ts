@@ -2,11 +2,13 @@ import {
   Fiber,
   FiberDispatchCall,
   FiberDispatcherContext,
+  FiberRoot,
   ReactContext,
   ReactDispatcherTrapApi,
   ReactInternals,
   RerenderState,
 } from "../types";
+import { CoreApi } from "./core";
 
 type Dispatcher = any;
 type DispatchFn = (state: any) => any;
@@ -38,14 +40,18 @@ function extractHookPath() {
 }
 
 export function dispatcherTrap(
-  renderer: ReactInternals
+  renderer: ReactInternals,
+  { isFiberRoot }: CoreApi
 ): ReactDispatcherTrapApi {
   let currentDispatcher: Dispatcher | null = null;
   let currentFiber: Fiber | null = null;
+  let currentRoot: FiberRoot | null = null;
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   let currentEffectFiber: Fiber | null = null;
+  let dispatchCalls: FiberDispatchCall[] = [];
   // let currentFiberRerenderState: RerenderState | null = null;
   const fiberInfo = new WeakMap<Fiber, FiberDispatcherInfo>();
+  const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const knownDispatcher = new Set();
   const ignoreDispatcherTransition = new Set();
   const patchedHookFn = new WeakMap<
@@ -53,7 +59,6 @@ export function dispatcherTrap(
     { fn: DispatchFn; path: string[] | undefined }
   >();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
-  const dispatchCalls: FiberDispatchCall[] = [];
 
   function patchEffectHook(hookName: string, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
@@ -101,9 +106,11 @@ export function dispatcherTrap(
 
     dispatcher[hookName] = (...args: any[]) => {
       const [state, dispatch] = orig(...args);
+      dispatch.current = state;
 
       if (!patchedHookFn.has(dispatch)) {
         const hookOwnerFiber = currentFiber as Fiber;
+        const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
         patchedHookFn.set(dispatch, {
           path: extractHookPath(),
@@ -134,13 +141,20 @@ export function dispatcherTrap(
             //   debugger;
             // }
 
+            // if (hookOwnerFiber?.type.name === "A") {
+            //   console.log("dispatch", dispatch.current, ...args);
+            //   // debugger;
+            // }
+
             dispatchCalls.push({
+              root: hookOwnerFiberRoot,
               fiber: hookOwnerFiber,
               renderFiber: currentFiber,
               effectFiber: currentEffectFiber,
               event:
                 (!currentFiber && !currentEffectFiber && window.event?.type) ||
                 null,
+              stack: String(new Error().stack),
             });
 
             // console.log("dispatch", new Error().stack, ...args);
@@ -256,6 +270,57 @@ export function dispatcherTrap(
               })
             );
           }
+
+          // if (currentFiber.alternate !== null) {
+          //   currentFiber.alternate.expirationTime = 0;
+          // }
+
+          // if (currentFiber.type?.name === "A") {
+          //   if (
+          //     "value" in Object.getOwnPropertyDescriptor(currentFiber, "lanes")
+          //   ) {
+          //     let lanes = currentFiber.lanes;
+          //     Object.defineProperty(currentFiber, "lanes", {
+          //       get() {
+          //         return lanes;
+          //       },
+          //       set(value) {
+          //         console.log("Set lanes", lanes, "->", value);
+          //         lanes = value;
+          //       },
+          //     });
+          //   }
+          // }
+
+          currentRoot =
+            fiberRoot.get(currentFiber) ||
+            (currentFiber.alternate !== null &&
+              fiberRoot.get(currentFiber.alternate)) ||
+            null;
+
+          if (currentRoot === null) {
+            let cursor = currentFiber.return;
+
+            while (cursor !== null) {
+              const root = fiberRoot.get(currentFiber);
+
+              if (root !== undefined) {
+                currentRoot = root;
+                break;
+              }
+
+              if (isFiberRoot(cursor)) {
+                currentRoot = cursor.stateNode as FiberRoot;
+                break;
+              }
+
+              cursor = cursor.return;
+            }
+
+            if (currentRoot !== null) {
+              fiberRoot.set(currentFiber, currentRoot);
+            }
+          }
         }
 
         // currentFiberRerenderState = null;
@@ -295,8 +360,30 @@ export function dispatcherTrap(
 
       return contexts ? [...contexts.values()] : undefined;
     },
-    flushDispatchCalls() {
-      return dispatchCalls.splice(0);
+    flushDispatchCalls(root: FiberRoot) {
+      const accepted = [];
+      const rejected = [];
+
+      for (const dispatchCall of dispatchCalls) {
+        if (dispatchCall.root === root) {
+          accepted.push(dispatchCall);
+        } else {
+          rejected.push(dispatchCall);
+        }
+      }
+
+      dispatchCalls = rejected;
+      // if (true || !accepted.length) {
+      //   console.log({
+      //     dispatchCalls: dispatchCalls.slice(),
+      //     accepted: accepted.slice(),
+      //     acceptedT: accepted.map(f => f.fiber.type),
+      //     acceptedT2: accepted.map(f => f.fiber.lanes),
+      //     root: root.containerInfo?.previousSibling?.innerHTML,
+      //   });
+      // }
+
+      return accepted;
     },
   };
 }

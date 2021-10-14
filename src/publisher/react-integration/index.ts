@@ -9,7 +9,7 @@ export function attach(
   recordEvent: RecordEventHandler
 ): ReactIntegration {
   const integrationCore = createIntegrationCore(renderer);
-  const dispatcherApi = dispatcherTrap(renderer);
+  const dispatcherApi = dispatcherTrap(renderer, integrationCore);
 
   return {
     ...createReactDevtoolsHookHandlers(

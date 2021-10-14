@@ -65,10 +65,11 @@ declare module "common-types" {
     state?: TransferNamedEntryChange[];
   };
   export type CommitTrigger = {
-    type: "event" | "effect" | "unknown";
+    type: "initial-mount" | "event" | "effect" | "unknown";
     fiberId: number;
     relatedFiberId?: number;
     event?: string;
+    stack?: string;
   };
 
   export interface BaseMessage {
@@ -103,6 +104,13 @@ declare module "common-types" {
     trigger?: number;
   }
 
+  export interface BailoutUpdateFiberMessage extends BaseMessage {
+    op: "update-bailout";
+    commitId: number;
+    fiberId: number;
+    trigger?: number;
+  }
+
   export interface UnmountFiberMessage extends BaseMessage {
     op: "unmount";
     commitId: number;
@@ -128,6 +136,7 @@ declare module "common-types" {
     | CommitStart
     | MountFiberMessage
     | UpdateFiberMessage
+    | BailoutUpdateFiberMessage
     | UnmountFiberMessage
     | CreateEffectFiberMessage
     | DestroyEffectFiberMessage;

@@ -5,16 +5,16 @@ import { SourceEvent } from "../../types";
 interface EventListFiberEventProps {
   op: SourceEvent["op"];
   type: string;
-  children: React.ReactNode;
-  details?: React.ReactNode;
+  selected?: boolean;
   showTimings: boolean;
   selfTime?: number;
   totalTime?: number;
   prevConjunction: boolean;
   nextConjunction: boolean;
-  rootTrigger?: boolean;
   updateTrigger?: boolean;
   indirectRootTrigger?: boolean;
+  children: React.ReactNode;
+  details?: React.ReactNode;
 }
 
 const opTooltip: Record<SourceEvent["op"], string> = {
@@ -30,55 +30,50 @@ const opTooltip: Record<SourceEvent["op"], string> = {
 const EventListEntry = ({
   op,
   type,
-  children: main,
-  details,
+  selected = false,
   selfTime,
   totalTime,
   showTimings,
   prevConjunction,
   nextConjunction,
-  rootTrigger = false,
   updateTrigger = false,
   indirectRootTrigger,
+  children: main,
+  details,
 }: EventListFiberEventProps) => {
   return (
-    <>
-      <div
-        data-op={op}
-        data-type={type}
-        className={
-          "event-list-item" +
-          (rootTrigger ? " event-list-item_root-trigger" : "")
-        }
-      >
-        <div className="event-list-item__dots">
-          {updateTrigger && (
-            <div
-              className="event-list-item__update-trigger"
-              title="Update trigger"
-            />
-          )}
-          <div className="event-list-item__dot" title={opTooltip[op]} />
-          {prevConjunction && <div className="event-list-item__dots-prev" />}
-          {nextConjunction && <div className="event-list-item__dots-next" />}
-        </div>
-        {showTimings && (
-          <>
-            <div className="event-list-item__time" title="Self time">
-              {typeof selfTime === "number" && formatDuration(selfTime)}
-            </div>
-            <div className="event-list-item__time" title="Total time">
-              {typeof totalTime === "number" && formatDuration(totalTime)}
-            </div>
-          </>
-        )}
-        <div className="event-list-item__main">{main}</div>
-      </div>
-      {details}
-      {indirectRootTrigger && (
-        <div className="event-list-item__indirect-root-trigger" />
+    <div
+      data-op={op + (updateTrigger ? "-trigger" : "")}
+      data-type={type}
+      className={
+        "event-list-item" +
+        (indirectRootTrigger ? " event-list-item_indirect-root-trigger" : "") +
+        (selected ? " event-list-item_selected" : "")
+      }
+    >
+      {showTimings && (
+        <>
+          <div className="event-list-item__time" title="Self time">
+            {typeof selfTime === "number" && formatDuration(selfTime)}
+          </div>
+          <div className="event-list-item__time" title="Total time">
+            {typeof totalTime === "number" && formatDuration(totalTime)}
+          </div>
+        </>
       )}
-    </>
+      <div className="event-list-item__dots">
+        <div className="event-list-item__dot" title={opTooltip[op]} />
+        {prevConjunction && <div className="event-list-item__dots-prev" />}
+        {nextConjunction && <div className="event-list-item__dots-next" />}
+        {indirectRootTrigger && (
+          <div className="event-list-item__indirect-root-trigger" />
+        )}
+      </div>
+      <div className="event-list-item__content">
+        <div className="event-list-item__main">{main}</div>
+        {details}
+      </div>
+    </div>
   );
 };
 
