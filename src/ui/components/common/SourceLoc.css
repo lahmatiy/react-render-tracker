@@ -1,9 +1,9 @@
 .source-loc {
-  padding-right: calc(1em + 2px);
+  padding-left: 11px;
   background-repeat: no-repeat;
   background-image: url("./img/source-loc.svg");
-  background-size: 1em;
-  background-position: right center;
+  background-size: 9px;
+  background-position: left center;
   cursor: default;
 }
 .source-loc:hover {
@@ -11,6 +11,9 @@
 }
 .source-loc_openable {
   text-decoration: underline;
-  text-decoration-color: #8886;
+  text-decoration-style: dotted;
   cursor: pointer;
+}
+.source-loc_openable:not(:hover) {
+  text-decoration-color: #8886;
 }

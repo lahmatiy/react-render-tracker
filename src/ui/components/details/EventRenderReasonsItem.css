@@ -3,7 +3,10 @@
 }
 
 .event-render-reason {
-  vertical-align: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 4px;
   padding: 4px;
   line-height: 16px;
   color: #444;
@@ -16,10 +19,8 @@
 
 .event-render-reason__type-badge {
   display: inline-block;
-  vertical-align: middle;
-  margin-top: -2px;
+  align-self: flex-start;
   margin-left: -8px;
-  margin-right: 4px;
   padding: 2px 4px;
   border-radius: 3px;
   font-size: 9px;
@@ -28,6 +29,10 @@
   border: 1px solid #cecbac;
   background-color: #f5f3de;
   color: #a09f6e;
+}
+
+.event-render-reason > .fiber-id {
+  margin-left: 1px;
 }
 
 .event-render-reason code {
