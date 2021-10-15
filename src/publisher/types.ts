@@ -404,11 +404,14 @@ export type FiberDispatcherContext = {
 };
 
 export type FiberDispatchCall = {
+  dispatch: any;
+  dispatchName: string;
   root: FiberRoot;
   fiber: Fiber;
   renderFiber: Fiber | null;
   effectFiber: Fiber | null;
   event: string | null;
+  loc: string | null;
   stack?: string;
 };
 

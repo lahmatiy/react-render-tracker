@@ -63,6 +63,17 @@ function extractHookPath() {
   return result;
 }
 
+function extractCallLoc() {
+  const line = String(new Error().stack).split("\n")[3] || "";
+  const parsed = parseStackTraceLine(line);
+
+  if (parsed && parsed.loc) {
+    return resolveSourceLoc(parsed.loc);
+  }
+
+  return null;
+}
+
 export function dispatcherTrap(
   renderer: ReactInternals,
   { isFiberRoot }: CoreApi
@@ -171,6 +182,8 @@ export function dispatcherTrap(
             // }
 
             dispatchCalls.push({
+              dispatch,
+              dispatchName: hookName === "useState" ? "setState" : "dispatch",
               root: hookOwnerFiberRoot,
               fiber: hookOwnerFiber,
               renderFiber: currentFiber,
@@ -178,6 +191,7 @@ export function dispatcherTrap(
               event:
                 (!currentFiber && !currentEffectFiber && window.event?.type) ||
                 null,
+              loc: extractCallLoc(),
               stack: String(new Error().stack),
             });
 

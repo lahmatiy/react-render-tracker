@@ -17,13 +17,15 @@ function Change({
   prelude,
   name,
   index,
+  diffPrelude,
   diff,
   values,
 }: {
   type: string;
-  prelude?: JSX.Element;
-  name: JSX.Element | string;
+  prelude?: React.ReactNode;
+  name: React.ReactNode | string;
   index?: number;
+  diffPrelude?: React.ReactNode;
   diff?: TransferChangeDiff;
   values: ValueTransition;
 }) {
@@ -32,8 +34,7 @@ function Change({
       <span className="event-render-reason__type-badge">{type}</span>
       {prelude}
       {name}
-      {typeof index === "number" && <FiberId id={index} />}{" "}
-      <Diff diff={diff} values={values} />
+      {typeof index === "number" && <FiberId id={index} />} {diffPrelude}
       <span className="event-render-reason__diff">
         <Diff diff={diff} values={values} />
       </span>
@@ -54,6 +55,20 @@ export function StateChange({ entry }: { entry: TransferNamedEntryChange }) {
       prelude={<CallTracePath path={entry.trace?.path} />}
       name={<SourceLoc loc={entry.trace?.loc}>{entry.name}</SourceLoc>}
       index={entry.index}
+      diffPrelude={
+        entry.calls && (
+          <span style={{ color: "#888", fontSize: "11px" }}>
+            {" "}
+            [[
+            {entry.calls.map((entry, idx) => (
+              <SourceLoc key={idx} loc={entry.loc}>
+                {entry.name}
+              </SourceLoc>
+            ))}
+            ]]{" "}
+          </span>
+        )
+      }
       diff={entry.diff}
       values={entry}
     />

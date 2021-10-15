@@ -21,6 +21,7 @@ import {
   RecordEventHandler,
   ReactContext,
   ReactDispatcherTrapApi,
+  FiberDispatchCall,
 } from "../types";
 import { simpleValueSerialization } from "./utils/simpleValueSerialization";
 import { objectDiff } from "./utils/objectDiff";
@@ -85,6 +86,7 @@ export function createReactDevtoolsHookHandlers(
   const idToFunctionContexts = new Map<number, HookContexts>();
   const commitUpdatedFiberIds = new Map<number, number | undefined>();
   const commitTriggeredFibers = new Set();
+  const commitDispatchCalls = new Map<any, FiberDispatchCall[]>();
   const commitContext = new Map<
     ReactContext<any>,
     {
@@ -300,8 +302,8 @@ export function createReactDevtoolsHookHandlers(
   function getFunctionContextChangedKeys(
     fiber: Fiber
   ): TransferContextChange[] | undefined {
-    const id = getFiberIdThrows(fiber);
-    const prevContexts = idToFunctionContexts.get(id) || null;
+    const fiberId = getFiberIdThrows(fiber);
+    const prevContexts = idToFunctionContexts.get(fiberId) || null;
     const nextContexts = getContextsForFunctionFiber(fiber);
 
     if (prevContexts !== null && nextContexts !== null) {
@@ -359,13 +361,19 @@ export function createReactDevtoolsHookHandlers(
         const nextValue = next.memoizedState;
 
         if (!Object.is(prevValue, nextValue)) {
+          const dispatchCalls = commitDispatchCalls.get(next.queue.dispatch);
+
           changes.push({
             index,
-            trace: getDispatchTrace(next.queue.dispatch),
             name: hookNames[index],
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
             diff: valueDiff(prevValue, nextValue),
+            trace: getDispatchTrace(next.queue.dispatch),
+            calls: dispatchCalls?.map(entry => ({
+              name: entry.dispatchName,
+              loc: entry.loc,
+            })),
           });
         }
       }
@@ -953,27 +961,35 @@ export function createReactDevtoolsHookHandlers(
 
     for (const call of dispatchCalls) {
       const stack = call.stack?.replace(/\n\s+at /g, "\n").replace(/^.+\n/, "");
+      const fiberId = getOrGenerateFiberId(call.fiber);
+      let fiberDispatchCalls = commitDispatchCalls.get(call.dispatch);
 
       commitTriggeredFibers.add(call.fiber);
+
+      if (fiberDispatchCalls === undefined) {
+        commitDispatchCalls.set(call.dispatch, (fiberDispatchCalls = []));
+      }
+
+      fiberDispatchCalls.push(call);
 
       if (call.effectFiber) {
         triggers.push({
           type: "effect",
-          fiberId: getOrGenerateFiberId(call.fiber),
+          fiberId,
           relatedFiberId: getOrGenerateFiberId(call.effectFiber),
           stack,
         });
       } else if (call.event) {
         triggers.push({
           type: "event",
-          fiberId: getOrGenerateFiberId(call.fiber),
+          fiberId,
           event: call.event,
           stack,
         });
       } else if (!call.renderFiber) {
         triggers.push({
           type: "unknown",
-          fiberId: getOrGenerateFiberId(call.fiber),
+          fiberId,
           stack,
         });
       }
@@ -1067,6 +1083,7 @@ export function createReactDevtoolsHookHandlers(
     currentCommitId = -1;
     commitTriggeredFibers.clear();
     commitUpdatedFiberIds.clear();
+    commitDispatchCalls.clear();
     commitContext.clear();
     unmountedFiberIds.clear();
     unmountedFiberIdsByOwnerId.clear();
