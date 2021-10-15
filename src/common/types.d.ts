@@ -56,8 +56,9 @@ declare module "common-types" {
     name: string;
     prev: string;
     next: string;
-    trace?: TransferCallTrace;
     diff?: TransferChangeDiff;
+    trace?: TransferCallTrace;
+    calls?: null | Array<{ name: string; loc: null | string }>;
   };
   export type TransferContextChange = {
     name: string;
