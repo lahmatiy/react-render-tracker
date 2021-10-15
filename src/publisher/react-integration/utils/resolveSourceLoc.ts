@@ -81,31 +81,33 @@ export function resolveSourceLoc(loc: string | null) {
     return null;
   }
 
-  loc = loc.replace(/^webpack-internal:\/\/\//, "");
-
   if (cache.has(loc)) {
     return cache.get(loc) as string;
   }
 
+  let resolvedLoc = loc.replace(/^webpack-internal:\/\/\//, "");
   const [, filepath, rawLine, rawColumn] =
-    loc.match(/^(.+?)(?::(\d+)(?::(\d+))?)?$/) || [];
+    resolvedLoc.match(/^(.+?)(?::(\d+)(?::(\d+))?)?$/) || [];
   const genLine = rawLine ? parseInt(rawLine, 10) : 0;
   const genColumn = rawColumn ? parseInt(rawColumn, 10) : 0;
 
   syncSourceMaps();
 
   const sourceMap = sourceMaps.get(filepath);
+
   if (sourceMap) {
     const mappedPos = sourceMap.resolve(genLine, genColumn);
 
     if (mappedPos !== null && mappedPos.source) {
       const { source, line, column } = mappedPos;
 
-      return `${source
+      resolvedLoc = `${source
         .replace(/^webpack:\/\//, "")
         .replace(/\?.*$/, "")}:${line}:${column}`;
     }
   }
 
-  return loc;
+  cache.set(loc, resolvedLoc);
+
+  return resolvedLoc;
 }
