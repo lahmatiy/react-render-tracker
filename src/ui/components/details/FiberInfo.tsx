@@ -2,7 +2,7 @@ import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useFiberMaps, useProviderCustomers } from "../../utils/fiber-maps";
 import { ElementTypeProvider } from "../../../common/constants";
-import { CallStackList } from "./CallStack";
+import { CallTraceList } from "./CallStack";
 import { FiberLink } from "./FiberLink";
 import { FiberInfoHeader } from "./FiberInfoHeader";
 
@@ -60,10 +60,10 @@ function FiberContexts({ fiber }: { fiber: MessageFiber }) {
             )}
             {reads && (
               <div className="fiber-info-fiber-context__reads">
-                <CallStackList
+                <CallTraceList
                   expanded
                   compat={false}
-                  paths={reads.map(read => read.path)}
+                  traces={reads.map(read => read.trace)}
                 />
               </div>
             )}

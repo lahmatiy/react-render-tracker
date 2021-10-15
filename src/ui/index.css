@@ -4,6 +4,7 @@
 @import url("./components/common/FiberHocNames.css");
 @import url("./components/common/FiberId.css");
 @import url("./components/common/FiberKey.css");
+@import url("./components/common/SourceLoc.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/Fiber.css");
 @import url("./components/details/FiberInfo.css");

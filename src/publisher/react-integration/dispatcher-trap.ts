@@ -1,4 +1,5 @@
 import {
+  TransferCallTrace,
   Fiber,
   FiberDispatchCall,
   FiberDispatcherContext,
@@ -7,8 +8,11 @@ import {
   ReactDispatcherTrapApi,
   ReactInternals,
   RerenderState,
+  TransferCallTracePoint,
 } from "../types";
 import { CoreApi } from "./core";
+import { parseStackTraceLine } from "./utils/parse-stack-trace";
+import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 
 type Dispatcher = any;
 type DispatchFn = (state: any) => any;
@@ -23,20 +27,40 @@ type FiberDispatcherInfo = {
 function extractHookPath() {
   const stack = String(new Error().stack).split("\n").slice(4);
   const path = [];
+  const result: TransferCallTrace = {
+    path: undefined,
+    loc: null,
+  };
+  let prev: TransferCallTrace | TransferCallTracePoint = result;
 
   for (const line of stack) {
-    const [, hookName] = line.match(/^\s*at\s+(use\S+)/) || [];
+    const parsed = parseStackTraceLine(line);
 
-    if (!hookName) {
+    if (!parsed) {
       break;
     }
 
-    path.unshift(hookName);
+    prev.loc = resolveSourceLoc(parsed.loc);
+
+    if (!parsed.name.startsWith("use")) {
+      break;
+    }
+
+    path.unshift(
+      (prev = {
+        name: parsed.name,
+        loc: null,
+      })
+    );
+  }
+
+  if (path.length) {
+    result.path = path;
   }
 
   // console.log(String(new Error().stack).split("\n"));
   // console.log(path);
-  return path.length ? path : undefined;
+  return result;
 }
 
 export function dispatcherTrap(
@@ -56,7 +80,7 @@ export function dispatcherTrap(
   const ignoreDispatcherTransition = new Set();
   const patchedHookFn = new WeakMap<
     DispatchFn,
-    { fn: DispatchFn; path: string[] | undefined }
+    { trace: TransferCallTrace; fn: DispatchFn }
   >();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
 
@@ -113,7 +137,7 @@ export function dispatcherTrap(
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
         patchedHookFn.set(dispatch, {
-          path: extractHookPath(),
+          trace: extractHookPath(),
           fn: (...args: any[]) => {
             // if (
             //   !currentFiberRerenderState &&
@@ -194,7 +218,7 @@ export function dispatcherTrap(
 
         contextInfo.reads.push({
           index: useContextIndex,
-          path: extractHookPath(),
+          trace: extractHookPath(),
         });
       }
 
@@ -347,8 +371,8 @@ export function dispatcherTrap(
   });
 
   return {
-    getHookPath(dispatch: DispatchFn) {
-      return patchedHookFn.get(dispatch)?.path;
+    getDispatchTrace(dispatch: DispatchFn) {
+      return patchedHookFn.get(dispatch)?.trace;
     },
     getFiberRerenders(fiber: Fiber) {
       return rerenderStates.get(fiber);

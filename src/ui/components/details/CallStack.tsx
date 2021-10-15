@@ -1,19 +1,29 @@
 import * as React from "react";
+import { TransferCallTrace, TransferCallTracePoint } from "../../types";
+import SourceLoc from "../common/SourceLoc";
 
-export function CallStack({
+export function CallTracePath({
   path,
   expanded = false,
 }: {
-  path: string[];
+  path: TransferCallTracePoint[] | null | undefined;
   expanded?: boolean;
 }) {
   const [collapsed, setCollapsed] = React.useState(!expanded);
-  const isFit = path.length === 2 && path[1].length < 12;
+
+  if (!Array.isArray(path)) {
+    return null;
+  }
+
+  const isFit = path.length === 2 && path[1].name.length < 12;
 
   if (collapsed && path.length > 1 && !isFit) {
+    const first = path[0];
+
     return (
       <span className="event-render-reason__value-change-path">
-        {path[0] + " → "}
+        <SourceLoc loc={first.loc}>{first.name}</SourceLoc>
+        {" → "}
         <span
           className="event-render-reason__value-change-path-more"
           onClick={() => setCollapsed(false)}
@@ -27,25 +37,29 @@ export function CallStack({
 
   return (
     <span className="event-render-reason__value-change-path">
-      {path.join(" → ")}
-      {" → "}
+      {path.map(entry => (
+        <>
+          <SourceLoc loc={entry.loc}>{entry.name}</SourceLoc>
+          {" → "}
+        </>
+      ))}
     </span>
   );
 }
 
-export function CallStackList({
-  paths,
+export function CallTraceList({
+  traces,
   expanded,
   compat = true,
 }: {
-  paths: Array<string[] | undefined>;
+  traces: Array<TransferCallTrace | undefined>;
   expanded?: boolean;
   compat?: boolean;
 }) {
   const [collapsed, setCollapsed] = React.useState<undefined | false>();
 
-  if (compat && paths.length < 2) {
-    return paths[0] ? <CallStack expanded={expanded} path={paths[0]} /> : null;
+  if (compat && traces.length < 2) {
+    return <CallTracePath expanded={expanded} path={traces[0]?.path} />;
   }
 
   if (collapsed === undefined ? !expanded : collapsed) {
@@ -54,22 +68,20 @@ export function CallStackList({
         className="event-render-reason__value-change-show-paths"
         onClick={() => setCollapsed(false)}
       >
-        …{paths.length} paths…
+        …{traces.length} paths…
       </span>
     );
   }
 
   return (
     <ol className="event-render-reason__value-change-path-list">
-      {paths.map((path, index) => (
+      {traces.map((trace, index) => (
         <li key={index}>
-          {path && (
-            <CallStack
-              path={path}
-              expanded={collapsed !== undefined ? !collapsed : expanded}
-            />
-          )}
-          useContext(…)
+          <CallTracePath
+            path={trace?.path}
+            expanded={collapsed !== undefined ? !collapsed : expanded}
+          />
+          <SourceLoc loc={trace?.loc}>useContext(…)</SourceLoc>
         </li>
       ))}
     </ol>

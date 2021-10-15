@@ -1,8 +1,10 @@
 import rempl from "rempl";
 import debounce from "lodash.debounce";
+import config from "./config";
 import { RecordEventHandler, Message } from "./types";
 
 let eventIdSeed = 0;
+const openFileUrl = config.openFileUrl;
 const events: Message[] = [];
 const getTimestamp =
   typeof performance === "object" &&
@@ -61,3 +63,9 @@ export const recordEvent: RecordEventHandler = payload => {
 
   return id;
 };
+
+if (typeof openFileUrl === "string") {
+  publisher.provide("open-file", (filepath: string) => {
+    fetch(openFileUrl.replace(/\[file\]/, filepath));
+  });
+}

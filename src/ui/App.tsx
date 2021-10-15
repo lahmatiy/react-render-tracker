@@ -12,6 +12,7 @@ import {
 } from "./utils/selection";
 import { EventsContextProvider } from "./utils/events";
 import { PinnedContextProvider, PinnedIdConsumer } from "./utils/pinned";
+import { OpenFileContextProvider } from "./utils/open-file";
 
 function App() {
   const [groupByParent, setGroupByParent] = React.useState(false);
@@ -60,12 +61,14 @@ function App() {
                 </FindMatchContextProvider>
 
                 {selectedId !== null && (
-                  <Details
-                    rootId={selectedId}
-                    groupByParent={groupByParent}
-                    showUnmounted={showUnmounted}
-                    showTimings={showTimings}
-                  />
+                  <OpenFileContextProvider>
+                    <Details
+                      rootId={selectedId}
+                      groupByParent={groupByParent}
+                      showUnmounted={showUnmounted}
+                      showTimings={showTimings}
+                    />
+                  </OpenFileContextProvider>
                 )}
                 <StatusBar />
               </div>

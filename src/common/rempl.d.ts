@@ -20,7 +20,16 @@ declare module "rempl" {
     callback: (events: Message[]) => void
   ) => void;
 
+  type PublisherMethods = "open-file";
+  type PublisherMethod<T extends PublisherMethods> = T extends "open-file"
+    ? (filepath: string) => void
+    : never;
+
   export interface Publisher {
+    provide<T extends PublisherMethods>(
+      name: T,
+      callback: PublisherMethod<T>
+    ): void;
     ns<T extends string>(
       channel: T
     ): T extends "tree-changes"
@@ -35,6 +44,16 @@ declare module "rempl" {
   }
 
   export interface Subscriber {
+    onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
+    callRemote<T extends PublisherMethods>(
+      name: T,
+      ...args:
+        | Parameters<PublisherMethod<T>>
+        | [
+            ...Parameters<PublisherMethod<T>>,
+            (value: ReturnType<PublisherMethod<T>>) => void
+          ]
+    ): void;
     ns<T extends string>(
       channel: T
     ): T extends "tree-changes"

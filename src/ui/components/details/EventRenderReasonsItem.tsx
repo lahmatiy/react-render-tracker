@@ -7,7 +7,8 @@ import {
 } from "../../types";
 import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
-import { CallStack, CallStackList } from "./CallStack";
+import SourceLoc from "../common/SourceLoc";
+import { CallTracePath, CallTraceList } from "./CallStack";
 import { Diff } from "./Diff";
 import { FiberLink } from "./FiberLink";
 
@@ -47,8 +48,8 @@ export function StateChange({ entry }: { entry: TransferNamedEntryChange }) {
   return (
     <Change
       type="state"
-      prelude={entry.path && <CallStack path={entry.path} />}
-      name={entry.name}
+      prelude={<CallTracePath path={entry.trace?.path} />}
+      name={<SourceLoc loc={entry.trace?.loc}>{entry.name}</SourceLoc>}
       index={entry.index}
       diff={entry.diff}
       values={entry}
@@ -77,7 +78,7 @@ export function ContextChange({
       type="context"
       prelude={
         context?.reads && (
-          <CallStackList paths={context.reads.map(read => read.path)} />
+          <CallTraceList traces={context.reads.map(read => read.trace)} />
         )
       }
       name={

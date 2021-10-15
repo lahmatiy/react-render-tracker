@@ -1,4 +1,9 @@
-import { FiberType, Message, TransferFiberChanges } from "common-types";
+import {
+  FiberType,
+  Message,
+  TransferCallTrace,
+  TransferFiberChanges,
+} from "common-types";
 export * from "common-types";
 
 export type DistributiveOmit<T, K extends keyof T> = T extends any
@@ -394,7 +399,7 @@ export type FiberDispatcherContext = {
   context: ReactContext<any>;
   reads: Array<{
     index: number;
-    path: string[] | undefined;
+    trace: TransferCallTrace;
   }>;
 };
 
@@ -409,8 +414,8 @@ export type FiberDispatchCall = {
 
 export type ReactDevtoolsHookHandlers = {
   handleCommitFiberRoot: (fiber: FiberRoot, commitPriority?: number) => void;
+  handlePostCommitFiberRoot: (fiber: FiberRoot) => void;
   handleCommitFiberUnmount: (fiber: Fiber) => void;
-  handlePostCommitFiberRoot: (fiber: Fiber) => void;
 };
 export type ReactInterationApi = {
   findNativeNodesForFiberID: (id: number) => any[] | null;
@@ -423,7 +428,9 @@ export type ReactInterationApi = {
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
 export type ReactDispatcherTrapApi = {
-  getHookPath: (dispatch: (state: any) => any) => string[] | undefined;
+  getDispatchTrace: (
+    dispatch: (state: any) => any
+  ) => TransferCallTrace | undefined;
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   getFiberContexts: (fiber: Fiber) => FiberDispatcherContext[] | undefined;
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];

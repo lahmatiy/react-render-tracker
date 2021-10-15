@@ -1,0 +1,16 @@
+.source-loc {
+  padding-right: calc(1em + 2px);
+  background-repeat: no-repeat;
+  background-image: url("./img/source-loc.svg");
+  background-size: 1em;
+  background-position: right center;
+  cursor: default;
+}
+.source-loc:hover {
+  color: #7caf46;
+}
+.source-loc_openable {
+  text-decoration: underline;
+  text-decoration-color: #8886;
+  cursor: pointer;
+}

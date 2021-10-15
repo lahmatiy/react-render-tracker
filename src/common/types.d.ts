@@ -6,7 +6,7 @@ declare module "common-types" {
     providerId?: number;
     reads?: Array<{
       index: number;
-      path: string[] | undefined;
+      trace: TransferCallTrace;
     }>;
   };
 
@@ -20,6 +20,15 @@ declare module "common-types" {
     displayName: string | null;
     hocDisplayNames: string[] | null;
     contexts: TransferFiberContext[] | null;
+  };
+
+  export type TransferCallTracePoint = {
+    name: string;
+    loc: string | null;
+  };
+  export type TransferCallTrace = {
+    path: TransferCallTracePoint[] | undefined;
+    loc: string | null;
   };
 
   export type TransferValueDiff = {
@@ -47,9 +56,7 @@ declare module "common-types" {
     name: string;
     prev: string;
     next: string;
-    location?: string;
-    path?: string[];
-    paths?: Array<string[] | undefined>;
+    trace?: TransferCallTrace;
     diff?: TransferChangeDiff;
   };
   export type TransferContextChange = {

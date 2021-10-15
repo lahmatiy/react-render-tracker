@@ -1,4 +1,4 @@
-let config: { inpage?: boolean } = {};
+let config: { inpage?: boolean; openFileUrl?: string } = {};
 
 if (typeof document !== "undefined") {
   const rawConfig = document.currentScript?.dataset.config || "";

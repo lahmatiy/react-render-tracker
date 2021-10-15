@@ -63,7 +63,7 @@ export function createReactDevtoolsHookHandlers(
     shouldFilterFiber,
   }: CoreApi,
   {
-    getHookPath,
+    getDispatchTrace,
     getFiberContexts: getDispatcherFiberContexts,
     flushDispatchCalls,
   }: ReactDispatcherTrapApi,
@@ -338,7 +338,7 @@ export function createReactDevtoolsHookHandlers(
       return;
     }
 
-    const changes = [];
+    const changes: TransferNamedEntryChange[] = [];
     let index = 0;
 
     // Contexts are treating aside by "dependencies" property on fiber.
@@ -361,7 +361,7 @@ export function createReactDevtoolsHookHandlers(
         if (!Object.is(prevValue, nextValue)) {
           changes.push({
             index,
-            path: getHookPath(next.queue.dispatch),
+            trace: getDispatchTrace(next.queue.dispatch),
             name: hookNames[index],
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
