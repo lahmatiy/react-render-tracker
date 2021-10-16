@@ -20,9 +20,14 @@ declare module "rempl" {
     callback: (events: Message[]) => void
   ) => void;
 
-  type PublisherMethods = "open-file";
+  type PublisherMethods = "open-file" | "resolve-source-locations";
   type PublisherMethod<T extends PublisherMethods> = T extends "open-file"
     ? (filepath: string) => void
+    : T extends "resolve-source-locations"
+    ? (
+        locations: string[],
+        callback: (result: Array<{ loc: string; resolved: string }>) => void
+      ) => void
     : never;
 
   export interface Publisher {

@@ -11,8 +11,7 @@ import {
   TransferCallTracePoint,
 } from "../types";
 import { CoreApi } from "./core";
-import { parseStackTraceLine } from "./utils/parse-stack-trace";
-import { resolveSourceLoc } from "./utils/resolveSourceLoc";
+import { parseStackTraceLine } from "./utils/parseStackTrace";
 
 type Dispatcher = any;
 type DispatchFn = (state: any) => any;
@@ -40,7 +39,7 @@ function extractHookPath() {
       break;
     }
 
-    prev.loc = resolveSourceLoc(parsed.loc);
+    prev.loc = parsed.loc;
 
     if (!parsed.name.startsWith("use")) {
       break;
@@ -68,7 +67,7 @@ function extractCallLoc() {
   const parsed = parseStackTraceLine(line);
 
   if (parsed && parsed.loc) {
-    return resolveSourceLoc(parsed.loc);
+    return parsed.loc;
   }
 
   return null;

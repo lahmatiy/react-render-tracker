@@ -37,11 +37,11 @@ export function CallTracePath({
 
   return (
     <span className="event-render-reason__value-change-path">
-      {path.map(entry => (
-        <>
+      {path.map((entry, index) => (
+        <React.Fragment key={index}>
           <SourceLoc loc={entry.loc}>{entry.name}</SourceLoc>
           {" → "}
-        </>
+        </React.Fragment>
       ))}
     </span>
   );

@@ -32,10 +32,12 @@ export function parseStackTraceLine(line: string): LineParseResult {
 
 const chromeRe =
   /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)?\)?\s*$/i;
+const chromeRe2 =
+  /^\s*at ()((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)\s*$/i;
 const chromeEvalRe = /\((\S*)\)/;
 
 function parseChrome(line: string): LineParseResult {
-  const parts = chromeRe.exec(line);
+  const parts = chromeRe.exec(line) || chromeRe2.exec(line);
 
   if (!parts) {
     return null;

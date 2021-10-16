@@ -1,7 +1,6 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import { FiberMapsContextProvider } from "./utils/fiber-maps";
 
 // bootstrap HTML document
 declare let __CSS__: string;
@@ -25,9 +24,4 @@ rootEl.addEventListener = (
 };
 
 // render React app
-ReactDOM.render(
-  <FiberMapsContextProvider>
-    <App />
-  </FiberMapsContextProvider>,
-  rootEl
-);
+ReactDOM.render(<App />, rootEl);

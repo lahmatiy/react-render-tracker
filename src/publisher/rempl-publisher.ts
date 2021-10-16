@@ -1,7 +1,8 @@
 import rempl from "rempl";
 import debounce from "lodash.debounce";
-import config from "./config";
 import { RecordEventHandler, Message } from "./types";
+import config from "./config";
+import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 
 let eventIdSeed = 0;
 const openFileUrl = config.openFileUrl;
@@ -65,7 +66,13 @@ export const recordEvent: RecordEventHandler = payload => {
 };
 
 if (typeof openFileUrl === "string") {
-  publisher.provide("open-file", (filepath: string) => {
+  publisher.provide("open-file", filepath => {
     fetch(openFileUrl.replace(/\[file\]/, filepath));
   });
 }
+
+publisher.provide("resolve-source-locations", (locations, callback) => {
+  Promise.all(locations.map(resolveSourceLoc)).then(result =>
+    callback(result.map((resolved, idx) => ({ loc: locations[idx], resolved })))
+  );
+});

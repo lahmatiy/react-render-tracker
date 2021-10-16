@@ -17,3 +17,6 @@
 .source-loc_openable:not(:hover) {
   text-decoration-color: #8886;
 }
+a.source-loc {
+  color: unset;
+}
