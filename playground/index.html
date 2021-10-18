@@ -11,8 +11,15 @@
     <h1>React render cases</h1>
     <script
       src="./react-render-tracker.js"
-      type="module"
-      data-config="inpage:true, openFileUrl:'vscode://file/Users/romandvornov/Developer/react-render-tracker/[file]'"
+      data-config="
+        inpage:true,
+        openSourceLoc: //'/open-in-editor?file=[file]' ||
+        '{cwd}' && {
+          pattern: 'vscode://file/[file]',
+          root: '{cwd}'
+        }
+      "
+    ></script>
     <script src="./index.js" type="module"></script>
   </body>
 </html>

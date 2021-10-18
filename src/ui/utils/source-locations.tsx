@@ -26,6 +26,19 @@ export function SourceLocationsContextProvider({
     let flushAwaitResolveScheduled = false;
     let resolveMethodAvailable = false;
 
+    const checkLoc = (loc: string | null | undefined) => {
+      if (!loc || knownLocations.has(loc)) {
+        return;
+      }
+
+      knownLocations.add(loc);
+      awaitResolve.add(loc);
+
+      if (!flushAwaitResolveScheduled) {
+        requestIdleCallback(flushAwaitResolve);
+        flushAwaitResolveScheduled = true;
+      }
+    };
     const flushAwaitResolve = () => {
       remoteSubscriber.callRemote(
         "resolve-source-locations",
@@ -59,19 +72,11 @@ export function SourceLocationsContextProvider({
 
     return {
       resolvedLocation(loc) {
+        checkLoc(loc);
         return resolvedLocations.get(loc || "") || null;
       },
       subscribe(loc, fn) {
-        if (!knownLocations.has(loc)) {
-          knownLocations.add(loc);
-          awaitResolve.add(loc);
-
-          if (!flushAwaitResolveScheduled) {
-            requestIdleCallback(flushAwaitResolve);
-            flushAwaitResolveScheduled = true;
-          }
-        }
-
+        checkLoc(loc);
         return resolvedLocations.subscribe(loc, fn);
       },
     };

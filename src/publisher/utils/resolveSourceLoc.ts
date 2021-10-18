@@ -42,7 +42,7 @@ function sourceToResolve(filepath: string, source: string | (() => any)) {
           const resolvedLoc = source
             ? `${source
                 .replace(/^webpack:\/\//, "")
-                .replace(/\?.*$/, "")}:${origLine}:${origColumn}`
+                .replace(/\?.*$/, "")}:${origLine}:${origColumn + 1}`
             : loc;
 
           cache.set(loc, resolvedLoc);

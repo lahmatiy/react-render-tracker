@@ -64,9 +64,3 @@ Promise.all(testCases).then(testCases => {
   syncSelectedTestCase();
   addEventListener("hashchange", syncSelectedTestCase);
 });
-
-// NOTE: That's not a part of demo, and helps to try Rempl in action with zero setup.
-// Although host is running inside page (btw, it calls in-page host) it load subscriber's UI
-// into <iframe>. So actually publisher and subcriber communicate cross runtimes through
-// event-based transport.
-rempl.getHost().activate();

@@ -5,7 +5,7 @@ import config from "./config";
 import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 
 let eventIdSeed = 0;
-const openFileUrl = config.openFileUrl;
+const { openSourceLoc } = config;
 const events: Message[] = [];
 const getTimestamp =
   typeof performance === "object" &&
@@ -65,11 +65,7 @@ export const recordEvent: RecordEventHandler = payload => {
   return id;
 };
 
-if (typeof openFileUrl === "string") {
-  publisher.provide("open-file", filepath => {
-    fetch(openFileUrl.replace(/\[file\]/, filepath));
-  });
-}
+publisher.ns("open-source-settings").publish(openSourceLoc || null);
 
 publisher.provide("resolve-source-locations", (locations, callback) => {
   Promise.all(locations.map(resolveSourceLoc)).then(result =>

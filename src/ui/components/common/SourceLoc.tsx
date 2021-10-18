@@ -9,14 +9,16 @@ function SourceLoc({
   loc: string | null | undefined;
   children: React.ReactNode;
 }) {
-  const { openInEditor } = useOpenFile();
+  const { anchorAttrs } = useOpenFile();
   const resolvedLoc = useResolvedLocation(loc);
 
   if (!resolvedLoc) {
     return <>{children}</>;
   }
 
-  if (!openInEditor) {
+  const attrs = anchorAttrs(resolvedLoc);
+
+  if (!attrs) {
     return (
       <span className="source-loc" title={resolvedLoc}>
         {children}
@@ -27,23 +29,11 @@ function SourceLoc({
   return (
     <a
       className="source-loc source-loc_openable"
-      href={
-        "vscode://file/Users/romandvornov/Developer/react-render-tracker/" +
-        resolvedLoc
-      }
+      title={`Open source location: ${attrs.href}`}
+      {...attrs}
     >
       {children}
     </a>
-  );
-
-  return (
-    <span
-      className="source-loc source-loc_openable"
-      title={`Open location in editor: ${resolvedLoc}`}
-      onClick={() => openInEditor(resolvedLoc)}
-    >
-      {children}
-    </span>
   );
 }
 

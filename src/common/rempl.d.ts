@@ -13,12 +13,35 @@ declare module "rempl" {
     activate(): void;
   };
 
-  type treeChangesData = { count: number };
-  type treeChangesGetEventsMethod = (
+  type PublisherChannels = "tree-changes" | "open-source-settings";
+  type TreeChangesData = { count: number };
+  type TreeChangesGetEventsMethod = (
     offset: number,
     count: number,
     callback: (events: Message[]) => void
   ) => void;
+  type TreeChangesNsMethods = "getEvents";
+  type TreeChangesNsRet<T> = T extends "getEvents"
+    ? TreeChangesGetEventsMethod
+    : never;
+  type OpenSourceSettings = {
+    pattern: string;
+    root: string;
+    base: string;
+  } | null;
+  type OpenSourceSettingsNsMethods = never;
+  type OpenSourceSettingsNsRet = never;
+  type PublisherNS<dataT, methodsEnum, methodsRet> = {
+    publish(data: dataT): void;
+    provide<T extends methodsEnum>(method: T, fn: methodsRet): void;
+  };
+  type SubscriberNS<dataT, methodsEnum, methodsRet> = {
+    subscribe(callback: (data: dataT | null) => void): void;
+    onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
+    getRemoteMethod<T extends methodsEnum>(
+      method: T
+    ): methodsRet & { available: boolean };
+  };
 
   type PublisherMethods = "open-file" | "resolve-source-locations";
   type PublisherMethod<T extends PublisherMethods> = T extends "open-file"
@@ -35,16 +58,20 @@ declare module "rempl" {
       name: T,
       callback: PublisherMethod<T>
     ): void;
-    ns<T extends string>(
+    ns<T extends PublisherChannels>(
       channel: T
     ): T extends "tree-changes"
-      ? {
-          publish(data: treeChangesData): void;
-          provide<T extends string>(
-            method: T,
-            fn: T extends "getEvents" ? treeChangesGetEventsMethod : never
-          ): void;
-        }
+      ? PublisherNS<
+          TreeChangesData,
+          TreeChangesNsMethods,
+          TreeChangesNsRet<TreeChangesNsMethods>
+        >
+      : T extends "open-source-settings"
+      ? PublisherNS<
+          OpenSourceSettings,
+          OpenSourceSettingsNsMethods,
+          OpenSourceSettingsNsRet
+        >
       : never;
   }
 
@@ -59,20 +86,20 @@ declare module "rempl" {
             (value: ReturnType<PublisherMethod<T>>) => void
           ]
     ): void;
-    ns<T extends string>(
+    ns<T extends PublisherChannels>(
       channel: T
     ): T extends "tree-changes"
-      ? {
-          subscribe(callback: (data: treeChangesData | null) => void): void;
-          onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
-          getRemoteMethod<T extends string>(
-            method: T
-          ): T extends "getEvents"
-            ? treeChangesGetEventsMethod & {
-                available: boolean;
-              }
-            : never;
-        }
+      ? SubscriberNS<
+          TreeChangesData,
+          TreeChangesNsMethods,
+          TreeChangesNsRet<TreeChangesNsMethods>
+        >
+      : T extends "open-source-settings"
+      ? SubscriberNS<
+          OpenSourceSettings,
+          OpenSourceSettingsNsMethods,
+          OpenSourceSettingsNsRet
+        >
       : never;
   }
 }
