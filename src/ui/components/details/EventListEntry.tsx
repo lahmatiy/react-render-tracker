@@ -1,9 +1,9 @@
 import * as React from "react";
 import { formatDuration } from "../../utils/duration";
-import { SourceEvent } from "../../types";
+import { SourceCommitEvent, SourceFiberEvent } from "../../types";
 
 interface EventListFiberEventProps {
-  op: SourceEvent["op"];
+  op: SourceFiberEvent["op"] | SourceCommitEvent["op"];
   type: string;
   selected?: boolean;
   showTimings: boolean;
@@ -17,7 +17,10 @@ interface EventListFiberEventProps {
   details?: React.ReactNode;
 }
 
-const opTooltip: Record<SourceEvent["op"], string> = {
+const opTooltip: Record<
+  SourceFiberEvent["op"] | SourceCommitEvent["op"],
+  string
+> = {
   mount: "Mount",
   update: "Update",
   "update-bailout": "Update bailout",

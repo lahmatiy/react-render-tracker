@@ -16,6 +16,7 @@
 @import url("./components/details/EventListFiberEvent.css");
 @import url("./components/details/EventRenderReasons.css");
 @import url("./components/details/EventRenderReasonsItem.css");
+@import url("./components/details/ShallowEqual.css");
 @import url("./components/fiber-tree/ButtonExpand.css");
 @import url("./components/fiber-tree/TreeHeader.css");
 @import url("./components/fiber-tree/Tree.css");

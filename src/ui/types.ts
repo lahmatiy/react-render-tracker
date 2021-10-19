@@ -1,12 +1,47 @@
-import { TransferFiber, Message } from "common-types";
+import {
+  Message,
+  TransferFiber,
+  TransferFiberContext,
+  TransferChangeDiff,
+  TransferPropChange,
+  TransferStateChange,
+  TransferHookInfo,
+} from "common-types";
 export * from "common-types";
 
 export type SourceEvent = Message;
 export type LinkedEvent = CommitEvent | FiberEvent;
 export type SourceCommitEvent = Extract<SourceEvent, { op: "commit-start" }>;
-export type SourceFiberEvent = Exclude<SourceEvent, SourceCommitEvent>;
+export type SourceDefEvent = Extract<SourceEvent, { op: "fiber-type-def" }>;
+export type SourceFiberEvent = Exclude<
+  SourceEvent,
+  SourceCommitEvent | SourceDefEvent
+>;
+export type FiberTypeHook = Omit<TransferHookInfo, "context"> & {
+  index: number;
+  context: TransferFiberContext | null;
+};
+export type FiberTypeDef = {
+  contexts: TransferFiberContext[] | null;
+  hooks: FiberTypeHook[];
+};
+export type FiberChanges = {
+  props?: TransferPropChange[] | null;
+  context: FiberContextChange[] | null;
+  state?: FiberStateChange[] | null;
+};
+export type FiberContextChange = {
+  context: TransferFiberContext | null;
+  prev?: string;
+  next?: string;
+  diff?: TransferChangeDiff;
+};
+export type FiberStateChange = Omit<TransferStateChange, "hook"> & {
+  hook: FiberTypeHook | null;
+};
 
 export interface MessageFiber extends TransferFiber {
+  typeDef: FiberTypeDef;
   mounted: boolean;
   events: LinkedEvent[];
   updatesCount: number;
@@ -26,7 +61,8 @@ export interface CommitEvent {
 export interface FiberEvent {
   target: "fiber";
   targetId: number;
-  event: SourceEvent;
+  event: SourceFiberEvent;
+  changes: FiberChanges | null;
   trigger: LinkedEvent | null;
   triggeredByOwner: boolean;
 }

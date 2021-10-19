@@ -1,15 +1,6 @@
 declare module "common-types" {
   export type FiberType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-  export type TransferFiberContext = {
-    name: string;
-    providerId?: number;
-    reads?: Array<{
-      index: number;
-      trace: TransferCallTrace;
-    }>;
-  };
-
   export type TransferFiber = {
     id: number;
     type: FiberType;
@@ -19,7 +10,22 @@ declare module "common-types" {
     parentId: number;
     displayName: string | null;
     hocDisplayNames: string[] | null;
+  };
+
+  export type TransferHookInfo = {
+    name: string;
+    context: number | null;
+    trace: TransferCallTrace;
+  };
+
+  export type TransferFiberTypeDef = {
     contexts: TransferFiberContext[] | null;
+    hooks: TransferHookInfo[];
+  };
+
+  export type TransferFiberContext = {
+    name: string;
+    providerId?: number;
   };
 
   export type TransferCallTracePoint = {
@@ -51,26 +57,27 @@ declare module "common-types" {
     | TransferObjectDiff
     | TransferArrayDiff
     | false;
-  export type TransferNamedEntryChange = {
-    index?: number;
+  export type TransferPropChange = {
     name: string;
     prev: string;
     next: string;
     diff?: TransferChangeDiff;
-    trace?: TransferCallTrace;
+  };
+  export type TransferContextChange = {
+    context: number;
+    valueChangedEventId: number;
+  };
+  export type TransferStateChange = {
+    hook: number | null;
+    prev: string;
+    next: string;
+    diff?: TransferChangeDiff;
     calls?: null | Array<{ name: string; loc: null | string }>;
   };
-  export type TransferContextChange = {
-    name: string;
-    providerId?: number;
-    prev: string;
-    next: string;
-    diff?: TransferChangeDiff;
-  };
   export type TransferFiberChanges = {
-    props?: TransferNamedEntryChange[];
+    props?: TransferPropChange[];
     context?: TransferContextChange[];
-    state?: TransferNamedEntryChange[];
+    state?: TransferStateChange[];
   };
   export type CommitTrigger = {
     type: "initial-mount" | "event" | "effect" | "unknown";
@@ -86,10 +93,16 @@ declare module "common-types" {
     timestamp: number;
   }
 
-  export interface CommitStart extends BaseMessage {
+  export interface CommitStartMessage extends BaseMessage {
     op: "commit-start";
     commitId: number;
     triggers: CommitTrigger[];
+  }
+
+  export interface FiberTypeDefMessage extends BaseMessage {
+    op: "fiber-type-def";
+    typeId: number;
+    definition: TransferFiberTypeDef;
   }
 
   export interface MountFiberMessage extends BaseMessage {
@@ -141,7 +154,8 @@ declare module "common-types" {
   }
 
   export type Message =
-    | CommitStart
+    | FiberTypeDefMessage
+    | CommitStartMessage
     | MountFiberMessage
     | UpdateFiberMessage
     | BailoutUpdateFiberMessage

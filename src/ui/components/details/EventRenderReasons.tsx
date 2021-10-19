@@ -1,5 +1,5 @@
 import * as React from "react";
-import { UpdateFiberMessage } from "../../types";
+import { FiberEvent } from "../../types";
 import {
   ContextChange,
   PropChange,
@@ -8,7 +8,7 @@ import {
 
 interface EventRenderReasonsProps {
   fiberId: number;
-  changes: UpdateFiberMessage["changes"];
+  changes: FiberEvent["changes"];
   nextConjunction: boolean;
 }
 

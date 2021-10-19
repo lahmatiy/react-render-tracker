@@ -5,12 +5,17 @@ import { remoteSubscriber } from "../rempl-subscriber";
 import { useFiberMaps } from "./fiber-maps";
 import { subscribeSubtree } from "./tree";
 import {
+  FiberChanges,
+  FiberEvent,
   LinkedEvent,
   Message,
   MessageFiber,
-  TransferNamedEntryChange,
+  TransferPropChange,
+  TransferStateChange,
+  UpdateFiberMessage,
 } from "../types";
 import { flushNotify, useDebouncedComputeSubscription } from "./subscription";
+import { ElementTypeProvider } from "../../common/constants";
 
 interface EventsContext {
   events: Message[];
@@ -46,7 +51,8 @@ export function EventsContextProvider({
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
-  const allEvents = React.useRef<LinkedEvent[]>([]).current;
+  const allEvents = React.useMemo<Message[]>(() => [], []);
+  const linkedEvents = React.useMemo(() => new Map<Message, LinkedEvent>(), []);
   const eventsSince = React.useRef(0);
   const maps = useFiberMaps();
   const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
@@ -153,6 +159,7 @@ export function EventsContextProvider({
             const { mountCount, unmountCount, updateCount } = processEvents(
               eventsChunk,
               allEvents,
+              linkedEvents,
               maps
             );
 
@@ -196,16 +203,42 @@ export function EventsContextProvider({
   );
 }
 
-function isShallowEqual(entry: TransferNamedEntryChange) {
+function isShallowEqual(entry: TransferPropChange | TransferStateChange) {
   return entry.diff === false;
 }
 
+function eventWarnings(fiber: MessageFiber, event: UpdateFiberMessage) {
+  let warnings = 0;
+
+  if (fiber.type === ElementTypeProvider && event.changes?.props) {
+    const hasShallowValue = event.changes.props.some(
+      change => change.name === "value" && isShallowEqual(change)
+    );
+
+    if (hasShallowValue) {
+      warnings++;
+    }
+  }
+
+  if (event.changes?.state) {
+    for (const change of event.changes.state) {
+      if (isShallowEqual(change)) {
+        warnings++;
+      }
+    }
+  }
+
+  return warnings;
+}
+
 export function processEvents(
-  events: Message[],
-  allEvents: LinkedEvent[],
+  newEvents: Message[],
+  allEvents: Message[],
+  linkedEvents: Map<Message, LinkedEvent>,
   {
     commitById,
     fiberById,
+    fiberTypeDefById,
     fibersByTypeId,
     fibersByProviderId,
     parentTree,
@@ -219,31 +252,55 @@ export function processEvents(
   let updateCount = 0;
 
   let fiberEventIndex = allEvents.length;
-  allEvents.length += events.length;
+  allEvents.length += newEvents.length;
 
   const linkEvent = <T extends LinkedEvent>(linkedEvent: T): T => {
     const { event } = linkedEvent;
     const trigger =
       ("trigger" in event &&
         event.trigger !== undefined &&
-        allEvents[event.trigger]) ||
+        linkedEvents.get(allEvents[event.trigger])) ||
       null;
 
-    allEvents[fiberEventIndex++] = linkedEvent;
     linkedEvent.trigger = trigger;
+    linkedEvents.set(event, linkedEvent);
 
     return linkedEvent;
   };
 
-  for (const event of events) {
+  for (const event of newEvents) {
     let fiber: MessageFiber;
+    let changes: FiberChanges | null = null;
+
+    allEvents[fiberEventIndex++] = event;
 
     switch (event.op) {
+      case "fiber-type-def": {
+        fiberTypeDefById.set(event.typeId, {
+          ...event.definition,
+          hooks: event.definition.hooks.map((hook, index) => ({
+            index,
+            ...hook,
+            context:
+              typeof hook.context === "number"
+                ? event.definition.contexts?.[hook.context] || null
+                : null,
+          })),
+        });
+        continue;
+      }
+
       case "mount": {
+        const typeDef = fiberTypeDefById.get(event.fiber.typeId) || {
+          contexts: null,
+          hooks: [],
+        };
+
         mountCount++;
 
         fiber = {
           ...event.fiber,
+          typeDef,
           displayName:
             event.fiber.displayName ||
             (!event.fiber.ownerId ? "Render root" : "Unknown"),
@@ -262,8 +319,8 @@ export function processEvents(
         ownerTree.add(fiber.id, fiber.ownerId);
         ownerTreeIncludeUnmounted.add(fiber.id, fiber.ownerId);
 
-        if (fiber.contexts) {
-          for (const { providerId } of fiber.contexts) {
+        if (typeDef.contexts) {
+          for (const { providerId } of typeDef.contexts) {
             if (typeof providerId === "number") {
               fibersByProviderId.add(providerId, fiber.id);
             }
@@ -297,17 +354,38 @@ export function processEvents(
           updatesCount: fiber.updatesCount + 1,
           selfTime: fiber.selfTime + event.selfTime,
           totalTime: fiber.totalTime + event.totalTime,
-          warnings:
-            fiber.warnings +
-            Number(
-              (event.changes?.context
-                ? event.changes.context.some(isShallowEqual)
-                : false) ||
-                (event.changes?.state
-                  ? event.changes.state.some(isShallowEqual)
-                  : false)
-            ),
+          warnings: fiber.warnings + eventWarnings(fiber, event),
         };
+
+        changes = event.changes
+          ? {
+              ...event.changes,
+              state: event.changes?.state?.map(change => ({
+                ...change,
+                hook:
+                  change.hook !== null
+                    ? fiber.typeDef.hooks[change.hook]
+                    : null,
+              })),
+              context:
+                event.changes.context?.map(change => {
+                  const linkedEvent = linkedEvents.get(
+                    allEvents[change.valueChangedEventId]
+                  ) as FiberEvent;
+                  const { prev, next, diff } =
+                    linkedEvent?.changes?.props?.find(
+                      prop => prop.name === "value"
+                    ) || {};
+
+                  return {
+                    context: fiber.typeDef.contexts?.[change.context] || null,
+                    prev,
+                    next,
+                    diff,
+                  };
+                }) || null,
+            }
+          : null;
 
         break;
 
@@ -347,6 +425,7 @@ export function processEvents(
           target: "fiber",
           targetId: event.fiberId,
           event,
+          changes,
           trigger: null,
           triggeredByOwner: false,
         })

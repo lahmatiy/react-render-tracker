@@ -1,9 +1,10 @@
 import * as React from "react";
 import {
+  FiberContextChange,
   TransferChangeDiff,
-  TransferContextChange,
-  TransferNamedEntryChange,
   ValueTransition,
+  TransferPropChange,
+  FiberStateChange,
 } from "../../types";
 import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
@@ -42,19 +43,26 @@ function Change({
   );
 }
 
-export function PropChange({ entry }: { entry: TransferNamedEntryChange }) {
+export function PropChange({ entry }: { entry: TransferPropChange }) {
   return (
     <Change type="prop" name={entry.name} diff={entry.diff} values={entry} />
   );
 }
 
-export function StateChange({ entry }: { entry: TransferNamedEntryChange }) {
+export function StateChange({ entry }: { entry: FiberStateChange }) {
+  if (!entry.hook) {
+    debugger;
+  }
   return (
     <Change
       type="state"
-      prelude={<CallTracePath path={entry.trace?.path} />}
-      name={<SourceLoc loc={entry.trace?.loc}>{entry.name}</SourceLoc>}
-      index={entry.index}
+      prelude={entry.hook && <CallTracePath path={entry.hook.trace.path} />}
+      name={
+        entry.hook && (
+          <SourceLoc loc={entry.hook.trace.loc}>{entry.hook.name}</SourceLoc>
+        )
+      }
+      index={entry.hook?.index}
       diffPrelude={
         entry.calls && (
           <span style={{ color: "#888", fontSize: "11px" }}>
@@ -80,30 +88,29 @@ export function ContextChange({
   entry,
 }: {
   fiberId: number;
-  entry: TransferContextChange;
+  entry: FiberContextChange;
 }) {
   const { fiberById } = useFiberMaps();
   const fiber = fiberById.get(fiberId);
-  const context =
-    entry.providerId !== undefined
-      ? fiber?.contexts?.find(
-          context => context.providerId === entry.providerId
-        )
+  const context = entry.context;
+  const contextReads =
+    context !== null
+      ? fiber?.typeDef.hooks.filter(hook => hook.context === context)
       : null;
 
   return (
     <Change
       type="context"
       prelude={
-        context?.reads && (
-          <CallTraceList traces={context.reads.map(read => read.trace)} />
+        contextReads?.length && (
+          <CallTraceList traces={contextReads.map(hook => hook.trace)} />
         )
       }
       name={
-        typeof entry.providerId === "number" ? (
-          <FiberLink id={entry.providerId} name={entry.name} />
+        typeof context?.providerId === "number" ? (
+          <FiberLink id={context?.providerId} name={context.name} />
         ) : (
-          entry.name || "UnknownContext"
+          context?.name || "UnknownContext"
         )
       }
       diff={entry.diff}

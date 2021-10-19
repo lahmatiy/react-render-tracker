@@ -2,29 +2,39 @@ import {
   TransferCallTrace,
   Fiber,
   FiberDispatchCall,
-  FiberDispatcherContext,
   FiberRoot,
   ReactContext,
   ReactDispatcherTrapApi,
   ReactInternals,
   RerenderState,
   TransferCallTracePoint,
+  HookInfo,
 } from "../types";
 import { CoreApi } from "./core";
 import { parseStackTraceLine } from "./utils/parseStackTrace";
 
-type Dispatcher = any;
-type DispatchFn = (state: any) => any;
-type UseContextPathMap = Map<ReactContext<any>, FiberDispatcherContext> & {
-  count: number;
+type StateHookName = "useState" | "useReducer";
+type MemoHookName = "useMemo" | "useCallback";
+type EffectHookName = "useEffect" | "useLayoutEffect";
+type Dispatcher = {
+  useState(...args: any[]): [any, DispatchFn];
+  useReducer(...args: any[]): [any, DispatchFn];
+  useMemo(cb: () => any, deps?: any[]): any;
+  useCallback(cb: () => any, deps?: any[]): () => any;
+  useEffect(create: () => any, deps?: any[]): void;
+  useLayoutEffect(create: () => any, deps?: any[]): void;
+  useContext(context: ReactContext<any>, ...rest: any[]): any;
+  readContext(context: ReactContext<any>): any;
 };
+type DispatchFn = (value: any) => any;
 type FiberDispatcherInfo = {
-  contexts: UseContextPathMap | null;
-  memos: any[] | null;
+  hooks: HookInfo[];
 };
 
-function extractHookPath() {
-  const stack = String(new Error().stack).split("\n").slice(4);
+function extractHookPath(depth = 0) {
+  const stack = String(new Error().stack)
+    .split("\n")
+    .slice(4 + depth);
   const path = [];
   const result: TransferCallTrace = {
     path: undefined,
@@ -75,30 +85,61 @@ function extractCallLoc() {
 
 export function dispatcherTrap(
   renderer: ReactInternals,
-  { isFiberRoot }: CoreApi
+  { getFiberTypeId, isFiberRoot }: CoreApi
 ): ReactDispatcherTrapApi {
   let currentDispatcher: Dispatcher | null = null;
-  let currentFiber: Fiber | null = null;
   let currentRoot: FiberRoot | null = null;
+  let currentFiber: Fiber | null = null;
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   let currentEffectFiber: Fiber | null = null;
+  let currentFiberHookIndex = 0;
   let dispatchCalls: FiberDispatchCall[] = [];
   // let currentFiberRerenderState: RerenderState | null = null;
-  const fiberInfo = new WeakMap<Fiber, FiberDispatcherInfo>();
+  const fiberTypeInfo = new Map<number, any>();
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const knownDispatcher = new Set();
   const ignoreDispatcherTransition = new Set();
+  const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
   const patchedHookFn = new WeakMap<
     DispatchFn,
-    { trace: TransferCallTrace; fn: DispatchFn }
+    { hookIndex: number; fn: DispatchFn }
   >();
-  const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
 
-  function patchEffectHook(hookName: string, dispatcher: Dispatcher) {
+  function trackUseHook(
+    name: string,
+    context: ReactContext<any> | null = null
+  ) {
+    if (currentFiberCollectInfo !== null) {
+      currentFiberCollectInfo.hooks?.push({
+        name,
+        context,
+        trace: extractHookPath(1),
+      });
+    }
+
+    return currentFiberHookIndex++;
+  }
+
+  function patchMemoHook(hookName: MemoHookName, dispatcher: Dispatcher) {
+    const orig = dispatcher[hookName];
+
+    dispatcher[hookName] = (fn: () => any, deps?: any[]) => {
+      trackUseHook(hookName);
+
+      const value = orig(fn, deps);
+
+      return value;
+    };
+  }
+
+  function patchEffectHook(hookName: EffectHookName, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
 
     dispatcher[hookName] = function (create: any, deps?: any[]) {
+      trackUseHook(hookName);
+
       const hookOwnerFiber = currentFiber;
+
       // const path = trackHookLocation();
       const wrappedCreate = () => {
         currentEffectFiber = hookOwnerFiber;
@@ -135,20 +176,21 @@ export function dispatcherTrap(
     };
   }
 
-  function patchStateHook(hookName: string, dispatcher: Dispatcher) {
+  function patchStateHook(hookName: StateHookName, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
 
     dispatcher[hookName] = (...args: any[]) => {
+      const hookIndex = trackUseHook(hookName);
       const [state, dispatch] = orig(...args);
-      dispatch.current = state;
+      let dispatchWrapper = patchedHookFn.get(dispatch);
 
-      if (!patchedHookFn.has(dispatch)) {
+      if (dispatchWrapper === undefined) {
         const hookOwnerFiber = currentFiber as Fiber;
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
-        patchedHookFn.set(dispatch, {
-          trace: extractHookPath(),
-          fn: (...args: any[]) => {
+        dispatchWrapper = {
+          hookIndex,
+          fn: value => {
             // if (
             //   !currentFiberRerenderState &&
             //   currentFiber !== null &&
@@ -175,11 +217,6 @@ export function dispatcherTrap(
             //   debugger;
             // }
 
-            // if (hookOwnerFiber?.type.name === "A") {
-            //   console.log("dispatch", dispatch.current, ...args);
-            //   // debugger;
-            // }
-
             dispatchCalls.push({
               dispatch,
               dispatchName: hookName === "useState" ? "setState" : "dispatch",
@@ -191,71 +228,41 @@ export function dispatcherTrap(
                 (!currentFiber && !currentEffectFiber && window.event?.type) ||
                 null,
               loc: extractCallLoc(),
-              stack: String(new Error().stack),
+              // stack: String(new Error().stack),
             });
 
             // console.log("dispatch", new Error().stack, ...args);
-            return dispatch(...args);
+            return dispatch(value);
           },
-        });
+        };
+
+        patchedHookFn.set(dispatch, dispatchWrapper);
       }
 
-      return [state, patchedHookFn.get(dispatch)?.fn];
+      return [state, dispatchWrapper.fn];
     };
   }
 
-  function patchUseContextHook(dispatcher: Dispatcher) {
+  function patchContextHook(dispatcher: Dispatcher) {
     const orig = dispatcher.useContext;
+    const hookName = "useContext";
 
-    dispatcher.useContext = (context: ReactContext<any>, ...args: any[]) => {
+    dispatcher[hookName] = (context: ReactContext<any>, ...args: any[]) => {
+      trackUseHook(hookName, context);
+
       const value = orig(context, ...args);
 
-      if (currentFiberCollectInfo !== null) {
-        let currentFiberUseContext = currentFiberCollectInfo.contexts;
-
-        if (currentFiberUseContext === null) {
-          currentFiberUseContext = currentFiberCollectInfo.contexts =
-            Object.assign(new Map(), { count: 0 });
-        }
-
-        const useContextIndex = currentFiberUseContext.count++;
-        let contextInfo = currentFiberUseContext.get(context);
-
-        if (contextInfo === undefined) {
-          contextInfo = {
-            context,
-            reads: [],
-          };
-          currentFiberUseContext.set(context, contextInfo);
-        }
-
-        contextInfo.reads.push({
-          index: useContextIndex,
-          trace: extractHookPath(),
-        });
-      }
-
       return value;
     };
   }
 
-  function patchMemoHook(hookName: string, dispatcher: Dispatcher) {
-    const orig = dispatcher[hookName];
-
-    dispatcher[hookName] = (...args: any[]) => {
-      const value = orig(...args);
-
-      return value;
-    };
-  }
-
-  function patchDispatcher(dispatcher: Dispatcher) {
+  function patchDispatcher(dispatcher: Dispatcher | null) {
     if (dispatcher && !knownDispatcher.has(dispatcher)) {
       knownDispatcher.add(dispatcher);
 
       // ContextOnlyDispatcher has a single guard function for each hook,
       // detecting it by comparing two random hooks for equality
-      if (dispatcher.useMemo === dispatcher.useState) {
+      if (dispatcher.useReducer === dispatcher.useState) {
         ignoreDispatcherTransition.add(dispatcher);
       }
       // In dev mode InvalidNestedHooksDispatcher* are used, that's the only
@@ -275,17 +282,17 @@ export function dispatcherTrap(
       patchMemoHook("useCallback", dispatcher);
       patchEffectHook("useEffect", dispatcher);
       patchEffectHook("useLayoutEffect", dispatcher);
-      patchUseContextHook(dispatcher);
+      patchContextHook(dispatcher);
     }
 
     return dispatcher;
   }
 
   Object.defineProperty(renderer.currentDispatcherRef, "current", {
-    get: () => {
+    get() {
       return currentDispatcher;
     },
-    set: nextDispatcher => {
+    set(nextDispatcher: Dispatcher | null) {
       const nextCurrentFiber = renderer.getCurrentFiber();
       const prevDispatcher = currentDispatcher;
 
@@ -295,39 +302,22 @@ export function dispatcherTrap(
       if (nextCurrentFiber !== currentFiber) {
         currentFiber = nextCurrentFiber;
         currentFiberCollectInfo = null;
+        currentFiberHookIndex = 0;
 
         if (currentFiber !== null) {
           // collect info on mount only
           if (currentFiber.alternate === null) {
-            fiberInfo.set(
-              currentFiber,
-              (currentFiberCollectInfo = {
-                contexts: null,
-                memos: null,
-              })
-            );
+            const fiberTypeId = getFiberTypeId(currentFiber.type);
+
+            if (!fiberTypeInfo.has(fiberTypeId)) {
+              fiberTypeInfo.set(
+                fiberTypeId,
+                (currentFiberCollectInfo = {
+                  hooks: [],
+                })
+              );
+            }
           }
-
-          // if (currentFiber.alternate !== null) {
-          //   currentFiber.alternate.expirationTime = 0;
-          // }
-
-          // if (currentFiber.type?.name === "A") {
-          //   if (
-          //     "value" in Object.getOwnPropertyDescriptor(currentFiber, "lanes")
-          //   ) {
-          //     let lanes = currentFiber.lanes;
-          //     Object.defineProperty(currentFiber, "lanes", {
-          //       get() {
-          //         return lanes;
-          //       },
-          //       set(value) {
-          //         console.log("Set lanes", lanes, "->", value);
-          //         lanes = value;
-          //       },
-          //     });
-          //   }
-          // }
 
           currentRoot =
             fiberRoot.get(currentFiber) ||
@@ -379,23 +369,21 @@ export function dispatcherTrap(
 
         // avoid collecting info on re-renders
         currentFiberCollectInfo = null;
+        currentFiberHookIndex = 0;
       }
     },
   });
 
   return {
-    getDispatchTrace(dispatch: DispatchFn) {
-      return patchedHookFn.get(dispatch)?.trace;
+    getDispatchHookIndex(dispatch: DispatchFn) {
+      const dispatchWrapper = patchedHookFn.get(dispatch);
+      return dispatchWrapper !== undefined ? dispatchWrapper.hookIndex : null;
     },
     getFiberRerenders(fiber: Fiber) {
       return rerenderStates.get(fiber);
     },
-    getFiberContexts(fiber: Fiber) {
-      const contexts = (
-        fiberInfo.get(fiber) || fiberInfo.get(fiber.alternate as Fiber)
-      )?.contexts;
-
-      return contexts ? [...contexts.values()] : undefined;
+    getFiberTypeHookInfo(fiberTypeId: number) {
+      return fiberTypeInfo.get(fiberTypeId)?.hooks || [];
     },
     flushDispatchCalls(root: FiberRoot) {
       const accepted = [];

@@ -66,6 +66,7 @@ const EventList = ({
               key={event.id}
               fiberId={targetId}
               event={event as SourceFiberEvent}
+              changes={fiberEvent.changes}
               showTimings={showTimings}
               prevConjunction={prevConjunction}
               nextConjunction={nextConjunction}

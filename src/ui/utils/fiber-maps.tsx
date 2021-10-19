@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Commit, MessageFiber } from "../types";
+import { Commit, FiberTypeDef, MessageFiber } from "../types";
 import {
   SubscribeMap,
   SubsetSplit,
@@ -10,6 +10,7 @@ import { Tree } from "./tree";
 interface FiberMapsContext {
   commitById: SubscribeMap<number, Commit>;
   fiberById: SubscribeMap<number, MessageFiber>;
+  fiberTypeDefById: SubscribeMap<number, FiberTypeDef>;
   fibersByTypeId: SubsetSplit<number, number>;
   fibersByProviderId: SubsetSplit<number, number>;
   parentTree: Tree;
@@ -29,6 +30,7 @@ export function FiberMapsContextProvider({
   const value: FiberMapsContext = React.useMemo(() => {
     const commitById = new SubscribeMap<number, Commit>();
     const fiberById = new SubscribeMap<number, MessageFiber>();
+    const fiberTypeDefById = new SubscribeMap<number, FiberTypeDef>();
     const fibersByTypeId = new SubsetSplit<number, number>();
     const fibersByProviderId = new SubsetSplit<number, number>();
     const parentTree = new Tree();
@@ -39,6 +41,7 @@ export function FiberMapsContextProvider({
     return {
       commitById,
       fiberById,
+      fiberTypeDefById,
       fibersByTypeId,
       fibersByProviderId,
       parentTree,

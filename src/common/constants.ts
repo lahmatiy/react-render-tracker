@@ -13,7 +13,7 @@ export const ElementTypeOtherOrUnknown = 12;
 
 export const fiberTypeName = {
   [ElementTypeClass]: "Class component",
-  [ElementTypeFunction]: "Functional component",
+  [ElementTypeFunction]: "Function component",
   [ElementTypeMemo]: "Memo",
   [ElementTypeForwardRef]: "ForwardRef",
   [ElementTypeProvider]: "Provider",

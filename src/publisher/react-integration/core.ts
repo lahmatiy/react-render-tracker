@@ -81,6 +81,11 @@ export function createIntegrationCore(renderer: ReactInternals) {
   // operations that should be the same whether the current and work-in-progress Fiber is used.
   const idToArbitraryFiber = new Map<number, Fiber>();
 
+  // Map for fiber type
+  let typeIdSeed = 1;
+  const fiberTypeId = new WeakMap<any, number>();
+  const fiberTypeIdNonWeakRef = new Map<symbol, Record<string, any>>();
+
   // Roots don't have a real persistent identity.
   // A root's "pseudo key" is "childDisplayName:indexWithThatName".
   // For example, "App:0" or, in case of similar roots, "Story:0", "Story:1", etc.
@@ -184,6 +189,30 @@ export function createIntegrationCore(renderer: ReactInternals) {
             return ElementTypeOtherOrUnknown;
         }
     }
+  }
+
+  function getFiberTypeId(type: any): number {
+    if (type === null) {
+      return 0;
+    }
+
+    if (typeof type !== "object" && typeof type !== "function") {
+      const replacement = fiberTypeIdNonWeakRef.get(type);
+
+      if (replacement === undefined) {
+        fiberTypeIdNonWeakRef.set(type, (type = {}));
+      } else {
+        type = replacement;
+      }
+    }
+
+    let typeId = fiberTypeId.get(type);
+
+    if (typeId === undefined) {
+      fiberTypeId.set(type, (typeId = typeIdSeed++));
+    }
+
+    return typeId;
   }
 
   function getDisplayNameForRoot(fiber: Fiber) {
@@ -390,13 +419,14 @@ export function createIntegrationCore(renderer: ReactInternals) {
     ReactTypeOfSideEffect,
     ReactTypeOfWork,
     ReactPriorityLevels,
+    getElementTypeForFiber,
+    getFiberTypeId,
     getOrGenerateFiberId,
     getFiberIdThrows,
     getFiberIdUnsafe,
     getFiberById,
     getFiberOwnerId,
     removeFiber,
-    getElementTypeForFiber,
     getDisplayNameForFiber,
     getDisplayNameForRoot,
     isFiberRoot,

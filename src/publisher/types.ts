@@ -415,6 +415,12 @@ export type FiberDispatchCall = {
   stack?: string;
 };
 
+export type HookInfo = {
+  name: string;
+  context: ReactContext<any> | null;
+  trace: TransferCallTrace;
+};
+
 export type ReactDevtoolsHookHandlers = {
   handleCommitFiberRoot: (fiber: FiberRoot, commitPriority?: number) => void;
   handlePostCommitFiberRoot: (fiber: FiberRoot) => void;
@@ -431,11 +437,9 @@ export type ReactInterationApi = {
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
 export type ReactDispatcherTrapApi = {
-  getDispatchTrace: (
-    dispatch: (state: any) => any
-  ) => TransferCallTrace | undefined;
+  getDispatchHookIndex: (dispatch: (state: any) => any) => number | null;
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
-  getFiberContexts: (fiber: Fiber) => FiberDispatcherContext[] | undefined;
+  getFiberTypeHookInfo: (fiberTypeId: number) => HookInfo[];
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;

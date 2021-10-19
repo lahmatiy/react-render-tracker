@@ -27,7 +27,7 @@ const TreeLeafCaptionContent = ({
     mounted,
     events,
     hocDisplayNames,
-    contexts,
+    typeDef,
     updatesCount,
     bailoutUpdatesCount,
     warnings,
@@ -69,12 +69,12 @@ const TreeLeafCaptionContent = ({
             {bailoutUpdatesCount}
           </span>
         )}
-        {Array.isArray(contexts) && (
+        {Array.isArray(typeDef.contexts) && (
           <span
             className="tree-leaf-caption__context-count"
             title="Number of used contexts"
           >
-            {contexts.length}
+            {typeDef.contexts.length}
           </span>
         )}
       </div>

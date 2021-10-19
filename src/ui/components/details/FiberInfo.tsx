@@ -1,5 +1,9 @@
 import * as React from "react";
-import { MessageFiber } from "../../types";
+import {
+  MessageFiber,
+  TransferFiberContext,
+  TransferCallTrace,
+} from "../../types";
 import { useFiberMaps, useProviderCustomers } from "../../utils/fiber-maps";
 import { ElementTypeProvider } from "../../../common/constants";
 import { CallTraceList } from "./CallStack";
@@ -37,34 +41,44 @@ function FiberInfoSection({ header, emptyText, children }: IFiberInfoSection) {
 }
 
 function FiberContexts({ fiber }: { fiber: MessageFiber }) {
-  const { contexts } = fiber;
+  const { typeDef } = fiber;
 
-  if (!Array.isArray(contexts)) {
+  if (!Array.isArray(typeDef.contexts)) {
     return null;
   }
 
+  const contextReadMap = typeDef.hooks.reduce((map, hook) => {
+    if (hook.context) {
+      const traces = map.get(hook.context);
+      if (traces === undefined) {
+        map.set(hook.context, [hook.trace]);
+      } else {
+        traces.push(hook.trace);
+      }
+    }
+    return map;
+  }, new Map<TransferFiberContext, TransferCallTrace[]>());
+
   return (
     <>
-      {contexts.map(({ name, providerId, reads }, index) => {
+      {typeDef.contexts.map((context, index) => {
+        const traces = contextReadMap.get(context);
+
         return (
           <div key={index}>
-            {providerId !== undefined ? (
-              <FiberLink id={providerId} name={name} />
+            {context.providerId !== undefined ? (
+              <FiberLink id={context.providerId} name={context.name} />
             ) : (
               <>
-                {name}{" "}
+                {context.name}{" "}
                 <span className="fiber-info-fiber-context__no-provider">
                   No provider found
                 </span>
               </>
             )}
-            {reads && (
+            {traces && (
               <div className="fiber-info-fiber-context__reads">
-                <CallTraceList
-                  expanded
-                  compat={false}
-                  traces={reads.map(read => read.trace)}
-                />
+                <CallTraceList expanded compat={false} traces={traces} />
               </div>
             )}
           </div>
@@ -105,7 +119,7 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
       />
 
       {false && <FiberInfoSection header="Timing"></FiberInfoSection>}
-      {fiber.contexts && (
+      {fiber.typeDef.contexts && (
         <FiberInfoSection header="Contexts" emptyText="no contexts">
           <FiberContexts fiber={fiber} />
         </FiberInfoSection>

@@ -1,9 +1,10 @@
 import * as React from "react";
 import EventRenderReasons from "./EventRenderReasons";
 import {
-  TransferNamedEntryChange,
-  TransferContextChange,
   SourceFiberEvent,
+  FiberChanges,
+  FiberContextChange,
+  FiberStateChange,
 } from "../../types";
 import { Fiber } from "./Fiber";
 import EventListEntry from "./EventListEntry";
@@ -12,24 +13,19 @@ import { useSelectionState } from "../../utils/selection";
 interface EventListFiberEventProps {
   fiberId: number;
   event: SourceFiberEvent;
+  changes: FiberChanges | null;
   showTimings: boolean;
   prevConjunction: boolean;
   nextConjunction: boolean;
   indirectRootTrigger?: boolean;
 }
 
-function isShallowEqual(
-  entry: TransferNamedEntryChange | TransferContextChange
-) {
+function isShallowEqual(entry: FiberContextChange | FiberStateChange) {
   return entry.diff === false;
 }
 
-function getChanges(event: SourceFiberEvent) {
-  if (event.op !== "update" || event.changes === null) {
-    return null;
-  }
-
-  const { context, props, state } = event.changes;
+function getChangesSummary(changes: FiberChanges) {
+  const { context, props, state } = changes;
   const reasons: string[] = [];
   let hasShallowEqual = false;
 
@@ -53,6 +49,7 @@ function getChanges(event: SourceFiberEvent) {
 const EventListFiberEvent = ({
   fiberId,
   event,
+  changes,
   showTimings,
   prevConjunction,
   nextConjunction,
@@ -60,12 +57,12 @@ const EventListFiberEvent = ({
 }: EventListFiberEventProps) => {
   const [expanded, setIsCollapsed] = React.useState(false);
   const { selected } = useSelectionState(fiberId);
-  const changes = getChanges(event);
+  const changesSummary = changes !== null ? getChangesSummary(changes) : null;
   const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
   const details = event.op === "update" && expanded && (
     <EventRenderReasons
       fiberId={fiberId}
-      changes={event.changes}
+      changes={changes}
       nextConjunction={nextConjunction}
     />
   );
@@ -93,17 +90,17 @@ const EventListFiberEvent = ({
       details={details}
     >
       <Fiber fiberId={fiberId} unmounted={event.op === "unmount"} />{" "}
-      {changes !== null && (
+      {changesSummary !== null && (
         <span
           className={
             "event-list-item__fiber-changes" +
             (expanded ? " expanded" : "") +
-            (changes.hasShallowEqual ? " has-warnings" : "")
+            (changesSummary.hasShallowEqual ? " has-warnings" : "")
           }
           onClick={() => setIsCollapsed(expanded => !expanded)}
         >
           {"± "}
-          {changes.reasons.map(reason => (
+          {changesSummary.reasons.map(reason => (
             <span
               key={reason}
               className="event-list-item__fiber-changes-reason"
