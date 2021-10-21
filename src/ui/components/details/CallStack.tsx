@@ -52,7 +52,7 @@ export function CallTraceList({
   expanded,
   compat = true,
 }: {
-  traces: Array<TransferCallTrace | undefined>;
+  traces: TransferCallTrace[];
   expanded?: boolean;
   compat?: boolean;
 }) {

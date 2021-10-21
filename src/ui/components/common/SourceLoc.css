@@ -1,7 +1,7 @@
 .source-loc {
   padding-left: 11px;
   background-repeat: no-repeat;
-  background-image: url("./img/source-loc.svg");
+  background-image: url("../../images/source-loc.svg");
   background-size: 9px;
   background-position: left center;
   cursor: default;

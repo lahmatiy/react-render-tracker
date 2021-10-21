@@ -60,7 +60,7 @@
   width: 13px;
   height: 13px;
   background: no-repeat center;
-  background-image: url("./img/expander.svg");
+  background-image: url("../../images/expander.svg");
   background-size: 13px;
   transform: rotate(-90deg);
   opacity: 0.35;
@@ -76,7 +76,7 @@
   margin-right: -2px;
   width: 11px;
   height: 11px;
-  background: url("./img/warning-exc-sign.svg") no-repeat center #eab439;
+  background: url("../../images/warning-exc-sign.svg") no-repeat center #eab439;
   background-size: 7px;
   background-clip: content-box;
   border-radius: 3px;

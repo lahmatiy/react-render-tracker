@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TransferObjectDiff } from "../../types";
+import { TransferObjectDiff } from "../../../types";
 import { DiffSimple } from "./DiffSimple";
 
 function plural(value: number, one: string, many: string) {
@@ -32,45 +32,37 @@ export function DiffObject({ diff }: { diff: TransferObjectDiff }) {
 
   return (
     <>
-      <span className="event-render-reason__diff-bracket">{"{"}</span>
+      <span className="diff-bracket">{"{"}</span>
       {diff.sample.map(values => {
         const key = <span className="key">{`${values.name}: `}</span>;
 
         if ("prev" in values === false) {
           return (
-            <div
-              key={values.name}
-              className="event-render-reason__diff-line added"
-            >
+            <div key={values.name} className="diff-line added">
               {key}
-              <code>{values.next}</code>
+              <code className="diff-value">{values.next}</code>
             </div>
           );
         }
 
         if ("next" in values === false) {
           return (
-            <div
-              key={values.name}
-              className="event-render-reason__diff-line removed"
-            >
+            <div key={values.name} className="diff-line removed">
               {key}
-              <code className="removed">{values.prev}</code>
+              <code className="diff-value removed">{values.prev}</code>
             </div>
           );
         }
 
         return (
-          <div key={values.name} className="event-render-reason__diff-line">
+          <div key={values.name} className="diff-line">
             {key}
             <DiffSimple values={values} />
           </div>
         );
       })}
-      {restNotes && (
-        <span className="event-render-reason__diff-rest">{restNotes}</span>
-      )}
-      <span className="event-render-reason__diff-bracket">{"}"}</span>
+      {restNotes && <span className="diff-rest">{restNotes}</span>}
+      <span className="diff-bracket">{"}"}</span>
     </>
   );
 }

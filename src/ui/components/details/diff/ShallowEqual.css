@@ -1,10 +1,10 @@
-.event-render-reason__shallow-equal {
+.shallow-equal-badge {
   display: inline-block;
   margin-left: 4px;
   padding: 2px 4px 2px 16px;
   border: 1px solid #ece3b0;
   border-radius: 2px;
-  background: #fdfcde url("./img/warning.svg") no-repeat 4px center;
+  background: #fdfcde url("../../../images/warning.svg") no-repeat 4px center;
   background-size: 9px;
   font-size: 10px;
   line-height: 11px;

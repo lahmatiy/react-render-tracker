@@ -35,69 +35,6 @@
   margin-left: 1px;
 }
 
-.event-render-reason code {
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: #619c5c;
-  background-color: #ecf3ed;
-  font-family: Consolas, monospace;
-}
-.event-render-reason code.removed {
-  background-color: #f3ecec;
-  color: #ca6a6a;
-}
-
-.event-render-reason__diff-bracket {
-  position: relative;
-  top: -1px;
-  font-family: monospace;
-  color: #aaa;
-}
-.event-render-reason__diff-line {
-  display: block;
-  padding-left: 16px;
-  margin: 2px 0 0;
-  font-size: 12px;
-  line-height: 18px;
-  color: #444;
-}
-.event-render-reason__diff-line .key {
-  color: #9c913b;
-}
-.event-render-reason__diff-line.added .key {
-  color: #359c42;
-}
-.event-render-reason__diff-line.added .key::before {
-  content: "+";
-  margin-left: calc(-1ch - 4px);
-  margin-right: 4px;
-  font-family: monospace;
-  opacity: 0.65;
-}
-.event-render-reason__diff-line.removed {
-  color: #ca6a6a;
-}
-.event-render-reason__diff-line.removed .key::before {
-  content: "-";
-  margin-left: calc(-1ch - 4px);
-  margin-right: 4px;
-  font-family: monospace;
-  opacity: 0.65;
-}
-.event-render-reason__diff-line.removed .key {
-  color: inherit;
-}
-.event-render-reason__diff-line.removed code {
-  background-color: #f3ecec;
-  color: inherit;
-}
-.event-render-reason__diff-rest {
-  display: block;
-  padding-left: 12px;
-  font-size: 10px;
-  color: #aaa;
-}
-
 .event-render-reason__value-change-path {
   font-size: 11px;
   color: #888;

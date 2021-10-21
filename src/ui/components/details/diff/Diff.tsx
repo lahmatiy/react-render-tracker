@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TransferChangeDiff, ValueTransition } from "../../types";
+import { TransferChangeDiff, ValueTransition } from "../../../types";
 import { DiffArray } from "./DiffArray";
 import { DiffObject } from "./DiffObject";
 import { DiffSimple } from "./DiffSimple";

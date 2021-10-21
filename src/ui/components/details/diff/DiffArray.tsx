@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TransferArrayDiff, ValueTransition } from "../../types";
+import { TransferArrayDiff, ValueTransition } from "../../../types";
 import { DiffSimple } from "./DiffSimple";
 
 export function DiffArray({
@@ -22,16 +22,14 @@ export function DiffArray({
     <>
       <DiffSimple values={values} />
       {diff.prevLength !== diff.nextLength && (
-        <div className="event-render-reason__diff-line">
+        <div className="diff-line">
           <span className="key">{"length "}</span>
           <DiffSimple
             values={{ prev: diff.prevLength, next: diff.nextLength }}
           />
         </div>
       )}
-      {restChanges && (
-        <span className="event-render-reason__diff-rest">{restChanges}</span>
-      )}
+      {restChanges && <span className="diff-rest">{restChanges}</span>}
     </>
   );
 }
