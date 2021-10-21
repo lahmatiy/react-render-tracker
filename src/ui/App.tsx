@@ -40,18 +40,18 @@ function Layout() {
 
   return (
     <div className="app" data-has-selected={selectedId !== null || undefined}>
-      <Toolbar
-        onGroupingChange={setGroupByParent}
-        groupByParent={groupByParent}
-        onShowUnmounted={setShowUnmounted}
-        showUnmounted={showUnmounted}
-        onShowTimings={setShowTimings}
-        showTimings={showTimings}
-      />
-
-      <WaitingForReady />
-
       <FindMatchContextProvider>
+        <Toolbar
+          onGroupingChange={setGroupByParent}
+          groupByParent={groupByParent}
+          onShowUnmounted={setShowUnmounted}
+          showUnmounted={showUnmounted}
+          onShowTimings={setShowTimings}
+          showTimings={showTimings}
+        />
+
+        <WaitingForReady />
+
         <FiberTreeHeader
           rootId={pinnedId}
           groupByParent={groupByParent}
