@@ -65,6 +65,7 @@ export function EventsContextProvider({
           events: [],
           warnings: 0,
           updatesCount: 0,
+          bailoutUpdatesCount: 0,
           totalTime: 0,
           selfTime: 0,
         });
