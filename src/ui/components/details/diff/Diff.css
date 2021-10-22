@@ -1,14 +1,12 @@
 .diff-bracket {
-  position: relative;
-  top: -1px;
   font-family: monospace;
   color: #aaa;
 }
 
 .diff-line {
   display: block;
+  min-width: 100%;
   padding-left: 16px;
-  margin: 2px 0 0;
   font-size: 12px;
   line-height: 18px;
   color: #444;
@@ -58,6 +56,7 @@
 
 .diff-rest {
   display: block;
+  min-width: 100%;
   padding-left: 12px;
   font-size: 10px;
   color: #aaa;

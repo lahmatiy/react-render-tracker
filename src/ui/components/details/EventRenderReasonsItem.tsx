@@ -36,9 +36,7 @@ function Change({
       {prelude}
       {name}
       {typeof index === "number" && <FiberId id={index} />} {diffPrelude}
-      <span className="event-render-reason__diff">
-        <Diff diff={diff} values={values} />
-      </span>
+      <Diff diff={diff} values={values} />
     </div>
   );
 }

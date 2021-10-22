@@ -1,0 +1,29 @@
+.details-call-stack {
+  font-size: 11px;
+  color: #888;
+}
+.details-call-stack-list {
+  width: 100%;
+  margin: 0 0 0 14px;
+  padding: 0;
+  font-size: 11px;
+  color: #444;
+}
+.details-call-stack-list li::marker {
+  font-size: 10px;
+  color: #888;
+}
+.details-call-stack-more,
+.details-call-stack-show-paths {
+  cursor: pointer;
+  padding: 2px 3px;
+  border: 1px solid white;
+  border-radius: 3px;
+  background-color: #eee;
+  font-size: 10px;
+  color: #888;
+}
+.details-call-stack-more:hover,
+.details-call-stack-show-paths:hover {
+  background-color: #ddd;
+}

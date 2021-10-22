@@ -34,35 +34,3 @@
 .event-render-reason > .fiber-id {
   margin-left: 1px;
 }
-
-.event-render-reason__value-change-path {
-  font-size: 11px;
-  color: #888;
-}
-.event-render-reason__value-change-path-list {
-  margin: 2px 0 4px 12px;
-  padding: 0;
-  font-size: 11px;
-  color: #444;
-}
-.event-render-reason__value-change-path-list li::marker {
-  font-size: 10px;
-  color: #888;
-}
-.event-render-reason__value-change-path-more,
-.event-render-reason__value-change-show-paths {
-  cursor: pointer;
-  padding: 2px 3px;
-  border: 1px solid white;
-  border-radius: 3px;
-  background-color: #eee;
-  font-size: 10px;
-  color: #888;
-}
-.event-render-reason__value-change-path-more:hover,
-.event-render-reason__value-change-show-paths:hover {
-  background-color: #ddd;
-}
-.event-render-reason__value-change-show-paths {
-  margin-right: 3px;
-}

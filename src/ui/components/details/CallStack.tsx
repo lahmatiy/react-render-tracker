@@ -21,11 +21,11 @@ export function CallTracePath({
     const first = path[0];
 
     return (
-      <span className="event-render-reason__value-change-path">
+      <span className="details-call-stack">
         <SourceLoc loc={first.loc}>{first.name}</SourceLoc>
         {" → "}
         <span
-          className="event-render-reason__value-change-path-more"
+          className="details-call-stack-more"
           onClick={() => setCollapsed(false)}
         >
           …{path.length - 1} more…
@@ -36,7 +36,7 @@ export function CallTracePath({
   }
 
   return (
-    <span className="event-render-reason__value-change-path">
+    <span className="details-call-stack">
       {path.map((entry, index) => (
         <React.Fragment key={index}>
           <SourceLoc loc={entry.loc}>{entry.name}</SourceLoc>
@@ -64,17 +64,19 @@ export function CallTraceList({
 
   if (collapsed === undefined ? !expanded : collapsed) {
     return (
-      <span
-        className="event-render-reason__value-change-show-paths"
-        onClick={() => setCollapsed(false)}
-      >
-        …{traces.length} paths…
+      <span>
+        <span
+          className="details-call-stack-show-paths"
+          onClick={() => setCollapsed(false)}
+        >
+          …{traces.length} paths…
+        </span>
       </span>
     );
   }
 
   return (
-    <ol className="event-render-reason__value-change-path-list">
+    <ol className="details-call-stack-list">
       {traces.map((trace, index) => (
         <li key={index}>
           <CallTracePath

@@ -16,8 +16,3 @@
   text-decoration: line-through;
   text-decoration-color: #888;
 }
-
-.details-fiber .fiber-key {
-  position: relative;
-  top: -1px;
-}
