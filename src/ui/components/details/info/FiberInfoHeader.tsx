@@ -1,13 +1,13 @@
 import * as React from "react";
-import { MessageFiber } from "../../types";
-import { useFiberMaps } from "../../utils/fiber-maps";
-import FiberId from "../common/FiberId";
-import { ChevronUp, ChevronDown, Pin } from "../common/icons";
-import { fiberTypeName } from "../../../common/constants";
-import { useSelectedId } from "../../utils/selection";
-import { FiberLink } from "./FiberLink";
-import { useTreeUpdateSubscription } from "../../utils/tree";
-import { usePinnedId } from "../../utils/pinned";
+import { fiberTypeName } from "../../../../common/constants";
+import { MessageFiber } from "../../../types";
+import { useFiberMaps } from "../../../utils/fiber-maps";
+import FiberId from "../../common/FiberId";
+import { ChevronUp, ChevronDown, Pin } from "../../common/icons";
+import { useSelectedId } from "../../../utils/selection";
+import { useTreeUpdateSubscription } from "../../../utils/tree";
+import { usePinnedId } from "../../../utils/pinned";
+import { FiberLink } from "../FiberLink";
 
 const FiberInfoHeaderPrelude = ({
   fiber,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FiberEvent } from "../../types";
+import { FiberEvent } from "../../../types";
 import {
   ContextChange,
   PropChange,

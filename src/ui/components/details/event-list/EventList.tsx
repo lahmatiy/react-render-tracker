@@ -1,6 +1,10 @@
 import * as React from "react";
-import { LinkedEvent, SourceCommitEvent, SourceFiberEvent } from "../../types";
-import { useEventLog } from "../../utils/events";
+import {
+  LinkedEvent,
+  SourceCommitEvent,
+  SourceFiberEvent,
+} from "../../../types";
+import { useEventLog } from "../../../utils/events";
 import EventListFiberEvent from "./EventListFiberEvent";
 import EventListCommitEvent from "./EventListCommitEvent";
 

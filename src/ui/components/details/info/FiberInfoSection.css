@@ -1,9 +1,3 @@
-.fiber-info {
-  padding: 6px 8px 6px;
-  font-size: 12px;
-  line-height: 14px;
-}
-
 .fiber-info-section {
   margin: 8px 0 0 8px;
 }
@@ -20,15 +14,4 @@
 }
 .fiber-info-section__header-no-data::before {
   content: " – ";
-}
-
-.fiber-info-fiber-context__reads {
-  margin-left: 8px;
-}
-.fiber-info-fiber-context__no-provider {
-  color: #a33;
-}
-.fiber-info-fiber-context__no-provider::before {
-  content: " – ";
-  color: #ccc;
 }

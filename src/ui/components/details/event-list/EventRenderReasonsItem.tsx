@@ -5,13 +5,13 @@ import {
   ValueTransition,
   TransferPropChange,
   FiberStateChange,
-} from "../../types";
-import { useFiberMaps } from "../../utils/fiber-maps";
-import FiberId from "../common/FiberId";
-import SourceLoc from "../common/SourceLoc";
-import { CallTracePath, CallTraceList } from "./CallStack";
-import { Diff } from "./diff/Diff";
-import { FiberLink } from "./FiberLink";
+} from "../../../types";
+import { useFiberMaps } from "../../../utils/fiber-maps";
+import FiberId from "../../common/FiberId";
+import SourceLoc from "../../common/SourceLoc";
+import { CallTracePath, CallTraceList } from "../CallStack";
+import { Diff } from "../diff/Diff";
+import { FiberLink } from "../FiberLink";
 
 function Change({
   type,

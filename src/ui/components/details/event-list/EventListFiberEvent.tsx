@@ -1,14 +1,14 @@
 import * as React from "react";
-import EventRenderReasons from "./EventRenderReasons";
 import {
   SourceFiberEvent,
   FiberChanges,
   FiberContextChange,
   FiberStateChange,
-} from "../../types";
-import { Fiber } from "./Fiber";
+} from "../../../types";
+import { useSelectionState } from "../../../utils/selection";
+import { Fiber } from "../Fiber";
 import EventListEntry from "./EventListEntry";
-import { useSelectionState } from "../../utils/selection";
+import EventRenderReasons from "./EventRenderReasons";
 
 interface EventListFiberEventProps {
   fiberId: number;

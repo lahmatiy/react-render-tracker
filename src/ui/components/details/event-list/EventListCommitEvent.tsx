@@ -1,8 +1,8 @@
 import * as React from "react";
-import { CommitTrigger, SourceCommitEvent } from "../../types";
-import { useCommit } from "../../utils/fiber-maps";
+import { CommitTrigger, SourceCommitEvent } from "../../../types";
+import { useCommit } from "../../../utils/fiber-maps";
 import EventListEntry from "./EventListEntry";
-import { Fiber } from "./Fiber";
+import { Fiber } from "../Fiber";
 
 interface EventListCommitEventProps {
   commitId: number;

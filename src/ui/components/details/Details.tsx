@@ -1,8 +1,8 @@
 import * as React from "react";
 import { SubtreeToggle } from "../common/icons";
 import ButtonToggle from "../common/ButtonToggle";
-import FiberInfo from "./FiberInfo";
-import EventList from "./EventList";
+import FiberInfo from "./info/FiberInfo";
+import EventList from "./event-list/EventList";
 import { useEventLog } from "../../utils/events";
 
 interface DetailsProps {

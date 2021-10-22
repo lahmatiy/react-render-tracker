@@ -1,6 +1,6 @@
 import * as React from "react";
-import { formatDuration } from "../../utils/duration";
-import { SourceCommitEvent, SourceFiberEvent } from "../../types";
+import { SourceCommitEvent, SourceFiberEvent } from "../../../types";
+import { formatDuration } from "../../../utils/duration";
 
 interface EventListFiberEventProps {
   op: SourceFiberEvent["op"] | SourceCommitEvent["op"];
