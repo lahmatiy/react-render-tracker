@@ -58,6 +58,7 @@ export function createReactDevtoolsHookHandlers(
   {
     getDispatchHookIndex,
     getFiberTypeHookInfo,
+    getFiberComputes,
     flushDispatchCalls,
   }: ReactDispatcherTrapApi,
   recordEvent: RecordEventHandler
@@ -169,10 +170,11 @@ export function createReactDevtoolsHookHandlers(
         : {
             // Functional component
             context: getFunctionContextChanges(nextFiber),
-            state: getChangedStateHooks(
+            state: getStateHooksChanges(
               prevFiber.memoizedState,
               nextFiber.memoizedState
             ),
+            memos: getMemoHookChanges(nextFiber),
           }),
     };
 
@@ -266,7 +268,7 @@ export function createReactDevtoolsHookHandlers(
     return;
   }
 
-  function getChangedStateHooks(
+  function getStateHooksChanges(
     prev: MemoizedState = null,
     next: MemoizedState = null
   ): TransferStateChange[] | undefined {
@@ -276,7 +278,7 @@ export function createReactDevtoolsHookHandlers(
 
     const changes: TransferStateChange[] = [];
 
-    while (next !== null) {
+    while (next !== null && prev !== null) {
       // We only interested in useState/useReducer hooks, since only these
       // hooks can be a trigger for an update. Such hooks have a special
       // signature in the form of the presence of the "queue" property.
@@ -344,6 +346,43 @@ export function createReactDevtoolsHookHandlers(
     };
 
     return [changes];
+  }
+
+  function getMemoHookChanges(fiber: Fiber) {
+    const computes = getFiberComputes(fiber);
+    const changes = [];
+
+    for (const compute of computes) {
+      // TODO: track re-renders
+      if (compute.render === 0) {
+        const [prevValue, prevDeps] = compute.prev.memoizedState;
+        const [nextValue, nextDeps] = compute.next.memoizedState;
+        const changedDeps = [];
+
+        if (prevDeps !== null && nextDeps !== null) {
+          for (let i = 0; i < prevDeps.length; i++) {
+            if (!Object.is(prevDeps[i], nextDeps[i])) {
+              changedDeps.push({
+                index: i,
+                prev: simpleValueSerialization(prevDeps[i]),
+                next: simpleValueSerialization(nextDeps[i]),
+                diff: valueDiff(prevDeps[i], nextDeps[i]),
+              });
+            }
+          }
+        }
+
+        changes.push({
+          hook: compute.hook,
+          prev: simpleValueSerialization(prevValue),
+          next: simpleValueSerialization(nextValue),
+          diff: valueDiff(prevValue, nextValue),
+          deps: changedDeps,
+        });
+      }
+    }
+
+    return changes.length > 0 ? changes : undefined;
   }
 
   function getFiberContexts(

@@ -3,12 +3,19 @@ import {
   MessageFiber,
   TransferFiberContext,
   TransferCallTrace,
+  TransferDepChange,
 } from "../../types";
-import { useFiberMaps, useProviderCustomers } from "../../utils/fiber-maps";
+import {
+  useFiber,
+  useFiberMaps,
+  useProviderCustomers,
+} from "../../utils/fiber-maps";
 import { ElementTypeProvider } from "../../../common/constants";
-import { CallTraceList } from "./CallStack";
+import { CallTraceList, CallTracePath } from "./CallStack";
 import { FiberLink } from "./FiberLink";
 import { FiberInfoHeader } from "./FiberInfoHeader";
+import SourceLoc from "../common/SourceLoc";
+import { Diff } from "./diff/Diff";
 
 interface IFiberInfo {
   fiberId: number;
@@ -19,7 +26,7 @@ interface IFiberInfo {
 interface IFiberInfoSection {
   header: string;
   emptyText?: string;
-  children?: JSX.Element | string | null;
+  children?: JSX.Element | JSX.Element[] | string | null;
 }
 
 function FiberInfoSection({ header, emptyText, children }: IFiberInfoSection) {
@@ -98,8 +105,100 @@ function ConsumersSection({ fiber }: { fiber: MessageFiber }) {
   );
 }
 
-function MemoizationSection() {
-  return <FiberInfoSection header="Memoization">TBD</FiberInfoSection>;
+function MemoizationSection({ fiber }: { fiber: MessageFiber }) {
+  const { events = [] } = useFiber(fiber.id) || {};
+  const memoHooks = fiber.typeDef.hooks.filter(
+    hook => hook.name === "useMemo" || hook.name === "useCallback"
+  );
+
+  if (memoHooks.length === 0) {
+    return null;
+  }
+
+  const computes = new Map<
+    number,
+    { count: number; deps: Array<(TransferDepChange | null)[]> | null }
+  >();
+  let updatesCount = 0;
+
+  for (const { event } of events) {
+    if (event.op === "update") {
+      updatesCount++;
+
+      if (event.changes?.memos) {
+        for (const { hook, deps } of event.changes?.memos) {
+          const depsCount = fiber.typeDef.hooks[hook].deps;
+          let compute = computes.get(hook);
+
+          if (compute === undefined) {
+            computes.set(
+              hook,
+              (compute = {
+                count: 0,
+                deps:
+                  depsCount !== null
+                    ? Array.from({ length: depsCount }, () => [])
+                    : null,
+              })
+            );
+          }
+
+          compute.count++;
+
+          if (
+            depsCount !== null &&
+            Array.isArray(deps) &&
+            Array.isArray(compute.deps)
+          ) {
+            for (const dep of deps) {
+              compute.deps[dep.index].push(dep);
+            }
+            for (let i = 0; i < depsCount; i++) {
+              if (compute.deps[i].length < compute.count) {
+                compute.deps[i].push(null);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return (
+    <FiberInfoSection header="Memoization">
+      {memoHooks.map(hook => {
+        const compute = computes.get(hook.index);
+
+        return (
+          <div key={hook.index}>
+            <CallTracePath key={hook.index} expanded path={hook.trace.path} />
+            <SourceLoc loc={hook.trace.loc}>{hook.name}(…)</SourceLoc>{" "}
+            {compute ? compute.count : 0}/{updatesCount}
+            {compute?.deps &&
+              compute.deps.map((dep, index) => (
+                <div key={index} style={{ marginLeft: "20px" }}>
+                  {" dep#" + index + " "}
+                  {dep.reduce(
+                    (count, change) => count + (change !== null ? 1 : 0),
+                    0
+                  )}
+                  /{updatesCount}
+                  {dep.map((change, idx) => (
+                    <div key={idx} style={{ marginLeft: "20px" }}>
+                      {change === null ? (
+                        "–"
+                      ) : (
+                        <Diff diff={change.diff} values={change} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+          </div>
+        );
+      })}
+    </FiberInfoSection>
+  );
 }
 
 const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
@@ -125,7 +224,7 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
         </FiberInfoSection>
       )}
       {fiber.type === ElementTypeProvider && <ConsumersSection fiber={fiber} />}
-      {false && <MemoizationSection />}
+      <MemoizationSection fiber={fiber} />
     </div>
   );
 };

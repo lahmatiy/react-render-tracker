@@ -15,6 +15,7 @@ declare module "common-types" {
   export type TransferHookInfo = {
     name: string;
     context: number | null;
+    deps: number | null;
     trace: TransferCallTrace;
   };
 
@@ -74,10 +75,24 @@ declare module "common-types" {
     diff?: TransferChangeDiff;
     calls?: null | Array<{ name: string; loc: null | string }>;
   };
+  export type TransferDepChange = {
+    index: number;
+    prev: string;
+    next: string;
+    diff?: TransferChangeDiff;
+  };
+  export type TransferMemoChange = {
+    hook: number;
+    prev: string;
+    next: string;
+    diff?: TransferChangeDiff;
+    deps: TransferDepChange[];
+  };
   export type TransferFiberChanges = {
     props?: TransferPropChange[];
     context?: TransferContextChange[];
     state?: TransferStateChange[];
+    memos?: TransferMemoChange[];
   };
   export type CommitTrigger = {
     type: "initial-mount" | "event" | "effect" | "unknown";
