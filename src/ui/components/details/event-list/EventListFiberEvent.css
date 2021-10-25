@@ -22,79 +22,12 @@
   color: var(--selected-fiber-color, #888);
 }
 
-.event-list-item__fiber-changes {
-  display: inline-block;
-  padding: 1px 6px 1px 2px;
-  margin-right: 2px;
+.event-list-item .event-changes-summary {
   margin-top: 2px;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: pointer;
-  user-select: none;
 }
-.event-list-item__fiber-changes.expanded {
-  position: relative;
-  z-index: 2;
-  border-color: #d0d0d0;
-  border-bottom-color: transparent;
-  background-color: #f7f7f7;
+.event-list-item .event-changes-summary.expanded {
   margin-top: 1px;
   margin-bottom: -4px;
   padding-top: 2px;
   padding-bottom: 5px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.event-list-item__fiber-changes:hover {
-  background: #ddd;
-  border-color: #ddd;
-}
-.event-list-item__fiber-changes::before {
-  content: "";
-  display: inline-block;
-  vertical-align: bottom;
-  position: relative;
-  top: -1px;
-  width: 13px;
-  height: 13px;
-  background: no-repeat center;
-  background-image: url("../../../images/expander.svg");
-  background-size: 13px;
-  transform: rotate(-90deg);
-  opacity: 0.35;
-  transition: 0.2s;
-  transition-property: opacity, transform;
-}
-.event-list-item__fiber-changes.has-warnings::after {
-  content: "";
-  display: inline-block;
-  vertical-align: middle;
-  margin-top: -2px;
-  margin-left: 4px;
-  margin-right: -2px;
-  width: 11px;
-  height: 11px;
-  background: url("../../../images/warning-exc-sign.svg") no-repeat center
-    #eab439;
-  background-size: 7px;
-  background-clip: content-box;
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-}
-.event-list-item__fiber-changes:hover::before {
-  opacity: 1;
-}
-.event-list-item__fiber-changes.expanded::before {
-  transform: none;
-}
-.event-list-item__fiber-changes-reason {
-  color: #555;
-  margin-left: 1px;
-}
-.event-list-item__fiber-changes-reason
-  + .event-list-item__fiber-changes-reason::before {
-  content: ", ";
-  color: #999;
 }

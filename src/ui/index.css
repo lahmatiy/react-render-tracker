@@ -7,6 +7,7 @@
 @import url("./components/common/SourceLoc.css");
 @import url("./components/details/CallStack.css");
 @import url("./components/details/Details.css");
+@import url("./components/details/EventChangesSummary.css");
 @import url("./components/details/Fiber.css");
 @import url("./components/details/FiberLink.css");
 @import url("./components/details/diff/Diff.css");
@@ -20,6 +21,7 @@
 @import url("./components/details/info/FiberInfo.css");
 @import url("./components/details/info/FiberInfoHeader.css");
 @import url("./components/details/info/FiberInfoSection.css");
+@import url("./components/details/info/FiberInfoSectionMemo.css");
 @import url("./components/fiber-tree/ButtonExpand.css");
 @import url("./components/fiber-tree/TreeHeader.css");
 @import url("./components/fiber-tree/Tree.css");

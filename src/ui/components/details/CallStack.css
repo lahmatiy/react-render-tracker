@@ -3,7 +3,7 @@
   color: #888;
 }
 .details-call-stack-list {
-  width: 100%;
+  flex-basis: 100%;
   margin: 0 0 0 14px;
   padding: 0;
   font-size: 11px;

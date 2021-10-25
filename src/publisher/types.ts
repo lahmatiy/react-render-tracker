@@ -173,12 +173,12 @@ type MemoizedStateMemo = {
   memoizedState: [any, any[] | null];
   next: MemoizedState;
 };
-type MemoizedStateState = {
-  queue: {
-    dispatch(): void;
-  };
-  next: MemoizedState;
-};
+// type MemoizedStateState = {
+//   queue: {
+//     dispatch(): void;
+//   };
+//   next: MemoizedState;
+// };
 export type MemoizedState = any; //MemoizedStateMemo | MemoizedStateState | null;
 export interface Fiber {
   // Tag identifying the type of fiber.

@@ -5,6 +5,7 @@ import {
   TransferChangeDiff,
   TransferPropChange,
   TransferStateChange,
+  TransferMemoChange,
   TransferHookInfo,
 } from "common-types";
 export * from "common-types";
@@ -29,6 +30,7 @@ export type FiberChanges = {
   props?: TransferPropChange[] | null;
   context: FiberContextChange[] | null;
   state?: FiberStateChange[] | null;
+  memos?: TransferMemoChange[] | null;
 };
 export type FiberContextChange = {
   context: TransferFiberContext | null;
@@ -43,7 +45,7 @@ export type FiberStateChange = Omit<TransferStateChange, "hook"> & {
 export interface MessageFiber extends TransferFiber {
   typeDef: FiberTypeDef;
   mounted: boolean;
-  events: LinkedEvent[];
+  events: FiberEvent[];
   updatesCount: number;
   bailoutUpdatesCount: number;
   selfTime: number;

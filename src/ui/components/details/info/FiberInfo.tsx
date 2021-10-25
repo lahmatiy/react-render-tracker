@@ -3,7 +3,7 @@ import { useFiberMaps } from "../../../utils/fiber-maps";
 import { ElementTypeProvider } from "../../../../common/constants";
 import { FiberInfoHeader } from "./FiberInfoHeader";
 import { FiberInfoSection } from "./FiberInfoSection";
-import { FiberInfoSectionContexts } from "./FiberInfoProviderSection";
+import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
 import { FiberInfoSectionMemo } from "./FiberInfoSectionMemo";
 
