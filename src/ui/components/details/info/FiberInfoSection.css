@@ -2,12 +2,38 @@
   margin: 8px 0 0 8px;
 }
 .fiber-info-section__header {
-  margin-left: -8px;
+  margin-left: -10px;
   margin-bottom: 4px;
   text-transform: uppercase;
   line-height: 12px;
   font-size: 10px;
   color: #999;
+  cursor: pointer;
+}
+.fiber-info-section__header:hover {
+  color: #555;
+}
+.fiber-info-section__header::before {
+  content: "";
+  display: inline-block;
+  vertical-align: bottom;
+  position: relative;
+  width: 13px;
+  height: 13px;
+  margin-right: 1px;
+  background: no-repeat left center;
+  background-image: url("../../../images/expander.svg");
+  background-size: 13px;
+  transform: rotate(-90deg);
+  opacity: 0.35;
+  transition: 0.2s;
+  transition-property: transform;
+}
+.fiber-info-section__header:hover::before {
+  opacity: 1;
+}
+.fiber-info-section__header_expanded::before {
+  transform: rotate(0deg);
 }
 .fiber-info-section__header-no-data {
   color: #bbb;

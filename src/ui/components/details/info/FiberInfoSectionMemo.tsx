@@ -82,28 +82,32 @@ function UpdateChangesMatrix({
 }) {
   return (
     <table className="update-deps-table">
-      <tr>
-        <th>
-          <div>
-            <span>update</span>
-          </div>
-        </th>
-        {headers.map((header, index) => (
-          <th key={index}>
+      <thead>
+        <tr>
+          <th>
             <div>
-              <span>{header}</span>
+              <span>update</span>
             </div>
           </th>
+          {headers.map((header, index) => (
+            <th key={index}>
+              <div>
+                <span>{header}</span>
+              </div>
+            </th>
+          ))}
+          <th style={{ width: "100%" }} />
+        </tr>
+      </thead>
+      <tbody>
+        {data.map(entry => (
+          <UpdateChangesMatrixRow
+            key={entry.num}
+            headers={headers}
+            data={entry}
+          />
         ))}
-        <th style={{ width: "100%" }} />
-      </tr>
-      {data.map(entry => (
-        <UpdateChangesMatrixRow
-          key={entry.num}
-          headers={headers}
-          data={entry}
-        />
-      ))}
+      </tbody>
     </table>
   );
 }
@@ -134,8 +138,8 @@ export function FiberInfoSectionMemo({ fiber }: { fiber: MessageFiber }) {
         computeCount: 0,
         headers:
           hook.deps === null
-            ? ["[computed]"]
-            : ["[computed]"].concat(
+            ? ["[value]"]
+            : ["[value]"].concat(
                 Array.from({ length: hook.deps }, (_, index) => "dep#" + index)
               ),
       });
@@ -193,7 +197,7 @@ export function FiberInfoSectionMemo({ fiber }: { fiber: MessageFiber }) {
   }
 
   return (
-    <FiberInfoSection header="Memo hooks">
+    <FiberInfoSection id="memo-hooks" header={`Memo hooks (${memoHooks.size})`}>
       <ol className="fiber-info-section-memo-content">
         {[...memoHooks.values()].map(
           ({ hook, updates, computeCount, headers }) => {
@@ -207,7 +211,13 @@ export function FiberInfoSectionMemo({ fiber }: { fiber: MessageFiber }) {
                   path={hook.trace.path}
                 />
                 <SourceLoc loc={hook.trace.loc}>{hook.name}(…)</SourceLoc>{" "}
-                {computeCount}/{updates.length}
+                <span className="fiber-info-section-memo-content__recompute-stat">
+                  {computeCount === 0
+                    ? "Never recompute"
+                    : computeCount === updates.length
+                    ? "Recompute on each update"
+                    : `Recompute ${computeCount} times of ${updates.length} updates`}
+                </span>
                 {rows.length > 0 && (
                   <UpdateChangesMatrix headers={headers} data={rows} />
                 )}

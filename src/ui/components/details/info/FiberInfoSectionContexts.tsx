@@ -6,6 +6,7 @@ import {
 } from "../../../types";
 import { CallTraceList } from "../CallStack";
 import { FiberLink } from "../FiberLink";
+import { FiberInfoSection } from "./FiberInfoSection";
 
 export function FiberInfoSectionContexts({ fiber }: { fiber: MessageFiber }) {
   const { typeDef } = fiber;
@@ -27,30 +28,36 @@ export function FiberInfoSectionContexts({ fiber }: { fiber: MessageFiber }) {
   }, new Map<TransferFiberContext, TransferCallTrace[]>());
 
   return (
-    <>
-      {typeDef.contexts.map((context, index) => {
-        const traces = contextReadMap.get(context);
+    <FiberInfoSection
+      id="contexts"
+      header={`Contexts (${typeDef.contexts.length})`}
+      emptyText="no contexts"
+    >
+      <div className="fiber-info-section-memo-contexts">
+        {typeDef.contexts.map((context, index) => {
+          const traces = contextReadMap.get(context);
 
-        return (
-          <div key={index}>
-            {context.providerId !== undefined ? (
-              <FiberLink id={context.providerId} name={context.name} />
-            ) : (
-              <>
-                {context.name}{" "}
-                <span className="fiber-info-fiber-context__no-provider">
-                  No provider found
-                </span>
-              </>
-            )}
-            {traces && (
-              <div className="fiber-info-fiber-context__reads">
-                <CallTraceList expanded compat={false} traces={traces} />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </>
+          return (
+            <div key={index}>
+              {context.providerId !== undefined ? (
+                <FiberLink id={context.providerId} name={context.name} />
+              ) : (
+                <>
+                  {context.name}{" "}
+                  <span className="fiber-info-fiber-context__no-provider">
+                    No provider found
+                  </span>
+                </>
+              )}
+              {traces && (
+                <div className="fiber-info-fiber-context__reads">
+                  <CallTraceList expanded compat={false} traces={traces} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </FiberInfoSection>
   );
 }

@@ -1,0 +1,36 @@
+.fiber-info-section-consumers-type-group {
+  margin-left: 4px;
+}
+.fiber-info-section-consumers-type-group__content {
+  margin: 2px 0 6px 14px;
+}
+
+.fiber-info-section-consumers-type-group__header {
+  color: #666;
+  cursor: pointer;
+}
+.fiber-info-section-consumers-type-group__header:hover {
+  color: #222;
+}
+.fiber-info-section-consumers-type-group__header::before {
+  content: "";
+  display: inline-block;
+  vertical-align: bottom;
+  position: relative;
+  width: 13px;
+  height: 13px;
+  margin-right: 1px;
+  background: no-repeat left center;
+  background-image: url("../../../images/expander.svg");
+  background-size: 13px;
+  transform: rotate(-90deg);
+  opacity: 0.35;
+  transition: 0.2s;
+  transition-property: transform;
+}
+.fiber-info-section-consumers-type-group__header:hover::before {
+  opacity: 1;
+}
+.fiber-info-section-consumers-type-group__header_expanded::before {
+  transform: rotate(0deg);
+}

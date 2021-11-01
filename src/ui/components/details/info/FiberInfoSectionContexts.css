@@ -1,0 +1,13 @@
+.fiber-info-section-memo-contexts {
+  padding-left: 4px;
+}
+.fiber-info-fiber-context__reads {
+  margin-left: 8px;
+}
+.fiber-info-fiber-context__no-provider {
+  color: #a33;
+}
+.fiber-info-fiber-context__no-provider::before {
+  content: " – ";
+  color: #ccc;
+}

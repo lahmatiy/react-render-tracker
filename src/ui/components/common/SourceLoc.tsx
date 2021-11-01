@@ -12,8 +12,16 @@ function SourceLoc({
   const { anchorAttrs } = useOpenFile();
   const resolvedLoc = useResolvedLocation(loc);
 
-  if (!resolvedLoc) {
+  if (!loc) {
     return <>{children}</>;
+  }
+
+  if (!resolvedLoc) {
+    return (
+      <span className="source-loc source-loc_unresolved" title="Resolving...">
+        {children}
+      </span>
+    );
   }
 
   const attrs = anchorAttrs(resolvedLoc);

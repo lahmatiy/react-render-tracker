@@ -43,6 +43,7 @@ export type FiberStateChange = Omit<TransferStateChange, "hook"> & {
 };
 
 export interface MessageFiber extends TransferFiber {
+  displayName: string;
   typeDef: FiberTypeDef;
   mounted: boolean;
   events: FiberEvent[];

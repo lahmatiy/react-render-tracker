@@ -10,6 +10,10 @@
   color: #888;
 }
 
+.fiber-info-section-memo-content__recompute-stat {
+  color: #b58a3d;
+}
+
 .update-deps-table {
   border-collapse: collapse;
 }
@@ -87,4 +91,9 @@
 }
 .update-deps-table__row-details td {
   text-align: left;
+}
+.update-deps-table__row-details td > div {
+  display: flex;
+  gap: 4px;
+  margin: 4px 0;
 }

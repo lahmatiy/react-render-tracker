@@ -6,6 +6,9 @@
   background-position: left center;
   cursor: default;
 }
+.source-loc_unresolved {
+  background-image: none;
+}
 .source-loc:hover {
   color: #7caf46;
 }
