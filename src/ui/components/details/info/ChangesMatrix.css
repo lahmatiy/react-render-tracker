@@ -1,0 +1,97 @@
+.changes-matrix {
+  border-collapse: collapse;
+}
+.changes-matrix__main-header {
+  padding: 2px 4px;
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+  font-weight: normal;
+  font-size: 11px;
+  color: #666;
+}
+.changes-matrix__value-header {
+  padding: 6px 0 0;
+  writing-mode: vertical-lr;
+  vertical-align: bottom;
+  text-align: left;
+  font-weight: normal;
+}
+.changes-matrix__value-header-text-wrapper {
+  transform: translate(calc(100% + 1px), 100%) rotate(220deg);
+  transform-origin: left top;
+}
+.changes-matrix__value-header-text {
+  display: block;
+  overflow: hidden;
+  max-height: 85px;
+  text-overflow: ellipsis;
+  padding-left: 1px;
+  padding-bottom: 12px;
+  margin-bottom: -12px;
+  border-left: 1px solid #ddd;
+  font-size: 11px;
+  color: #666;
+  text-align: left;
+}
+.changes-matrix td {
+  border: 1px solid #ddd;
+  border-right: none;
+  padding: 2px 4px;
+  text-align: center;
+  vertical-align: middle;
+}
+.changes-matrix .changes-matrix__row td:first-child {
+  text-align: left;
+  border-left: none;
+  white-space: nowrap;
+}
+
+.changes-matrix td.shallow-equal::before,
+.changes-matrix td.has-diff::before,
+.changes-matrix td.no-diff::before {
+  content: "";
+}
+
+.changes-matrix td.shallow-equal::before {
+  content: "SE";
+  padding: 3px 1px 2px;
+  font-size: 7px;
+  background: #fdfcde;
+  border: 1px solid #ece3b0;
+  border-radius: 7px;
+  color: #b39b20;
+  line-height: 1;
+}
+.changes-matrix td.has-diff::before {
+  content: "±";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: #e8e8e8;
+  border-radius: 7px;
+  color: #666;
+  font-size: 10px;
+  text-align: center;
+}
+.changes-matrix td.no-diff::before {
+  content: "–";
+  color: #ccc;
+}
+
+.changes-matrix__row:not(.changes-matrix__row_no-details):hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+.changes-matrix__row-details td {
+  padding: 3px 6px 9px 15px;
+  border-left: none;
+  text-align: left;
+}
+.changes-matrix__diff-line {
+  display: flex;
+  gap: 4px;
+}
+.changes-matrix__diff-line + .changes-matrix__diff-line {
+  margin-top: 5px;
+}

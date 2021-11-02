@@ -48,7 +48,7 @@ export interface MessageFiber extends TransferFiber {
   mounted: boolean;
   events: FiberEvent[];
   updatesCount: number;
-  bailoutUpdatesCount: number;
+  updatesBailoutStateCount: number;
   selfTime: number;
   totalTime: number;
   warnings: number;

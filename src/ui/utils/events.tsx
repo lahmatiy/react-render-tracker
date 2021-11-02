@@ -65,7 +65,7 @@ export function EventsContextProvider({
           events: [],
           warnings: 0,
           updatesCount: 0,
-          bailoutUpdatesCount: 0,
+          updatesBailoutStateCount: 0,
           totalTime: 0,
           selfTime: 0,
         });
@@ -308,7 +308,7 @@ export function processEvents(
           mounted: true,
           events: [],
           updatesCount: 0,
-          bailoutUpdatesCount: 0,
+          updatesBailoutStateCount: 0,
           warnings: 0,
           selfTime: event.selfTime,
           totalTime: event.totalTime,
@@ -390,12 +390,15 @@ export function processEvents(
 
         break;
 
-      case "update-bailout":
+      case "update-bailout-state":
         fiber = fiberById.get(event.fiberId) as MessageFiber;
         fiber = {
           ...fiber,
-          bailoutUpdatesCount: fiber.bailoutUpdatesCount + 1,
+          updatesBailoutStateCount: fiber.updatesBailoutStateCount + 1,
         };
+        break;
+      case "update-bailout-memo":
+        fiber = fiberById.get(event.fiberId) as MessageFiber;
         break;
 
       // case "effect-create":

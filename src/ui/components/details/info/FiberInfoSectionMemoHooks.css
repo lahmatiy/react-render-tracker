@@ -1,0 +1,16 @@
+.fiber-info-section-memo-content {
+  margin: 0;
+  padding-left: 16px;
+}
+.fiber-info-section-memo-content li {
+  margin-bottom: 6px;
+}
+.fiber-info-section-memo-content li::marker {
+  font-size: 10px;
+  color: #888;
+}
+
+.fiber-info-section-memo-content__recompute-stat {
+  display: block;
+  color: #b58a3d;
+}

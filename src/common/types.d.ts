@@ -125,6 +125,7 @@ declare module "common-types" {
     commitId: number;
     fiberId: number;
     fiber: TransferFiber;
+    props: string[];
     totalTime: number;
     selfTime: number;
     trigger?: number;
@@ -140,8 +141,15 @@ declare module "common-types" {
     trigger?: number;
   }
 
-  export interface BailoutUpdateFiberMessage extends BaseMessage {
-    op: "update-bailout";
+  export interface UpdateBailoutStateFiberMessage extends BaseMessage {
+    op: "update-bailout-state";
+    commitId: number;
+    fiberId: number;
+    trigger?: number;
+  }
+
+  export interface UpdateBailoutMemoFiberMessage extends BaseMessage {
+    op: "update-bailout-memo";
     commitId: number;
     fiberId: number;
     trigger?: number;
@@ -173,7 +181,8 @@ declare module "common-types" {
     | CommitStartMessage
     | MountFiberMessage
     | UpdateFiberMessage
-    | BailoutUpdateFiberMessage
+    | UpdateBailoutStateFiberMessage
+    | UpdateBailoutMemoFiberMessage
     | UnmountFiberMessage
     | CreateEffectFiberMessage
     | DestroyEffectFiberMessage;

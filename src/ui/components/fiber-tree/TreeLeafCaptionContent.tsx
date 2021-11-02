@@ -29,7 +29,7 @@ const TreeLeafCaptionContent = ({
     hocDisplayNames,
     typeDef,
     updatesCount,
-    bailoutUpdatesCount,
+    updatesBailoutStateCount: bailoutUpdatesCount,
     warnings,
   } = fiber;
 

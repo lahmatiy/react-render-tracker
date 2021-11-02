@@ -31,12 +31,19 @@
   --type-image: url("../../../images/update-trigger.svg");
   --type-image-size: 9px;
 }
-.event-list-item[data-op="update-bailout"] {
+.event-list-item[data-op="update-bailout-state"] {
   --type-color: #ffbbbb;
-  --type-image: url("../../../images/event-update.svg");
+  --type-image: url("../../../images/event-update-bailout-state.svg");
   --type-image-size: 11px;
   --selected-fiber-bg-color: #f6e3e3;
   --selected-fiber-color: #ac6f6f;
+}
+.event-list-item[data-op="update-bailout-memo"] {
+  --type-color: #c4dced;
+  --type-image: url("../../../images/event-update-bailout-memo.svg");
+  --type-image-size: 11px;
+  --selected-fiber-bg-color: #d9e8f3;
+  --selected-fiber-color: #7090a7;
 }
 .event-list-item[data-op="effect-create"] {
   --type-color: #bcddf5;

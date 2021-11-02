@@ -23,6 +23,7 @@ export function FiberInfoSection({
       <div
         className={
           "fiber-info-section__header" +
+          (!children ? " fiber-info-section__header_no-data" : "") +
           (expanded ? " fiber-info-section__header_expanded" : "")
         }
         onClick={() => toggleSectionState(id)}

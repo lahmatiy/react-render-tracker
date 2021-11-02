@@ -1,10 +1,14 @@
 import * as React from "react";
 import { useFiberMaps } from "../../../utils/fiber-maps";
-import { ElementTypeProvider } from "../../../../common/constants";
+import {
+  ElementTypeMemo,
+  ElementTypeProvider,
+} from "../../../../common/constants";
 import { FiberInfoHeader } from "./FiberInfoHeader";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
+import { FiberInfoSectionMemoHooks } from "./FiberInfoSectionMemoHooks";
 import { FiberInfoSectionMemo } from "./FiberInfoSectionMemo";
 
 interface IFiberInfo {
@@ -58,7 +62,10 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
         {fiber.type === ElementTypeProvider && (
           <FiberInfoSectionConsumers fiber={fiber} />
         )}
-        <FiberInfoSectionMemo fiber={fiber} />
+        {fiber.type === ElementTypeMemo && (
+          <FiberInfoSectionMemo fiber={fiber} />
+        )}
+        <FiberInfoSectionMemoHooks fiber={fiber} />
       </SectionStateContext.Provider>
     </div>
   );

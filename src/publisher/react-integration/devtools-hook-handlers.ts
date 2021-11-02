@@ -482,6 +482,7 @@ export function createReactDevtoolsHookHandlers(
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
     const fiberId = getOrGenerateFiberId(fiber);
+    let props: string[] = [];
     let transferFiber: TransferFiber;
     let triggerEventId: number | undefined;
 
@@ -509,6 +510,7 @@ export function createReactDevtoolsHookHandlers(
         elementType
       );
 
+      props = Object.keys(fiber.memoizedProps);
       triggerEventId = commitUpdatedFiberIds.get(ownerId);
       transferFiber = {
         id: fiberId,
@@ -530,6 +532,7 @@ export function createReactDevtoolsHookHandlers(
       commitId: currentCommitId,
       fiberId,
       fiber: transferFiber,
+      props,
       selfTime,
       totalTime,
       trigger: triggerEventId,
@@ -833,7 +836,17 @@ export function createReactDevtoolsHookHandlers(
       }
     } else if (commitTriggeredFibers.has(fiber)) {
       recordEvent({
-        op: "update-bailout",
+        op: "update-bailout-state",
+        commitId: currentCommitId,
+        fiberId,
+        trigger: triggerEventId,
+      });
+    } else if (
+      commitUpdatedFiberIds.has(ownerId) &&
+      getElementTypeForFiber(fiber) === ElementTypeMemo
+    ) {
+      recordEvent({
+        op: "update-bailout-memo",
         commitId: currentCommitId,
         fiberId,
         trigger: triggerEventId,

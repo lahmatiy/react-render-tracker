@@ -35,6 +35,9 @@
 .fiber-info-section__header_expanded::before {
   transform: rotate(0deg);
 }
+.fiber-info-section__header_no-data::before {
+  visibility: hidden;
+}
 .fiber-info-section__header-no-data {
   color: #bbb;
 }
