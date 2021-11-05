@@ -18,7 +18,7 @@ export function FiberInfoSection({
 }: IFiberInfoSection) {
   const { get: getSectionState, toggle: toggleSectionState } =
     useSectionStateContext();
-  const expanded = getSectionState(id);
+  const expanded = getSectionState(id) && Boolean(children);
 
   return (
     <div
@@ -40,7 +40,7 @@ export function FiberInfoSection({
         ) : (
           ""
         )}
-        {expanded && children ? expandedOpts : null}
+        {expanded ? expandedOpts : null}
       </div>
       {expanded && children}
     </div>

@@ -28,7 +28,7 @@ export function FiberInfoSectionEvents({
   return (
     <FiberInfoSection
       id="events"
-      header={`${"Events"} (${events.length})`}
+      header={`${"Events"} ${events.length ? ` (${events.length})` : ""}`}
       emptyText="No events"
       expandedOpts={
         <ButtonToggle
@@ -44,17 +44,22 @@ export function FiberInfoSectionEvents({
         />
       }
     >
-      <div className="fiber-info-section-events">
-        <EventList
-          // key used to reset state of visible records on component & settings change
-          key={[fiber.id, groupByParent, showUnmounted, showSubtreeEvents].join(
-            "-"
-          )}
-          rootId={fiber.id}
-          events={events}
-          showTimings={showTimings}
-        />
-      </div>
+      {events.length === 0 ? undefined : (
+        <div className="fiber-info-section-events">
+          <EventList
+            // key used to reset state of visible records on component & settings change
+            key={[
+              fiber.id,
+              groupByParent,
+              showUnmounted,
+              showSubtreeEvents,
+            ].join("-")}
+            rootId={fiber.id}
+            events={events}
+            showTimings={showTimings}
+          />
+        </div>
+      )}
     </FiberInfoSection>
   );
 }
