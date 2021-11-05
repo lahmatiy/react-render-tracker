@@ -1,13 +1,13 @@
 import * as React from "react";
-import { fiberTypeName } from "../../../../common/constants";
-import { MessageFiber } from "../../../types";
-import { useFiberMaps } from "../../../utils/fiber-maps";
-import FiberId from "../../common/FiberId";
-import { ChevronUp, ChevronDown, Pin } from "../../common/icons";
-import { useSelectedId } from "../../../utils/selection";
-import { useTreeUpdateSubscription } from "../../../utils/tree";
-import { usePinnedId } from "../../../utils/pinned";
-import { FiberLink } from "../FiberLink";
+import { fiberTypeName } from "../../../common/constants";
+import { MessageFiber } from "../../types";
+import { useFiberMaps } from "../../utils/fiber-maps";
+import FiberId from "../common/FiberId";
+import { ChevronUp, ChevronDown, Pin } from "../common/icons";
+import { useSelectedId } from "../../utils/selection";
+import { useTreeUpdateSubscription } from "../../utils/tree";
+import { usePinnedId } from "../../utils/pinned";
+import { FiberLink } from "./FiberLink";
 
 const FiberInfoHeaderPrelude = ({
   fiber,
@@ -146,12 +146,12 @@ function FiberInfoHeaderNotes({ fiber }: { fiber?: MessageFiber }) {
     <div className="fiber-info-header-notes">
       {parent === owner ? (
         <>
-          Parent / created by{" "}
+          Child of &amp; created by{" "}
           <FiberLink key={parent.id} id={parent.id} name={parent.displayName} />
         </>
       ) : (
         <>
-          {"Parent: "}
+          {"Child of "}
           <FiberLink key={parent.id} id={parent.id} name={parent.displayName} />
           {", "}
           {owner ? (
@@ -188,7 +188,7 @@ export const FiberInfoHeader = ({
         groupByParent={groupByParent}
         showUnmounted={showUnmounted}
       />
-      <div className="fiber-info-header">
+      <div className="fiber-info-header-content">
         {fiber.displayName}
         <FiberId id={fiber.id} />
       </div>

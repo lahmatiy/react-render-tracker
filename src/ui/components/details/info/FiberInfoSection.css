@@ -1,17 +1,35 @@
 .fiber-info-section {
-  margin: 8px 0 0 8px;
+  margin: 0 0 0 8px;
 }
+.fiber-info-section:first-child {
+  margin-top: -6px;
+}
+.fiber-info-section_no-data {
+  pointer-events: none;
+}
+.fiber-info-section_expanded:not(:last-child)::after {
+  content: "";
+  display: block;
+  height: 10px;
+}
+
 .fiber-info-section__header {
-  margin-left: -10px;
-  margin-bottom: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 4px 8px 4px 6px;
+  margin-left: -16px;
+  margin-right: -8px;
   text-transform: uppercase;
   line-height: 12px;
   font-size: 10px;
   color: #999;
-  cursor: pointer;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(2px);
 }
 .fiber-info-section__header:hover {
   color: #555;
+  cursor: pointer;
 }
 .fiber-info-section__header::before {
   content: "";
@@ -32,12 +50,13 @@
 .fiber-info-section__header:hover::before {
   opacity: 1;
 }
-.fiber-info-section__header_expanded::before {
+.fiber-info-section_expanded > .fiber-info-section__header::before {
   transform: rotate(0deg);
 }
-.fiber-info-section__header_no-data::before {
+.fiber-info-section_no-data > .fiber-info-section__header::before {
   visibility: hidden;
 }
+
 .fiber-info-section__header-no-data {
   color: #bbb;
 }

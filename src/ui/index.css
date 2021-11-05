@@ -10,6 +10,7 @@
 @import url("./components/details/EventChangesSummary.css");
 @import url("./components/details/Fiber.css");
 @import url("./components/details/FiberLink.css");
+@import url("./components/details/FiberHeader.css");
 @import url("./components/details/diff/Diff.css");
 @import url("./components/details/diff/ShallowEqual.css");
 @import url("./components/details/event-list/EventList.css");
@@ -20,10 +21,10 @@
 @import url("./components/details/event-list/EventRenderReasonsItem.css");
 @import url("./components/details/info/ChangesMatrix.css");
 @import url("./components/details/info/FiberInfo.css");
-@import url("./components/details/info/FiberInfoHeader.css");
 @import url("./components/details/info/FiberInfoSection.css");
 @import url("./components/details/info/FiberInfoSectionConsumers.css");
 @import url("./components/details/info/FiberInfoSectionContexts.css");
+@import url("./components/details/info/FiberInfoSectionEvents.css");
 @import url("./components/details/info/FiberInfoSectionMemoHooks.css");
 @import url("./components/details/info/FiberInfoSectionProps.css");
 @import url("./components/fiber-tree/ButtonExpand.css");

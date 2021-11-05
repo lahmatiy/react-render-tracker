@@ -5,6 +5,7 @@ interface IFiberInfoSection {
   id: string;
   header: string;
   emptyText?: string;
+  expandedOpts?: JSX.Element | JSX.Element[] | string | null;
   children?: JSX.Element | JSX.Element[] | string | null;
 }
 
@@ -12,6 +13,7 @@ export function FiberInfoSection({
   id,
   header,
   emptyText,
+  expandedOpts,
   children,
 }: IFiberInfoSection) {
   const { get: getSectionState, toggle: toggleSectionState } =
@@ -19,13 +21,15 @@ export function FiberInfoSection({
   const expanded = getSectionState(id);
 
   return (
-    <div className="fiber-info-section">
+    <div
+      className={
+        "fiber-info-section" +
+        (!children ? " fiber-info-section_no-data" : "") +
+        (expanded ? " fiber-info-section_expanded" : "")
+      }
+    >
       <div
-        className={
-          "fiber-info-section__header" +
-          (!children ? " fiber-info-section__header_no-data" : "") +
-          (expanded ? " fiber-info-section__header_expanded" : "")
-        }
+        className="fiber-info-section__header"
         onClick={() => toggleSectionState(id)}
       >
         {header}
@@ -36,6 +40,7 @@ export function FiberInfoSection({
         ) : (
           ""
         )}
+        {expanded && children ? expandedOpts : null}
       </div>
       {expanded && children}
     </div>

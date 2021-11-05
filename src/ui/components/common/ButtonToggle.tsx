@@ -15,7 +15,8 @@ const ButtonToggle = ({
   tooltip,
   className,
 }: ButtonToggleProps) => {
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
     onChange((prev: boolean) => !prev);
   };
 

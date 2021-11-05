@@ -25,19 +25,19 @@
 .fiber-event-list__show-more {
   display: flex;
   gap: 0 2px;
-  padding: 3px;
+  padding: 2px 6px 4px;
 }
 .fiber-event-list__show-more button {
   vertical-align: top;
   color: #444;
   min-height: 0;
-  padding: 3px 8px 3px;
+  padding: 1px 8px 2px;
   margin: 0;
   background-color: #ffffff1a;
   border: 1px solid rgba(127, 127, 127, 0.4);
   border-radius: 3px;
-  font-size: 11px;
-  line-height: 13px;
+  font-size: 10px;
+  line-height: 12px;
   font-family: system-ui, Arial, sans-serif;
   cursor: pointer;
 }

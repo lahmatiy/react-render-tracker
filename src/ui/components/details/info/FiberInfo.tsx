@@ -1,17 +1,18 @@
 import * as React from "react";
-import { useFiberMaps } from "../../../utils/fiber-maps";
 import { ElementTypeProvider } from "../../../../common/constants";
-import { FiberInfoHeader } from "./FiberInfoHeader";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
 import { FiberInfoSectionMemoHooks } from "./FiberInfoSectionMemoHooks";
 import { FiberInfoSectionProps } from "./FiberInfoSectionProps";
+import { MessageFiber } from "../../../types";
+import { FiberInfoSectionEvents } from "./FiberInfoSectionEvents";
 
 interface IFiberInfo {
-  fiberId: number;
+  fiber: MessageFiber;
   groupByParent: boolean;
   showUnmounted: boolean;
+  showTimings: boolean;
 }
 interface SectionStateContext {
   toggle(name: string): void;
@@ -22,12 +23,15 @@ const SectionStateContext = React.createContext<SectionStateContext>({} as any);
 export const useSectionStateContext = () =>
   React.useContext(SectionStateContext);
 
-const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
+const FiberInfo = ({
+  fiber,
+  groupByParent,
+  showUnmounted,
+  showTimings,
+}: IFiberInfo) => {
   const [sectionStates, setSectionStates] = React.useState<
     Record<string, boolean>
-  >({});
-  const { fiberById } = useFiberMaps();
-  const fiber = fiberById.get(fiberId);
+  >({ events: true });
   const sectionStatesContextValue = React.useMemo<SectionStateContext>(() => {
     return {
       get(name) {
@@ -39,18 +43,8 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
     };
   }, [sectionStates]);
 
-  if (fiber === undefined) {
-    return <div className="fiber-info">Fiber with #{fiberId} is not found</div>;
-  }
-
   return (
     <div className="fiber-info">
-      <FiberInfoHeader
-        fiber={fiber}
-        groupByParent={groupByParent}
-        showUnmounted={showUnmounted}
-      />
-
       <SectionStateContext.Provider value={sectionStatesContextValue}>
         <FiberInfoSectionProps fiber={fiber} />
         {false && (
@@ -61,6 +55,12 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
           <FiberInfoSectionConsumers fiber={fiber} />
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
+        <FiberInfoSectionEvents
+          fiber={fiber}
+          groupByParent={groupByParent}
+          showUnmounted={showUnmounted}
+          showTimings={showTimings}
+        />
       </SectionStateContext.Provider>
     </div>
   );
