@@ -24,8 +24,8 @@
 @import url("./components/details/info/FiberInfoSection.css");
 @import url("./components/details/info/FiberInfoSectionConsumers.css");
 @import url("./components/details/info/FiberInfoSectionContexts.css");
-@import url("./components/details/info/FiberInfoSectionMemo.css");
 @import url("./components/details/info/FiberInfoSectionMemoHooks.css");
+@import url("./components/details/info/FiberInfoSectionProps.css");
 @import url("./components/fiber-tree/ButtonExpand.css");
 @import url("./components/fiber-tree/TreeHeader.css");
 @import url("./components/fiber-tree/Tree.css");

@@ -1,15 +1,12 @@
 import * as React from "react";
 import { useFiberMaps } from "../../../utils/fiber-maps";
-import {
-  ElementTypeMemo,
-  ElementTypeProvider,
-} from "../../../../common/constants";
+import { ElementTypeProvider } from "../../../../common/constants";
 import { FiberInfoHeader } from "./FiberInfoHeader";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
 import { FiberInfoSectionMemoHooks } from "./FiberInfoSectionMemoHooks";
-import { FiberInfoSectionMemo } from "./FiberInfoSectionMemo";
+import { FiberInfoSectionProps } from "./FiberInfoSectionProps";
 
 interface IFiberInfo {
   fiberId: number;
@@ -55,15 +52,13 @@ const FiberInfo = ({ fiberId, groupByParent, showUnmounted }: IFiberInfo) => {
       />
 
       <SectionStateContext.Provider value={sectionStatesContextValue}>
+        <FiberInfoSectionProps fiber={fiber} />
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>
         )}
         {fiber.typeDef.contexts && <FiberInfoSectionContexts fiber={fiber} />}
         {fiber.type === ElementTypeProvider && (
           <FiberInfoSectionConsumers fiber={fiber} />
-        )}
-        {fiber.type === ElementTypeMemo && (
-          <FiberInfoSectionMemo fiber={fiber} />
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
       </SectionStateContext.Provider>

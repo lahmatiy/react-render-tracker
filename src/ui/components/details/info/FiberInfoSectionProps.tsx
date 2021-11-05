@@ -1,10 +1,11 @@
 import * as React from "react";
+import { ElementTypeMemo } from "../../../../common/constants";
 import { FiberEvent, MessageFiber, TransferPropChange } from "../../../types";
 import { useFiber } from "../../../utils/fiber-maps";
 import { ChangesMatrix } from "./ChangesMatrix";
 import { FiberInfoSection } from "./FiberInfoSection";
 
-export function FiberInfoSectionMemo({ fiber }: { fiber: MessageFiber }) {
+export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
   const { events = [] } = useFiber(fiber.id) || {};
   const fiberProps = new Map<string, number>();
   const targetEvents: Array<FiberEvent> = [];
@@ -60,13 +61,17 @@ export function FiberInfoSectionMemo({ fiber }: { fiber: MessageFiber }) {
   return (
     <FiberInfoSection
       id="memo"
-      header={`memo`}
-      emptyText="No conditions for an effect"
+      header={`${
+        fiber.type === ElementTypeMemo
+          ? "Props changes & memo"
+          : "Props changes"
+      } ${rows.length > 0 ? `(${rows.length})` : ""}`}
+      emptyText="New props never passed"
     >
       {rows.length === 0 ? null : (
         <ChangesMatrix
           key={fiber.id}
-          mainHeader="Update from owner"
+          mainHeader="Owner update"
           headers={[...fiberProps.keys()]}
           data={rows}
         />

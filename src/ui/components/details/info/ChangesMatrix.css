@@ -90,6 +90,7 @@
 }
 .changes-matrix__diff-line {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 .changes-matrix__diff-line + .changes-matrix__diff-line {
