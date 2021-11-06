@@ -6,6 +6,7 @@
 .diff-line {
   display: block;
   min-width: 100%;
+  box-sizing: border-box;
   padding-left: 16px;
   font-size: 12px;
   line-height: 18px;

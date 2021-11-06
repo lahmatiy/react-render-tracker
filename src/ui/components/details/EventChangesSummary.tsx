@@ -32,7 +32,7 @@ function getChangesSummary(changes: FiberChanges) {
 }
 
 export function EventChangesSummary({
-  changes,
+  changes = null,
   expanded = false,
   toggleExpanded,
 }: {

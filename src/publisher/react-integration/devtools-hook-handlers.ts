@@ -272,7 +272,7 @@ export function createReactDevtoolsHookHandlers(
     prev: MemoizedState = null,
     next: MemoizedState = null
   ): TransferStateChange[] | undefined {
-    if (prev === null || next === null) {
+    if (prev === null || next === null || prev === next) {
       return;
     }
 
@@ -313,7 +313,7 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function getPropsChanges(prev: MemoizedState, next: MemoizedState) {
-    if (prev == null || next == null) {
+    if (prev == null || next == null || prev === next) {
       return undefined;
     }
 
@@ -330,7 +330,7 @@ export function createReactDevtoolsHookHandlers(
       }
     }
 
-    return changedProps.length > 0 ? changedProps : undefined;
+    return changedProps;
   }
 
   function getStateChanges(prev: MemoizedState, next: MemoizedState) {
@@ -849,6 +849,17 @@ export function createReactDevtoolsHookHandlers(
         op: "update-bailout-memo",
         commitId: currentCommitId,
         fiberId,
+        trigger: triggerEventId,
+      });
+    } else if (fiber.stateNode && fiber.updateQueue !== alternate.updateQueue) {
+      recordEvent({
+        op: "update-bailout-scu",
+        commitId: currentCommitId,
+        fiberId,
+        changes: {
+          props: getPropsChanges(fiber.memoizedProps, alternate.memoizedProps),
+          state: getStateChanges(fiber.memoizedState, alternate.memoizedState),
+        },
         trigger: triggerEventId,
       });
     }

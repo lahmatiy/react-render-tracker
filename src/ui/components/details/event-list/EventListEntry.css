@@ -38,7 +38,8 @@
   --selected-fiber-bg-color: #f6e3e3;
   --selected-fiber-color: #ac6f6f;
 }
-.event-list-item[data-op="update-bailout-memo"] {
+.event-list-item[data-op="update-bailout-memo"],
+.event-list-item[data-op="update-bailout-scu"] {
   --type-color: #c4dced;
   --type-image: url("../../../images/event-update-bailout-memo.svg");
   --type-image-size: 11px;

@@ -47,12 +47,6 @@
   white-space: nowrap;
 }
 
-.changes-matrix td.shallow-equal::before,
-.changes-matrix td.has-diff::before,
-.changes-matrix td.no-diff::before {
-  content: "";
-}
-
 .changes-matrix td.shallow-equal::before {
   content: "SE";
   padding: 3px 1px 2px;
@@ -74,9 +68,13 @@
   font-size: 10px;
   text-align: center;
 }
+.changes-matrix td.no-diff {
+  min-width: 14px;
+}
 .changes-matrix td.no-diff::before {
   content: "–";
   color: #ccc;
+  line-height: 15px;
 }
 
 .changes-matrix__row:not(.changes-matrix__row_no-details):hover {

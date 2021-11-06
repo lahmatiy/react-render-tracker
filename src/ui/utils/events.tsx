@@ -7,9 +7,11 @@ import { subscribeSubtree } from "./tree";
 import {
   FiberChanges,
   FiberEvent,
+  FiberTypeDef,
   LinkedEvent,
   Message,
   MessageFiber,
+  TransferFiberChanges,
   TransferPropChange,
   TransferStateChange,
   UpdateFiberMessage,
@@ -268,6 +270,36 @@ export function processEvents(
 
     return linkedEvent;
   };
+  const normChanges = (
+    typeDef: FiberTypeDef,
+    changes: TransferFiberChanges | null
+  ) =>
+    changes
+      ? {
+          ...changes,
+          state: changes?.state?.map(change => ({
+            ...change,
+            hook: change.hook !== null ? typeDef.hooks[change.hook] : null,
+          })),
+          context:
+            changes.context?.map(change => {
+              const linkedEvent = linkedEvents.get(
+                allEvents[change.valueChangedEventId]
+              ) as FiberEvent;
+              const { prev, next, diff } =
+                linkedEvent?.changes?.props?.find(
+                  prop => prop.name === "value"
+                ) || {};
+
+              return {
+                context: typeDef.contexts?.[change.context] || null,
+                prev,
+                next,
+                diff,
+              };
+            }) || null,
+        }
+      : null;
 
   for (const event of newEvents) {
     let fiber: MessageFiber;
@@ -358,35 +390,7 @@ export function processEvents(
           warnings: fiber.warnings + eventWarnings(fiber, event),
         };
 
-        changes = event.changes
-          ? {
-              ...event.changes,
-              state: event.changes?.state?.map(change => ({
-                ...change,
-                hook:
-                  change.hook !== null
-                    ? fiber.typeDef.hooks[change.hook]
-                    : null,
-              })),
-              context:
-                event.changes.context?.map(change => {
-                  const linkedEvent = linkedEvents.get(
-                    allEvents[change.valueChangedEventId]
-                  ) as FiberEvent;
-                  const { prev, next, diff } =
-                    linkedEvent?.changes?.props?.find(
-                      prop => prop.name === "value"
-                    ) || {};
-
-                  return {
-                    context: fiber.typeDef.contexts?.[change.context] || null,
-                    prev,
-                    next,
-                    diff,
-                  };
-                }) || null,
-            }
-          : null;
+        changes = normChanges(fiber.typeDef, event.changes);
 
         break;
 
@@ -397,8 +401,14 @@ export function processEvents(
           updatesBailoutStateCount: fiber.updatesBailoutStateCount + 1,
         };
         break;
+
       case "update-bailout-memo":
         fiber = fiberById.get(event.fiberId) as MessageFiber;
+        break;
+
+      case "update-bailout-scu":
+        fiber = fiberById.get(event.fiberId) as MessageFiber;
+        changes = normChanges(fiber.typeDef, event.changes);
         break;
 
       // case "effect-create":

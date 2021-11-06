@@ -155,6 +155,14 @@ declare module "common-types" {
     trigger?: number;
   }
 
+  export interface UpdateBailoutSCUFiberMessage extends BaseMessage {
+    op: "update-bailout-scu";
+    commitId: number;
+    fiberId: number;
+    changes: TransferFiberChanges | null;
+    trigger?: number;
+  }
+
   export interface UnmountFiberMessage extends BaseMessage {
     op: "unmount";
     commitId: number;
@@ -183,6 +191,7 @@ declare module "common-types" {
     | UpdateFiberMessage
     | UpdateBailoutStateFiberMessage
     | UpdateBailoutMemoFiberMessage
+    | UpdateBailoutSCUFiberMessage
     | UnmountFiberMessage
     | CreateEffectFiberMessage
     | DestroyEffectFiberMessage;

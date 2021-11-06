@@ -50,6 +50,9 @@
 .fiber-info-section__header:hover::before {
   opacity: 1;
 }
+.fiber-info-section_expanded > .fiber-info-section__header {
+  color: #555;
+}
 .fiber-info-section_expanded > .fiber-info-section__header::before {
   transform: rotate(0deg);
 }

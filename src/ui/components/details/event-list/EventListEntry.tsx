@@ -27,6 +27,8 @@ const opTooltip: Record<
     "Update bailout (rendered but return is discarded and further update is prevented due to no changes in state)",
   "update-bailout-memo":
     "React.memo() update bailout (render and further updates are prevented due to no changes in props)",
+  "update-bailout-scu":
+    'shouldComponentUpdate() bailout (state and props are set, but render and further updates are prevented due "shouldComponentUpdate" method returned false)',
   unmount: "Unmount",
   "effect-create": "Create effect",
   "effect-destroy": "Destroy effect",

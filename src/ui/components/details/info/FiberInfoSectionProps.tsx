@@ -38,24 +38,37 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
       case "update-bailout-memo":
         targetEvents.push(fiberEvent);
         break;
+
+      case "update-bailout-scu":
+        if (changes?.props) {
+          targetEvents.push(fiberEvent);
+        }
+        break;
     }
   }
 
-  for (const { event, changes } of targetEvents) {
-    let values: Array<TransferPropChange | null> | null = null;
+  if (fiberProps.size > 0) {
+    for (const { event, changes } of targetEvents) {
+      let values: Array<TransferPropChange | null> | null = null;
 
-    if (changes?.props) {
-      values = Array.from({ length: fiberProps.size }, () => null);
-      for (const change of changes?.props) {
-        values[fiberProps.get(change.name) as number] = change;
+      if (changes?.props) {
+        values = Array.from({ length: fiberProps.size }, () => null);
+        for (const change of changes?.props) {
+          values[fiberProps.get(change.name) as number] = change;
+        }
       }
-    }
 
-    rows.push({
-      num: rows.length,
-      main: event.op === "update" ? "Update" : "Bailout",
-      values,
-    });
+      rows.push({
+        num: rows.length,
+        main:
+          event.op === "update"
+            ? "Update"
+            : event.op === "update-bailout-memo"
+            ? "Memo HOC bailout"
+            : "SCU bailout",
+        values,
+      });
+    }
   }
 
   return (
@@ -66,12 +79,12 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
           ? "Props changes & memo"
           : "Props changes"
       } ${rows.length > 0 ? `(${rows.length})` : ""}`}
-      emptyText="New props never passed"
+      emptyText={fiberProps.size === 0 ? "No props" : "New props never passed"}
     >
       {rows.length === 0 ? null : (
         <ChangesMatrix
           key={fiber.id}
-          mainHeader="Owner update"
+          mainHeader="Reaction"
           headers={[...fiberProps.keys()]}
           data={rows}
         />

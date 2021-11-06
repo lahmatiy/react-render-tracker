@@ -48,9 +48,6 @@ export function PropChange({ entry }: { entry: TransferPropChange }) {
 }
 
 export function StateChange({ entry }: { entry: FiberStateChange }) {
-  if (!entry.hook) {
-    debugger;
-  }
   return (
     <Change
       type="state"
