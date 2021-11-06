@@ -59,7 +59,7 @@ async function buildPublisher(config) {
     entryPoints: ["src/publisher/index.ts"],
     bundle: true,
     sourcemap: true,
-    format: "esm",
+    format: "iife",
     write: false,
     ...config,
     define: {

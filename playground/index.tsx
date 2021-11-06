@@ -1,5 +1,4 @@
 import * as React from "react";
-import rempl from "rempl";
 import testCases from "./cases/index.js";
 import createTestCaseWrapper from "./create-test-case-wrapper.jsx";
 import { RenderContextProvider } from "./helpers.jsx";
