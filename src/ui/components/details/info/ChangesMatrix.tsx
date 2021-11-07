@@ -82,7 +82,11 @@ export function ChangesMatrix({
             </div>
           </th>
           {headers.map((header, index) => (
-            <th key={index} className="changes-matrix__value-header">
+            <th
+              key={index}
+              title={header}
+              className="changes-matrix__value-header"
+            >
               <div className="changes-matrix__value-header-text-wrapper">
                 <div className="changes-matrix__value-header-text">
                   {header}
@@ -90,7 +94,7 @@ export function ChangesMatrix({
               </div>
             </th>
           ))}
-          <th style={{ width: "100%" }} />
+          <th className="changes-matrix__header-spacer" />
         </tr>
       </thead>
       <tbody>

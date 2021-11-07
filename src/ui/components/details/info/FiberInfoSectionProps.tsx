@@ -79,7 +79,9 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
           ? "Props changes & memo"
           : "Props changes"
       } ${rows.length > 0 ? `(${rows.length})` : ""}`}
-      emptyText={fiberProps.size === 0 ? "No props" : "New props never passed"}
+      emptyText={
+        fiberProps.size === 0 ? "No props" : "No new props since mount"
+      }
     >
       {rows.length === 0 ? null : (
         <ChangesMatrix
