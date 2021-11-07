@@ -4,6 +4,7 @@
   - `Enter` – select next matched
   - `Shift+Enter` – select previous matched
   - `Escape` – clear search input
+- Added prev/next fiber selection with up/down keys
 
 ## 0.5.0 (October 10, 2021)
 

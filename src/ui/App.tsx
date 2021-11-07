@@ -12,6 +12,7 @@ import FiberTreeHeader from "./components/fiber-tree/TreeHeader";
 import Details from "./components/details/Details";
 import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";
+import FiberTreeKeyboardNav from "./components/misc/FiberTreeKeyboardNav";
 
 function App() {
   return (
@@ -56,6 +57,10 @@ function Layout() {
           rootId={pinnedId}
           groupByParent={groupByParent}
           showTimings={showTimings}
+        />
+        <FiberTreeKeyboardNav
+          groupByParent={groupByParent}
+          showUnmounted={showUnmounted}
         />
         <FiberTree
           rootId={pinnedId}
