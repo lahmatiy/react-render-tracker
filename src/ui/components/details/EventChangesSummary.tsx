@@ -14,7 +14,7 @@ function getChangesSummary(changes: FiberChanges) {
   const reasons: string[] = [];
   let hasShallowEqual = false;
 
-  if (props) {
+  if (props && props.length) {
     reasons.push("props");
   }
 

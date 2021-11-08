@@ -32,13 +32,15 @@ const EventListFiberEvent = ({
   );
   const { selected } = useSelectionState(fiberId);
   const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
-  const details = event.op === "update" && expanded && (
-    <EventRenderReasons
-      fiberId={fiberId}
-      changes={changes}
-      nextConjunction={nextConjunction}
-    />
-  );
+  const details = (event.op === "update" ||
+    event.op === "update-bailout-scu") &&
+    expanded && (
+      <EventRenderReasons
+        fiberId={fiberId}
+        changes={changes}
+        nextConjunction={nextConjunction}
+      />
+    );
 
   return (
     <EventListEntry
