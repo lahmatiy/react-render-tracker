@@ -242,6 +242,7 @@ export function createReactDevtoolsHookHandlers(
     const contexts = getContextsForFunctionFiber(fiber);
 
     if (contexts !== null) {
+      const seenContexts = new Set<number>();
       const changes = [];
       const typeId = getFiberTypeId(fiber.type);
       const hookContextIndecies =
@@ -252,7 +253,19 @@ export function createReactDevtoolsHookHandlers(
         const valueChangedEventId =
           commitContext.get(context)?.valueChangedEventId || null;
 
-        if (typeof contextIndex === "number" && valueChangedEventId !== null) {
+        if (
+          typeof contextIndex === "number" &&
+          valueChangedEventId !== null &&
+          !seenContexts.has(contextIndex)
+        ) {
+          // React adds extra entries to dependencies list in some cases,
+          // e.g. useContext(A) -> useContext(B) -> useContext(A) will produce
+          // 3 entries on dependencies list instead of 2. Moreover re-renders
+          // might double count of entries on the list.
+          // It's not clear that's a bug or a feature, so just we exclude
+          // context reference duplicates for now
+          seenContexts.add(contextIndex);
+
           changes.push({
             context: contextIndex,
             valueChangedEventId,

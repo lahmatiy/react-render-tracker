@@ -14,6 +14,7 @@ function Root() {
     <MyContextProvider>
       <HookConsumer />
       <ElementConsumer />
+      <MemoPaypassConsumer />
     </MyContextProvider>
   );
 }
@@ -37,6 +38,28 @@ function Child({ value }: { value: string }) {
   return <>{value || "Fail: no value"}</>;
 }
 
+function MemoPaypassConsumer() {
+  return <MemoWrapper />;
+}
+
+const MemoWrapper = React.memo(function () {
+  return <PaypassConsumerTarget />;
+});
+MemoWrapper.displayName = "MemoWrapper";
+
+function PaypassConsumerTarget() {
+  React.useContext(MyContext);
+  const { useContext, useState } = useTrackRender();
+  const contextValue = useContext(MyContext);
+  const [state, setState] = useState(contextValue);
+
+  if (state !== contextValue) {
+    setState(contextValue);
+  }
+
+  return <Child value={state} />;
+}
+
 const MyContext = React.createContext("Fail: waiting for context change");
 MyContext.displayName = "MyContext";
 
@@ -45,14 +68,14 @@ function MyContextProvider({ children }: { children?: React.ReactNode }) {
   const [value, setValue] = useState(0);
 
   React.useEffect(() => {
-    if (value < 2) {
+    if (value < 5) {
       setValue(value + 1);
     }
   }, [value]);
 
   return (
     <MyContext.Provider
-      value={value > 0 ? "OK" : "Fail: waiting for context change"}
+      value={value > 0 ? "OK" + value : "Fail: waiting for context change"}
     >
       {children}
     </MyContext.Provider>
