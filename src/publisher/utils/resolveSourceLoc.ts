@@ -16,6 +16,11 @@ const noResolve = (loc: string) => {
 };
 let needWebpackSync = true;
 
+const callAsap =
+  typeof requestIdleCallback === "function"
+    ? requestIdleCallback
+    : (fn: () => void) => Promise.resolve().then(fn);
+
 function sourceToResolve(filepath: string, source: string | (() => any)) {
   const lazyResolve = (loc: string, line: number, column: number) => {
     const [, sourceMapBase64] =
@@ -95,7 +100,7 @@ function syncWebpackSourceMapsIfNeeded() {
   }
 
   needWebpackSync = false;
-  requestIdleCallback(() => (needWebpackSync = true));
+  callAsap(() => (needWebpackSync = true));
 
   for (const name of Object.keys(window)) {
     if (!name.startsWith("webpackChunk_")) {
@@ -149,8 +154,8 @@ export function resolveSourceLoc(loc: string) {
     loc
       .replace(/^webpack-internal:\/\/\//, "")
       .match(/^(.+?)(?::(\d+)(?::(\d+))?)?$/) || [];
-  const genLine = rawLine ? parseInt(rawLine, 10) : 0;
-  const genColumn = rawColumn ? parseInt(rawColumn, 10) : 0;
+  const genLine = rawLine ? parseInt(rawLine, 10) : 1;
+  const genColumn = rawColumn ? parseInt(rawColumn, 10) : 1;
 
   syncWebpackSourceMapsIfNeeded();
   fetchIfNeeded(filepath);

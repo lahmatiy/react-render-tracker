@@ -8,6 +8,11 @@ interface SourceLocationsContext {
   resolvedLocation: (loc?: string | null) => string | null;
 }
 
+const callAsap =
+  typeof requestIdleCallback === "function"
+    ? requestIdleCallback
+    : (fn: () => void) => Promise.resolve().then(fn);
+
 const SourceLocationsContext = React.createContext<SourceLocationsContext>({
   subscribe: () => () => undefined,
   resolvedLocation: () => null,
@@ -35,7 +40,7 @@ export function SourceLocationsContextProvider({
       awaitResolve.add(loc);
 
       if (!flushAwaitResolveScheduled) {
-        requestIdleCallback(flushAwaitResolve);
+        callAsap(flushAwaitResolve);
         flushAwaitResolveScheduled = true;
       }
     };
