@@ -52,7 +52,10 @@ const FiberInfo = ({
         )}
         {fiber.typeDef.contexts && <FiberInfoSectionContexts fiber={fiber} />}
         {fiber.type === ElementTypeProvider && (
-          <FiberInfoSectionConsumers fiber={fiber} />
+          <FiberInfoSectionConsumers
+            fiber={fiber}
+            showUnmounted={showUnmounted}
+          />
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
         <FiberInfoSectionEvents

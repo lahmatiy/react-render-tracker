@@ -35,48 +35,81 @@ function FiberByTypeList({
       >
         {displayName} ({fibers.length})
       </div>
-      <div className="fiber-info-section-consumers-type-group__content">
-        {expanded &&
-          fibers.map((fiber, index) => (
+      {expanded && (
+        <div className="fiber-info-section-consumers-type-group__content">
+          {fibers.map((fiber, index) => (
             <div key={index}>
               <FiberLink id={fiber.id} name={fiber.displayName} />
             </div>
           ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export function FiberInfoSectionConsumers({ fiber }: { fiber: MessageFiber }) {
+export function FiberInfoSectionConsumers({
+  fiber,
+  showUnmounted,
+}: {
+  fiber: MessageFiber;
+  showUnmounted: boolean;
+}) {
   const fiberIds = useProviderCustomers(fiber.id);
   const { fiberById } = useFiberMaps();
   const fiberByType = new Map<number, FiberGroup>();
+  let fiberCount = 0;
 
   for (const fiberId of fiberIds) {
     const fiber = fiberById.get(fiberId) as MessageFiber;
-    const { typeId } = fiber;
+    const { typeId, displayName, mounted } = fiber;
+
+    if (!showUnmounted && !mounted) {
+      continue;
+    }
 
     if (!fiberByType.has(typeId)) {
       fiberByType.set(typeId, {
-        displayName: fiber.displayName,
+        displayName,
         fibers: [],
       });
     }
 
     fiberByType.get(typeId)?.fibers.push(fiber);
+    fiberCount++;
   }
 
+  const consumers = [...fiberByType.entries()]
+    .sort(byDisplayName)
+    .map(([typeId, { displayName, fibers }]) =>
+      fibers.length === 1 ? (
+        <div
+          key={fibers[0].typeId}
+          className={
+            "fiber-info-section-consumers-single-instance" +
+            (!fibers[0].mounted
+              ? " fiber-info-section-consumers-single-instance_unmounted"
+              : "")
+          }
+        >
+          <FiberLink id={fibers[0].id} name={fibers[0].displayName} />
+        </div>
+      ) : (
+        <FiberByTypeList
+          key={typeId}
+          displayName={displayName}
+          fibers={fibers}
+        />
+      )
+    );
+
   return (
-    <FiberInfoSection id="consumers" header={`Consumers (${fiberIds.length})`}>
-      {[...fiberByType.entries()]
-        .sort(byDisplayName)
-        .map(([typeId, { displayName, fibers }]) => (
-          <FiberByTypeList
-            key={typeId}
-            displayName={displayName}
-            fibers={fibers}
-          />
-        ))}
+    <FiberInfoSection
+      id="consumers"
+      header={fiberCount ? `Consumers (${fiberCount})` : "Consumers"}
+      emptyText={"No consumers"}
+    >
+      {fiberCount ? consumers : null}
     </FiberInfoSection>
   );
 }
