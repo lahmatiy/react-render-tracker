@@ -64,7 +64,7 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
           event.op === "update"
             ? "Update"
             : event.op === "update-bailout-memo"
-            ? "Memo HOC bailout"
+            ? "React.memo() bailout"
             : "SCU bailout",
         values,
       });
@@ -76,8 +76,8 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
       id="memo"
       header={`${
         fiber.type === ElementTypeMemo
-          ? "Props changes & memo"
-          : "Props changes"
+          ? "Props updates & memo"
+          : "Props updates"
       } ${rows.length > 0 ? `(${rows.length})` : ""}`}
       emptyText={
         fiberProps.size === 0 ? "No props" : "No new props since mount"
