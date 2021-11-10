@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,8 +7,6 @@ export default {
 } as TestCase;
 
 function Root() {
-  useTrackRender();
-
   return (
     <MyContextProvider>
       <HookConsumer />
@@ -20,17 +17,24 @@ function Root() {
 }
 
 function HookConsumer() {
-  const { useContext } = useTrackRender();
-  const contextValue = useContext(MyContext);
+  const contextValue = React.useContext(MyContext);
 
   return <Child value={contextValue || "Fail"} />;
 }
 
 function ElementConsumer() {
+  const memoCallback = React.useCallback(
+    contextValue => <Child value={contextValue} />,
+    []
+  );
+
   return (
-    <MyContext.Consumer>
-      {contextValue => <Child value={contextValue} />}
-    </MyContext.Consumer>
+    <>
+      <MyContext.Consumer>
+        {contextValue => <Child value={contextValue} />}
+      </MyContext.Consumer>
+      <MyContext.Consumer>{memoCallback}</MyContext.Consumer>
+    </>
   );
 }
 
@@ -49,9 +53,8 @@ MemoWrapper.displayName = "MemoWrapper";
 
 function PaypassConsumerTarget() {
   React.useContext(MyContext);
-  const { useContext, useState } = useTrackRender();
-  const contextValue = useContext(MyContext);
-  const [state, setState] = useState(contextValue);
+  const contextValue = React.useContext(MyContext);
+  const [state, setState] = React.useState(contextValue);
 
   if (state !== contextValue) {
     setState(contextValue);
@@ -64,8 +67,7 @@ const MyContext = React.createContext("Fail: waiting for context change");
 MyContext.displayName = "MyContext";
 
 function MyContextProvider({ children }: { children?: React.ReactNode }) {
-  const { useState } = useTrackRender();
-  const [value, setValue] = useState(0);
+  const [value, setValue] = React.useState(0);
 
   React.useEffect(() => {
     if (value < 5) {

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,9 +7,8 @@ export default {
 } as TestCase;
 
 function Root() {
-  const { useState } = useTrackRender();
-  const [counter, setCounter] = useState(0);
-  const [mounted, setMounted] = useState("Fail: waiting for mount");
+  const [counter, setCounter] = React.useState(0);
+  const [mounted, setMounted] = React.useState("Fail: waiting for mount");
   const [memoArray, memoObj] = React.useMemo(
     () => [[counter], { mounted, [mounted[0]]: "test" }],
     [mounted]
@@ -57,7 +55,6 @@ function Child({
   lazy?: any;
   mix?: any;
 }) {
-  useTrackRender();
   return <>{mounted}</>;
 }
 Child.displayName = "Child";

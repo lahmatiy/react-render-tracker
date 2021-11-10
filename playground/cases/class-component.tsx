@@ -1,10 +1,4 @@
 import * as React from "react";
-import {
-  IRenderContext,
-  IRenderInstance,
-  RenderContext,
-  useTrackRender,
-} from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -13,8 +7,7 @@ export default {
 } as TestCase;
 
 function Root() {
-  const { useState } = useTrackRender();
-  const [, setState] = useState(0);
+  const [, setState] = React.useState(0);
 
   return (
     <>
@@ -31,22 +24,9 @@ function Root() {
 }
 
 class ClassComponent extends React.Component<{ value: string }> {
-  static contextType = RenderContext;
-  private renderContextInstance?: IRenderInstance;
-  private initial = true;
   state = { test: 1 };
   render() {
-    const renderContext: IRenderContext = this.context;
     const { value } = this.props;
-
-    if (!this.renderContextInstance) {
-      this.renderContextInstance = renderContext.initInstance();
-    }
-
-    this.renderContextInstance.log(
-      `[render] ${this.initial ? "initial" : "rerender"}`
-    );
-    this.initial = false;
 
     return <Child value={value} />;
   }
@@ -173,6 +153,5 @@ class ClassComponentWithForceUpdate extends React.Component {
 const MemoClassComponent = React.memo(ClassComponent);
 
 function Child({ value }: { value: string }) {
-  useTrackRender();
   return <>[{value}]</>;
 }

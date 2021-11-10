@@ -1,7 +1,6 @@
 import * as React from "react";
 import testCases from "./cases/index.js";
 import createTestCaseWrapper from "./create-test-case-wrapper.jsx";
-import { RenderContextProvider } from "./helpers.jsx";
 import { createElement } from "./dom-utils.js";
 
 function createTocItem(id: string | undefined, title: string) {
@@ -46,7 +45,7 @@ Promise.all(testCases).then(testCases => {
     selectedTestCaseId = newSelectedTestCaseId;
 
     for (const testCaseWrapper of testCaseWrappers) {
-      const { id, render, instrumentedLog, testcase } = testCaseWrapper;
+      const { id, render, testcase } = testCaseWrapper;
       const { Root, title } = testcase;
 
       if (selectedTestCaseId !== null && selectedTestCaseId !== id) {
@@ -54,12 +53,7 @@ Promise.all(testCases).then(testCases => {
       }
 
       renderedTestCases.add(testCaseWrapper);
-      render(
-        contentEl,
-        <RenderContextProvider log={instrumentedLog}>
-          <Root title={title} />
-        </RenderContextProvider>
-      );
+      render(contentEl, <Root title={title} />);
     }
   };
 

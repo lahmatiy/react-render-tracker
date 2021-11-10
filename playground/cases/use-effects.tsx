@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,9 +7,8 @@ export default {
 } as TestCase;
 
 function Root() {
-  const { useState } = useTrackRender();
-  const [isVisible, setIsVisible] = useState(true);
-  const [, setState] = useState(0);
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [, setState] = React.useState(0);
 
   React.useEffect(() => {
     setState(Date.now());
@@ -56,7 +54,6 @@ function useEffects() {
 }
 
 function Child() {
-  useTrackRender();
   useEffects();
 
   return <>OK</>;

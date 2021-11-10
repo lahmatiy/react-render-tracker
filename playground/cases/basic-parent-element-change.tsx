@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,13 +7,11 @@ export default {
 } as TestCase;
 
 function Root() {
-  useTrackRender();
   return <ChildWrapper />;
 }
 
 function ChildWrapper() {
-  const { useState } = useTrackRender();
-  const [mounted, setMounted] = useState("Fail: waiting for mount");
+  const [mounted, setMounted] = React.useState("Fail: waiting for mount");
 
   React.useEffect(() => {
     setMounted("OK");
@@ -29,6 +26,5 @@ function ChildWrapper() {
 }
 
 function Child() {
-  useTrackRender();
   return <>child element</>;
 }

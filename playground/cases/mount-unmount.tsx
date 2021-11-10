@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useEffect } from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -9,9 +8,8 @@ export default {
 } as TestCase;
 
 function Root() {
-  const { useState } = useTrackRender();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isFirstRender, setIsFirstRender] = useState(true);
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [isFirstRender, setIsFirstRender] = React.useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +32,5 @@ function Root() {
 }
 
 function Child() {
-  useTrackRender();
   return <>OK</>;
 }

@@ -1,7 +1,6 @@
 import { TestCase } from "../types";
 
 export default [
-  getDefault(import("./basic")),
   getDefault(import("./class-component")),
   getDefault(import("./basic-nested-set-state")),
   getDefault(import("./props-changes")),

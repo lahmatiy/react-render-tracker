@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,13 +7,11 @@ export default {
 } as TestCase;
 
 function Root() {
-  useTrackRender();
   return <Child />;
 }
 
 function Child() {
-  const { useState } = useTrackRender();
-  const [ok, setOk] = useState(false);
+  const [ok, setOk] = React.useState(false);
 
   if (!ok) {
     return (

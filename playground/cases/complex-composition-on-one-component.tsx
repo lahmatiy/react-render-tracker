@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTrackRender } from "../helpers";
 import { TestCase } from "../types";
 
 export default {
@@ -8,7 +7,6 @@ export default {
 } as TestCase;
 
 function Root() {
-  useTrackRender();
   return (
     <Foo>
       <Bar />
@@ -23,23 +21,19 @@ function Root() {
 }
 
 function Foo({ children }: { children?: React.ReactNode }) {
-  useTrackRender();
   return <>{children}</>;
 }
 
 function Bar({ children }: { children?: React.ReactNode }) {
-  useTrackRender();
   return <>{children}</>;
 }
 
 const BarMemo = React.memo(Baz);
 
 function Baz({ children }: { children?: React.ReactNode }) {
-  useTrackRender();
   return <>{children}</>;
 }
 
 function Qux() {
-  useTrackRender();
   return <>O</>;
 }

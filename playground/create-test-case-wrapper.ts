@@ -20,19 +20,9 @@ function emulateEvent(target: HTMLElement) {
 
 export default function (testcase: TestCase) {
   let reactRootEl: HTMLElement;
-  let instrumentedLogEl: HTMLElement;
-  let reactLogEl: HTMLElement;
   const rootEl = createElement("div", "case-wrapper", [
     createElement("h2", null, [createElement("span", null, testcase.title)]),
     (reactRootEl = createElement("div", "content")),
-    createElement("div", "instrumented-log", [
-      createElement("h3", null, "Instrumented log"),
-      (instrumentedLogEl = createElement("div", "log")),
-    ]),
-    createElement("div", "react-log", [
-      createElement("h3", null, "React log"),
-      (reactLogEl = createElement("div", "log")),
-    ]),
   ]);
 
   let observing = false;
@@ -62,12 +52,6 @@ export default function (testcase: TestCase) {
   return {
     id: encodeURIComponent(testcase.title.replace(/\s+/g, "-")),
     testcase,
-    instrumentedLog(msg: any) {
-      instrumentedLogEl.append(createElement("div", "log-entry", String(msg)));
-    },
-    reactLog(msg: any) {
-      reactLogEl.append(createElement("div", "log-entry", String(msg)));
-    },
     render(containerEl: HTMLElement, element: JSX.Element) {
       if (!containerEl.contains(rootEl)) {
         containerEl.append(rootEl);
@@ -90,8 +74,6 @@ export default function (testcase: TestCase) {
       observer.disconnect();
       ReactDOM.unmountComponentAtNode(reactRootEl);
       rootEl.remove();
-      instrumentedLogEl.innerHTML = "";
-      reactLogEl.innerHTML = "";
     },
   };
 }
