@@ -23,7 +23,7 @@ export default function (testcase: TestCase) {
   let instrumentedLogEl: HTMLElement;
   let reactLogEl: HTMLElement;
   const rootEl = createElement("div", "case-wrapper", [
-    createElement("h2", null, testcase.title),
+    createElement("h2", null, [createElement("span", null, testcase.title)]),
     (reactRootEl = createElement("div", "content")),
     createElement("div", "instrumented-log", [
       createElement("h3", null, "Instrumented log"),

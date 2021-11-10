@@ -6,21 +6,18 @@ import { createElement } from "./dom-utils.js";
 
 function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
-    createElement("a", { id, href: `#${id || ""}` }, title),
+    createElement("a", { href: `#${id || ""}` }, title),
   ]);
 }
 
 Promise.all(testCases).then(testCases => {
   const testCaseWrappers = testCases.map(test => createTestCaseWrapper(test));
 
-  let tocEl: HTMLElement;
-  let contentEl: HTMLElement;
-  const playgroundEl = createElement("div", "playground", [
-    (tocEl = createElement("ul", "playground__toc", [
-      createTocItem(undefined, "All"),
-    ])),
-    (contentEl = createElement("section", "playground__content")),
-  ]);
+  const sidebarEl: HTMLElement = document.querySelector(".playground__sidebar");
+  const contentEl: HTMLElement = document.querySelector(".playground__content");
+  const tocEl = sidebarEl.appendChild(
+    createElement("ul", "playground__toc", [createTocItem(undefined, "All")])
+  );
 
   for (const testCaseWrapper of testCaseWrappers) {
     const { id, testcase } = testCaseWrapper;
@@ -28,12 +25,18 @@ Promise.all(testCases).then(testCases => {
     tocEl.append(createTocItem(id, testcase.title));
   }
 
-  document.body.append(playgroundEl);
-
   let selectedTestCaseId = null;
   const renderedTestCases = new Set<ReturnType<typeof createTestCaseWrapper>>();
   const syncSelectedTestCase = () => {
     const newSelectedTestCaseId = location.hash.slice(1) || null;
+    const newSelectedHash = `#${newSelectedTestCaseId || ""}`;
+
+    for (const link of tocEl.querySelectorAll("a[href]")) {
+      link.classList.toggle(
+        "selected",
+        link.getAttribute("href") === newSelectedHash
+      );
+    }
 
     for (const testCaseWrapper of renderedTestCases) {
       renderedTestCases.delete(testCaseWrapper);

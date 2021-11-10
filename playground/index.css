@@ -5,45 +5,71 @@ body {
   line-height: 1.6;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  display: flex;
 }
 
 .playground {
-  display: flex;
-  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+  display: grid;
+  height: 100%;
+  grid-template:
+    "header header"
+    "sidebar content" 1fr;
+  grid-template-columns: 280px auto;
 }
-.playground__toc {
-  position: sticky;
-  top: 0;
-  width: 250px;
+
+.playground__header {
+  grid-area: header;
+  border-bottom: 1px solid #e0e0e0;
+}
+.playground__header h1 {
+  margin: 4px 10px;
+  font-size: 25px;
+  font-weight: 100;
+}
+
+.playground__sidebar {
+  grid-area: sidebar;
+  overflow: auto;
+  border-right: 1px solid #e0e0e0;
+}
+.playground__sidebar ul {
   margin: 0;
   padding: 0;
-  padding-right: 8px;
   list-style: none;
 }
-.playground__toc a {
-  padding: 4px;
+.playground__sidebar a {
   display: block;
+  padding: 4px 12px;
   color: #09d;
 }
-.playground__toc a:hover {
+.playground__sidebar a:hover {
   background-color: #f4f4f4;
 }
-.playground__toc a:target {
-  background-color: #e0f0f8;
+.playground__sidebar a.selected {
+  background-color: #dde8f4;
 }
+
 .playground__content {
-  flex: 1;
+  grid-area: content;
+  overflow: auto;
 }
 
 .case-wrapper {
-  border-left: 4px solid #ccc;
   display: grid;
   gap: 10px 5px;
   grid-template:
     "header header header"
     "content instrumented-log react-log";
   grid-template-columns: 1fr 1fr 1fr;
-  margin: 10px 0;
+  margin: 0 0 20px;
 }
 
 .case-wrapper h2 {
@@ -53,7 +79,9 @@ body {
   font-size: 18px;
   font-weight: normal;
   color: #06a;
-  background-color: #e0e0e0;
+}
+.case-wrapper h2 span {
+  border-bottom: 2px solid #06a;
 }
 
 .case-wrapper .content {
