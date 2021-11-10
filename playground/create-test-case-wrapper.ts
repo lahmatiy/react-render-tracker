@@ -1,6 +1,6 @@
-import ReactDOM from "react-dom";
-import { createElement } from "./dom-utils.js";
-import { TestCase } from "./types.js";
+import ReactDOM from "./react-dom";
+import { createElement } from "./dom-utils";
+import { TestCase } from "./types";
 
 const emulateEventAttribute = "data-send-event";
 

@@ -1,7 +1,7 @@
-import * as React from "react";
-import testCases from "./cases/index.js";
-import createTestCaseWrapper from "./create-test-case-wrapper.jsx";
-import { createElement } from "./dom-utils.js";
+import React from "./react";
+import testCases from "./cases/index";
+import createTestCaseWrapper from "./create-test-case-wrapper";
+import { createElement } from "./dom-utils";
 
 function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
