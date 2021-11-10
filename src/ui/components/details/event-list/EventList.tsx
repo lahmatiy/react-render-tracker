@@ -7,6 +7,7 @@ import {
 import { useEventLog } from "../../../utils/events";
 import EventListFiberEvent from "./EventListFiberEvent";
 import EventListCommitEvent from "./EventListCommitEvent";
+import { useFiberMaps } from "../../../utils/fiber-maps";
 
 interface EventListProps {
   rootId: number;
@@ -21,6 +22,7 @@ const EventList = ({
   events,
   showTimings,
 }: EventListProps) => {
+  const { commitById } = useFiberMaps();
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, events.length - SECTION_SIZE);
     return offset < SECTION_MIN_SIZE ? 0 : offset;
@@ -104,8 +106,15 @@ const EventList = ({
       event.commitId !== -1 && event.commitId === nextCommitId;
 
     if (target === "fiber" && targetId === rootFiberId && "trigger" in event) {
+      const commit = commitById.get(event.commitId);
+
+      if (commit) {
+        listEvents.push(getEventListItem(commit.start, false, true, false));
+        prevConjunction = true;
+      }
+
       if (trigger !== null) {
-        listEvents.push(getEventListItem(trigger, prevConjunction, true, true));
+        listEvents.push(getEventListItem(trigger, true, true, true));
         prevConjunction = true;
       }
     }

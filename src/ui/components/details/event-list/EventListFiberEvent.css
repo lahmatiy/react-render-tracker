@@ -31,3 +31,19 @@
   padding-top: 2px;
   padding-bottom: 5px;
 }
+
+.event-list-item .special-reason {
+  margin-top: 2px;
+}
+.event-list-item .special-reason .source-loc {
+  background-color: #f8e6ff;
+  background-position-x: 3px;
+  padding: 2px 4px 2px 14px;
+  font-size: 10px;
+  border-radius: 3px;
+  line-height: 10px;
+  border: 1px solid #dec6e7;
+}
+.event-list-item .special-reason .source-loc:hover {
+  color: #9366a5;
+}

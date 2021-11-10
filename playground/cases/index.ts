@@ -8,6 +8,7 @@ export default [
   getDefault(import("./basic-parent-element-change")),
   getDefault(import("./context")),
   getDefault(import("./hooks")),
+  getDefault(import("./bailouts")),
   getDefault(import("./mount-unmount")),
   getDefault(import("./complex-composition-on-one-component")),
   getDefault(import("./set-state-by-event-handler")),

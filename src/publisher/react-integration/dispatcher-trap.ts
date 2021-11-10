@@ -13,7 +13,7 @@ import {
   MemoizedState,
 } from "../types";
 import { CoreApi } from "./core";
-import { parseStackTraceLine } from "./utils/parseStackTrace";
+import { extractCallLoc, parseStackTraceLine } from "./utils/stackTrace";
 
 type StateHookName = "useState" | "useReducer";
 type MemoHookName = "useMemo" | "useCallback";
@@ -74,17 +74,6 @@ function extractHookPath(depth = 0) {
   return result;
 }
 
-function extractCallLoc() {
-  const line = String(new Error().stack).split("\n")[3] || "";
-  const parsed = parseStackTraceLine(line);
-
-  if (parsed && parsed.loc) {
-    return parsed.loc;
-  }
-
-  return null;
-}
-
 export function dispatcherTrap(
   renderer: ReactInternals,
   { getFiberTypeId, isFiberRoot }: CoreApi
@@ -94,6 +83,7 @@ export function dispatcherTrap(
   let currentFiber: Fiber | null = null;
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   let currentEffectFiber: Fiber | null = null;
+  let currentEffectName: "effect" | "layout-effect" | null = null;
   let currentFiberLastHook: MemoizedState | null = null;
   let currentFiberAlternateLastHook: MemoizedState | null = null;
   let currentFiberHookIndex = 0;
@@ -199,10 +189,13 @@ export function dispatcherTrap(
       // const path = trackHookLocation();
       const wrappedCreate = () => {
         currentEffectFiber = hookOwnerFiber;
+        currentEffectName =
+          hookName === "useEffect" ? "effect" : "layout-effect";
 
         const destroy = create();
 
         currentEffectFiber = null;
+        currentEffectName = null;
         // const fiberId = getOrGenerateFiberId(fiber);
 
         // recordEvent({
@@ -280,10 +273,11 @@ export function dispatcherTrap(
               fiber: hookOwnerFiber,
               renderFiber: currentFiber,
               effectFiber: currentEffectFiber,
+              effectName: currentEffectName,
               event:
                 (!currentFiber && !currentEffectFiber && window.event?.type) ||
                 null,
-              loc: extractCallLoc(),
+              loc: extractCallLoc(0),
               // stack: String(new Error().stack),
             });
 
@@ -471,15 +465,6 @@ export function dispatcherTrap(
       }
 
       dispatchCalls = rejected;
-      // if (true || !accepted.length) {
-      //   console.log({
-      //     dispatchCalls: dispatchCalls.slice(),
-      //     accepted: accepted.slice(),
-      //     acceptedT: accepted.map(f => f.fiber.type),
-      //     acceptedT2: accepted.map(f => f.fiber.lanes),
-      //     root: root.containerInfo?.previousSibling?.innerHTML,
-      //   });
-      // }
 
       return accepted;
     },

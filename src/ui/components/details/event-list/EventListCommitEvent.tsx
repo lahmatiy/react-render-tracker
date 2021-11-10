@@ -3,6 +3,7 @@ import { CommitTrigger, SourceCommitEvent } from "../../../types";
 import { useCommit } from "../../../utils/fiber-maps";
 import EventListEntry from "./EventListEntry";
 import { Fiber } from "../Fiber";
+import SourceLoc from "../../common/SourceLoc";
 
 interface EventListCommitEventProps {
   commitId: number;
@@ -12,42 +13,23 @@ interface EventListCommitEventProps {
   nextConjunction: boolean;
 }
 
-function CallStack({ stack }: { stack: string }) {
-  const [state, setState] = React.useState(false);
-  if (!state) {
-    return (
-      <span
-        onClick={() => setState(true)}
-        style={{
-          display: "inline-block",
-          textDecoration: "underline",
-          cursor: "pointer",
-          marginLeft: "6px",
-          color: "#888",
-        }}
-      >
-        stack trace
-      </span>
-    );
-  }
-
-  return <pre style={{ fontSize: "11px", margin: "0 0 0 8px" }}>{stack}</pre>;
-}
-
 const CommitTriggers = ({ triggers }: { triggers: CommitTrigger[] }) => {
   return (
     <div className="event-list-item__commit-details">
       {triggers?.map((trigger, idx) => (
         <div key={idx}>
-          [{trigger.type}] {trigger.event}{" "}
           {trigger.relatedFiberId &&
             trigger.relatedFiberId !== trigger.fiberId && (
               <>
-                <Fiber fiberId={trigger.relatedFiberId} /> →{" "}
+                <Fiber fiberId={trigger.relatedFiberId} />
+                {" → "}
               </>
             )}
           <Fiber fiberId={trigger.fiberId} />
-          {trigger.stack && <CallStack stack={trigger.stack} />}
+          <div style={{ margin: "0 0 2px 10px" }}>
+            [{trigger.event ? `${trigger.type} ${trigger.event}` : trigger.type}
+            ] {<SourceLoc loc={trigger.loc}>{trigger.kind}</SourceLoc>}
+          </div>
         </div>
       ))}
     </div>
@@ -64,6 +46,9 @@ const EventListCommitEvent = ({
   const [expanded, setIsCollapsed] = React.useState(false);
   const commit = useCommit(commitId);
   const triggers = commit?.start.event.triggers;
+  const triggerFiberCount =
+    triggers?.reduce((ids, trigger) => ids.add(trigger.fiberId), new Set())
+      .size || 0;
   const details = triggers && expanded && (
     <CommitTriggers triggers={triggers} />
   );
@@ -85,13 +70,8 @@ const EventListCommitEvent = ({
           }
           onClick={() => setIsCollapsed(expanded => !expanded)}
         >
-          {
-            triggers.reduce(
-              (ids, trigger) => ids.add(trigger.fiberId),
-              new Set()
-            ).size
-          }{" "}
-          triggers
+          {triggerFiberCount}
+          {triggerFiberCount > 1 ? " triggers" : " trigger"}
         </span>
       )}
     </EventListEntry>

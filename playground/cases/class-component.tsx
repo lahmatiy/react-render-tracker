@@ -23,7 +23,7 @@ function Root() {
       <ClassComponentWithSetState />
       <ClassComponentWithShouldComponentUpdate />
       <ShouldComponentUpdateChildWrapper />
-      <PureComponent />
+      <PureComponentWrapper />
       <ClassComponentWithForceUpdate />
       <button onClick={() => setState(Date.now())}>Trigger update</button>
     </>
@@ -114,11 +114,24 @@ class ShouldComponentUpdateChild extends React.Component<{
   }
 }
 
-class PureComponent extends React.PureComponent {
+class PureComponentWrapper extends React.Component {
   private initial = true;
   state = { test: 1 };
   render() {
-    // debugger;
+    if (this.initial) {
+      setTimeout(() => this.setState({ test: 1 }));
+      setTimeout(() => this.setState({ test: 2 }), 50);
+      this.initial = false;
+    }
+
+    return <PureComponent value={this.state.test} />;
+  }
+}
+
+class PureComponent extends React.PureComponent<{ value: number }> {
+  private initial = true;
+  state = { test: 1 };
+  render() {
     if (this.initial) {
       setTimeout(() => this.setState({ test: 2 }));
       setTimeout(() => this.setState({ test: 3 }), 5);

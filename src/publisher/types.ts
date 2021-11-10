@@ -416,14 +416,22 @@ export type FiberDispatcherContext = {
 
 export type FiberDispatchCall = {
   dispatch: any;
-  dispatchName: string;
+  dispatchName: "setState" | "dispatch";
   root: FiberRoot;
   fiber: Fiber;
   renderFiber: Fiber | null;
   effectFiber: Fiber | null;
+  effectName: "effect" | "layout-effect" | null;
   event: string | null;
   loc: string | null;
   stack?: string;
+};
+
+export type ClassComponentUpdateCall = {
+  type: "setState" | "forceUpdate";
+  rootId?: number;
+  fiber?: Fiber;
+  loc: string | null;
 };
 
 export type HookInfo = {

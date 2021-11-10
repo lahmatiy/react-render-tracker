@@ -8,6 +8,23 @@ type LineParseResult = null | {
   loc: string | null;
 };
 
+function getCallStackLine(depth: number) {
+  const stack = String(new Error().stack).split("\n");
+
+  return stack[stack[0] === "Error" ? depth + 1 : depth];
+}
+
+export function extractCallLoc(depth: number) {
+  const line = getCallStackLine(depth + 3);
+  const parsed = line ? parseStackTraceLine(line) : null;
+
+  if (parsed && parsed.loc) {
+    return parsed.loc;
+  }
+
+  return null;
+}
+
 /**
  * This parses the different stack traces and puts them into one format
  * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
@@ -60,7 +77,7 @@ function parseChrome(line: string): LineParseResult {
 }
 
 const geckoRe =
-  /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
+  /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)\s*$/i;
 const geckoEvalRe = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
 function parseGecko(line: string): LineParseResult {

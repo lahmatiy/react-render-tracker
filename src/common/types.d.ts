@@ -95,11 +95,12 @@ declare module "common-types" {
     memos?: TransferMemoChange[];
   };
   export type CommitTrigger = {
-    type: "initial-mount" | "event" | "effect" | "unknown";
+    type: "initial-mount" | "event" | "effect" | "layout-effect" | "unknown";
+    kind: "mount" | "setState" | "forceUpdate" | "useReducer" | "useState";
     fiberId: number;
     relatedFiberId?: number;
     event?: string;
-    stack?: string;
+    loc: string | null;
   };
 
   export interface BaseMessage {
@@ -138,6 +139,7 @@ declare module "common-types" {
     totalTime: number;
     selfTime: number;
     changes: TransferFiberChanges | null;
+    specialReasons: Array<{ name: string; loc: string | null }> | null;
     trigger?: number;
   }
 

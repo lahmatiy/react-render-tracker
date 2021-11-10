@@ -1,6 +1,7 @@
 import * as React from "react";
 import { SourceFiberEvent, FiberChanges } from "../../../types";
 import { useSelectionState } from "../../../utils/selection";
+import SourceLoc from "../../common/SourceLoc";
 import { EventChangesSummary } from "../EventChangesSummary";
 import { Fiber } from "../Fiber";
 import EventListEntry from "./EventListEntry";
@@ -70,6 +71,13 @@ const EventListFiberEvent = ({
         expanded={expanded}
         toggleExpanded={toggleExpanded}
       />
+      {event.op === "update" && event.specialReasons
+        ? event.specialReasons.map((reason, index) => (
+            <span key={index} className="special-reason">
+              <SourceLoc loc={reason.loc}>{reason.name}</SourceLoc>
+            </span>
+          ))
+        : null}
     </EventListEntry>
   );
 };

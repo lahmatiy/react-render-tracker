@@ -472,7 +472,7 @@ export function useEventLog(
   includeUnmounted: boolean,
   includeSubtree: boolean
 ) {
-  const { commitById, fiberById, selectTree } = useFiberMaps();
+  const { fiberById, selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, includeUnmounted);
   const subtree = React.useMemo(
     () => new Map<number, () => void>(),
@@ -491,14 +491,6 @@ export function useEventLog(
           commitIds.add(linkedEvent.event.commitId);
           events.push(linkedEvent);
         }
-      }
-    }
-
-    for (const commitId of commitIds) {
-      const commit = commitById.get(commitId);
-
-      if (commit) {
-        events.push(commit.start);
       }
     }
 
