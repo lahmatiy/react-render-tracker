@@ -8,6 +8,7 @@ import {
   ToggleUnmounted,
   ClearEventLog,
   ToggleTimings,
+  Download,
 } from "../common/icons";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
@@ -28,7 +29,39 @@ const Toolbar = ({
   onShowTimings,
   showTimings,
 }: ToolbarProps) => {
-  const { clearAllEvents } = useEventsContext();
+  const { clearAllEvents, allEvents } = useEventsContext();
+  const downloadAnchorRef = React.useRef<HTMLAnchorElement | null>(null);
+  const onDonwload = React.useCallback(() => {
+    const anchor = downloadAnchorRef.current;
+
+    if (anchor === null) {
+      return;
+    }
+
+    const json = JSON.stringify(allEvents);
+    const blob = new Blob([json], { type: "octet/stream" });
+    const url = window.URL.createObjectURL(blob);
+
+    anchor.href = url;
+    anchor.download = `react-render-tracker-data-${new Date()
+      .toISOString()
+      .replace(/\..+$/, "")
+      .replace(/\D/g, "")}.json`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+  }, [allEvents]);
+
+  React.useEffect(() => {
+    let anchor: HTMLAnchorElement | null = document.createElement("a");
+    anchor.setAttribute("style", "display:none");
+    downloadAnchorRef.current = anchor;
+    document.body.appendChild(anchor);
+
+    return () => {
+      anchor?.remove();
+      downloadAnchorRef.current = anchor = null;
+    };
+  });
 
   return (
     <div className="toolbar">
@@ -70,6 +103,14 @@ const Toolbar = ({
           onChange={clearAllEvents}
           tooltip={"Clear event log"}
         />
+        {false && (
+          <ButtonToggle
+            icon={Download}
+            isActive={false}
+            onChange={onDonwload}
+            tooltip={"Download event log"}
+          />
+        )}
       </div>
     </div>
   );

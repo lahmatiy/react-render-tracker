@@ -20,6 +20,7 @@ import { flushNotify, useDebouncedComputeSubscription } from "./subscription";
 import { ElementTypeProvider } from "../../common/constants";
 
 interface EventsContext {
+  allEvents: Message[];
   events: Message[];
   loadingStartOffset: number;
   loadedEventsCount: number;
@@ -32,6 +33,7 @@ interface EventsContext {
 }
 
 const createEventsContextValue = (): EventsContext => ({
+  allEvents: [],
   events: [],
   loadingStartOffset: 0,
   loadedEventsCount: 0,
@@ -53,7 +55,7 @@ export function EventsContextProvider({
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
-  const allEvents = React.useMemo<Message[]>(() => [], []);
+  const { allEvents } = state;
   const linkedEvents = React.useMemo(() => new Map<Message, LinkedEvent>(), []);
   const eventsSince = React.useRef(0);
   const maps = useFiberMaps();
