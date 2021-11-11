@@ -7,8 +7,23 @@ module.exports = {
 };
 
 async function buildPlayground(config) {
+  const plugins = [
+    {
+      name: "replace",
+      setup({ onLoad }) {
+        onLoad({ filter: /react\.tsx/ }, () => ({
+          contents: `export default window.React;`,
+        }));
+        onLoad({ filter: /react-dom\.tsx/ }, () => ({
+          contents: `export default window.ReactDOM;`,
+        }));
+      },
+    },
+  ];
+
   const result = await esbuild.build({
     entryPoints: ["playground/index.tsx"],
+    plugins,
     // external: ["src/*"],
     bundle: true,
     sourcemap: true,

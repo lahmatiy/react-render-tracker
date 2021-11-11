@@ -1,5 +1,4 @@
 import React from "../react";
-import { useEffect } from "react";
 import { TestCase } from "../types";
 
 export default {
@@ -11,7 +10,7 @@ function Root() {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isFirstRender, setIsFirstRender] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     let mounted = true;
     const timer = setTimeout(() => mounted && setIsFirstRender(false), 1);
 

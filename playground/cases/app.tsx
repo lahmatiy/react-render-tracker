@@ -54,7 +54,7 @@ function Input({
   return (
     <input
       value={value}
-      onInput={e => onInput((e.target as HTMLInputElement).value)}
+      onChange={e => onInput((e.target as HTMLInputElement).value)}
     />
   );
 }
