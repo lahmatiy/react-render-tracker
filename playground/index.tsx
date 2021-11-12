@@ -91,7 +91,10 @@ Promise.all(testCases).then(testCases => {
       const { id, render, testcase } = testCaseWrapper;
       const { Root, title } = testcase;
 
-      if (selectedTestCaseId !== null && selectedTestCaseId !== id) {
+      if (
+        selectedTestCaseId !== null &&
+        selectedTestCaseId !== decodeURIComponent(id)
+      ) {
         continue;
       }
 

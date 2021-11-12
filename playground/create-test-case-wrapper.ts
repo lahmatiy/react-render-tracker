@@ -22,7 +22,10 @@ export default function (testcase: TestCase) {
   let reactRootEl: HTMLElement;
   const rootEl = createElement("div", "case-wrapper", [
     createElement("h2", null, [createElement("span", null, testcase.title)]),
-    (reactRootEl = createElement("div", "content")),
+    (reactRootEl = createElement("div", {
+      id: testcase.title,
+      class: "content",
+    })),
   ]);
 
   let observing = false;

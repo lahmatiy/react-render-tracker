@@ -119,7 +119,6 @@ const ClassStateNoChangeBailout = React.memo(
         //   this.setState({ value: 1 });
         // });
       }
-      console.log("!!");
 
       return <ShouldNotUpdate value={"test"} />;
     }
