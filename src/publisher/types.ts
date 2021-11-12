@@ -167,7 +167,7 @@ export type OldDependencies = {
 type Lanes = number;
 type Flags = number;
 
-export type FiberRoot = { current: Fiber };
+export type FiberRoot = { current: Fiber; tag: number };
 
 type MemoizedStateMemo = {
   memoizedState: [any, any[] | null];

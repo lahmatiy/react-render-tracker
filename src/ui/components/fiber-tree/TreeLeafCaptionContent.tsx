@@ -5,6 +5,7 @@ import FiberKey from "../common/FiberKey";
 import FiberHocNames from "../common/FiberHocNames";
 import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
+import { fiberRootMode } from "../../../common/constants";
 
 const noop = () => undefined;
 
@@ -28,8 +29,9 @@ const TreeLeafCaptionContent = ({
     events,
     hocDisplayNames,
     typeDef,
+    rootMode,
     updatesCount,
-    updatesBailoutStateCount: bailoutUpdatesCount,
+    updatesBailoutStateCount,
     warnings,
   } = fiber;
 
@@ -49,8 +51,19 @@ const TreeLeafCaptionContent = ({
           mounted={mounted}
           events={events.length > 0}
         />
-        {key !== null && <FiberKey fiber={fiber} />}
         <FiberId id={id} />
+        {rootMode !== undefined ? (
+          <a
+            className="tree-leaf-caption__root-mode"
+            href="https://reactjs.org/docs/concurrent-mode-adoption.html#why-so-many-modes"
+            rel="noreferrer"
+            target="_blank"
+            title="Read more about root mode"
+          >
+            {fiberRootMode[rootMode]}
+          </a>
+        ) : null}
+        {key !== null && <FiberKey fiber={fiber} />}
         {warnings > 0 && <span className="tree-leaf-caption__warnings" />}
         {hocDisplayNames && <FiberHocNames names={hocDisplayNames} />}
         {updatesCount > 0 && (
@@ -61,12 +74,12 @@ const TreeLeafCaptionContent = ({
             {updatesCount}
           </span>
         )}
-        {bailoutUpdatesCount > 0 && (
+        {updatesBailoutStateCount > 0 && (
           <span
             className="tree-leaf-caption__update-bailout-count"
             title="Number of update bailouts"
           >
-            {bailoutUpdatesCount}
+            {updatesBailoutStateCount}
           </span>
         )}
         {Array.isArray(typeDef.contexts) && (

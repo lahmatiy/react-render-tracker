@@ -33,6 +33,20 @@
   border-bottom: 2px solid #e0bf08;
 }
 
+.tree-leaf-caption__root-mode {
+  margin-left: 2px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 10px;
+  background-color: #e0e0e0;
+  text-decoration: none;
+  color: #888;
+  font-size: 10px;
+}
+.tree-leaf-caption__root-mode:hover {
+  text-decoration: underline;
+}
+
 .tree-leaf-caption__update-count,
 .tree-leaf-caption__update-bailout-count,
 .tree-leaf-caption__context-count {

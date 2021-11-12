@@ -565,7 +565,8 @@ export function createReactDevtoolsHookHandlers(
         id: fiberId,
         type: ElementTypeHostRoot,
         typeId: 0,
-        key: null,
+        rootMode: fiber.stateNode.tag || 0,
+        key: fiber.stateNode.containerInfo.id || null,
         ownerId: 0,
         parentId: 0,
         displayName: null,
@@ -1203,7 +1204,7 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function handleCommitFiberRoot(root: FiberRoot /*, priorityLevel?: number*/) {
-    const current = root.current;
+    const { current } = root;
     const { alternate } = current;
 
     // Flush any pending Fibers that we are untracking before processing the new commit.
