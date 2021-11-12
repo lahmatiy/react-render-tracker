@@ -28,6 +28,28 @@
     ></script>
     <script>
       (function () {
+        function loadScript(src, type) {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+
+            if (type) {
+              script.type = type;
+            }
+
+            script.src = src.replace("[version]", version);
+            script.onload = () => resolve();
+            script.onerror = error => {
+              const msg = "Failed to load " + script.src;
+              const errorEl = document.createElement("div");
+              errorEl.append(msg);
+              document.querySelector(".playground__content").append(errorEl);
+              reject(new Error(msg));
+            };
+
+            document.body.append(script);
+          });
+        }
+
         const params = new URLSearchParams(location.hash.slice(1));
         const version = params.get("version") || "17.0.2";
         const scripts = [
@@ -43,30 +65,16 @@
           }
         });
 
-        Promise.all(
-          scripts.map(
-            src =>
-              new Promise((resolve, reject) => {
-                const script = document.createElement("script");
-                script.src = src.replace("[version]", version);
-                script.onload = () => resolve();
-                script.onerror = error => {
-                  const msg = "Failed to load " + script.src;
-                  const errorEl = document.createElement("div");
-                  errorEl.append(msg);
-                  document
-                    .querySelector(".playground__content")
-                    .append(errorEl);
-                  reject(new Error(msg));
-                };
-                document.body.append(script);
-              })
-          )
-        ).then(() => {
-          const script = document.createElement("script");
-          script.type = "module";
-          script.src = "./index.js";
-          document.body.append(script);
+        let lastLoadScriptPromise = Promise.resolve();
+
+        for (const src of scripts) {
+          lastLoadScriptPromise = lastLoadScriptPromise.then(() =>
+            loadScript(src.replace("[version]", version))
+          );
+        }
+
+        lastLoadScriptPromise.then(() => {
+          loadScript("./index.js", "module");
         });
       })();
     </script>
