@@ -106,8 +106,6 @@ export function FiberInfoSectionMemoHooks({ fiber }: { fiber: MessageFiber }) {
       <ol className="fiber-info-section-memo-content">
         {[...memoHooks.values()].map(
           ({ hook, updates, computeCount, headers }) => {
-            const rows = updates.filter(update => update.values !== null);
-
             return (
               <li key={hook.index}>
                 <CallTracePath
@@ -123,11 +121,11 @@ export function FiberInfoSectionMemoHooks({ fiber }: { fiber: MessageFiber }) {
                     ? "Every update recompute"
                     : `${computeCount} of ${updates.length} updates recompute`}
                 </span>
-                {rows.length > 0 && (
+                {updates.some(update => update.values !== null) && (
                   <ChangesMatrix
                     mainHeader="Update"
                     headers={headers}
-                    data={rows}
+                    data={updates}
                   />
                 )}
               </li>

@@ -2,7 +2,7 @@
   margin: 0;
   padding-left: 16px;
 }
-.fiber-info-section-memo-content li {
+.fiber-info-section-memo-content li:not(:last-child) {
   margin-bottom: 6px;
 }
 .fiber-info-section-memo-content li::marker {
@@ -13,4 +13,11 @@
 .fiber-info-section-memo-content__recompute-stat {
   display: block;
   color: #b58a3d;
+}
+
+.fiber-info-section-memo-content .event-changes-summary {
+  padding-left: 6px;
+}
+.fiber-info-section-memo-content .event-changes-summary::before {
+  display: none;
 }
