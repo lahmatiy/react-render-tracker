@@ -1196,13 +1196,11 @@ export function createReactDevtoolsHookHandlers(
       return true;
     });
 
-    const eventId = recordEvent({
+    recordEvent({
       op: "commit-start",
       commitId: currentCommitId,
       triggers, // FIXME: Don't send triggers for now
     });
-
-    commitUpdatedFiberId.set(currentRootId, eventId);
   }
 
   function handleCommitFiberUnmount(fiber: Fiber) {

@@ -63,7 +63,7 @@ const EventListCommitEvent = ({
       nextConjunction={nextConjunction}
     >
       <span className="event-list-item__commit-name">Commit #{commitId}</span>
-      {triggers && (
+      {false && triggers && (
         <span
           className={
             "event-list-item__commit-triggers" + (expanded ? " expanded" : "")

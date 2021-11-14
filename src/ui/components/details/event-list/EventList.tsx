@@ -22,7 +22,8 @@ const EventList = ({
   events,
   showTimings,
 }: EventListProps) => {
-  const { commitById } = useFiberMaps();
+  const { commitById, fiberById } = useFiberMaps();
+  const rootFiber = fiberById.get(rootFiberId);
   const [startOffset, setStartOffset] = React.useState(() => {
     const offset = Math.max(0, events.length - SECTION_SIZE);
     return offset < SECTION_MIN_SIZE ? 0 : offset;
@@ -105,16 +106,25 @@ const EventList = ({
     const nextConjunction =
       event.commitId !== -1 && event.commitId === nextCommitId;
 
-    if (target === "fiber" && targetId === rootFiberId && "trigger" in event) {
+    if (event.commitId !== prevCommitId) {
       const commit = commitById.get(event.commitId);
 
       if (commit) {
         listEvents.push(getEventListItem(commit.start, false, true, false));
         prevConjunction = true;
       }
+    }
 
-      if (trigger !== null) {
-        listEvents.push(getEventListItem(trigger, true, true, true));
+    if (target === "fiber" && targetId === rootFiberId) {
+      if ("trigger" in event && trigger !== null) {
+        listEvents.push(
+          getEventListItem(
+            trigger,
+            true,
+            true,
+            rootFiber?.ownerId !== trigger.targetId
+          )
+        );
         prevConjunction = true;
       }
     }
