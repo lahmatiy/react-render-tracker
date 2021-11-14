@@ -65,7 +65,6 @@ export function createReactDevtoolsHookHandlers(
   {
     getDispatchHookIndex,
     getFiberTypeHookInfo,
-    getFiberComputes,
     flushDispatchCalls,
   }: ReactDispatcherTrapApi,
   recordEvent: RecordEventHandler
@@ -102,7 +101,11 @@ export function createReactDevtoolsHookHandlers(
   >();
   const recordedTypeDef = new Map<
     number,
-    { hookContextIndecies: Map<ReactContext<any>, number> }
+    {
+      hookContextIndecies: Map<ReactContext<any>, number>;
+      hookMemoIndecies: number[];
+      hooks: TransferHookInfo[];
+    }
   >();
   const unmountedFiberIds = new Set<number>();
   const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
@@ -388,37 +391,47 @@ export function createReactDevtoolsHookHandlers(
   }
 
   function getMemoHookChanges(fiber: Fiber) {
-    const computes = getFiberComputes(fiber);
+    const hookMemoIndecies =
+      recordedTypeDef.get(getFiberTypeId(fiber.type))?.hookMemoIndecies || [];
     const changes = [];
+    let nextState = fiber.memoizedState || null;
+    let prevState = fiber.alternate?.memoizedState || null;
+    let stateIndex = 0;
 
-    for (const compute of computes) {
-      // TODO: track re-renders
-      if (compute.render === 0) {
-        const [prevValue, prevDeps] = compute.prev.memoizedState;
-        const [nextValue, nextDeps] = compute.next.memoizedState;
+    while (nextState !== null && prevState !== null) {
+      if (nextState.queue === null && Array.isArray(nextState.memoizedState)) {
+        const [prevValue, prevDeps] = prevState.memoizedState;
+        const [nextValue, nextDeps] = nextState.memoizedState;
+        const memoHookIndex = hookMemoIndecies[stateIndex++];
         const changedDeps = [];
 
-        if (prevDeps !== null && nextDeps !== null) {
-          for (let i = 0; i < prevDeps.length; i++) {
-            if (!Object.is(prevDeps[i], nextDeps[i])) {
-              changedDeps.push({
-                index: i,
-                prev: simpleValueSerialization(prevDeps[i]),
-                next: simpleValueSerialization(nextDeps[i]),
-                diff: valueDiff(prevDeps[i], nextDeps[i]),
-              });
+        if (prevDeps !== nextDeps) {
+          // recompute
+          if (prevDeps !== null && nextDeps !== null) {
+            for (let i = 0; i < prevDeps.length; i++) {
+              if (!Object.is(prevDeps[i], nextDeps[i])) {
+                changedDeps.push({
+                  index: i,
+                  prev: simpleValueSerialization(prevDeps[i]),
+                  next: simpleValueSerialization(nextDeps[i]),
+                  diff: valueDiff(prevDeps[i], nextDeps[i]),
+                });
+              }
             }
           }
-        }
 
-        changes.push({
-          hook: compute.hook,
-          prev: simpleValueSerialization(prevValue),
-          next: simpleValueSerialization(nextValue),
-          diff: valueDiff(prevValue, nextValue),
-          deps: changedDeps,
-        });
+          changes.push({
+            hook: memoHookIndex,
+            prev: simpleValueSerialization(prevValue),
+            next: simpleValueSerialization(nextValue),
+            diff: valueDiff(prevValue, nextValue),
+            deps: changedDeps,
+          });
+        }
       }
+
+      nextState = nextState.next || null;
+      prevState = prevState.next || null;
     }
 
     return changes.length > 0 ? changes : undefined;
@@ -483,6 +496,7 @@ export function createReactDevtoolsHookHandlers(
     const hooks = getFiberTypeHookInfo(typeId);
     const contexts = getFiberContexts(fiber, fiberType, hooks);
     const hookContextIndecies = new Map<ReactContext<any>, number>();
+    const hookMemoIndecies: number[] = [];
     const transferHooks: TransferHookInfo[] = [];
 
     for (const hook of hooks) {
@@ -497,6 +511,10 @@ export function createReactDevtoolsHookHandlers(
             (hookContext = hookContextIndecies.size)
           );
         }
+      }
+
+      if (hook.name === "useMemo" || hook.name === "useCallback") {
+        hookMemoIndecies.push(transferHooks.length);
       }
 
       transferHooks.push({
@@ -541,6 +559,8 @@ export function createReactDevtoolsHookHandlers(
 
     recordedTypeDef.set(typeId, {
       hookContextIndecies,
+      hookMemoIndecies,
+      hooks: transferHooks,
     });
 
     recordEvent({

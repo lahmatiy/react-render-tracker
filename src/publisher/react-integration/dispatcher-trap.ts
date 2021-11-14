@@ -10,7 +10,6 @@ import {
   TransferCallTracePoint,
   HookInfo,
   HookCompute,
-  MemoizedState,
 } from "../types";
 import { CoreApi } from "./core";
 import { extractCallLoc, parseStackTraceLine } from "./utils/stackTrace";
@@ -84,10 +83,7 @@ export function dispatcherTrap(
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   let currentEffectFiber: Fiber | null = null;
   let currentEffectName: "effect" | "layout-effect" | null = null;
-  let currentFiberLastHook: MemoizedState | null = null;
-  let currentFiberAlternateLastHook: MemoizedState | null = null;
   let currentFiberHookIndex = 0;
-  let currentFiberRenderNum = 0;
   let dispatchCalls: FiberDispatchCall[] = [];
   // let currentFiberRerenderState: RerenderState | null = null;
   const knownDispatcher = new Set<Dispatcher>();
@@ -118,63 +114,13 @@ export function dispatcherTrap(
     return currentFiberHookIndex++;
   }
 
-  function getHookState() {
-    if (currentFiberLastHook === null) {
-      currentFiberLastHook = currentFiber?.memoizedState;
-      currentFiberAlternateLastHook =
-        currentFiber?.alternate?.memoizedState || null;
-    }
-
-    while (currentFiberLastHook?.next) {
-      currentFiberLastHook = currentFiberLastHook.next;
-      currentFiberAlternateLastHook = currentFiberAlternateLastHook?.next;
-    }
-
-    return {
-      next: currentFiberLastHook || null,
-      prev: currentFiberAlternateLastHook || null,
-    };
-  }
-
   function patchMemoHook(hookName: MemoHookName, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
 
     dispatcher[hookName] = (fn: () => any, deps?: any[]) => {
-      const currentFiberHookIndex = trackUseHook(
-        hookName,
-        (deps && deps.length) || null
-      );
-      const wrappedFn =
-        hookName === "useMemo"
-          ? () => {
-              computed = true;
-              return fn();
-            }
-          : fn;
-      let computed = false;
-      const value = orig(wrappedFn, deps);
+      trackUseHook(hookName, Array.isArray(deps) ? deps.length : null);
 
-      if (hookName === "useCallback") {
-        computed = value === wrappedFn;
-      }
-
-      if (computed && currentFiber !== null) {
-        const { prev, next } = getHookState();
-        let computes = fiberComputedMemo.get(currentFiber);
-
-        if (computes === undefined) {
-          fiberComputedMemo.set(currentFiber, (computes = []));
-        }
-
-        computes.push({
-          render: currentFiberRenderNum,
-          hook: currentFiberHookIndex,
-          prev,
-          next,
-        });
-      }
-
-      return value;
+      return orig(fn, deps);
     };
   }
 
@@ -351,11 +297,8 @@ export function dispatcherTrap(
       // render
       if (nextCurrentFiber !== currentFiber) {
         currentFiber = nextCurrentFiber;
-        currentFiberLastHook = null;
-        currentFiberAlternateLastHook = null;
         currentFiberCollectInfo = null;
         currentFiberHookIndex = 0;
-        currentFiberRenderNum = 0;
 
         if (currentFiber !== null) {
           const alternate = currentFiber.alternate;
@@ -430,10 +373,7 @@ export function dispatcherTrap(
 
         // avoid collecting info on re-renders
         currentFiberCollectInfo = null;
-        currentFiberLastHook = null;
-        currentFiberAlternateLastHook = null;
         currentFiberHookIndex = 0;
-        currentFiberRenderNum++;
       }
     },
   });
