@@ -31,13 +31,14 @@
   --type-image: url("../../../images/update-trigger.svg");
   --type-image-size: 9px;
 }
-.event-list-item[data-op="update-bailout-state"] {
+/* .event-list-item[data-op="update-bailout-state"] {
   --type-color: #ffbbbb;
   --type-image: url("../../../images/event-update-bailout-state.svg");
   --type-image-size: 11px;
   --selected-fiber-bg-color: #f6e3e3;
   --selected-fiber-color: #ac6f6f;
-}
+} */
+.event-list-item[data-op="update-bailout-state"],
 .event-list-item[data-op="update-bailout-memo"],
 .event-list-item[data-op="update-bailout-scu"] {
   --type-color: #c4dced;

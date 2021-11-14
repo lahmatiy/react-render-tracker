@@ -31,7 +31,7 @@ const TreeLeafCaptionContent = ({
     typeDef,
     rootMode,
     updatesCount,
-    updatesBailoutStateCount,
+    updatesBailoutCount,
     warnings,
   } = fiber;
 
@@ -74,12 +74,12 @@ const TreeLeafCaptionContent = ({
             {updatesCount}
           </span>
         )}
-        {updatesBailoutStateCount > 0 && (
+        {updatesBailoutCount > 0 && (
           <span
             className="tree-leaf-caption__update-bailout-count"
             title="Number of update bailouts"
           >
-            {updatesBailoutStateCount}
+            {updatesBailoutCount}
           </span>
         )}
         {Array.isArray(typeDef.contexts) && (

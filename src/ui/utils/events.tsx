@@ -342,6 +342,7 @@ export function processEvents(
           mounted: true,
           events: [],
           updatesCount: 0,
+          updatesBailoutCount: 0,
           updatesBailoutStateCount: 0,
           warnings: 0,
           selfTime: event.selfTime,
@@ -400,16 +401,25 @@ export function processEvents(
         fiber = fiberById.get(event.fiberId) as MessageFiber;
         fiber = {
           ...fiber,
+          updatesBailoutCount: fiber.updatesBailoutCount + 1,
           updatesBailoutStateCount: fiber.updatesBailoutStateCount + 1,
         };
         break;
 
       case "update-bailout-memo":
         fiber = fiberById.get(event.fiberId) as MessageFiber;
+        fiber = {
+          ...fiber,
+          updatesBailoutCount: fiber.updatesBailoutCount + 1,
+        };
         break;
 
       case "update-bailout-scu":
         fiber = fiberById.get(event.fiberId) as MessageFiber;
+        fiber = {
+          ...fiber,
+          updatesBailoutCount: fiber.updatesBailoutCount + 1,
+        };
         changes = normChanges(fiber.typeDef, event.changes);
         break;
 

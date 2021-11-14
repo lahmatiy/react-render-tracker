@@ -63,9 +63,13 @@
   line-height: 10px;
   text-align: center;
 }
-.tree-leaf-caption__update-bailout-count {
+/* .tree-leaf-caption__update-bailout-count {
   background-color: #ffbdbd;
   color: #e1373e;
+} */
+.tree-leaf-caption__update-bailout-count {
+  background-color: #d5e5f1;
+  color: #8594a1;
 }
 .tree-leaf-caption__context-count {
   background-color: #eadcea;

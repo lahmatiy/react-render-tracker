@@ -17,6 +17,27 @@ interface EventListFiberEventProps {
   indirectRootTrigger?: boolean;
 }
 
+function getSpecialBadges(
+  event: SourceFiberEvent
+): null | Array<{ name: string; loc: string | null; bailout?: boolean }> {
+  switch (event.op) {
+    case "update":
+      return event.specialReasons;
+
+    case "update-bailout-state":
+      return [{ name: "No state changes", bailout: true, loc: null }];
+
+    case "update-bailout-memo":
+      return [{ name: "React.memo()", bailout: true, loc: null }];
+
+    case "update-bailout-scu":
+      return [{ name: "shouldComponentUpdate()", bailout: true, loc: null }];
+
+    default:
+      return null;
+  }
+}
+
 const EventListFiberEvent = ({
   fiberId,
   event,
@@ -33,6 +54,7 @@ const EventListFiberEvent = ({
   );
   const { selected } = useSelectionState(fiberId);
   const isUpdateTrigger = event.op === "update" && event.trigger === undefined;
+  const specialBadges = getSpecialBadges(event);
   const details = (event.op === "update" ||
     event.op === "update-bailout-scu") &&
     expanded && (
@@ -71,13 +93,16 @@ const EventListFiberEvent = ({
         expanded={expanded}
         toggleExpanded={toggleExpanded}
       />
-      {event.op === "update" && event.specialReasons
-        ? event.specialReasons.map((reason, index) => (
-            <span key={index} className="special-reason">
-              <SourceLoc loc={reason.loc}>{reason.name}</SourceLoc>
-            </span>
-          ))
-        : null}
+      {specialBadges?.map((reason, index) => (
+        <span
+          key={index}
+          className={
+            "special-reason" + (reason.bailout ? " special-reason_bailout" : "")
+          }
+        >
+          <SourceLoc loc={reason.loc}>{reason.name}</SourceLoc>
+        </span>
+      ))}
     </EventListEntry>
   );
 };
