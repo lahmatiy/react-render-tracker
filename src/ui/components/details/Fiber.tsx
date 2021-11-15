@@ -32,8 +32,8 @@ export const Fiber = ({
       >
         {fiber.displayName}
       </span>
-      {fiber.key !== null && <FiberKey fiber={fiber} />}
       <FiberId id={fiber.id} />
+      {fiber.key !== null && <FiberKey fiber={fiber} />}
     </span>
   );
 };
