@@ -16,10 +16,15 @@ Features:
 
 - The state of component's tree over time including unmounted components (can be hidden by a toggle in the top right corner) and number of updates (re-renders)
 - Two types of component's tree hierarchy: owner-based (how components are created, that's better for updates tracking, selected by default) and parent-based (how components are mounted)
+- The matrix of props updates and update bailouts for a selected fiber
+- Displaying context used on fibers and locations where context is reading using hooks
+- Displaying consumers list for provider fibers
+- Details on useMemo() and useCallback() hook usage and recomputations for a selected fiber
 - Event log for a selected component (with the option to include a subtree component's events), grouped by a React's batch of work (commit), with details on changes in context, state and props
-- Displaying which component (fiber) is responsible for selected component update
+- Displaying which component (fiber) is responsible for selected component updates
 - Self and subtree rendering timings (hidden by default, use toggle in the right top corner to enable it)
-- Overall stats on events and component instances in status bar
+- Open a source location in an editor
+- Overall stats on events and component instances in the status bar
 - More to come... (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6))
 
 ## How to use
@@ -65,7 +70,7 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 
 ### Option #1 – Using with browser's devtools
 
-1. Install [Rempl extension](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) for Chromium based browser (other browsers might be added later)
+1. Install Rempl extension [for Chromium](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) based browser or [for Firefox](https://addons.mozilla.org/en-US/firefox/addon/rempl/) (other browsers might be added later)
 
 2. Open location of your React app, then open browser's devtools and find Rempl tab here. Click it. That's it.
 
@@ -93,6 +98,90 @@ This will launch a Rempl server on port `8177`. Use `--port` option to specify a
 3. Open your application. Open Rempl server location in an evergreen browser on your choice, e.g. `http://localhost:8177` which is the default URL. You should see connected instances of React Render Tracker, select one to see the UI.
 
 > NOTE: During MVP phase cross-browser support is not guarantee. Feel free to open an issue if something doesn't work in non-Chromium browser you use.
+
+## Configuring React Render Tracker
+
+React Render Tracker can be configured by the attribute `data-config` on `<script>` element:
+
+```html
+<script
+  src="path/to/react-render-tracker.js"
+  data-config="...options goes here..."
+></script>
+```
+
+### inpage
+
+Type: `boolean`  
+Default: `false`
+
+Opens in-page host for the tool on initialization when `true`.
+
+### openSourceLoc
+
+Type: `string` | `object` | `undefined`  
+Default: `undefined`
+
+Allow to enable "open in editor" feature. This feature is disabled when value is `undefined` (by default). It can be enabled by specify an object value (all options are optional except `pattern`):
+
+```js
+{
+  pattern: 'string (required)',
+  projectRoot: 'string (optional)',
+  basedir: 'string (optional)',
+  basedirJsx: 'string (optional)'
+}
+```
+
+- `pattern` – defines an URL which should be fetched on a click by a source location link. Such URL should be an endpoint of web server which performs "open in editor" action. For `Visual Studio Code` a web server is not required (see below).
+- `projectRoot` – an absolute path for a project dir, any location is appending to it.
+- `basedir` – a path relative to project's dir to resolve relative paths (i.e. paths which contain `..`) before appending to `projectRoot`.
+- `basedirJsx` – the same as `basedir` but for JSX locations (i.e. `__source` prop values on JSX elements); `basedir` value is used when `basedirJsx` is not specified.
+
+In case your editor is `Visual Studio Code`, it's possible to setup "open in editor" feature without a web server, like so:
+
+```js
+{
+  pattern: 'vscode://file/[file]',
+  projectRoot: '/Users/username/git/project-name'
+}
+```
+
+When a string is passed for `openSourceLoc` option it's expanded to `{ pattern: stringValue }`, i.e.
+
+```js
+openSourceLoc: "url pattern";
+// ->
+openSourceLoc: {
+  pattern: "url pattern";
+}
+```
+
+The `pattern`'s value might contain placeholders:
+
+- `[filepath]` – absolute resolved location for a module, e.g. `/Users/username/git/project/src/module.js`
+- `[file]` or `[loc]` – the same as `[filepath]`, but line and column are included, e.g. `/Users/username/git/project/src/module.js:12:5`
+- `[line]` – line of location in module's source (starting with 1)
+- `[column]` – column of location in module's source (starting with 1)
+- `[line0]` – zero-based line of location in module's source
+- `[column0]` – zero-based column of location in module's source
+
+> NOTE: `[file]` and `[loc]` are the same as `[filepath]:[line]:[column]`.
+
+## Using custom build / dev version
+
+- Clone the repo and install deps using `npm install`
+- Run dev server using `npm start` and include `<script>` with server's host:
+
+```html
+<script src="http://localhost:3000/react-render-tracker.js"></script>
+```
+
+> NOTE: In this case bundle will be rebuild on each request for the script. This version of bundle contains source maps which is good for debugging
+
+- As alternative you could run `npm build` to get a bundle in `dist` folder (`dist/react-render-tracker.js`)
+
+> NOTE: This version of bundle is the same as for publishing (minified and no source maps included)
 
 ## How to start playground locally
 
