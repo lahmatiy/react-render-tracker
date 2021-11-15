@@ -43,16 +43,16 @@ First of all the `<script>` should be added before a React app. This script will
 
 You can use a CDN service to include script with no installation from NPM:
 
-- unpkg
-
-```html
-<script src="https://unpkg.com/react-render-tracker"></script>
-```
-
 - jsDelivr
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/react-render-tracker"></script>
+```
+
+- unpkg
+
+```html
+<script src="https://unpkg.com/react-render-tracker"></script>
 ```
 
 Next, you need to open the user interface, one of the ways that best suits your case.
@@ -63,7 +63,7 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 
 ```html
 <script
-  src="https://unpkg.com/react-render-tracker"
+  src="https://cdn.jsdelivr.net/npm/react-render-tracker"
   data-config="inpage:true"
 ></script>
 ```
@@ -122,16 +122,18 @@ Opens in-page host for the tool on initialization when `true`.
 Type: `string` | `object` | `undefined`  
 Default: `undefined`
 
-Allow to enable "open in editor" feature. This feature is disabled when value is `undefined` (by default). It can be enabled by specify an object value (all options are optional except `pattern`):
+Allows to enable "open in editor" feature which is disabled when value is `undefined` (by default). Option's value should be an object with the following shape (all entries are optional except `pattern`):
 
 ```js
 {
-  pattern: 'string (required)',
-  projectRoot: 'string (optional)',
-  basedir: 'string (optional)',
-  basedirJsx: 'string (optional)'
+  pattern: 'string',     // required
+  projectRoot: 'string', // optional
+  basedir: 'string',     // optional
+  basedirJsx: 'string'   // optional
 }
 ```
+
+Where:
 
 - `pattern` – defines an URL which should be fetched on a click by a source location link. Such URL should be an endpoint of web server which performs "open in editor" action. For `Visual Studio Code` a web server is not required (see below).
 - `projectRoot` – an absolute path for a project dir, any location is appending to it.
@@ -140,33 +142,36 @@ Allow to enable "open in editor" feature. This feature is disabled when value is
 
 In case your editor is `Visual Studio Code`, it's possible to setup "open in editor" feature without a web server, like so:
 
-```js
-{
-  pattern: 'vscode://file/[file]',
-  projectRoot: '/Users/username/git/project-name'
-}
+```html
+<script
+  src="https://cdn.jsdelivr.net/npm/react-render-tracker"
+  data-config="
+    openSourceLoc: {
+      pattern: 'vscode://file/[file]',
+      projectRoot: '/Users/username/git/project-name'
+    }
+  "
+></script>
 ```
 
-When a string is passed for `openSourceLoc` option it's expanded to `{ pattern: stringValue }`, i.e.
+When a string value is passed for `openSourceLoc` option it's replaced with an object `{ pattern: stringValue }`, i.e.
 
 ```js
 openSourceLoc: "url pattern";
-// ->
+// the same as ->
 openSourceLoc: {
   pattern: "url pattern";
 }
 ```
 
-The `pattern`'s value might contain placeholders:
+The `pattern`'s value might contain placeholders for a value substitution:
 
 - `[filepath]` – absolute resolved location for a module, e.g. `/Users/username/git/project/src/module.js`
-- `[file]` or `[loc]` – the same as `[filepath]`, but line and column are included, e.g. `/Users/username/git/project/src/module.js:12:5`
+- `[file]` or `[loc]` – the same as `[filepath]`, but line and column are included (the same as `[filepath]:[line]:[column]`), e.g. `/Users/username/git/project/src/module.js:12:5`
 - `[line]` – line of location in module's source (starting with 1)
 - `[column]` – column of location in module's source (starting with 1)
 - `[line0]` – zero-based line of location in module's source
 - `[column0]` – zero-based column of location in module's source
-
-> NOTE: `[file]` and `[loc]` are the same as `[filepath]:[line]:[column]`.
 
 ## Using custom build / dev version
 
