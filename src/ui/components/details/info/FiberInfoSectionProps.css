@@ -1,1 +1,18 @@
+.props-update-reaction_update,
+.props-update-reaction_bailout {
+  padding: 1px 5px;
+  margin: -1px -3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  vertical-align: middle;
+  line-height: 16px;
+}
 
+.props-update-reaction_update {
+  background-color: #f0f0d5;
+  color: #898927;
+}
+.props-update-reaction_bailout {
+  background-color: #d9e8f3;
+  color: #597d97;
+}

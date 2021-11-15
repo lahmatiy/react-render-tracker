@@ -61,11 +61,15 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
       rows.push({
         num: rows.length,
         main:
-          event.op === "update"
-            ? "Update"
-            : event.op === "update-bailout-memo"
-            ? "React.memo() bailout"
-            : "SCU bailout",
+          event.op === "update" ? (
+            <span className="props-update-reaction_update">Update</span>
+          ) : event.op === "update-bailout-memo" ? (
+            <span className="props-update-reaction_bailout">
+              React.memo() bailout
+            </span>
+          ) : (
+            <span className="props-update-reaction_bailout">SCU bailout</span>
+          ),
         values,
       });
     }
@@ -73,7 +77,7 @@ export function FiberInfoSectionProps({ fiber }: { fiber: MessageFiber }) {
 
   return (
     <FiberInfoSection
-      id="memo"
+      id="props"
       header={`${
         fiber.type === ElementTypeMemo
           ? "Props updates & memo"
