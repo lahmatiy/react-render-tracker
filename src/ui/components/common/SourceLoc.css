@@ -1,9 +1,9 @@
 .source-loc {
-  padding-left: 11px;
+  padding-left: 12px;
   background-repeat: no-repeat;
   background-image: url("../../images/source-loc.svg");
-  background-size: 9px;
-  background-position: left center;
+  background-size: 10px;
+  background-position: 0px center;
   cursor: default;
 }
 .source-loc_unresolved {
@@ -22,4 +22,7 @@
 }
 a.source-loc {
   color: unset;
+  background-image: url("../../images/source-loc-open.svg");
+  background-size: 9px;
+  background-position: 1px center;
 }

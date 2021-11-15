@@ -6,6 +6,8 @@
 .fiber-info-header-content .source-loc {
   margin-left: 6px;
   font-size: 11px;
+}
+.fiber-info-header-content .source-loc:not(:hover) {
   color: #777;
 }
 
