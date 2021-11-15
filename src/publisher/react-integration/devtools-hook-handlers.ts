@@ -627,7 +627,6 @@ export function createReactDevtoolsHookHandlers(
       );
 
       props = Object.keys(fiber.memoizedProps);
-      console.log(displayName, fiber);
       triggerEventId = commitUpdatedFiberId.get(ownerId);
       transferFiber = {
         id: fiberId,
