@@ -12,6 +12,7 @@ declare module "common-types" {
     parentId: number;
     displayName: string | null;
     hocDisplayNames: string[] | null;
+    loc: string | null;
   };
 
   export type TransferHookInfo = {

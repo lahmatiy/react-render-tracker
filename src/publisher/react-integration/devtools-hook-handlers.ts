@@ -573,6 +573,26 @@ export function createReactDevtoolsHookHandlers(
     });
   }
 
+  function locFromDebugSource({
+    fileName,
+    lineNumber,
+    columnNumber,
+  }: {
+    fileName: string;
+    lineNumber: number;
+    columnNumber?: number;
+  }) {
+    return typeof fileName === "string" &&
+      typeof lineNumber === "number" &&
+      lineNumber > 0
+      ? `${fileName}:${lineNumber}${
+          typeof columnNumber === "number" && columnNumber > 0
+            ? ":" + columnNumber
+            : ""
+        }`
+      : null;
+  }
+
   function recordMount(fiber: Fiber, parentFiber: Fiber | null) {
     const isRoot = fiber.tag === HostRoot;
     const fiberId = getOrGenerateFiberId(fiber);
@@ -591,6 +611,7 @@ export function createReactDevtoolsHookHandlers(
         parentId: 0,
         displayName: null,
         hocDisplayNames: null,
+        loc: null,
       };
     } else {
       const { key, type } = fiber;
@@ -606,6 +627,7 @@ export function createReactDevtoolsHookHandlers(
       );
 
       props = Object.keys(fiber.memoizedProps);
+      console.log(displayName, fiber);
       triggerEventId = commitUpdatedFiberId.get(ownerId);
       transferFiber = {
         id: fiberId,
@@ -616,6 +638,7 @@ export function createReactDevtoolsHookHandlers(
         parentId,
         displayName,
         hocDisplayNames,
+        loc: fiber._debugSource ? locFromDebugSource(fiber._debugSource) : null,
       };
     }
 

@@ -8,6 +8,7 @@ import { useSelectedId } from "../../utils/selection";
 import { useTreeUpdateSubscription } from "../../utils/tree";
 import { usePinnedId } from "../../utils/pinned";
 import { FiberLink } from "./FiberLink";
+import { SourceLoc } from "../common/SourceLoc";
 
 const FiberInfoHeaderPrelude = ({
   fiber,
@@ -191,6 +192,7 @@ export const FiberInfoHeader = ({
       <div className="fiber-info-header-content">
         {fiber.displayName}
         <FiberId id={fiber.id} />
+        {fiber.loc && <SourceLoc loc={fiber.loc}>&lt;jsx&gt;</SourceLoc>}
       </div>
       <FiberInfoHeaderNotes fiber={fiber} />
     </>

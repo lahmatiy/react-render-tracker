@@ -346,6 +346,7 @@ export type ReactCommitData = {
 export type Source = {
   fileName: string;
   lineNumber: number;
+  columnNumber?: number;
 };
 
 export type InspectedElement = {

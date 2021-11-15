@@ -1,4 +1,4 @@
-import { FiberType, FiberRootType } from "common-types";
+import { FiberType, FiberRootMode } from "common-types";
 
 export const ElementTypeClass: FiberType = 1;
 export const ElementTypeFunction: FiberType = 2;
@@ -28,11 +28,11 @@ export const fiberTypeName: Record<FiberType, string> = {
   [ElementTypeOtherOrUnknown]: "Unknown",
 };
 
-export const LegacyRoot: FiberRootType = 0;
-export const BlockingRoot: FiberRootType = 1;
-export const ConcurrentRoot: FiberRootType = 2;
+export const LegacyRoot: FiberRootMode = 0;
+export const BlockingRoot: FiberRootMode = 1;
+export const ConcurrentRoot: FiberRootMode = 2;
 
-export const fiberRootMode: Record<FiberRootType, string> = {
+export const fiberRootMode: Record<FiberRootMode, string> = {
   [LegacyRoot]: "Legacy Mode",
   [BlockingRoot]: "Blocking Mode",
   [ConcurrentRoot]: "Concurrent Mode",

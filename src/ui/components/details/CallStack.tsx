@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TransferCallTrace, TransferCallTracePoint } from "../../types";
-import SourceLoc from "../common/SourceLoc";
+import { ResolveSourceLoc } from "../common/SourceLoc";
 
 export function CallTracePath({
   path,
@@ -22,7 +22,7 @@ export function CallTracePath({
 
     return (
       <span className="details-call-stack">
-        <SourceLoc loc={first.loc}>{first.name}</SourceLoc>
+        <ResolveSourceLoc loc={first.loc}>{first.name}</ResolveSourceLoc>
         {" → "}
         <span
           className="details-call-stack-more"
@@ -39,7 +39,7 @@ export function CallTracePath({
     <span className="details-call-stack">
       {path.map((entry, index) => (
         <React.Fragment key={index}>
-          <SourceLoc loc={entry.loc}>{entry.name}</SourceLoc>
+          <ResolveSourceLoc loc={entry.loc}>{entry.name}</ResolveSourceLoc>
           {" → "}
         </React.Fragment>
       ))}
@@ -83,7 +83,7 @@ export function CallTraceList({
             path={trace?.path}
             expanded={collapsed !== undefined ? !collapsed : expanded}
           />
-          <SourceLoc loc={trace?.loc}>useContext(…)</SourceLoc>
+          <ResolveSourceLoc loc={trace?.loc}>useContext(…)</ResolveSourceLoc>
         </li>
       ))}
     </ol>

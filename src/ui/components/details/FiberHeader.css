@@ -3,6 +3,11 @@
   font-size: 14px;
   line-height: 16px;
 }
+.fiber-info-header-content .source-loc {
+  margin-left: 6px;
+  font-size: 11px;
+  color: #777;
+}
 
 .fiber-info-header-prelude {
   display: flex;

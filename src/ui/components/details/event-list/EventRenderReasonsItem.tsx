@@ -8,7 +8,7 @@ import {
 } from "../../../types";
 import { useFiberMaps } from "../../../utils/fiber-maps";
 import FiberId from "../../common/FiberId";
-import SourceLoc from "../../common/SourceLoc";
+import { ResolveSourceLoc } from "../../common/SourceLoc";
 import { CallTracePath, CallTraceList } from "../CallStack";
 import { Diff } from "../diff/Diff";
 import { FiberLink } from "../FiberLink";
@@ -54,7 +54,9 @@ export function StateChange({ entry }: { entry: FiberStateChange }) {
       prelude={entry.hook && <CallTracePath path={entry.hook.trace.path} />}
       name={
         entry.hook && (
-          <SourceLoc loc={entry.hook.trace.loc}>{entry.hook.name}</SourceLoc>
+          <ResolveSourceLoc loc={entry.hook.trace.loc}>
+            {entry.hook.name}
+          </ResolveSourceLoc>
         )
       }
       index={entry.hook?.index}
@@ -64,9 +66,9 @@ export function StateChange({ entry }: { entry: FiberStateChange }) {
             {" "}
             [[
             {entry.calls.map((entry, idx) => (
-              <SourceLoc key={idx} loc={entry.loc}>
+              <ResolveSourceLoc key={idx} loc={entry.loc}>
                 {entry.name}
-              </SourceLoc>
+              </ResolveSourceLoc>
             ))}
             ]]{" "}
           </span>

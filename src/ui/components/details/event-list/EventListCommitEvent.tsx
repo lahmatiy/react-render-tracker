@@ -3,7 +3,7 @@ import { CommitTrigger, SourceCommitEvent } from "../../../types";
 import { useCommit } from "../../../utils/fiber-maps";
 import EventListEntry from "./EventListEntry";
 import { Fiber } from "../Fiber";
-import SourceLoc from "../../common/SourceLoc";
+import { ResolveSourceLoc } from "../../common/SourceLoc";
 
 interface EventListCommitEventProps {
   commitId: number;
@@ -28,7 +28,12 @@ const CommitTriggers = ({ triggers }: { triggers: CommitTrigger[] }) => {
           <Fiber fiberId={trigger.fiberId} />
           <div style={{ margin: "0 0 2px 10px" }}>
             [{trigger.event ? `${trigger.type} ${trigger.event}` : trigger.type}
-            ] {<SourceLoc loc={trigger.loc}>{trigger.kind}</SourceLoc>}
+            ]{" "}
+            {
+              <ResolveSourceLoc loc={trigger.loc}>
+                {trigger.kind}
+              </ResolveSourceLoc>
+            }
           </div>
         </div>
       ))}

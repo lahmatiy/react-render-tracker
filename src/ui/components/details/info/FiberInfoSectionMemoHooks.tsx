@@ -6,7 +6,7 @@ import {
   TransferDepChange,
 } from "../../../types";
 import { useFiber } from "../../../utils/fiber-maps";
-import SourceLoc from "../../common/SourceLoc";
+import { ResolveSourceLoc } from "../../common/SourceLoc";
 import { CallTracePath } from "../CallStack";
 import { EventChangesSummary } from "../EventChangesSummary";
 import { ChangesMatrix } from "./ChangesMatrix";
@@ -113,7 +113,9 @@ export function FiberInfoSectionMemoHooks({ fiber }: { fiber: MessageFiber }) {
                   expanded
                   path={hook.trace.path}
                 />
-                <SourceLoc loc={hook.trace.loc}>{hook.name}(…)</SourceLoc>{" "}
+                <ResolveSourceLoc loc={hook.trace.loc}>
+                  {hook.name}(…)
+                </ResolveSourceLoc>{" "}
                 <span className="fiber-info-section-memo-content__recompute-stat">
                   {computeCount === 0
                     ? "Never recompute"

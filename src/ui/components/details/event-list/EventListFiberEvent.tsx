@@ -1,7 +1,7 @@
 import * as React from "react";
 import { SourceFiberEvent, FiberChanges } from "../../../types";
 import { useSelectionState } from "../../../utils/selection";
-import SourceLoc from "../../common/SourceLoc";
+import { ResolveSourceLoc } from "../../common/SourceLoc";
 import { EventChangesSummary } from "../EventChangesSummary";
 import { Fiber } from "../Fiber";
 import EventListEntry from "./EventListEntry";
@@ -100,7 +100,7 @@ const EventListFiberEvent = ({
             "special-reason" + (reason.bailout ? " special-reason_bailout" : "")
           }
         >
-          <SourceLoc loc={reason.loc}>{reason.name}</SourceLoc>
+          <ResolveSourceLoc loc={reason.loc}>{reason.name}</ResolveSourceLoc>
         </span>
       ))}
     </EventListEntry>

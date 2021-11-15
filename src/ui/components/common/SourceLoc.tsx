@@ -2,7 +2,7 @@ import * as React from "react";
 import { useOpenFile } from "../../utils/open-file";
 import { useResolvedLocation } from "../../utils/source-locations";
 
-function SourceLoc({
+export function SourceLoc({
   loc,
   children,
 }: {
@@ -10,25 +10,16 @@ function SourceLoc({
   children: React.ReactNode;
 }) {
   const { anchorAttrs } = useOpenFile();
-  const resolvedLoc = useResolvedLocation(loc);
 
   if (!loc) {
     return <>{children}</>;
   }
 
-  if (!resolvedLoc) {
-    return (
-      <span className="source-loc source-loc_unresolved" title="Resolving...">
-        {children}
-      </span>
-    );
-  }
-
-  const attrs = anchorAttrs(resolvedLoc);
+  const attrs = anchorAttrs(loc);
 
   if (!attrs) {
     return (
-      <span className="source-loc" title={resolvedLoc}>
+      <span className="source-loc" title={loc}>
         {children}
       </span>
     );
@@ -45,4 +36,26 @@ function SourceLoc({
   );
 }
 
-export default SourceLoc;
+export function ResolveSourceLoc({
+  loc,
+  children,
+}: {
+  loc: string | null | undefined;
+  children: React.ReactNode;
+}) {
+  const resolvedLoc = useResolvedLocation(loc);
+
+  if (!loc) {
+    return <>{children}</>;
+  }
+
+  if (!resolvedLoc) {
+    return (
+      <span className="source-loc source-loc_unresolved" title="Resolving...">
+        {children}
+      </span>
+    );
+  }
+
+  return <SourceLoc loc={resolvedLoc}>{children}</SourceLoc>;
+}
