@@ -58,9 +58,9 @@
         ];
 
         addEventListener("hashchange", () => {
-          const params = new URLSearchParams(location.hash.slice(1));
+          const newParams = new URLSearchParams(location.hash.slice(1));
 
-          if (params.get("version") !== version) {
+          if (newParams.get("version") !== params.get("version")) {
             location.reload();
           }
         });
