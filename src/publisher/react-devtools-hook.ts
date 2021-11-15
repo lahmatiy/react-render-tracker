@@ -1,4 +1,7 @@
+import gte from "semver/functions/gte";
 import { ReactIntegration, ReactInternals, Fiber, FiberRoot } from "./types";
+
+const MIN_SUPPORTED_VERSION = "16.9.0";
 
 type ReactDevtoolsHook = {
   supportsFiber: boolean;
@@ -25,7 +28,7 @@ export function createReactDevtoolsHook(
   attachRenderer: (renderer: ReactInternals) => ReactIntegration,
   existing: ReactDevtoolsHook
 ) {
-  const rendererInterfaces = new Map<number, ReactIntegration>();
+  const attachedRenderers = new Map<number, ReactIntegration>();
   const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
@@ -39,7 +42,8 @@ export function createReactDevtoolsHook(
     supportsFiber: true,
 
     // Not used. It is declared to follow React Devtools hook's behaviour
-    // in order for other tools like react-render to work
+    // in order for other tools like react-refresh to work
+    // see https://github.com/facebook/react/blob/4ff5f5719b348d9d8db14aaa49a48532defb4ab7/packages/react-refresh/src/ReactFreshRuntime.js#L509
     renderers,
 
     inject(renderer) {
@@ -53,13 +57,27 @@ export function createReactDevtoolsHook(
         renderers.set(id, renderer);
       }
 
-      if (typeof renderer.findFiberByHostInstance === "function") {
-        rendererInterfaces.set(id, attachRenderer(renderer));
-        fiberRoots.set(id, new Set());
+      if (
+        renderer.rendererPackageName === "react-dom" &&
+        typeof renderer.version === "string" &&
+        /^\d+\.\d+\.\d+(-\S+)?$/.test(renderer.version) &&
+        gte(renderer.version, MIN_SUPPORTED_VERSION)
+      ) {
+        if (attachedRenderers.size === 0) {
+          attachedRenderers.set(id, attachRenderer(renderer));
+          fiberRoots.set(id, new Set());
+        } else {
+          console.warn(
+            `[react-render-tracker] Only one React instance per page is supported for now, but one more React instance (${renderer.rendererPackageName} v${renderer.version}) was detected`
+          );
+        }
       } else {
         console.warn(
-          "[react-render-tracker] Unsupported React version",
-          renderer.version
+          `[react-render-tracker] Unsupported renderer (only react-dom v${MIN_SUPPORTED_VERSION}+ is supported)`,
+          {
+            renderer: renderer.rendererPackageName || "unknown",
+            version: renderer.version || "unknown",
+          }
         );
       }
 
@@ -73,7 +91,7 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberUnmount(rendererId, fiber);
       }
 
-      const renderer = rendererInterfaces.get(rendererId);
+      const renderer = attachedRenderers.get(rendererId);
 
       if (renderer) {
         try {
@@ -91,7 +109,7 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberRoot(rendererId, root, priorityLevel);
       }
 
-      const renderer = rendererInterfaces.get(rendererId);
+      const renderer = attachedRenderers.get(rendererId);
       const mountedRoots = fiberRoots.get(rendererId);
 
       if (!renderer || !mountedRoots) {
@@ -127,7 +145,7 @@ export function createReactDevtoolsHook(
         existing.onPostCommitFiberRoot(rendererId, root);
       }
 
-      const renderer = rendererInterfaces.get(rendererId);
+      const renderer = attachedRenderers.get(rendererId);
 
       if (renderer) {
         try {
