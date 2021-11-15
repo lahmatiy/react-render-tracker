@@ -1,9 +1,13 @@
 import * as React from "react";
 import { OpenSourceSettings } from "rempl";
 import { remoteSubscriber } from "../rempl-subscriber";
+import { LocType } from "../types";
 
 interface OpenFileContext {
-  anchorAttrs(loc: string):
+  anchorAttrs(
+    loc: string,
+    type?: LocType
+  ):
     | {
         href: string;
         onClick?: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
@@ -26,14 +30,16 @@ export function OpenFileContextProvider({
   const value = React.useMemo<OpenFileContext>(() => {
     return {
       available: Boolean(settings),
-      anchorAttrs(loc) {
+      anchorAttrs(loc, type = "default") {
         if (settings) {
           try {
             const [, path = "", line = "1", column = "1"] =
               loc.match(/^(.+?)(?::(\d+)(?::(\d+))?)?$/) || [];
+            const basedir =
+              type === "jsx" ? settings.basedirJsx : settings.basedir;
             const filepath =
-              settings.root +
-              new URL(path, "http://test" + settings.base).pathname;
+              settings.projectRoot +
+              new URL(path, "http://test" + basedir).pathname;
             const resolvedLoc = `${filepath}:${line}:${column}`;
             const values = {
               loc: resolvedLoc,

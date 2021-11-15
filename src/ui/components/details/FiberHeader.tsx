@@ -192,7 +192,11 @@ export const FiberInfoHeader = ({
       <div className="fiber-info-header-content">
         {fiber.displayName}
         <FiberId id={fiber.id} />
-        {fiber.loc && <SourceLoc loc={fiber.loc}>&lt;jsx&gt;</SourceLoc>}
+        {fiber.loc && (
+          <SourceLoc type="jsx" loc={fiber.loc}>
+            &lt;jsx&gt;
+          </SourceLoc>
+        )}
       </div>
       <FiberInfoHeaderNotes fiber={fiber} />
     </>

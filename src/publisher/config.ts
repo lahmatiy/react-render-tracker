@@ -1,9 +1,19 @@
 type OpenSourceSettings = {
   pattern: string;
-  root: string;
-  base: string;
+  projectRoot: string;
+  basedir: string;
+  basedirJsx: string;
 };
 let config: { inpage?: boolean; openSourceLoc?: OpenSourceSettings } = {};
+
+function normBasedir(basedir: string) {
+  basedir = basedir
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\/+|\/+$/g, "");
+  basedir = basedir ? `/${basedir}/` : "/";
+  return basedir;
+}
 
 function normOpenSourceLoc(
   value: Partial<OpenSourceSettings> | string | undefined
@@ -15,8 +25,9 @@ function normOpenSourceLoc(
   let {
     // eslint-disable-next-line prefer-const
     pattern,
-    root = "",
-    base = "",
+    projectRoot = "",
+    basedir = "",
+    basedirJsx = "",
   } = typeof value === "string" ? { pattern: value } : value;
 
   if (typeof pattern !== "string") {
@@ -27,23 +38,17 @@ function normOpenSourceLoc(
       : new URL(pattern, location.origin).href;
   }
 
-  if (typeof root !== "string") {
-    root = "";
+  if (typeof projectRoot !== "string") {
+    projectRoot = "";
   } else {
-    root = root.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+    projectRoot = projectRoot.trim().replace(/\\/g, "/").replace(/\/+$/, "");
   }
 
-  if (typeof base !== "string") {
-    base = "";
-  } else {
-    base = base
-      .trim()
-      .replace(/\\/g, "/")
-      .replace(/^\/+|\/+$/g, "");
-    base = base ? `/${base}/` : "/";
-  }
+  basedir = typeof basedir !== "string" ? "" : normBasedir(basedir);
+  basedirJsx =
+    typeof basedirJsx !== "string" ? basedir : normBasedir(basedirJsx);
 
-  return { pattern, root, base };
+  return { pattern, projectRoot, basedir, basedirJsx };
 }
 
 if (typeof document !== "undefined") {

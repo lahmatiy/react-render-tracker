@@ -10,6 +10,8 @@ import {
 } from "common-types";
 export * from "common-types";
 
+export type LocType = "default" | "jsx";
+
 export type SourceEvent = Message;
 export type LinkedEvent = CommitEvent | FiberEvent;
 export type SourceCommitEvent = Extract<SourceEvent, { op: "commit-start" }>;

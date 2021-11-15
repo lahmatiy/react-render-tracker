@@ -26,8 +26,9 @@ declare module "rempl" {
     : never;
   type OpenSourceSettings = {
     pattern: string;
-    root: string;
-    base: string;
+    projectRoot: string;
+    basedir: string;
+    basedirJsx: string;
   } | null;
   type OpenSourceSettingsNsMethods = never;
   type OpenSourceSettingsNsRet = never;
