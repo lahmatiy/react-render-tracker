@@ -27,7 +27,7 @@ function normOpenSourceLoc(
     pattern,
     projectRoot = "",
     basedir = "",
-    basedirJsx = "",
+    basedirJsx = null,
   } = typeof value === "string" ? { pattern: value } : value;
 
   if (typeof pattern !== "string") {
