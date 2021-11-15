@@ -184,7 +184,7 @@ The `pattern`'s value might contain placeholders for a value substitution:
 
 > NOTE: In this case bundle will be rebuild on each request for the script. This version of bundle contains source maps which is good for debugging
 
-- As alternative you could run `npm build` to get a bundle in `dist` folder (`dist/react-render-tracker.js`)
+- As alternative you could run `npm run build` to get a bundle in `dist` folder (`dist/react-render-tracker.js`)
 
 > NOTE: This version of bundle is the same as for publishing (minified and no source maps included)
 
