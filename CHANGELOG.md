@@ -1,10 +1,28 @@
 ## next
 
+- Added info sections for selected fiber:
+  - Props updates and fiber's reaction (update or bailout) on it
+  - Consumers list for Provider fibers
+  - Used providers including paths to `React.useContext()` for Function components
+  - Recomputes and changes in `useMemo()`/`useCallback()` hooks
+- Added commit label to event log
+- Added tracking for `setState()` and `dispatch()` callbacks of `useReducer()` and `useState()` hooks for Function components
+- Added tracking for `setState()` and `forceUpdate()` method calls for Class components
+- Added update bailouts events and a count badge for a fiber on fiber tree (supported)
+- Added a render mode badge for render roots
+- Added open in editor feature which may be enabled and configured with `openSourceLoc` option on `<script>` (see [detail in readme](README.md#opensourceloc))
+- Added source location resolving to an original module locations using source maps
 - Added shortcuts in search input:
   - `Enter` – select next matched
   - `Shift+Enter` – select previous matched
   - `Escape` – clear search input
 - Added prev/next fiber selection with up/down keys
+- Added warning when multiple instances of React are detected and attach to the first one only instead of unpredictable behaviour (multiple instances of React will be supported in the future releases)
+- Reworked event list markup and style
+- Improved warnings on update changes:
+  - Display which change trigger a warning in changes details (on change type badge)
+  - Display warning for a context value shallow equal change for the context provider only (instead of a warning on each consumer changes)
+- Improved testing for supported version of React/ReactDOM, improved warning for unsupported renderer (something different from `react-dom` or a version prior `16.9` which is lowest supported version for now)
 
 ## 0.5.0 (October 10, 2021)
 
