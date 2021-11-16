@@ -14,6 +14,7 @@ export default [
   getDefault(import("./use-effects")),
   getDefault(import("./suspense")),
   getDefault(import("./app")),
+  getDefault(import("./screenshot-demo")),
 ];
 
 function getDefault(dynImport: Promise<{ default: TestCase }>) {
