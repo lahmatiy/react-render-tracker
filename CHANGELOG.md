@@ -1,8 +1,8 @@
-## next
+## 0.6.0 (November 16, 2021)
 
 - Added info sections for a selected fiber:
   - Props updates and fiber's reaction (update or bailout) on it
-  - Consumers list for Provider fibers
+  - Consumers list for a context provider fibers
   - Used providers including paths of `React.useContext()` calls for function components
   - Recomputes and changes in `useMemo()` and `useCallback()` hooks
 - Added commit label in event log
@@ -17,6 +17,7 @@
   - `Shift+Enter` – select previous matched fiber
   - `Escape` – clear search input
 - Added prev/next fiber selection with `Up` and `Down` keys
+- Added support for Firefox
 - Reworked event list markup and style
 - Improved warnings on update changes:
   - Display which change triggers a warning in update changes details (on change type badge)
