@@ -7,14 +7,12 @@ import { subscribeSubtree } from "./tree";
 import {
   FiberChanges,
   FiberEvent,
-  FiberTypeDef,
+  FiberStateChange,
   LinkedEvent,
   Message,
   MessageFiber,
   TransferFiberChanges,
   TransferPropChange,
-  TransferStateChange,
-  UpdateFiberMessage,
 } from "../types";
 import { flushNotify, useDebouncedComputeSubscription } from "./subscription";
 import { ElementTypeProvider } from "../../common/constants";
@@ -209,32 +207,35 @@ export function EventsContextProvider({
   );
 }
 
-function isShallowEqual(entry: TransferPropChange | TransferStateChange) {
+function isShallowEqual(entry: TransferPropChange | FiberStateChange) {
   return entry.diff === false;
 }
 
-function eventWarnings(fiber: MessageFiber, event: UpdateFiberMessage) {
-  let warnings = 0;
+function eventChangesWarnings(
+  fiber: MessageFiber,
+  changes: FiberChanges | null
+) {
+  const warnings: FiberChanges["warnings"] = new Set();
 
-  if (fiber.type === ElementTypeProvider && event.changes?.props) {
-    const hasShallowValue = event.changes.props.some(
+  if (fiber.type === ElementTypeProvider && changes?.props) {
+    const shallowValueChange = changes.props.find(
       change => change.name === "value" && isShallowEqual(change)
     );
 
-    if (hasShallowValue) {
-      warnings++;
+    if (shallowValueChange) {
+      warnings.add(shallowValueChange);
     }
   }
 
-  if (event.changes?.state) {
-    for (const change of event.changes.state) {
+  if (changes?.state) {
+    for (const change of changes.state) {
       if (isShallowEqual(change)) {
-        warnings++;
+        warnings.add(change);
       }
     }
   }
 
-  return warnings;
+  return warnings.size > 0 ? warnings : null;
 }
 
 export function processEvents(
@@ -274,35 +275,42 @@ export function processEvents(
     return linkedEvent;
   };
   const normChanges = (
-    typeDef: FiberTypeDef,
+    fiber: MessageFiber,
     changes: TransferFiberChanges | null
-  ) =>
-    changes
-      ? {
-          ...changes,
-          state: changes?.state?.map(change => ({
-            ...change,
-            hook: change.hook !== null ? typeDef.hooks[change.hook] : null,
-          })),
-          context:
-            changes.context?.map(change => {
-              const linkedEvent = linkedEvents.get(
-                allEvents[change.valueChangedEventId]
-              ) as FiberEvent;
-              const { prev, next, diff } =
-                linkedEvent?.changes?.props?.find(
-                  prop => prop.name === "value"
-                ) || {};
+  ) => {
+    if (changes === null) {
+      return null;
+    }
 
-              return {
-                context: typeDef.contexts?.[change.context] || null,
-                prev,
-                next,
-                diff,
-              };
-            }) || null,
-        }
-      : null;
+    const normalizedChanges: FiberChanges = {
+      ...changes,
+      warnings: null,
+      state: changes?.state?.map(change => ({
+        ...change,
+        hook: change.hook !== null ? fiber.typeDef.hooks[change.hook] : null,
+      })),
+      context:
+        changes.context?.map(change => {
+          const linkedEvent = linkedEvents.get(
+            allEvents[change.valueChangedEventId]
+          ) as FiberEvent;
+          const { prev, next, diff } =
+            linkedEvent?.changes?.props?.find(prop => prop.name === "value") ||
+            {};
+
+          return {
+            context: fiber.typeDef.contexts?.[change.context] || null,
+            prev,
+            next,
+            diff,
+          };
+        }) || null,
+    };
+
+    normalizedChanges.warnings = eventChangesWarnings(fiber, normalizedChanges);
+
+    return normalizedChanges;
+  };
 
   for (const event of newEvents) {
     let fiber: MessageFiber;
@@ -386,15 +394,14 @@ export function processEvents(
         updateCount++;
 
         fiber = fiberById.get(event.fiberId) as MessageFiber;
+        changes = normChanges(fiber, event.changes);
         fiber = {
           ...fiber,
           updatesCount: fiber.updatesCount + 1,
           selfTime: fiber.selfTime + event.selfTime,
           totalTime: fiber.totalTime + event.totalTime,
-          warnings: fiber.warnings + eventWarnings(fiber, event),
+          warnings: fiber.warnings + (changes?.warnings?.size || 0),
         };
-
-        changes = normChanges(fiber.typeDef, event.changes);
 
         break;
 
@@ -421,7 +428,7 @@ export function processEvents(
           ...fiber,
           updatesBailoutCount: fiber.updatesBailoutCount + 1,
         };
-        changes = normChanges(fiber.typeDef, event.changes);
+        changes = normChanges(fiber, event.changes);
         break;
 
       // case "effect-create":

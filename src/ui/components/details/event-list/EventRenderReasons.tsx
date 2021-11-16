@@ -21,6 +21,8 @@ const EventRenderReasons = ({
     return <>Unknown changes</>;
   }
 
+  const warn = changes.warnings || new Set();
+
   return (
     <div
       className={
@@ -29,18 +31,15 @@ const EventRenderReasons = ({
       }
     >
       <div className="event-render-reasons__list">
-        {changes.props &&
-          changes.props.map((entry, index) => (
-            <PropChange key={index} entry={entry} />
-          ))}
-        {changes.context &&
-          changes.context.map((entry, index) => (
-            <ContextChange key={index} entry={entry} fiberId={fiberId} />
-          ))}
-        {changes.state &&
-          changes.state.map((entry, index) => (
-            <StateChange key={index} entry={entry} />
-          ))}
+        {changes.props?.map((entry, index) => (
+          <PropChange key={index} entry={entry} warn={warn.has(entry)} />
+        ))}
+        {changes.context?.map((entry, index) => (
+          <ContextChange key={index} entry={entry} fiberId={fiberId} />
+        ))}
+        {changes.state?.map((entry, index) => (
+          <StateChange key={index} entry={entry} warn={warn.has(entry)} />
+        ))}
       </div>
     </div>
   );

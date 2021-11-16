@@ -30,6 +30,23 @@
   background-color: #f5f3de;
   color: #a09f6e;
 }
+.event-render-reason__type-badge_has-warning::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -2px;
+  margin-left: 1px;
+  margin-right: -2px;
+  margin-bottom: -1px;
+  width: 10px;
+  height: 10px;
+  background: url("../../../images/warning-exc-sign.svg") no-repeat center
+    #eab439;
+  background-size: 6px;
+  background-clip: content-box;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
 
 .event-render-reason > .fiber-id {
   margin-left: 1px;

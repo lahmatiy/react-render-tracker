@@ -53,6 +53,9 @@
   border-left: none;
   white-space: nowrap;
 }
+.changes-matrix .event-changes-summary {
+  pointer-events: none;
+}
 
 .changes-matrix td.shallow-equal::before {
   content: "SE";

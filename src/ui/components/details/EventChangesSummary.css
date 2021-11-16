@@ -1,7 +1,7 @@
 .event-changes-summary {
   display: inline-block;
   padding: 1px 6px 1px 2px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.65);
   border-radius: 3px;
   background-color: #f0f0f0;
   color: #999;
@@ -19,6 +19,8 @@
 }
 .event-changes-summary:hover {
   background: #ddd;
+}
+.event-changes-summary.expanded:hover {
   border-color: #ddd;
 }
 .event-changes-summary::before {
@@ -41,9 +43,9 @@
   content: "";
   display: inline-block;
   vertical-align: middle;
-  margin-top: -2px;
-  margin-left: 4px;
-  margin-right: -2px;
+  margin-top: -1px;
+  margin-left: 2px;
+  margin-right: -3px;
   width: 11px;
   height: 11px;
   background: url("../../images/warning-exc-sign.svg") no-repeat center #eab439;

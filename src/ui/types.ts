@@ -33,6 +33,7 @@ export type FiberChanges = {
   context: FiberContextChange[] | null;
   state?: FiberStateChange[] | null;
   memos?: TransferMemoChange[] | null;
+  warnings: Set<TransferPropChange | FiberStateChange> | null;
 };
 export type FiberContextChange = {
   context: TransferFiberContext | null;

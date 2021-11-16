@@ -21,6 +21,7 @@ function Change({
   diffPrelude,
   diff,
   values,
+  warn = false,
 }: {
   type: string;
   prelude?: React.ReactNode;
@@ -29,10 +30,18 @@ function Change({
   diffPrelude?: React.ReactNode;
   diff?: TransferChangeDiff;
   values: ValueTransition;
+  warn: boolean;
 }) {
   return (
     <div key={index} className="event-render-reason">
-      <span className="event-render-reason__type-badge">{type}</span>
+      <span
+        className={
+          "event-render-reason__type-badge" +
+          (warn ? " event-render-reason__type-badge_has-warning" : "")
+        }
+      >
+        {type}
+      </span>
       {prelude}
       {name}
       {typeof index === "number" && <FiberId id={index} />} {diffPrelude}
@@ -41,13 +50,31 @@ function Change({
   );
 }
 
-export function PropChange({ entry }: { entry: TransferPropChange }) {
+export function PropChange({
+  entry,
+  warn,
+}: {
+  entry: TransferPropChange;
+  warn: boolean;
+}) {
   return (
-    <Change type="prop" name={entry.name} diff={entry.diff} values={entry} />
+    <Change
+      type="prop"
+      name={entry.name}
+      diff={entry.diff}
+      values={entry}
+      warn={warn}
+    />
   );
 }
 
-export function StateChange({ entry }: { entry: FiberStateChange }) {
+export function StateChange({
+  entry,
+  warn,
+}: {
+  entry: FiberStateChange;
+  warn: boolean;
+}) {
   return (
     <Change
       type="state"
@@ -76,6 +103,7 @@ export function StateChange({ entry }: { entry: FiberStateChange }) {
       }
       diff={entry.diff}
       values={entry}
+      warn={warn}
     />
   );
 }
@@ -112,6 +140,7 @@ export function ContextChange({
       }
       diff={entry.diff}
       values={entry}
+      warn={false}
     />
   );
 }

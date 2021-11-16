@@ -1,18 +1,9 @@
 import * as React from "react";
-import {
-  FiberChanges,
-  FiberContextChange,
-  FiberStateChange,
-} from "../../types";
-
-function isShallowEqual(entry: FiberContextChange | FiberStateChange) {
-  return entry.diff === false;
-}
+import { FiberChanges } from "../../types";
 
 function getChangesSummary(changes: FiberChanges) {
   const { context, props, state } = changes;
   const reasons: string[] = [];
-  let hasShallowEqual = false;
 
   if (props && props.length) {
     reasons.push("props");
@@ -20,15 +11,13 @@ function getChangesSummary(changes: FiberChanges) {
 
   if (context) {
     reasons.push("context");
-    hasShallowEqual ||= context.some(isShallowEqual);
   }
 
   if (state) {
     reasons.push("state");
-    hasShallowEqual ||= state.some(isShallowEqual);
   }
 
-  return reasons.length > 0 ? { reasons, hasShallowEqual } : null;
+  return reasons.length > 0 ? reasons : null;
 }
 
 export function EventChangesSummary({
@@ -51,12 +40,12 @@ export function EventChangesSummary({
       className={
         "event-changes-summary" +
         (expanded ? " expanded" : "") +
-        (changesSummary.hasShallowEqual ? " has-warnings" : "")
+        (changes?.warnings ? " has-warnings" : "")
       }
       onClick={toggleExpanded}
     >
       {"± "}
-      {changesSummary.reasons.map(reason => (
+      {changesSummary.map(reason => (
         <span key={reason} className="event-changes-summary-reason">
           {reason}
         </span>

@@ -21,6 +21,9 @@
   background-clip: padding-box;
   color: var(--selected-fiber-color, #888);
 }
+.event-list-item:not(.event-list-item_selected):not(:hover) .details-fiber {
+  opacity: 0.8;
+}
 
 .event-list-item .event-changes-summary {
   margin-top: 2px;
@@ -30,6 +33,10 @@
   margin-bottom: -4px;
   padding-top: 2px;
   padding-bottom: 5px;
+}
+.event-list-item:not(.event-list-item_selected):not(:hover)
+  .event-changes-summary:not(:hover):not(.expanded) {
+  opacity: 0.6;
 }
 
 .event-list-item .special-reason {
@@ -48,4 +55,7 @@
 }
 .event-list-item .special-reason .source-loc:hover {
   color: #9366a5;
+}
+.event-list-item:not(.event-list-item_selected):not(:hover) .special-reason {
+  opacity: 0.65;
 }
