@@ -1,27 +1,27 @@
 ## next
 
-- Added info sections for selected fiber:
+- Added info sections for a selected fiber:
   - Props updates and fiber's reaction (update or bailout) on it
   - Consumers list for Provider fibers
-  - Used providers including paths to `React.useContext()` for Function components
-  - Recomputes and changes in `useMemo()`/`useCallback()` hooks
-- Added commit label to event log
-- Added tracking for `setState()` and `dispatch()` callbacks of `useReducer()` and `useState()` hooks for Function components
-- Added tracking for `setState()` and `forceUpdate()` method calls for Class components
-- Added update bailouts events and a count badge for a fiber on fiber tree (supported)
+  - Used providers including paths of `React.useContext()` calls for function components
+  - Recomputes and changes in `useMemo()` and `useCallback()` hooks
+- Added commit label in event log
+- Added tracking for `setState()` and `dispatch()` callbacks of `useReducer()` and `useState()` hooks for function components
+- Added tracking for `setState()` and `forceUpdate()` method calls for class components
+- Added update bailouts events and a count badge for a fiber on fiber tree (supported bailouts: `React.memo()`, `shouldComponentUpdate()` and no changes in state)
 - Added a render mode badge for render roots
-- Added open in editor feature which may be enabled and configured with `openSourceLoc` option on `<script>` (see [detail in readme](README.md#opensourceloc))
+- Added open in editor feature which might be enabled and configured with `openSourceLoc` option on `<script>` (see [detail in readme](README.md#opensourceloc))
 - Added source location resolving to an original module locations using source maps
 - Added shortcuts in search input:
-  - `Enter` – select next matched
-  - `Shift+Enter` – select previous matched
+  - `Enter` – select next matched fiber
+  - `Shift+Enter` – select previous matched fiber
   - `Escape` – clear search input
-- Added prev/next fiber selection with up/down keys
-- Added warning when multiple instances of React are detected and attach to the first one only instead of unpredictable behaviour (multiple instances of React will be supported in the future releases)
+- Added prev/next fiber selection with `Up` and `Down` keys
 - Reworked event list markup and style
 - Improved warnings on update changes:
-  - Display which change trigger a warning in changes details (on change type badge)
-  - Display warning for a context value shallow equal change for the context provider only (instead of a warning on each consumer changes)
+  - Display which change triggers a warning in update changes details (on change type badge)
+  - Display warning for a context value shallow equal change for the context provider fiber only (instead of a warning on each consumer fiber)
+- Added warning when multiple instances of React are detected and attach to the first one only instead of unpredictable behaviour (multiple instances of React will be supported in the future releases)
 - Improved testing for supported version of React/ReactDOM, improved warning for unsupported renderer (something different from `react-dom` or a version prior `16.9` which is lowest supported version for now)
 
 ## 0.5.0 (October 10, 2021)
