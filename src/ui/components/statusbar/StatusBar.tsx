@@ -26,6 +26,7 @@ const StatusBar = () => {
     mountCount,
     unmountCount,
     updateCount,
+    paused,
   } = useEventsContext();
   const pendingEventsCount = totalEventsCount - loadedEventsCount;
   const { fiberById } = useFiberMaps();
@@ -43,6 +44,7 @@ const StatusBar = () => {
           ? ` for ${plural(fiberCount, "component instance")}`
           : ""}
       </span>
+      {paused && <span className="statusbar__paused" />}
       {pendingEventsCount > 0 && (
         <span
           className="statusbar__pending"

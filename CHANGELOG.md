@@ -1,3 +1,8 @@
+## next
+
+- Added an events loading pause button
+- Fixed tree traversal after a leaf deletion, i.e. on event log reset
+
 ## 0.6.0 (November 16, 2021)
 
 - Added info sections for a selected fiber:

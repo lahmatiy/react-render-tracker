@@ -28,8 +28,11 @@ interface EventsContext {
   unmountCount: number;
   updateCount: number;
   clearAllEvents: () => void;
+  paused: boolean;
+  setPaused: (paused: boolean) => void;
 }
 
+const noop = () => undefined;
 const createEventsContextValue = (): EventsContext => ({
   allEvents: [],
   events: [],
@@ -40,9 +43,9 @@ const createEventsContextValue = (): EventsContext => ({
   mountCount: 0,
   unmountCount: 0,
   updateCount: 0,
-  clearAllEvents() {
-    /* mock fn */
-  },
+  clearAllEvents: noop,
+  paused: true,
+  setPaused: noop,
 });
 const EventsContext = React.createContext(createEventsContextValue());
 export const useEventsContext = () => React.useContext(EventsContext);
@@ -56,6 +59,12 @@ export function EventsContextProvider({
   const { allEvents } = state;
   const linkedEvents = React.useMemo(() => new Map<Message, LinkedEvent>(), []);
   const eventsSince = React.useRef(0);
+  const [paused, setStatePaused] = React.useState(false);
+  const setEffectPaused = React.useRef<(paused: boolean) => void>(noop);
+  const setPaused = React.useCallback((paused: boolean) => {
+    setStatePaused(paused);
+    setEffectPaused.current(paused);
+  }, []);
   const maps = useFiberMaps();
   const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
     maps;
@@ -101,9 +110,11 @@ export function EventsContextProvider({
   const value = React.useMemo(
     () => ({
       ...state,
+      paused,
+      setPaused,
       clearAllEvents,
     }),
-    [state, clearAllEvents]
+    [state, paused, setPaused, clearAllEvents]
   );
 
   React.useEffect(() => {
@@ -116,16 +127,59 @@ export function EventsContextProvider({
       }
     });
 
-    const TROTTLE = false;
-    const MAX_EVENT_COUNT = TROTTLE ? 1 : 512;
+    const EVENT_COUNT = 512;
     let loadingStartOffset = 0;
     let lastLoadedOffset = 0;
     let totalEventsCount = 0;
     let loading = false;
+    let paused = false;
+    let pendingEventsChunk: Message[] | null = null;
 
-    const finalizeLoading = () => {
+    setEffectPaused.current = (newPaused: boolean) => {
+      if (newPaused !== paused) {
+        paused = newPaused;
+
+        if (!paused) {
+          applyEventsChunk();
+          loadEvents();
+        } else {
+          setTimeout(() => flushUpdatedMaps(), 16);
+        }
+      }
+    };
+
+    const applyEventsChunk = () => {
+      if (paused || pendingEventsChunk === null) {
+        return;
+      }
+
+      const eventsChunk = pendingEventsChunk;
+      pendingEventsChunk = null;
+      lastLoadedOffset += eventsChunk.length;
       loading = false;
-      loadEvents();
+      loadEvents(); // call load events to make sure there are no more events
+
+      const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
+      const { mountCount, unmountCount, updateCount } = processEvents(
+        eventsChunk,
+        allEvents,
+        linkedEvents,
+        maps
+      );
+
+      setState(state => {
+        state.events.push(...eventsChunk);
+
+        return {
+          ...state,
+          loadedEventsCount: state.loadedEventsCount + eventsChunk.length,
+          totalEventsCount: totalEventsCount - eventsSince.current,
+          bytesReceived: state.bytesReceived + bytesReceived,
+          mountCount: state.mountCount + mountCount,
+          unmountCount: state.unmountCount + unmountCount,
+          updateCount: state.updateCount + updateCount,
+        };
+      });
     };
     const loadEvents = () => {
       if (loading || !remoteLoadEvents.available) {
@@ -138,49 +192,23 @@ export function EventsContextProvider({
       }
 
       if (lastLoadedOffset >= totalEventsCount) {
+        loadingStartOffset = totalEventsCount;
         // flush updates async
         setTimeout(() => flushUpdatedMaps(), 16);
-        loadingStartOffset = totalEventsCount;
+        return;
+      }
+
+      if (paused) {
         return;
       }
 
       loading = true;
       remoteLoadEvents(
         lastLoadedOffset,
-        Math.min(totalEventsCount - lastLoadedOffset, MAX_EVENT_COUNT),
+        Math.min(totalEventsCount - lastLoadedOffset, EVENT_COUNT),
         (eventsChunk: Message[]) => {
-          lastLoadedOffset += eventsChunk.length;
-
-          // call load events to make sure there are no more events
-          if (TROTTLE) {
-            setTimeout(finalizeLoading, 250);
-          } else {
-            finalizeLoading();
-          }
-
-          if (eventsChunk.length > 0) {
-            const { minLength: bytesReceived } = stringifyInfo(eventsChunk);
-            const { mountCount, unmountCount, updateCount } = processEvents(
-              eventsChunk,
-              allEvents,
-              linkedEvents,
-              maps
-            );
-
-            setState(state => {
-              state.events.push(...eventsChunk);
-
-              return {
-                ...state,
-                loadedEventsCount: state.loadedEventsCount + eventsChunk.length,
-                totalEventsCount: totalEventsCount - eventsSince.current,
-                bytesReceived: state.bytesReceived + bytesReceived,
-                mountCount: state.mountCount + mountCount,
-                unmountCount: state.unmountCount + unmountCount,
-                updateCount: state.updateCount + updateCount,
-              };
-            });
-          }
+          pendingEventsChunk = eventsChunk;
+          applyEventsChunk();
         }
       );
     };

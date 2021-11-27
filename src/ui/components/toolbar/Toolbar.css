@@ -8,6 +8,13 @@
 }
 .toolbar__buttons {
   display: flex;
+  align-items: center;
   margin: 2px;
   gap: 1px;
+}
+.toolbar__buttons-splitter {
+  display: inline-block;
+  height: 20px;
+  border-left: 1px solid #ddd;
+  margin: 0 1px;
 }

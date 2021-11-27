@@ -9,6 +9,8 @@ import {
   ClearEventLog,
   ToggleTimings,
   Download,
+  Pause,
+  Play,
 } from "../common/icons";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
@@ -29,7 +31,7 @@ const Toolbar = ({
   onShowTimings,
   showTimings,
 }: ToolbarProps) => {
-  const { clearAllEvents, allEvents } = useEventsContext();
+  const { clearAllEvents, allEvents, paused, setPaused } = useEventsContext();
   const downloadAnchorRef = React.useRef<HTMLAnchorElement | null>(null);
   const onDonwload = React.useCallback(() => {
     const anchor = downloadAnchorRef.current;
@@ -96,6 +98,15 @@ const Toolbar = ({
           isActive={showTimings}
           onChange={onShowTimings}
           tooltip={showTimings ? "Hide timings" : "Show timings"}
+        />
+
+        <span className="toolbar__buttons-splitter" />
+
+        <ButtonToggle
+          icon={!paused ? Play : Pause}
+          isActive={!paused}
+          onChange={() => setPaused(!paused)}
+          tooltip={paused ? "Resume event loading" : "Pause event loading"}
         />
         <ButtonToggle
           icon={ClearEventLog}
