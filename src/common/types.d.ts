@@ -109,7 +109,6 @@ declare module "common-types" {
   export interface BaseMessage {
     op: string;
     id: number;
-    timestamp: number;
   }
 
   export interface CommitStartMessage extends BaseMessage {

@@ -7,12 +7,12 @@ import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 let eventIdSeed = 0;
 const { openSourceLoc } = config;
 const events: Message[] = [];
-const getTimestamp =
-  typeof performance === "object" &&
-  typeof performance.now === "function" &&
-  typeof performance.timeOrigin === "number"
-    ? () => performance.timeOrigin + performance.now()
-    : () => Date.now();
+// const getTimestamp =
+//   typeof performance === "object" &&
+//   typeof performance.now === "function" &&
+//   typeof performance.timeOrigin === "number"
+//     ? () => performance.timeOrigin + performance.now()
+//     : () => Date.now();
 
 declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
@@ -56,7 +56,7 @@ export const recordEvent: RecordEventHandler = payload => {
 
   events.push({
     id,
-    timestamp: Math.trunc(getTimestamp()),
+    // timestamp: Math.trunc(getTimestamp()),
     ...payload,
   });
 
