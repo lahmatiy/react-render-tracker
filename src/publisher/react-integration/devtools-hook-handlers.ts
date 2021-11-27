@@ -565,6 +565,7 @@ export function createReactDevtoolsHookHandlers(
 
     recordEvent({
       op: "fiber-type-def",
+      commitId: currentCommitId,
       typeId,
       definition: {
         contexts,

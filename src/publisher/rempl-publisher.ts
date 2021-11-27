@@ -38,10 +38,20 @@ eventLogChannel.provide("getEvents", (offset, count, callback) => {
     return callback([]);
   }
 
-  offset = Math.max(0, Math.floor(offset));
-  count = Math.min(Math.max(0, Math.floor(count)), events.length - offset);
+  const start = Math.max(0, Math.floor(offset));
+  let end =
+    start + Math.min(Math.max(0, Math.floor(count)), events.length - start);
 
-  callback(events.slice(offset, offset + count));
+  if (end > start) {
+    const { commitId } = events[end - 1];
+    for (; end < events.length; end++) {
+      if (events[end].commitId !== commitId) {
+        break;
+      }
+    }
+  }
+
+  callback(events.slice(start, end));
 });
 const publishEventsDebounced = debounce(
   () =>

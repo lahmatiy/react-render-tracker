@@ -109,11 +109,11 @@ declare module "common-types" {
   export interface BaseMessage {
     op: string;
     id: number;
+    commitId: number;
   }
 
   export interface CommitStartMessage extends BaseMessage {
     op: "commit-start";
-    commitId: number;
     triggers: CommitTrigger[];
   }
 
@@ -125,7 +125,6 @@ declare module "common-types" {
 
   export interface MountFiberMessage extends BaseMessage {
     op: "mount";
-    commitId: number;
     fiberId: number;
     fiber: TransferFiber;
     props: string[];
@@ -136,7 +135,6 @@ declare module "common-types" {
 
   export interface UpdateFiberMessage extends BaseMessage {
     op: "update";
-    commitId: number;
     fiberId: number;
     totalTime: number;
     selfTime: number;
@@ -147,21 +145,18 @@ declare module "common-types" {
 
   export interface UpdateBailoutStateFiberMessage extends BaseMessage {
     op: "update-bailout-state";
-    commitId: number;
     fiberId: number;
     trigger?: number;
   }
 
   export interface UpdateBailoutMemoFiberMessage extends BaseMessage {
     op: "update-bailout-memo";
-    commitId: number;
     fiberId: number;
     trigger?: number;
   }
 
   export interface UpdateBailoutSCUFiberMessage extends BaseMessage {
     op: "update-bailout-scu";
-    commitId: number;
     fiberId: number;
     changes: TransferFiberChanges | null;
     trigger?: number;
@@ -169,21 +164,18 @@ declare module "common-types" {
 
   export interface UnmountFiberMessage extends BaseMessage {
     op: "unmount";
-    commitId: number;
     fiberId: number;
     trigger?: number;
   }
 
   export interface CreateEffectFiberMessage extends BaseMessage {
     op: "effect-create";
-    commitId: number;
     fiberId: number;
     path?: string[];
   }
 
   export interface DestroyEffectFiberMessage extends BaseMessage {
     op: "effect-destroy";
-    commitId: number;
     fiberId: number;
     path?: string[];
   }
