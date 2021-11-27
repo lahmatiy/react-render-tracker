@@ -139,6 +139,13 @@ export class Tree {
   nodes = new Map<number, TreeNode>([[0, this.root]]);
   subscriptions: Subscriptions<() => void> = new Set();
 
+  get first() {
+    return this.root;
+  }
+  get last() {
+    return this.root.last;
+  }
+
   getOrCreate(id: number): TreeNode {
     let node = this.nodes.get(id);
 
@@ -162,14 +169,18 @@ export class Tree {
     const node = this.getOrCreate(id);
     const parent = this.getOrCreate(parentId);
 
-    node.parent = parent;
-    awaitNotify(parent);
+    if (node !== parent) {
+      node.parent = parent;
+      awaitNotify(parent);
+    }
+
+    return this;
   }
 
   setFiber(id: number, fiber: MessageFiber) {
     const node = this.nodes.get(id);
 
-    if (node !== undefined) {
+    if (node !== undefined && node.fiber !== fiber) {
       node.fiber = fiber;
       awaitNotify(this);
     }
@@ -182,15 +193,15 @@ export class Tree {
       return;
     }
 
-    node.next = node.last;
-    if (node.next) {
-      node.next.prev = node;
-    }
-
     for (const descendant of node.descendants()) {
       this.nodes.delete(descendant.id);
       stopAwatingNotify(descendant);
       descendant.reset(true);
+    }
+
+    node.next = node.nextSkipDescendant;
+    if (node.next !== null) {
+      node.next.prev = node;
     }
 
     if (node.parent) {
@@ -304,6 +315,7 @@ export class TreeNode {
 
     if (this.#parent !== null) {
       const oldParent = this.#parent;
+      const nextSkipDescendant = this.nextSkipDescendant;
 
       if (oldParent.firstChild === this) {
         oldParent.firstChild = this.nextSibling;
@@ -322,11 +334,11 @@ export class TreeNode {
       }
 
       if (this.prev !== null) {
-        this.prev.next = this.next;
+        this.prev.next = nextSkipDescendant;
       }
 
-      if (this.next !== null) {
-        this.next.prev = this.prev;
+      if (nextSkipDescendant !== null) {
+        nextSkipDescendant.prev = this.prev;
       }
 
       oldParent.#children = null;
@@ -388,7 +400,7 @@ export class TreeNode {
     end: TreeNode | null = null
   ) {
     let cursor: TreeNode | null = start || this;
-    end = end || this.last;
+    end = end || this.last || this;
 
     if (cursor !== this && fn(this) === true) {
       return this;
