@@ -17,7 +17,13 @@ function bytesFormatted(value: number) {
   return `${units.length === 3 ? value : value.toFixed(1)}${units[0]}`;
 }
 
-const StatusBar = () => {
+const StatusBar = ({
+  discoveryMode,
+  setDiscoveryMode,
+}: {
+  discoveryMode: boolean;
+  setDiscoveryMode: (state: boolean) => void;
+}) => {
   const {
     loadingStartOffset,
     loadedEventsCount,
@@ -34,6 +40,13 @@ const StatusBar = () => {
 
   return (
     <div className="statusbar">
+      <span
+        className={
+          "statusbar__discovery-toggle" +
+          (discoveryMode ? " statusbar__discovery-toggle_enabled" : "")
+        }
+        onClick={() => setDiscoveryMode(!discoveryMode)}
+      />
       <span className="statusbar__summary">
         {totalEventsCount > 0
           ? `${plural(loadedEventsCount, "event")} (${bytesFormatted(

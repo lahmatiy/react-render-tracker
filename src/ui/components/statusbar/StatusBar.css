@@ -7,6 +7,34 @@
   color: #aaa;
 }
 
+.statusbar__discovery-toggle {
+  display: flex;
+  align-items: center;
+  padding: 2px 2px;
+  margin-right: -6px;
+}
+.statusbar__discovery-toggle::before {
+  content: "Discovery";
+  border: 1px solid #cbcbc9;
+  background: #f7f7f7;
+  color: #a19f97;
+  border-radius: 2px;
+  padding: 1px 3px;
+  text-transform: uppercase;
+  font-size: 9px;
+  vertical-align: top;
+  opacity: 0.75;
+  cursor: pointer;
+}
+.statusbar__discovery-toggle:hover::before {
+  opacity: 1;
+}
+.statusbar__discovery-toggle_enabled::before {
+  border-color: #94d394;
+  background-color: #ecf5ec;
+  color: #569556;
+}
+
 .statusbar__summary {
   flex: 1;
   padding: 4px 8px;

@@ -9,11 +9,30 @@
   overflow: hidden;
 }
 
-.app[data-has-selected] {
+.app_has-selected {
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "toolbar toolbar"
     "fiber-tree-header details"
     "fiber-tree details"
     "statusbar statusbar";
+}
+
+.app_discovery-mode {
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "discovery"
+    "statusbar";
+}
+.app_discovery-mode > :not(.statusbar):not(.app__discovery-wrapper) {
+  display: none;
+}
+.app__discovery-wrapper {
+  grid-area: discovery;
+  display: flex;
+  overflow: hidden;
+}
+.app__discovery-wrapper > .discovery {
+  flex: 1;
 }

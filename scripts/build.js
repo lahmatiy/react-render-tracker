@@ -50,6 +50,17 @@ async function buildSubscriber(config, configCSS) {
     ...configCSS,
     write: false,
   });
+  const discoveryCss = await esbuild.build({
+    entryPoints: ["src/ui/discovery.css"],
+    bundle: true,
+    loader: {
+      ".png": "dataurl",
+      ".svg": "dataurl",
+    },
+    sourcemap: true,
+    ...configCSS,
+    write: false,
+  });
   const result = await esbuild.build({
     entryPoints: ["src/ui/index.tsx"],
     bundle: true,
@@ -60,6 +71,7 @@ async function buildSubscriber(config, configCSS) {
     define: {
       ...(config && config.define),
       __CSS__: JSON.stringify(css.outputFiles[0].text),
+      __DISCOVERY_CSS__: JSON.stringify(discoveryCss.outputFiles[0].text),
       // "process.env.NODE_ENV": '"production"',
     },
   });

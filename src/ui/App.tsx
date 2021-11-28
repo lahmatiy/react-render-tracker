@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FiberMapsContextProvider } from "./utils/fiber-maps";
-import { EventsContextProvider } from "./utils/events";
+import { EventsContextProvider, useEventsContext } from "./utils/events";
 import { SourceLocationsContextProvider } from "./utils/source-locations";
 import { OpenFileContextProvider } from "./utils/open-file";
 import { SelectionContextProvider, useSelectedId } from "./utils/selection";
@@ -13,6 +13,7 @@ import Details from "./components/details/Details";
 import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";
 import FiberTreeKeyboardNav from "./components/misc/FiberTreeKeyboardNav";
+import { Widget, navButtons } from "@discoveryjs/discovery/dist/discovery";
 
 function App() {
   return (
@@ -32,15 +33,48 @@ function App() {
   );
 }
 
+declare let __DISCOVERY_CSS__: string;
+const discovery = new Widget(null, null, {
+  styles: [__DISCOVERY_CSS__],
+  extensions: [{ ...navButtons, loadData: undefined }],
+});
+function Discovery() {
+  const { allEvents, setPaused } = useEventsContext();
+  const ref = React.useCallback(el => {
+    discovery.setPage("report");
+    discovery.setContainer(el);
+  }, []);
+
+  React.useEffect(() => {
+    setPaused(true);
+    discovery.setData(allEvents, { name: "React Render Tracker" });
+
+    return () => {
+      setPaused(false);
+    };
+  }, []);
+
+  return <div className="app__discovery-wrapper" ref={ref} />;
+}
+
 function Layout() {
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
   const [showTimings, setShowTimings] = React.useState(false);
+  const [discoveryMode, setDiscoveryMode] = React.useState(false);
   const { selectedId } = useSelectedId();
   const { pinnedId } = usePinnedId();
 
   return (
-    <div className="app" data-has-selected={selectedId !== null || undefined}>
+    <div
+      className={
+        "app" +
+        (selectedId !== null ? " app_has-selected" : "") +
+        (discoveryMode ? " app_discovery-mode" : "")
+      }
+    >
+      {discoveryMode && <Discovery />}
+
       <FindMatchContextProvider>
         <Toolbar
           onGroupingChange={setGroupByParent}
@@ -78,7 +112,11 @@ function Layout() {
           showTimings={showTimings}
         />
       )}
-      <StatusBar />
+
+      <StatusBar
+        discoveryMode={discoveryMode}
+        setDiscoveryMode={setDiscoveryMode}
+      />
     </div>
   );
 }

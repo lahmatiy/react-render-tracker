@@ -1,0 +1,7 @@
+@import "@discoveryjs/discovery/dist/discovery.css";
+
+.discovery-root {
+  --discovery-page-padding-right: 10px;
+  --discovery-page-padding-bottom: 10px;
+  --discovery-page-padding-left: 10px;
+}

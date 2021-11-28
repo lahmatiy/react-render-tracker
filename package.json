@@ -24,6 +24,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@discoveryjs/discovery": "^1.0.0-beta.62",
     "@discoveryjs/json-ext": "^0.5.5",
     "lodash.debounce": "^4.0.8",
     "react": "^17.0.2",
