@@ -474,5 +474,5 @@ export type ReactDispatcherTrapApi = {
 export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
 
 export type RecordEventHandler = (
-  payload: DistributiveOmit<Message, "id" | "timestamp">
+  payload: DistributiveOmit<Message, "id">
 ) => number;
