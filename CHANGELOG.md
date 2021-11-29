@@ -1,7 +1,8 @@
-## next
+## 0.6.1 (November 29, 2021)
 
 - Added an events loading pause button
-- Fixed tree traversal after a leaf deletion, i.e. on event log reset
+- Changed events loading behaviour to avoid a commit's events splitting across loading data chunks
+- Fixed tree traversal after a leaf deletion, i.e. on event log reset (#20)
 
 ## 0.6.0 (November 16, 2021)
 
