@@ -1,3 +1,7 @@
+## next
+
+- Added warning when non-development version of React is used instead of trying to inspect it and crash
+
 ## 0.6.1 (November 29, 2021)
 
 - Added an events loading pause button

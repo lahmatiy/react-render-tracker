@@ -11,11 +11,12 @@ export type DistributiveOmit<T, K extends keyof T> = T extends any
   : never;
 
 export type ReactInternals = {
+  bundleType?: number;
   reconcilerVersion?: string;
   version?: string;
   currentDispatcherRef: any;
   getCurrentFiber: () => Fiber | null;
-  rendererPackageName: string;
+  rendererPackageName?: string;
   findFiberByHostInstance: (hostInstance: NativeType) => Fiber | null;
 };
 

@@ -2,6 +2,8 @@ import gte from "semver/functions/gte";
 import { ReactIntegration, ReactInternals, Fiber, FiberRoot } from "./types";
 
 const MIN_SUPPORTED_VERSION = "16.9.0";
+const BUNDLE_TYPE_PROD = 0;
+const BUNDLE_TYPE_DEV = 1;
 
 type ReactDevtoolsHook = {
   supportsFiber: boolean;
@@ -20,9 +22,44 @@ type ReactDevtoolsHook = {
   renderers?: Map<any, any>;
 };
 
-/**
- * {@link packages/react-devtools-shared/src/hook.js}
- */
+function isValidRenderer({
+  rendererPackageName,
+  version,
+  bundleType,
+}: {
+  rendererPackageName?: string;
+  version?: string;
+  bundleType?: number;
+}) {
+  if (
+    rendererPackageName !== "react-dom" ||
+    typeof version !== "string" ||
+    !/^\d+\.\d+\.\d+(-\S+)?$/.test(version) ||
+    !gte(version, MIN_SUPPORTED_VERSION)
+  ) {
+    console.warn(
+      `[react-render-tracker] Unsupported React renderer (only react-dom v${MIN_SUPPORTED_VERSION}+ is supported)`,
+      {
+        renderer: rendererPackageName || "unknown",
+        version: version || "unknown",
+      }
+    );
+
+    return false;
+  }
+
+  if (bundleType !== BUNDLE_TYPE_DEV) {
+    console.warn(
+      `[react-render-tracker] Unsupported React renderer, only bundle type ${BUNDLE_TYPE_DEV} (development) is supported but ${bundleType} (${
+        bundleType === BUNDLE_TYPE_PROD ? "production" : "unknown"
+      }) is found`
+    );
+
+    return false;
+  }
+
+  return true;
+}
 
 export function createReactDevtoolsHook(
   attachRenderer: (renderer: ReactInternals) => ReactIntegration,
@@ -57,12 +94,7 @@ export function createReactDevtoolsHook(
         renderers.set(id, renderer);
       }
 
-      if (
-        renderer.rendererPackageName === "react-dom" &&
-        typeof renderer.version === "string" &&
-        /^\d+\.\d+\.\d+(-\S+)?$/.test(renderer.version) &&
-        gte(renderer.version, MIN_SUPPORTED_VERSION)
-      ) {
+      if (isValidRenderer(renderer)) {
         if (attachedRenderers.size === 0) {
           attachedRenderers.set(id, attachRenderer(renderer));
           fiberRoots.set(id, new Set());
@@ -71,14 +103,6 @@ export function createReactDevtoolsHook(
             `[react-render-tracker] Only one React instance per page is supported for now, but one more React instance (${renderer.rendererPackageName} v${renderer.version}) was detected`
           );
         }
-      } else {
-        console.warn(
-          `[react-render-tracker] Unsupported renderer (only react-dom v${MIN_SUPPORTED_VERSION}+ is supported)`,
-          {
-            renderer: renderer.rendererPackageName || "unknown",
-            version: renderer.version || "unknown",
-          }
-        );
       }
 
       return id;
@@ -162,10 +186,7 @@ export function createReactDevtoolsHook(
   return reactDevtoolsHook;
 }
 
-/**
- * React uses hardcoded hook name.
- * {@link packages/react-reconciler/src/ReactFiberDevToolsHook.new.js L:44}
- */
+// React uses hardcoded hook name
 const hookName = "__REACT_DEVTOOLS_GLOBAL_HOOK__";
 const MARKER = Symbol();
 
