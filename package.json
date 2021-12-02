@@ -21,6 +21,7 @@
     "tscheck": "tsc --noEmit",
     "start": "node scripts/server",
     "build": "node scripts/build",
+    "build-gh-pages": "node scripts/build-gh-pages",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

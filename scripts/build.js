@@ -4,6 +4,7 @@ module.exports = {
   buildPlayground,
   buildSubscriber,
   buildPublisher,
+  buildBundle,
 };
 
 async function buildPlayground(config) {
@@ -88,29 +89,35 @@ async function buildPublisher(config) {
   }
 }
 
-if (require.main === module) {
-  (async () => {
-    const __SUBSCRIBER_SRC__ = await buildSubscriber(
-      {
-        minify: true,
-        sourcemap: false,
-      },
-      {
-        minify: true,
-        sourcemap: false,
-      }
-    );
-    buildPublisher({
-      logLevel: "info",
-      write: true,
-      outfile: "dist/react-render-tracker.js",
-      format: "iife",
+async function buildBundle(
+  config = { outfile: "dist/react-render-tracker.js" }
+) {
+  const __SUBSCRIBER_SRC__ = await buildSubscriber(
+    {
       minify: true,
       sourcemap: false,
-      define: {
-        __DEV__: false,
-        __SUBSCRIBER_SRC__: JSON.stringify(__SUBSCRIBER_SRC__),
-      },
-    });
-  })();
+    },
+    {
+      minify: true,
+      sourcemap: false,
+    }
+  );
+
+  return await buildPublisher({
+    logLevel: "info",
+    write: true,
+    format: "iife",
+    minify: true,
+    sourcemap: false,
+    ...config,
+    define: {
+      __DEV__: false,
+      __SUBSCRIBER_SRC__: JSON.stringify(__SUBSCRIBER_SRC__),
+      ...(config && config.define),
+    },
+  });
+}
+
+if (require.main === module) {
+  buildBundle();
 }
