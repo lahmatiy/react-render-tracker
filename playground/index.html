@@ -52,15 +52,21 @@
 
         const params = new URLSearchParams(location.hash.slice(1));
         const version = params.get("version") || "17.0.2";
+        const bundleType = params.has("prod")
+          ? "production.min"
+          : "development";
         const scripts = [
-          "https://cdn.jsdelivr.net/npm/react@[version]/umd/react.development.js",
-          "https://cdn.jsdelivr.net/npm/react-dom@[version]/umd/react-dom.development.js",
+          "https://cdn.jsdelivr.net/npm/react@[version]/umd/react.[bundleType].js",
+          "https://cdn.jsdelivr.net/npm/react-dom@[version]/umd/react-dom.[bundleType].js",
         ];
 
         addEventListener("hashchange", () => {
           const newParams = new URLSearchParams(location.hash.slice(1));
 
-          if (newParams.get("version") !== params.get("version")) {
+          if (
+            newParams.get("version") !== params.get("version") ||
+            newParams.has("prod") ^ params.has("prod")
+          ) {
             location.reload();
           }
         });
@@ -69,7 +75,11 @@
 
         for (const src of scripts) {
           lastLoadScriptPromise = lastLoadScriptPromise.then(() =>
-            loadScript(src.replace("[version]", version))
+            loadScript(
+              src
+                .replace("[version]", version)
+                .replace("[bundleType]", bundleType)
+            )
           );
         }
 

@@ -3,7 +3,9 @@ import testCases from "./cases/index";
 import createTestCaseWrapper from "./create-test-case-wrapper";
 import { createElement } from "./dom-utils";
 
-const reactVersion = new URLSearchParams(location.hash.slice(1)).get("version");
+const initialHashParams = new URLSearchParams(location.hash.slice(1));
+const isProdBundle = initialHashParams.has("prod");
+const reactVersion = initialHashParams.get("version");
 const versions = [
   "17.0.2",
   "17.0.1",
@@ -18,16 +20,35 @@ const versions = [
   "16.9.0",
 ];
 
-function createHash(version: string | null, id: string | null = null) {
-  const versionParam = version ? "version=" + encodeURIComponent(version) : "";
-  const caseParam = id ? "case=" + id : "";
+function createHash(
+  version: string | null,
+  prod = false,
+  id: string | null = null
+) {
+  const params = new URLSearchParams();
 
-  return `#${[versionParam, caseParam].filter(Boolean).join("&")}`;
+  if (version) {
+    params.append("version", version);
+  }
+
+  if (prod) {
+    params.append("prod", "");
+  }
+
+  if (id) {
+    params.append("case", id);
+  }
+
+  return `#${params}`;
 }
 
 function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
-    createElement("a", { href: createHash(reactVersion, id) }, title),
+    createElement(
+      "a",
+      { href: createHash(reactVersion, isProdBundle, id) },
+      title
+    ),
   ]);
 }
 
@@ -47,7 +68,11 @@ Promise.all(testCases).then(testCases => {
       "select",
       {
         onchange() {
-          location.hash = createHash(this.value, selectedTestCaseId);
+          location.hash = createHash(
+            this.value,
+            isProdBundle,
+            selectedTestCaseId
+          );
         },
       },
       versions.map(version =>
@@ -57,7 +82,21 @@ Promise.all(testCases).then(testCases => {
           version
         )
       )
-    )
+    ),
+    createElement("label", null, [
+      createElement("input", {
+        type: "checkbox",
+        checked: isProdBundle ? "" : undefined,
+        onchange() {
+          location.hash = createHash(
+            reactVersion,
+            this.checked,
+            selectedTestCaseId
+          );
+        },
+      }),
+      "production",
+    ])
   );
 
   for (const testCaseWrapper of testCaseWrappers) {
@@ -71,7 +110,11 @@ Promise.all(testCases).then(testCases => {
   const syncSelectedTestCase = () => {
     const params = new URLSearchParams(location.hash.slice(1));
     const newSelectedTestCaseId = params.get("case") || null;
-    const newSelectedHash = createHash(reactVersion, newSelectedTestCaseId);
+    const newSelectedHash = createHash(
+      reactVersion,
+      isProdBundle,
+      newSelectedTestCaseId
+    );
 
     for (const link of tocEl.querySelectorAll("a[href]")) {
       link.classList.toggle(
