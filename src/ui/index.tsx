@@ -1,12 +1,47 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
+import { Widget, navButtons, router } from '@discoveryjs/discovery/dist/discovery';
 import App from "./App";
 
 // bootstrap HTML document
 declare let __CSS__: string;
-const rootEl = document.createElement("div");
 document.head.appendChild(document.createElement("style")).append(__CSS__);
+
+const rootEl = document.createElement("div");
 document.body.appendChild(rootEl);
+
+const discoveryEl = document.createElement("iframe");
+discoveryEl.name = 'discovery';
+const blob = new Blob(
+  ['<html><style>html,body{margin:0;padding:0}</style><body></body></html>'],
+  {type : 'text/html'}
+);
+discoveryEl.src = window.URL.createObjectURL(blob);
+document.body.appendChild(discoveryEl);
+
+declare let __DISCOVERY_CSS__: string;
+
+discoveryEl.addEventListener('load', () => {
+  if (discoveryEl.contentDocument && discoveryEl.contentWindow) {
+    const discovery = new Widget(null, null, {
+      styles: [__DISCOVERY_CSS__],
+      extensions: [{ ...navButtons, router, loadData: undefined }],
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('app__discovery-wrapper');
+    discoveryEl.contentDocument.body.appendChild(wrapper);
+
+    discovery.setData({}, { name: "React Render Tracker" });
+    discovery.setPage("report");
+    discovery.setContainer(wrapper);
+
+    discoveryEl.contentWindow.addEventListener('message', ({ data }) => {
+      discovery.setData(data.allEvents);
+      discoveryEl.style.display = data.discoveryMode ? 'initial' : 'none';
+    })
+  }
+})
 
 // That's actually a hack.
 // React add 2x listeners for all known events (one for capture and one for bubbling phases),
