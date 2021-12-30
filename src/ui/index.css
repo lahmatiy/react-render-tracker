@@ -50,3 +50,12 @@ body {
   color: #333;
   background-color: transparent;
 }
+
+iframe[name=discovery] {
+  border: none;
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  height: calc(100vh - 21px);
+  display: none;
+}
