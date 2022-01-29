@@ -130,12 +130,12 @@ function ShouldUpdate({ value }: { value: string }) {
   const updateCount = React.useRef(0);
   updateCount.current++;
 
-  return <>[{updateCount.current === 1 ? "FAIL" : "OK"}]</>;
+  return <>[{value !== value || updateCount.current === 1 ? "FAIL" : "OK"}]</>;
 }
 
 function ShouldNotUpdate({ value }: { value: string }) {
   const updateCount = React.useRef(0);
   updateCount.current++;
 
-  return <>[{updateCount.current === 1 ? "OK" : "FAIL"}]</>;
+  return <>[{value === value && updateCount.current === 1 ? "OK" : "FAIL"}]</>;
 }

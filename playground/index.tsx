@@ -105,7 +105,7 @@ Promise.all(testCases).then(testCases => {
     tocEl.append(createTocItem(id, testcase.title));
   }
 
-  let selectedTestCaseId = null;
+  let selectedTestCaseId: string | null = null;
   const renderedTestCases = new Set<ReturnType<typeof createTestCaseWrapper>>();
   const syncSelectedTestCase = () => {
     const params = new URLSearchParams(location.hash.slice(1));
@@ -149,4 +149,3 @@ Promise.all(testCases).then(testCases => {
   syncSelectedTestCase();
   addEventListener("hashchange", syncSelectedTestCase);
 });
-// });
