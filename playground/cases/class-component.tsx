@@ -85,7 +85,7 @@ class ShouldComponentUpdateChild extends React.Component<{
   update: number;
   value: string;
 }> {
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: Record<string, any>) {
     return this.props.value !== nextProps.value;
   }
   render() {

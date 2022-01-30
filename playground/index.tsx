@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from "./react";
 import testCases from "./cases/index";
 import createTestCaseWrapper from "./create-test-case-wrapper";
@@ -52,12 +53,16 @@ function createTocItem(id: string | undefined, title: string) {
   ]);
 }
 
+function selectElement(selector: string): HTMLElement {
+  return document.querySelector(selector)!;
+}
+
 Promise.all(testCases).then(testCases => {
   const testCaseWrappers = testCases.map(test => createTestCaseWrapper(test));
 
-  const headerEl: HTMLElement = document.querySelector(".playground__header");
-  const sidebarEl: HTMLElement = document.querySelector(".playground__sidebar");
-  const contentEl: HTMLElement = document.querySelector(".playground__content");
+  const headerEl = selectElement(".playground__header");
+  const sidebarEl = selectElement(".playground__sidebar");
+  const contentEl = selectElement(".playground__content");
   const tocEl = sidebarEl.appendChild(
     createElement("ul", "playground__toc", [createTocItem(undefined, "All")])
   );

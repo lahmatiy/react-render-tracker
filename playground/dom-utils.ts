@@ -1,17 +1,18 @@
 const { hasOwnProperty } = Object.prototype;
 
-type EventHandler<T> = (evt: T) => void;
-type Attrs = {
-  [key in keyof HTMLElementEventMap as `on${key}`]?:
-    | EventHandler<HTMLElementEventMap[key]>
-    | undefined;
+type EventHandler<Element, Event> = (this: Element, evt: Event) => void;
+type Attrs<TagName extends keyof HTMLElementTagNameMap> = {
+  [key in keyof HTMLElementEventMap as `on${key}`]?: EventHandler<
+    HTMLElementTagNameMap[TagName],
+    HTMLElementEventMap[key]
+  >;
 } & {
-  [key: string]: string | undefined;
+  [key: string]: any | undefined; // TODO: replace "any" with "string"
 };
 
-export function createElement(
-  tag: string,
-  attrs: Attrs | string | null,
+export function createElement<TagName extends keyof HTMLElementTagNameMap>(
+  tag: TagName,
+  attrs: Attrs<TagName> | string | null,
   children?: (Node | string)[] | string
 ) {
   const el = document.createElement(tag);
@@ -31,7 +32,7 @@ export function createElement(
       }
 
       if (typeof value === "function") {
-        el.addEventListener(attrName.substr(2), value);
+        el.addEventListener(attrName.slice(2), value);
       } else {
         el.setAttribute(attrName, value);
       }

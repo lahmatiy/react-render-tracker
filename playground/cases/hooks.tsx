@@ -13,7 +13,7 @@ function Root() {
   const [isVisible, setIsVisible] = React.useState(false);
   const [test, setTest] = React.useState(0);
   const [state, dispatch] = React.useReducer(
-    (_, value) => value,
+    (_: any, value: any) => value,
     false,
     () => ({
       a: false,

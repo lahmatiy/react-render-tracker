@@ -57,7 +57,7 @@ class ClassNewChild extends React.Component {
 }
 
 class ClassSameChild extends React.Component {
-  child = null;
+  child: JSX.Element | null = null;
   render() {
     if (this.child === null) {
       this.child = <ShouldNotUpdate value={"test"} />;

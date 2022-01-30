@@ -2,7 +2,7 @@ import React from "../react";
 import { TestCase } from "../types";
 
 export default {
-  title: "Demo for RRT demo screenshot",
+  title: "RRT readme demo screenshot",
   Root: App,
 } as TestCase;
 
@@ -63,7 +63,7 @@ const Header = React.memo(function ({
 }: {
   title: string;
   datetime: Date;
-  user: User;
+  user: User | null;
 }) {
   const formattedDate = useFormattedDate(datetime);
   const avatar = React.useMemo(
