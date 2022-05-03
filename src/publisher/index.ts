@@ -7,5 +7,20 @@ import { attach } from "./react-integration";
 installReactDevtoolsHook(window, renderer => attach(renderer, recordEvent));
 
 if (config.inpage) {
-  rempl.getHost().activate();
+  const host = rempl.getHost();
+  let isActive = config.isactive ?? true
+
+  const toggle = () => {
+    isActive = !isActive;
+    isActive ? host.deactivate() : host.activate();
+  }
+  toggle()
+
+  document.addEventListener('keydown', event => {
+    if (event.metaKey === true && 
+        event.altKey === true &&
+        event.code === 'KeyT') {
+      toggle()
+    }
+  })
 }

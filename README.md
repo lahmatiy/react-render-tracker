@@ -70,6 +70,10 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 ></script>
 ```
 
+Also you can toggle React Render Tracker panel with:
+   - shortcut `Alt + Meta (Command / Win) + T`
+   - `data-config="isactive:false"` option
+
 ### Option #1 – Using with browser's devtools
 
 1. Install Rempl extension [for Chromium](https://chrome.google.com/webstore/detail/rempl/hcikjlholajopgbgfmmlbmifdfbkijdj) based browser or [for Firefox](https://addons.mozilla.org/en-US/firefox/addon/rempl/) (other browsers might be added later)
