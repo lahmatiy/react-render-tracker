@@ -19,6 +19,7 @@ function emulateEvent(target: HTMLElement) {
 }
 
 export default function (testcase: TestCase) {
+  let reactRoot: any;
   let reactRootEl: HTMLElement;
   const rootEl = createElement("div", "case-wrapper", [
     createElement("h2", null, [createElement("span", null, testcase.title)]),
@@ -70,12 +71,23 @@ export default function (testcase: TestCase) {
         });
       }
 
-      ReactDOM.render(element, reactRootEl);
+      if ((ReactDOM as any).createRoot) {
+        // React 18
+        reactRoot = (ReactDOM as any).createRoot(reactRootEl);
+        reactRoot.render(element);
+      } else {
+        // React prior 18
+        ReactDOM.render(element, reactRootEl);
+      }
     },
     dispose() {
       observing = false;
       observer.disconnect();
-      ReactDOM.unmountComponentAtNode(reactRootEl);
+      if (reactRoot) {
+        reactRoot.unmount();
+      } else {
+        ReactDOM.unmountComponentAtNode(reactRootEl);
+      }
       rootEl.remove();
     },
   };

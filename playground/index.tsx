@@ -8,6 +8,8 @@ const initialHashParams = new URLSearchParams(location.hash.slice(1));
 const isProdBundle = initialHashParams.has("prod");
 const reactVersion = initialHashParams.get("version");
 const versions = [
+  "18.1.0",
+  "18.0.0",
   "17.0.2",
   "17.0.1",
   "17.0.0",
