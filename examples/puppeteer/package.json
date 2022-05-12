@@ -1,0 +1,15 @@
+{
+  "name": "react-render-tracker-puppeteer-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example of using React Render Tracker with puppeteer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node script.js"
+  },
+  "dependencies": {
+    "puppeteer": "^13.7.0",
+    "react-render-tracker": "file:../..",
+    "react-render-tracker-demo-app": "file:../_app"
+  }
+}
