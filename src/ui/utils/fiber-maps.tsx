@@ -1,24 +1,8 @@
 import * as React from "react";
-import { Commit, FiberTypeDef, MessageFiber } from "../types";
-import {
-  SubscribeMap,
-  SubsetSplit,
-  useComputeSubscription,
-} from "./subscription";
-import { Tree } from "./tree";
+import { createFiberDataset } from "../../data";
+import { useComputeSubscription } from "./subscription";
 
-interface FiberMapsContext {
-  commitById: SubscribeMap<number, Commit>;
-  fiberById: SubscribeMap<number, MessageFiber>;
-  fiberTypeDefById: SubscribeMap<number, FiberTypeDef>;
-  fibersByTypeId: SubsetSplit<number, number>;
-  fibersByProviderId: SubsetSplit<number, number>;
-  parentTree: Tree;
-  parentTreeIncludeUnmounted: Tree;
-  ownerTree: Tree;
-  ownerTreeIncludeUnmounted: Tree;
-  selectTree: (groupByParent: boolean, includeUnmounted: boolean) => Tree;
-}
+type FiberMapsContext = ReturnType<typeof createFiberDataset>;
 
 const FiberMapsContext = React.createContext<FiberMapsContext>({} as any);
 export const useFiberMaps = () => React.useContext(FiberMapsContext);
@@ -27,38 +11,7 @@ export function FiberMapsContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const value: FiberMapsContext = React.useMemo(() => {
-    const commitById = new SubscribeMap<number, Commit>();
-    const fiberById = new SubscribeMap<number, MessageFiber>();
-    const fiberTypeDefById = new SubscribeMap<number, FiberTypeDef>();
-    const fibersByTypeId = new SubsetSplit<number, number>();
-    const fibersByProviderId = new SubsetSplit<number, number>();
-    const parentTree = new Tree();
-    const parentTreeIncludeUnmounted = new Tree();
-    const ownerTree = new Tree();
-    const ownerTreeIncludeUnmounted = new Tree();
-
-    return {
-      commitById,
-      fiberById,
-      fiberTypeDefById,
-      fibersByTypeId,
-      fibersByProviderId,
-      parentTree,
-      parentTreeIncludeUnmounted,
-      ownerTree,
-      ownerTreeIncludeUnmounted,
-      selectTree(groupByParent, includeUnmounted) {
-        return groupByParent
-          ? includeUnmounted
-            ? parentTreeIncludeUnmounted
-            : parentTree
-          : includeUnmounted
-          ? ownerTreeIncludeUnmounted
-          : ownerTree;
-      },
-    };
-  }, []);
+  const value: FiberMapsContext = React.useMemo(createFiberDataset, []);
 
   return (
     <FiberMapsContext.Provider value={value}>

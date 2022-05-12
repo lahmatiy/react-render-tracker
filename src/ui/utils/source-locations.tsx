@@ -45,10 +45,9 @@ export function SourceLocationsContextProvider({
       }
     };
     const flushAwaitResolve = () => {
-      remoteSubscriber.callRemote(
-        "resolve-source-locations",
-        [...awaitResolve],
-        result => {
+      remoteSubscriber
+        .callRemote("resolve-source-locations", [...awaitResolve])
+        .then(result => {
           for (const { loc, resolved } of result) {
             resolvedLocations.set(loc, resolved);
           }
@@ -56,8 +55,7 @@ export function SourceLocationsContextProvider({
           ReactDOM.unstable_batchedUpdates(() => {
             resolvedLocations.notify();
           });
-        }
-      );
+        });
 
       flushAwaitResolveScheduled = false;
       awaitResolve.clear();
