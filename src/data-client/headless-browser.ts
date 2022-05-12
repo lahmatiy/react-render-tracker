@@ -6,13 +6,17 @@ type DataClient = typeof ns;
 type LazyDataClient = {
   [T in keyof DataClient]: (...args: Parameters<DataClient[T]>) => Promise<any>;
 };
+type JSHandlerPayload<T extends keyof DataClient> = {
+  name: T;
+  args: Parameters<DataClient[T]>;
+};
 type JSHandler = {
   evaluate<T extends keyof DataClient>(
     fn: (
       exports: DataClient,
-      name: T,
-      ...args: Parameters<DataClient[T]>
-    ) => void
+      payload: JSHandlerPayload<T>
+    ) => ReturnType<DataClient[T]>,
+    payload: JSHandlerPayload<T>
   ): Promise<ReturnType<DataClient[T]>>;
   getProperties(): Promise<Map<keyof DataClient, any>>;
 };
@@ -41,7 +45,7 @@ function readScript(name: keyof typeof scripts) {
 function readScriptWithExports<T>(name: keyof typeof scripts) {
   const exportSymbols: (keyof T)[] = [];
   const source = readScript(name).replace(
-    /export(\{.+?\})/,
+    /export\s*(\{(.|\s)+?\})/,
     (_: any, e: string) =>
       "const api=" +
       e.replace(/([a-z]+) as ([a-z]+)/gi, (_, localName, exportName) => {
@@ -60,24 +64,18 @@ function readScriptWithExports<T>(name: keyof typeof scripts) {
 
 async function initDataClient(page: HeadlessBrowserPage) {
   const dataClient = Object.create(null);
-  const module = readScriptWithExports("data-client");
+  const module = readScriptWithExports<DataClient>("data-client");
   const dataClientHandle = await page.evaluateHandle(
     new Function(module.source) as () => Promise<DataClient>
   );
 
-  for (const name of (await dataClientHandle.getProperties()).keys()) {
+  for (const name of module.exportSymbols) {
     dataClient[name] = <T extends keyof DataClient>(
       ...args: Parameters<DataClient[T]>
     ) =>
-      // TODO: get rid of "as any"
-      (dataClientHandle.evaluate as any)(
-        (
-          client: DataClient,
-          name: keyof DataClient,
-          ...args: Parameters<DataClient[T]>
-        ) => (client[name] as any)(...args), // TODO: get rid of "as any"
-        name,
-        ...args
+      dataClientHandle.evaluate(
+        (client: DataClient, { name, args }) => (client[name] as any)(...args), // TODO: get rid of "as any"
+        { name, args }
       );
   }
 

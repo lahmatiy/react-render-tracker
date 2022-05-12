@@ -54,7 +54,7 @@ export async function getEvents(offset = 0, limit = Infinity) {
   await getEventCount();
   await syncEvents();
 
-  return cachedEvents.slice(offset, limit);
+  return cachedEvents.slice(offset, offset + limit);
 }
 
 export function subscribeNewEvents(

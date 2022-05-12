@@ -23,13 +23,12 @@ async function runReactScenarioSet(run) {
 
 runReactScenarioSet(async runReactScenario => {
   await runReactScenario("/", async ({ page, rrt }) => {
-    // log current event count
-    console.log(await rrt.getEventCount());
+    const eventCountBeforeAction = await rrt.getEventCount();
 
     // do some actions
     await page.click("button");
 
-    // dump events
-    console.log(await rrt.getEvents());
+    // dump events after an action
+    console.log(await rrt.getEvents(eventCountBeforeAction));
   });
 });
