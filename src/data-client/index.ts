@@ -11,6 +11,7 @@ const getEventsStateMethod = subscriber
   .getRemoteMethod("getEventsState");
 
 const cachedEvents: Message[] = [];
+const newEventListeners: (() => void)[] & { subscribed?: boolean } = [];
 let totalEventsCount = 0;
 let syncing = false;
 
@@ -20,7 +21,10 @@ async function syncEvents() {
   }
 
   try {
+    let hasNewEvents = false;
+
     syncing = true;
+
     while (cachedEvents.length < totalEventsCount) {
       if (!getEventsMethod.available) {
         break;
@@ -32,17 +36,60 @@ async function syncEvents() {
       if (!chunk.length) {
         break;
       }
+
+      hasNewEvents = true;
+    }
+
+    if (hasNewEvents) {
+      for (const listener of newEventListeners) {
+        listener();
+      }
     }
   } finally {
     syncing = false;
   }
 }
 
-export async function getEvents() {
+export async function getEvents(offset = 0, limit = Infinity) {
   await getEventCount();
   await syncEvents();
 
-  return cachedEvents.slice();
+  return cachedEvents.slice(offset, limit);
+}
+
+export function subscribeNewEvents(
+  callback: (newEvents: Message[]) => void,
+  offset = cachedEvents.length
+) {
+  const callbackWrapper = () => {
+    try {
+      callback(cachedEvents.slice(offset));
+      offset = cachedEvents.length;
+    } catch {}
+  };
+
+  newEventListeners.push(callbackWrapper);
+
+  if (offset < cachedEvents.length) {
+    callback(cachedEvents.slice(offset));
+  }
+
+  offset = cachedEvents.length;
+
+  if (!newEventListeners.subscribed) {
+    subscriber.ns("tree-changes").subscribe(state => {
+      totalEventsCount = Math.max(totalEventsCount, state?.count || 0);
+      syncEvents();
+    });
+    newEventListeners.subscribed = true;
+  }
+
+  return () => {
+    const idx = newEventListeners.indexOf(callbackWrapper);
+    if (idx !== -1) {
+      newEventListeners.splice(idx, 1);
+    }
+  };
 }
 
 export async function getEventCount() {
