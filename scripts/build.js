@@ -1,8 +1,12 @@
 const esbuild = require("esbuild");
+const path = require("path");
+const basePath = path.join(__dirname, "..");
 
 module.exports = {
   buildPlayground,
+  buildDataUtils,
   buildSubscriber,
+  buildSelfSubscriber: buildDataClient,
   buildPublisher,
   buildBundle,
 };
@@ -23,7 +27,7 @@ async function buildPlayground(config) {
   ];
 
   const result = await esbuild.build({
-    entryPoints: ["playground/index.tsx"],
+    entryPoints: [path.join(basePath, "playground/index.tsx")],
     plugins,
     // external: ["src/*"],
     bundle: true,
@@ -41,7 +45,7 @@ async function buildPlayground(config) {
 
 async function buildSubscriber(config, configCSS) {
   const css = await esbuild.build({
-    entryPoints: ["src/ui/index.css"],
+    entryPoints: [path.join(basePath, "src/ui/index.css")],
     bundle: true,
     loader: {
       ".png": "dataurl",
@@ -52,7 +56,7 @@ async function buildSubscriber(config, configCSS) {
     write: false,
   });
   const result = await esbuild.build({
-    entryPoints: ["src/ui/index.tsx"],
+    entryPoints: [path.join(basePath, "src/ui/index.tsx")],
     bundle: true,
     sourcemap: true,
     format: "esm",
@@ -72,7 +76,7 @@ async function buildSubscriber(config, configCSS) {
 
 async function buildPublisher(config) {
   const result = await esbuild.build({
-    entryPoints: ["src/publisher/index.ts"],
+    entryPoints: [path.join(basePath, "src/publisher/index.ts")],
     bundle: true,
     sourcemap: true,
     format: "iife",
@@ -89,9 +93,62 @@ async function buildPublisher(config) {
   }
 }
 
-async function buildBundle(
-  config = { outfile: "dist/react-render-tracker.js" }
-) {
+async function buildDataUtils(config) {
+  config = config || {};
+
+  if (!config.outfile && config.write) {
+    config.outfile = path.join(basePath, "dist/data-utils.js");
+  }
+
+  const result = await esbuild.build({
+    entryPoints: [path.join(basePath, "src/data/index.ts")],
+    bundle: true,
+    format: "esm",
+    write: false,
+    ...config,
+    define: {
+      __DEV__: true,
+      ...(config && config.define),
+    },
+  });
+
+  if (result.outputFiles && result.outputFiles.length) {
+    return result.outputFiles[0].text;
+  }
+}
+
+async function buildDataClient(config) {
+  config = config || {};
+
+  if (!config.outfile && config.write) {
+    config.outfile = path.join(basePath, "dist/data-client.js");
+  }
+
+  const result = await esbuild.build({
+    entryPoints: [path.join(basePath, "src/data-client/index.ts")],
+    bundle: true,
+    minify: true,
+    format: "esm",
+    write: false,
+    ...config,
+    define: {
+      __DEV__: true,
+      ...(config && config.define),
+    },
+  });
+
+  if (result.outputFiles && result.outputFiles.length) {
+    return result.outputFiles[0].text;
+  }
+}
+
+async function buildBundle(config) {
+  config = config || {};
+
+  if (!config.outfile && config.write) {
+    config.outfile = path.join(basePath, "dist/react-render-tracker.js");
+  }
+
   const __SUBSCRIBER_SRC__ = await buildSubscriber(
     {
       minify: true,
@@ -104,8 +161,6 @@ async function buildBundle(
   );
 
   return await buildPublisher({
-    logLevel: "info",
-    write: true,
     format: "iife",
     minify: true,
     sourcemap: false,
@@ -118,6 +173,33 @@ async function buildBundle(
   });
 }
 
+function buildHeadlessBrowserModules(config) {
+  return Promise.all([
+    esbuild.build({
+      entryPoints: [path.join(basePath, "src/data-client/headless-browser.ts")],
+      outfile: path.join(basePath, "dist/headless-browser-client.mjs"),
+      format: "esm",
+      bundle: false,
+      ...config,
+      banner: {
+        js: 'import { fileURLToPath } from "url";\nconst __dirname = path.dirname(fileURLToPath(import.meta.url));\n',
+      },
+    }),
+    esbuild.build({
+      entryPoints: [path.join(basePath, "src/data-client/headless-browser.ts")],
+      outfile: path.join(basePath, "dist/headless-browser-client.js"),
+      format: "cjs",
+      bundle: false,
+      ...config,
+    }),
+  ]);
+}
+
 if (require.main === module) {
-  buildBundle();
+  (async () => {
+    await buildBundle({ logLevel: "info", write: true });
+    await buildDataClient({ logLevel: "info", write: true });
+    await buildDataUtils({ logLevel: "info", write: true });
+    await buildHeadlessBrowserModules({ logLevel: "info" });
+  })();
 }

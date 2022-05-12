@@ -3,7 +3,13 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const openInEditor = require("express-open-in-editor");
-const { buildPublisher, buildSubscriber, buildPlayground } = require("./build");
+const {
+  buildPublisher,
+  buildSubscriber,
+  buildPlayground,
+  buildSelfSubscriber,
+  buildDataUtils,
+} = require("./build");
 const playgroundDir = path.join(__dirname, "../playground");
 
 const app = express();
@@ -25,6 +31,8 @@ app.listen(process.env.PORT || 3000, function () {
     "/publisher.js": () =>
       buildPublisher({ define: { "import.meta.url": JSON.stringify(host) } }),
     "/subscriber.js": () => buildSubscriber(),
+    "/rrt-data-client.js": () => buildSelfSubscriber({ sourcemap: "inline" }),
+    "/rrt-data-utils.js": () => buildDataUtils({ sourcemap: "inline" }),
   })) {
     app.get(url, asyncResponse(generator));
   }
