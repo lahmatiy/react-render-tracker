@@ -15,6 +15,18 @@
   "main": "src/publisher/index.js",
   "unpkg": "dist/react-render-tracker.js",
   "jsdelivr": "dist/react-render-tracker.js",
+  "exports": {
+    ".": "./dist/react-render-tracker.js",
+    "./package.json": "./package.json",
+    "./data-client": {
+      "default": "./dist/data-client.js"
+    },
+    "./data-utils": "./dist/data-utils.js",
+    "./headless-browser-client": {
+      "import": "./dist/headless-browser-client.mjs",
+      "require": "./dist/headless-browser-client.js"
+    }
+  },
   "scripts": {
     "test": "jest src",
     "lint": "eslint playground src",
