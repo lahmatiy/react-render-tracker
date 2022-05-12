@@ -9,98 +9,93 @@ declare module "rempl" {
     ) => void
   ): Publisher;
   export function getSubscriber(): Subscriber;
+  export function getSelfSubscriber(id: string): Subscriber;
   export function getHost(): {
     activate(): void;
   };
 
-  type PublisherChannels = "tree-changes" | "open-source-settings";
-  type TreeChangesData = { count: number };
-  type TreeChangesGetEventsMethod = (
-    offset: number,
-    count: number,
-    callback: (events: Message[]) => void
-  ) => void;
-  type TreeChangesNsMethods = "getEvents";
-  type TreeChangesNsRet<T> = T extends "getEvents"
-    ? TreeChangesGetEventsMethod
-    : never;
+  export type ReactiveValue<T> = {
+    value: T;
+    link(fn: (value: T) => void): void;
+    on(fn: (value: T) => void): void;
+    off(fn: (value: T) => void): void;
+  };
+
+  type MethodsMap = {
+    [method: string]: (...args: any[]) => any;
+  };
+  type NamespaceDef = {
+    data: any;
+    methods: MethodsMap;
+  };
+  type NamespacesMap = {
+    [ns: string]: NamespaceDef;
+  };
+
+  type TreeEventsState = { count: number };
   type OpenSourceSettings = {
     pattern: string;
     projectRoot: string;
     basedir: string;
     basedirJsx: string;
   } | null;
-  type OpenSourceSettingsNsMethods = never;
-  type OpenSourceSettingsNsRet = never;
-  type PublisherNS<dataT, methodsEnum, methodsRet> = {
-    publish(data: dataT): void;
-    provide<T extends methodsEnum>(method: T, fn: methodsRet): void;
+  interface RRTNamespaces extends NamespacesMap {
+    "*": {
+      data: never;
+      methods: {
+        "open-file"(filepath: string): void;
+        "resolve-source-locations"(
+          locations: string[]
+        ): Array<{ loc: string; resolved: string }>;
+      };
+    };
+    "tree-changes": {
+      data: TreeEventsState;
+      methods: {
+        getEvents(offset: number, count: number): Message[];
+        getEventsState(): TreeEventsState;
+      };
+    };
+    "open-source-settings": {
+      data: OpenSourceSettings;
+      methods: never;
+    };
+  }
+
+  type PublisherNS<NS extends NamespaceDef> = {
+    publish(data: NS["data"]): void;
+    provide<T extends keyof NS["methods"], M extends NS["methods"][T]>(
+      method: T,
+      fn: (...args: Parameters<M>) => Promise<ReturnType<M>> | ReturnType<M>
+    ): void;
   };
-  type SubscriberNS<dataT, methodsEnum, methodsRet> = {
-    subscribe(callback: (data: dataT | null) => void): void;
-    onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
-    getRemoteMethod<T extends methodsEnum>(
+  type SubscriberNS<NS extends NamespaceDef> = {
+    subscribe(callback: (data: NS["data"] | null) => void): void;
+    callRemote<T extends keyof NS["methods"], M extends NS["methods"][T]>(
+      method: T,
+      ...args: Parameters<M>
+    ): Promise<ReturnType<M>>;
+    onRemoteMethodsChanged<T extends keyof NS["methods"]>(
+      callback: (methods: T[]) => void
+    ): () => void;
+    getRemoteMethod<T extends keyof NS["methods"], M extends NS["methods"][T]>(
       method: T
-    ): methodsRet & { available: boolean };
+    ): ((...args: Parameters<M>) => Promise<ReturnType<M>>) & {
+      available: boolean;
+    };
   };
 
-  type PublisherMethods = "open-file" | "resolve-source-locations";
-  type PublisherMethod<T extends PublisherMethods> = T extends "open-file"
-    ? (filepath: string) => void
-    : T extends "resolve-source-locations"
-    ? (
-        locations: string[],
-        callback: (result: Array<{ loc: string; resolved: string }>) => void
-      ) => void
-    : never;
-
-  export interface Publisher {
-    provide<T extends PublisherMethods>(
-      name: T,
-      callback: PublisherMethod<T>
-    ): void;
-    ns<T extends PublisherChannels>(
+  export type Publisher = {
+    id: string;
+    ns<T extends keyof RRTNamespaces>(
       channel: T
-    ): T extends "tree-changes"
-      ? PublisherNS<
-          TreeChangesData,
-          TreeChangesNsMethods,
-          TreeChangesNsRet<TreeChangesNsMethods>
-        >
-      : T extends "open-source-settings"
-      ? PublisherNS<
-          OpenSourceSettings,
-          OpenSourceSettingsNsMethods,
-          OpenSourceSettingsNsRet
-        >
-      : never;
-  }
+    ): PublisherNS<RRTNamespaces[T]>;
+  } & PublisherNS<RRTNamespaces["*"]>;
 
-  export interface Subscriber {
-    onRemoteMethodsChanged(callback: (methods: string[]) => void): void;
-    callRemote<T extends PublisherMethods>(
-      name: T,
-      ...args:
-        | Parameters<PublisherMethod<T>>
-        | [
-            ...Parameters<PublisherMethod<T>>,
-            (value: ReturnType<PublisherMethod<T>>) => void
-          ]
-    ): void;
-    ns<T extends PublisherChannels>(
+  export type Subscriber = {
+    connected: ReactiveValue<boolean>;
+    ns<T extends keyof RRTNamespaces>(
       channel: T
-    ): T extends "tree-changes"
-      ? SubscriberNS<
-          TreeChangesData,
-          TreeChangesNsMethods,
-          TreeChangesNsRet<TreeChangesNsMethods>
-        >
-      : T extends "open-source-settings"
-      ? SubscriberNS<
-          OpenSourceSettings,
-          OpenSourceSettingsNsMethods,
-          OpenSourceSettingsNsRet
-        >
-      : never;
-  }
+    ): SubscriberNS<RRTNamespaces[T]>;
+  } & SubscriberNS<RRTNamespaces["*"]>;
 }

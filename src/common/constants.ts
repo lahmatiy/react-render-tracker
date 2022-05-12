@@ -1,5 +1,7 @@
 import { FiberType, FiberRootMode } from "common-types";
 
+export const ToolId = "React Render Tracker";
+
 export const ElementTypeClass: FiberType = 1;
 export const ElementTypeFunction: FiberType = 2;
 export const ElementTypeMemo: FiberType = 3;

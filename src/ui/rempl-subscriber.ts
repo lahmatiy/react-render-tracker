@@ -1,7 +1,3 @@
-import _rempl from "rempl";
+import { getSubscriber } from "rempl";
 
-declare global {
-  const rempl: typeof _rempl;
-}
-
-export const remoteSubscriber = rempl.getSubscriber();
+export const remoteSubscriber = getSubscriber();

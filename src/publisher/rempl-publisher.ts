@@ -1,6 +1,7 @@
-import rempl from "rempl";
+import { createPublisher } from "rempl";
 import debounce from "lodash.debounce";
 import { RecordEventHandler, Message } from "./types";
+import { ToolId } from "../common/constants";
 import config from "./config";
 import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 
@@ -17,26 +18,25 @@ const events: Message[] = [];
 declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
 
-export const publisher = rempl.createPublisher(
-  "React Render Tracker",
-  (settings, callback) => {
-    if (__DEV__) {
-      const { origin } = new URL(import.meta.url);
+export const publisher = createPublisher(ToolId, (settings, callback) => {
+  if (__DEV__) {
+    const { origin } = new URL(import.meta.url);
 
-      fetch(`${origin}/subscriber.js`)
-        .then(res => res.text())
-        .then(script => callback(null, "script", script));
-    } else {
-      callback(null, "script", __SUBSCRIBER_SRC__);
-    }
+    fetch(`${origin}/subscriber.js`)
+      .then(res => res.text())
+      .then(script => callback(null, "script", script));
+  } else {
+    callback(null, "script", __SUBSCRIBER_SRC__);
   }
-);
+});
 
 const eventLogChannel = publisher.ns("tree-changes");
-eventLogChannel.provide("getEvents", (offset, count, callback) => {
+eventLogChannel.provide("getEvents", (offset, count) => {
   if (isNaN(offset) || isNaN(count)) {
-    return callback([]);
+    return [];
   }
+
+  publishEventsDebounced.flush();
 
   const start = Math.max(0, Math.floor(offset));
   let end =
@@ -51,13 +51,17 @@ eventLogChannel.provide("getEvents", (offset, count, callback) => {
     }
   }
 
-  callback(events.slice(start, end));
+  return events.slice(start, end);
+});
+const getEventsState = () => ({
+  count: events.length,
+});
+eventLogChannel.provide("getEventsState", () => {
+  publishEventsDebounced.flush();
+  return getEventsState();
 });
 const publishEventsDebounced = debounce(
-  () =>
-    eventLogChannel.publish({
-      count: events.length,
-    }),
+  () => eventLogChannel.publish(getEventsState()),
   50,
   { maxWait: 50 }
 );
@@ -77,8 +81,8 @@ export const recordEvent: RecordEventHandler = payload => {
 
 publisher.ns("open-source-settings").publish(openSourceLoc || null);
 
-publisher.provide("resolve-source-locations", (locations, callback) => {
+publisher.provide("resolve-source-locations", locations =>
   Promise.all(locations.map(resolveSourceLoc)).then(result =>
-    callback(result.map((resolved, idx) => ({ loc: locations[idx], resolved })))
-  );
-});
+    result.map((resolved, idx) => ({ loc: locations[idx], resolved }))
+  )
+);
