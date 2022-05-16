@@ -1,11 +1,10 @@
 var __defProp = Object.defineProperty;
-var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
+var __getOwnPropNames = Object.getOwnPropertyNames;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[Object.keys(fn)[0]])(fn = 0)), res;
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
 var __export = (target, all) => {
-  __markAsModule(target);
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
@@ -498,12 +497,12 @@ function FunctionSameProps() {
 function ShouldUpdate({ value }) {
   const updateCount = react_default.useRef(0);
   updateCount.current++;
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", updateCount.current === 1 ? "FAIL" : "OK", "]");
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", value !== value || updateCount.current === 1 ? "FAIL" : "OK", "]");
 }
 function ShouldNotUpdate({ value }) {
   const updateCount = react_default.useRef(0);
   updateCount.current++;
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", updateCount.current === 1 ? "OK" : "FAIL", "]");
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", value === value && updateCount.current === 1 ? "OK" : "FAIL", "]");
 }
 var bailouts_default, ClassNewChild, ClassSameChild, ClassSameProps, MemoNoPropsBailout, MemoWithPropsBailout, FunctionStateNoChangeBailout, ClassStateNoChangeBailout;
 var init_bailouts = __esm({
@@ -972,7 +971,7 @@ var init_screenshot_demo = __esm({
   "playground/cases/screenshot-demo.tsx"() {
     init_react();
     screenshot_demo_default = {
-      title: "Demo for RRT demo screenshot",
+      title: "RRT readme demo screenshot",
       Root: App
     };
     Settings = react_default.createContext({ darkmode: false });
@@ -1066,7 +1065,7 @@ function createElement(tag, attrs, children) {
         continue;
       }
       if (typeof value === "function") {
-        el.addEventListener(attrName.substr(2), value);
+        el.addEventListener(attrName.slice(2), value);
       } else {
         el.setAttribute(attrName, value);
       }
@@ -1095,6 +1094,7 @@ function emulateEvent(target) {
 }
 __name(emulateEvent, "emulateEvent");
 function create_test_case_wrapper_default(testcase) {
+  let reactRoot;
   let reactRootEl;
   const rootEl = createElement("div", "case-wrapper", [
     createElement("h2", null, [createElement("span", null, testcase.title)]),
@@ -1139,12 +1139,21 @@ function create_test_case_wrapper_default(testcase) {
           attributeFilter: [emulateEventAttribute]
         });
       }
-      react_dom_default.render(element, reactRootEl);
+      if (react_dom_default.createRoot) {
+        reactRoot = react_dom_default.createRoot(reactRootEl);
+        reactRoot.render(element);
+      } else {
+        react_dom_default.render(element, reactRootEl);
+      }
     },
     dispose() {
       observing = false;
       observer.disconnect();
-      react_dom_default.unmountComponentAtNode(reactRootEl);
+      if (reactRoot) {
+        reactRoot.unmount();
+      } else {
+        react_dom_default.unmountComponentAtNode(reactRootEl);
+      }
       rootEl.remove();
     }
   };
@@ -1156,6 +1165,8 @@ var initialHashParams = new URLSearchParams(location.hash.slice(1));
 var isProdBundle = initialHashParams.has("prod");
 var reactVersion = initialHashParams.get("version");
 var versions = [
+  "18.1.0",
+  "18.0.0",
   "17.0.2",
   "17.0.1",
   "17.0.0",
@@ -1188,11 +1199,15 @@ function createTocItem(id, title) {
   ]);
 }
 __name(createTocItem, "createTocItem");
+function selectElement(selector) {
+  return document.querySelector(selector);
+}
+__name(selectElement, "selectElement");
 Promise.all(cases_default).then((testCases) => {
   const testCaseWrappers = testCases.map((test) => create_test_case_wrapper_default(test));
-  const headerEl = document.querySelector(".playground__header");
-  const sidebarEl = document.querySelector(".playground__sidebar");
-  const contentEl = document.querySelector(".playground__content");
+  const headerEl = selectElement(".playground__header");
+  const sidebarEl = selectElement(".playground__sidebar");
+  const contentEl = selectElement(".playground__content");
   const tocEl = sidebarEl.appendChild(createElement("ul", "playground__toc", [createTocItem(void 0, "All")]));
   headerEl.append("React version:\xA0", createElement("select", {
     onchange() {
@@ -1213,7 +1228,7 @@ Promise.all(cases_default).then((testCases) => {
     tocEl.append(createTocItem(id, testcase.title));
   }
   let selectedTestCaseId = null;
-  const renderedTestCases = new Set();
+  const renderedTestCases = /* @__PURE__ */ new Set();
   const syncSelectedTestCase = /* @__PURE__ */ __name(() => {
     const params = new URLSearchParams(location.hash.slice(1));
     const newSelectedTestCaseId = params.get("case") || null;
