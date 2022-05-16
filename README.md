@@ -125,11 +125,40 @@ The `react-render-tracker/data-client` module provides JavaScript API (data clie
 </script>
 ```
 
-See example [here](playground/data-client-example.js)
+See example [here](playground/data-client-example.js).
+
+Data client API:
+
+> NOTE: Data client API is very basic at the moment and a subject to change. Consider it **experimental**. Your feedback is highly welcome.
+
+```ts
+// returns a promise that is resolving when data client is connected to RRT
+async function isReady(): void;
+
+// returns the state of data client connection to RRT
+function isConnected(): boolean;
+
+// returns an array of captured events
+async function getEvents(offset = 0, limit = Infinity): Message[];
+
+// return a number of captured events
+async function getEventCount(): number;
+
+// adds listener to the connection state changes, return a function to unsubscribe
+function subscribeConnected(listener: (value: boolean) => void): () => {};
+
+// adds listener to receive new captured events, return a function to unsubscribe;
+// specifies the index from which to consider events as new, by default it's all
+// non-captured events; set to 0 to receieve all the events;
+function subscribeNewEvents(
+  callback: (newEvents: Message[]) => void,
+  offset = events.length
+): () => {};
+```
 
 ### Option #4 – Data client in a headless browser framework
 
-The `react-render-tracker/headless-browser-client` module provides an adapter for headless browser frameworks which is applied to a page to get the data client API in the context of the page. Supported frameworks:
+The `react-render-tracker/headless-browser-client` module provides an adapter for headless browser frameworks which is applied to a page object to get the data client API in the context of the page. Supported frameworks:
 
 - [Playwright](https://github.com/microsoft/playwright) (see [example](examples/playwright/script.mjs))
 - [Puppeteer](https://github.com/puppeteer/puppeteer) (see [example](examples/puppeteer/script.js))
