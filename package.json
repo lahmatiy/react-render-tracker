@@ -18,10 +18,7 @@
   "exports": {
     ".": "./dist/react-render-tracker.js",
     "./package.json": "./package.json",
-    "./data-client": {
-      "default": "./dist/data-client.js"
-    },
-    "./data-utils": "./dist/data-utils.js",
+    "./data-client": "./dist/data-client.js",
     "./headless-browser-client": {
       "import": "./dist/headless-browser-client.mjs",
       "require": "./dist/headless-browser-client.js"

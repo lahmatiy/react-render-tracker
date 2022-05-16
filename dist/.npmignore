@@ -1,6 +1,5 @@
 *
 !data-client.js
-!data-utils.js
 !headless-browser-client.js
 !headless-browser-client.mjs
 !react-render-tracker.js
