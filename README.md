@@ -27,6 +27,7 @@ Features:
 - Self and subtree rendering timings (hidden by default, use toggle in the right top corner to enable it)
 - Open a source location in an editor
 - Overall stats on events and component instances in the status bar
+- API for a fetching and processing captured data for a [browser](#option-3--data-client-in-a-browser) and [headless browser frameworks](#option-4--data-client-in-a-headless-browser-framework)
 - More to come... (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6))
 
 ## How to use
@@ -57,9 +58,15 @@ You can use a CDN service to include script with no installation from NPM:
 <script src="https://unpkg.com/react-render-tracker"></script>
 ```
 
-Next, you need to open the user interface, one of the ways that best suits your case.
+Next, you need to open the user interface or use data client API, one of the ways that best suits your case:
 
-### Option #0 - Open UI right in the page
+- [Option #0 – Open UI right in the page](#option-0--open-ui-right-in-the-page)
+- [Option #1 – Using with browser's devtools](#option-1--using-with-browsers-devtools)
+- [Option #2 – Open UI in another tab, or browser, or device](#option-2--open-ui-in-another-tab-or-browser-or-device)
+- [Option #3 – Data client in a browser](#option-3--data-client-in-a-browser)
+- [Option #4 – Data client in a headless browser framework](#option-4--data-client-in-a-headless-browser-framework)
+
+### Option #0 – Open UI right in the page
 
 To avoid any additional installs you may just add `data-config="inpage:true"` attribute to the `<script>`. In this case, the UI will be shown right in the page of your application. That's the simplest way to try React Render Tracker in action. However, UI will perform in the same thread as your React application which may be not a good option from a performance perspective for large scale apps.
 
@@ -78,7 +85,7 @@ To avoid any additional installs you may just add `data-config="inpage:true"` at
 
 > NOTE: If your React application and browser's devtools were opened before Rempl extension is installed, you need to close and open browser's devtools as well as reload the page with React application.
 
-### Option #2 – Open UI in another tab, or browser, or device...
+### Option #2 – Open UI in another tab, or browser, or device
 
 The most universal way for a remote inspection of your React app using React Render Tracker is via a special server as a connection point between the app and React Render Tracker UI. Since RRT is based on [Rempl](https://github.com/rempl/rempl), it works with [rempl-cli](https://github.com/rempl/rempl-cli) which is used to launch such kind of a server. In this case, it becomes possible to inspect a React application launched in any web view with a WebSocket support. In fact, you can inspect a React application running in a browser with no devtools support, or Electron, or VS Code, etc.
 
@@ -100,6 +107,45 @@ This will launch a Rempl server on port `8177`. Use `--port` option to specify a
 3. Open your application. Open Rempl server location in an evergreen browser on your choice, e.g. `http://localhost:8177` which is the default URL. You should see connected instances of React Render Tracker, select one to see the UI.
 
 > NOTE: During MVP phase cross-browser support is not guarantee. Feel free to open an issue if something doesn't work in non-Chromium browser you use.
+
+### Option #3 – Data client in a browser
+
+The `react-render-tracker/data-client` module provides JavaScript API (data client) to interact with React Render Tracker.
+
+```html
+<script src="path/to/react-render-tracker.js"></script>
+<script type="module">
+  import * as rrt from "react-render-tracker/data-client";
+
+  await rrt.isReady(); // resolves when data client is connected to React Render Tracker
+
+  // ...
+
+  const capturedEvents = await rrt.getEvents();
+</script>
+```
+
+See example [here](playground/data-client-example.js)
+
+### Option #4 – Data client in a headless browser framework
+
+The `react-render-tracker/headless-browser-client` module provides an adapter for headless browser frameworks which is applied to a page to get the data client API in the context of the page. Supported frameworks:
+
+- [Playwright](https://github.com/microsoft/playwright) (see [example](examples/playwright/script.mjs))
+- [Puppeteer](https://github.com/puppeteer/puppeteer) (see [example](examples/puppeteer/script.js))
+
+```js
+import { chromium } from "playwright"; // or import puppeteer from "puppeteer";
+import newTrackerClient from "react-render-tracker/headless-browser-client";
+
+const browser = chromium.launch();
+const page = await browser.newPage();
+const rrt = await newTrackerClient(page);
+
+await page.goto("https://example.com");
+
+const capturedEvents = await rrt.getEvents();
+```
 
 ## Configuring React Render Tracker
 
