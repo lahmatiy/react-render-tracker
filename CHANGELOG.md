@@ -2,7 +2,7 @@
 
 - **[EXPERIMENTAL]** Added new entry points (exports):
   - `react-render-tracker/data-client` – [data client API](#option-3--data-client-in-a-browser) to interact with React Render Tracker
-  - `react-render-tracker/headless-browset-client` – [an adapter for headless browser frameworks](#option-4--data-client-in-a-headless-browser-framework) which is applied to a page object to get the data client API in the context of the page
+  - `react-render-tracker/headless-browser-client` – [an adapter for headless browser frameworks](#option-4--data-client-in-a-headless-browser-framework) which is applied to a page object to get the data client API in the context of the page
 - Added warning when non-development version of React is used instead of trying to inspect it and crash
 - Bumped rempl to [`1.0.0-alpha.20`](https://github.com/rempl/rempl/releases/tag/v1.0.0-alpha.20)
 
