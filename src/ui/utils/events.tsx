@@ -1,9 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { stringifyInfo } from "@discoveryjs/json-ext";
+import { ReactRenderer } from "common-types";
+import { LinkedEvent, Message } from "../types";
 import { remoteSubscriber } from "../rempl-subscriber";
 import { useFiberMaps } from "./fiber-maps";
-import { LinkedEvent, Message } from "../types";
 import { useDebouncedComputeSubscription } from "./subscription";
 import { flushNotify, subscribeSubtree, processEvents } from "../../data";
 
@@ -41,8 +42,10 @@ const EventsContext = React.createContext(createEventsContextValue());
 export const useEventsContext = () => React.useContext(EventsContext);
 
 export function EventsContextProvider({
+  channelId,
   children,
 }: {
+  channelId: ReactRenderer["channelId"];
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
@@ -107,14 +110,8 @@ export function EventsContextProvider({
   );
 
   React.useEffect(() => {
-    const channel = remoteSubscriber.ns("tree-changes");
+    const channel = remoteSubscriber.ns(channelId);
     const remoteLoadEvents = channel.getRemoteMethod("getEvents");
-
-    channel.onRemoteMethodsChanged(methods => {
-      if (methods.includes("getEvents")) {
-        loadEvents();
-      }
-    });
 
     const EVENT_COUNT = 512;
     let loadingStartOffset = 0;
@@ -199,6 +196,12 @@ export function EventsContextProvider({
         applyEventsChunk();
       });
     };
+
+    channel.onRemoteMethodsChanged(methods => {
+      if (methods.includes("getEvents")) {
+        loadEvents();
+      }
+    });
 
     return channel.subscribe(data => {
       const { count } = data || { count: 0 };

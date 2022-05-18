@@ -1,19 +1,40 @@
-import { getSelfSubscriber, Subscriber } from "rempl";
+import {
+  getSelfSubscriber,
+  Subscriber,
+  RemoteProtocol,
+  SubscriberRemoveMethod,
+  SubscriberNS,
+} from "rempl";
 import { Message } from "common-types";
 import { ToolId } from "../common/constants";
 
+type EventsNamespace = SubscriberNS<RemoteProtocol[`events:${number}`]>;
+type EventsChannelMethods = RemoteProtocol[`events:${number}`]["methods"];
+type RemoteMethod<name extends keyof EventsChannelMethods> =
+  SubscriberRemoveMethod<EventsChannelMethods[name]>;
+
 const subscriber = getSelfSubscriber(ToolId) as Subscriber;
-const getEventsMethod = subscriber
-  .ns("tree-changes")
-  .getRemoteMethod("getEvents");
-const getEventsStateMethod = subscriber
-  .ns("tree-changes")
-  .getRemoteMethod("getEventsState");
+let getEventsMethod: RemoteMethod<"getEvents"> | null = null;
+let getEventsStateMethod: RemoteMethod<"getEventsState"> | null = null;
 
 const cachedEvents: Message[] = [];
 const newEventListeners: (() => void)[] & { subscribed?: boolean } = [];
 let totalEventsCount = 0;
 let syncing = false;
+
+let selectedRendererChannel: EventsNamespace | null = null;
+const rendererReady = new Promise<EventsNamespace>(resolve =>
+  subscriber.ns("react-renderers").subscribe(renderers => {
+    if (selectedRendererChannel === null && renderers.length > 0) {
+      selectedRendererChannel = subscriber.ns(renderers[0].channelId);
+
+      getEventsMethod = selectedRendererChannel.getRemoteMethod("getEvents");
+      getEventsStateMethod =
+        selectedRendererChannel.getRemoteMethod("getEventsState");
+      resolve(selectedRendererChannel);
+    }
+  })
+);
 
 async function syncEvents() {
   if (syncing) {
@@ -26,7 +47,7 @@ async function syncEvents() {
     syncing = true;
 
     while (cachedEvents.length < totalEventsCount) {
-      if (!getEventsMethod.available) {
+      if (!getEventsMethod?.available) {
         break;
       }
 
@@ -77,9 +98,11 @@ export function subscribeNewEvents(
   offset = cachedEvents.length;
 
   if (!newEventListeners.subscribed) {
-    subscriber.ns("tree-changes").subscribe(state => {
-      totalEventsCount = Math.max(totalEventsCount, state?.count || 0);
-      syncEvents();
+    rendererReady.then(channel => {
+      channel.subscribe(state => {
+        totalEventsCount = Math.max(totalEventsCount, state?.count || 0);
+        syncEvents();
+      });
     });
     newEventListeners.subscribed = true;
   }
@@ -93,7 +116,7 @@ export function subscribeNewEvents(
 }
 
 export async function getEventCount() {
-  if (!getEventsStateMethod.available) {
+  if (!getEventsStateMethod?.available) {
     return 0;
   }
 
@@ -126,12 +149,16 @@ export function isReady() {
       check();
     };
     subscriber.connected.on(onConnected);
-    const unsubscribeRemoteMethodsChanged = subscriber
-      .ns("tree-changes")
-      .onRemoteMethodsChanged(newMethods => {
-        methods = newMethods;
-        check();
-      });
+    let unsubscribeRemoteMethodsChanged: () => void = () => undefined;
+
+    rendererReady.then(channel => {
+      unsubscribeRemoteMethodsChanged = channel.onRemoteMethodsChanged(
+        newMethods => {
+          methods = newMethods;
+          check();
+        }
+      );
+    });
 
     check();
   });

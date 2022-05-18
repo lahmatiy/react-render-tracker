@@ -1,9 +1,5 @@
-import gte from "semver/functions/gte";
 import { ReactIntegration, ReactInternals, Fiber, FiberRoot } from "./types";
-
-const MIN_SUPPORTED_VERSION = "16.9.0";
-const BUNDLE_TYPE_PROD = 0;
-const BUNDLE_TYPE_DEV = 1;
+import { isValidRenderer } from "./utils/renderer-info";
 
 type ReactDevtoolsHook = {
   supportsFiber: boolean;
@@ -22,47 +18,8 @@ type ReactDevtoolsHook = {
   renderers?: Map<any, any>;
 };
 
-function isValidRenderer({
-  rendererPackageName,
-  version,
-  bundleType,
-}: {
-  rendererPackageName?: string;
-  version?: string;
-  bundleType?: number;
-}) {
-  if (
-    rendererPackageName !== "react-dom" ||
-    typeof version !== "string" ||
-    !/^\d+\.\d+\.\d+(-\S+)?$/.test(version) ||
-    !gte(version, MIN_SUPPORTED_VERSION)
-  ) {
-    console.warn(
-      `[react-render-tracker] Unsupported React renderer (only react-dom v${MIN_SUPPORTED_VERSION}+ is supported)`,
-      {
-        renderer: rendererPackageName || "unknown",
-        version: version || "unknown",
-      }
-    );
-
-    return false;
-  }
-
-  if (bundleType !== BUNDLE_TYPE_DEV) {
-    console.warn(
-      `[react-render-tracker] Unsupported React renderer, only bundle type ${BUNDLE_TYPE_DEV} (development) is supported but ${bundleType} (${
-        bundleType === BUNDLE_TYPE_PROD ? "production" : "unknown"
-      }) is found`
-    );
-
-    return false;
-  }
-
-  return true;
-}
-
 export function createReactDevtoolsHook(
-  attachRenderer: (renderer: ReactInternals) => ReactIntegration,
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
   existing: ReactDevtoolsHook
 ) {
   const attachedRenderers = new Map<number, ReactIntegration>();
@@ -96,7 +53,7 @@ export function createReactDevtoolsHook(
 
       if (isValidRenderer(renderer)) {
         if (attachedRenderers.size === 0) {
-          attachedRenderers.set(id, attachRenderer(renderer));
+          attachedRenderers.set(id, attachRenderer(id, renderer));
           fiberRoots.set(id, new Set());
         } else {
           console.warn(
@@ -192,7 +149,7 @@ const MARKER = Symbol();
 
 export function installReactDevtoolsHook(
   target: any,
-  attachRenderer: (renderer: ReactInternals) => ReactIntegration
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration
 ) {
   const existingHook = target[hookName];
 

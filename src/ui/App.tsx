@@ -12,24 +12,49 @@ import FiberTreeHeader from "./components/fiber-tree/TreeHeader";
 import Details from "./components/details/Details";
 import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";
+import WaitingForRenderer from "./components/misc/WaitingForRenderer";
 import FiberTreeKeyboardNav from "./components/misc/FiberTreeKeyboardNav";
+import {
+  ReactRenderersContextProvider,
+  useReactRenderers,
+} from "./utils/react-renderers";
 
 function App() {
   return (
-    <FiberMapsContextProvider>
-      <EventsContextProvider>
-        <SourceLocationsContextProvider>
-          <OpenFileContextProvider>
+    <SourceLocationsContextProvider>
+      <OpenFileContextProvider>
+        <ReactRenderersContextProvider>
+          <ReactInstanceUI />
+        </ReactRenderersContextProvider>
+      </OpenFileContextProvider>
+    </SourceLocationsContextProvider>
+  );
+}
+
+function ReactInstanceUI() {
+  const { selected } = useReactRenderers();
+  const reactInstanceUI = React.useMemo(
+    () =>
+      selected && (
+        <FiberMapsContextProvider key={selected.id}>
+          <EventsContextProvider channelId={selected.channelId}>
             <SelectionContextProvider>
               <PinnedContextProvider>
+                <WaitingForRenderer />
                 <Layout />
               </PinnedContextProvider>
             </SelectionContextProvider>
-          </OpenFileContextProvider>
-        </SourceLocationsContextProvider>
-      </EventsContextProvider>
-    </FiberMapsContextProvider>
+          </EventsContextProvider>
+        </FiberMapsContextProvider>
+      ),
+    [selected]
   );
+
+  if (reactInstanceUI) {
+    return reactInstanceUI;
+  }
+
+  return <WaitingForRenderer />;
 }
 
 function Layout() {

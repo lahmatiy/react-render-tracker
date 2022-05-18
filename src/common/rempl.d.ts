@@ -1,5 +1,5 @@
 declare module "rempl" {
-  import { Message } from "common-types";
+  import { Message, ReactRenderer } from "common-types";
 
   export function createPublisher(
     name: string,
@@ -8,6 +8,7 @@ declare module "rempl" {
       callback: (error: Error | null, type: string, value: string) => void
     ) => void
   ): Publisher;
+  export function connectPublisherWs(uri?: string): void;
   export function getSubscriber(): Subscriber;
   export function getSelfSubscriber(id: string): Subscriber;
   export function getHost(): {
@@ -21,8 +22,9 @@ declare module "rempl" {
     off(fn: (value: T) => void): void;
   };
 
+  type Method = (...args: any[]) => any;
   type MethodsMap = {
-    [method: string]: (...args: any[]) => any;
+    [method: string]: Method;
   };
   type NamespaceDef = {
     data: any;
@@ -30,6 +32,9 @@ declare module "rempl" {
   };
   type NamespacesMap = {
     [ns: string]: NamespaceDef;
+  };
+  type DefinedNamespaceMap<TSource extends NamespacesMap> = {
+    [K in keyof TSource]: TSource[K];
   };
 
   type TreeEventsState = { count: number };
@@ -39,7 +44,7 @@ declare module "rempl" {
     basedir: string;
     basedirJsx: string;
   } | null;
-  interface RRTNamespaces extends NamespacesMap {
+  export type RemoteProtocol = DefinedNamespaceMap<{
     "*": {
       data: never;
       methods: {
@@ -49,8 +54,12 @@ declare module "rempl" {
         ): Array<{ loc: string; resolved: string }>;
       };
     };
-    "tree-changes": {
-      data: TreeEventsState;
+    "react-renderers": {
+      data: ReactRenderer[];
+      methods: never;
+    };
+    [key: `events:${number}`]: {
+      data: TreeEventsState | null;
       methods: {
         getEvents(offset: number, count: number): Message[];
         getEventsState(): TreeEventsState;
@@ -60,7 +69,7 @@ declare module "rempl" {
       data: OpenSourceSettings;
       methods: never;
     };
-  }
+  }>;
 
   type PublisherNS<NS extends NamespaceDef> = {
     publish(data: NS["data"]): void;
@@ -68,9 +77,16 @@ declare module "rempl" {
       method: T,
       fn: (...args: Parameters<M>) => Promise<ReturnType<M>> | ReturnType<M>
     ): void;
+    provide(methods: Partial<NS["methods"]>): void;
   };
-  type SubscriberNS<NS extends NamespaceDef> = {
-    subscribe(callback: (data: NS["data"] | null) => void): void;
+
+  export type SubscriberRemoveMethod<M extends Method> = ((
+    ...args: Parameters<M>
+  ) => Promise<ReturnType<M>>) & {
+    available: boolean;
+  };
+  export type SubscriberNS<NS extends NamespaceDef> = {
+    subscribe(callback: (data: NS["data"]) => void): void;
     callRemote<T extends keyof NS["methods"], M extends NS["methods"][T]>(
       method: T,
       ...args: Parameters<M>
@@ -80,22 +96,20 @@ declare module "rempl" {
     ): () => void;
     getRemoteMethod<T extends keyof NS["methods"], M extends NS["methods"][T]>(
       method: T
-    ): ((...args: Parameters<M>) => Promise<ReturnType<M>>) & {
-      available: boolean;
-    };
+    ): SubscriberRemoveMethod<M>;
   };
 
   export type Publisher = {
     id: string;
-    ns<T extends keyof RRTNamespaces>(
+    ns<T extends keyof RemoteProtocol>(
       channel: T
-    ): PublisherNS<RRTNamespaces[T]>;
-  } & PublisherNS<RRTNamespaces["*"]>;
+    ): PublisherNS<RemoteProtocol[T]>;
+  } & PublisherNS<RemoteProtocol["*"]>;
 
   export type Subscriber = {
     connected: ReactiveValue<boolean>;
-    ns<T extends keyof RRTNamespaces>(
+    ns<T extends keyof RemoteProtocol>(
       channel: T
-    ): SubscriberNS<RRTNamespaces[T]>;
-  } & SubscriberNS<RRTNamespaces["*"]>;
+    ): SubscriberNS<RemoteProtocol[T]>;
+  } & SubscriberNS<RemoteProtocol["*"]>;
 }

@@ -1,4 +1,4 @@
-@keyframes waiting-for-ready-appear {
+@keyframes waiting-for-renderer-appear {
   from,
   33% {
     visibility: hidden;
@@ -10,10 +10,9 @@
   }
 }
 
-.waiting-for-ready {
-  grid-area: fiber-tree;
+.waiting-for-renderer {
   padding: 12px 16px;
   font-size: 13px;
   color: #888;
-  animation: 1.5s 1 waiting-for-ready-appear;
+  animation: 1.5s 1 waiting-for-renderer-appear;
 }

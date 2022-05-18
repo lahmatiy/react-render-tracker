@@ -7,6 +7,7 @@
   line-height: 22px;
 }
 .toolbar__buttons {
+  position: relative;
   display: flex;
   align-items: center;
   margin: 2px;
@@ -17,4 +18,36 @@
   height: 20px;
   border-left: 1px solid #ddd;
   margin: 0 1px;
+}
+
+.renderer-info {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 6px 4px 13px;
+  color: #7a8f56;
+  margin-left: -9px;
+  order: 1;
+  text-align: right;
+  background: linear-gradient(70deg, white 13px, #d7eec5 10px);
+}
+.renderer-info__name {
+  opacity: 0.85;
+  font-size: 10px;
+  line-height: 12px;
+  flex: 1;
+  min-width: 45px;
+}
+.renderer-info__version {
+  position: relative;
+  font-size: 12px;
+  line-height: 15px;
+  flex: 1;
+}
+.renderer-info__version > span {
+  position: absolute;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  left: 4px;
+  right: 0;
 }

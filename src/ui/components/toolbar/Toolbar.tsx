@@ -12,6 +12,7 @@ import {
   Pause,
   Play,
 } from "../common/icons";
+import { useReactRenderers } from "../../utils/react-renderers";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -31,6 +32,7 @@ const Toolbar = ({
   onShowTimings,
   showTimings,
 }: ToolbarProps) => {
+  const { selected: selectedReactInstance } = useReactRenderers();
   const { clearAllEvents, allEvents, paused, setPaused } = useEventsContext();
   const downloadAnchorRef = React.useRef<HTMLAnchorElement | null>(null);
   const onDonwload = React.useCallback(() => {
@@ -67,6 +69,21 @@ const Toolbar = ({
 
   return (
     <div className="toolbar">
+      <div
+        className="renderer-info"
+        title={
+          selectedReactInstance
+            ? `${selectedReactInstance?.name} v${selectedReactInstance?.version}`
+            : undefined
+        }
+      >
+        <span className="renderer-info__name">
+          {selectedReactInstance?.name}
+        </span>
+        <span className="renderer-info__version">
+          <span>{selectedReactInstance?.version}</span>
+        </span>
+      </div>
       <SelectionHistoryNavigation />
       <ComponentSearch
         groupByParent={groupByParent}

@@ -1,3 +1,7 @@
+## next
+
+- Added renderer's name & version into sidebar
+
 ## 0.6.2 (May 16, 2022)
 
 - **[EXPERIMENTAL]** Added new entry points (exports):
