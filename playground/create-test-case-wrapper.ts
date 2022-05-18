@@ -54,7 +54,7 @@ export default function (testcase: TestCase) {
   });
 
   return {
-    id: encodeURIComponent(testcase.title.replace(/\s+/g, "-")),
+    id: testcase.title.replace(/\s+/g, "-"),
     testcase,
     render(containerEl: HTMLElement, element: JSX.Element) {
       if (!containerEl.contains(rootEl)) {
