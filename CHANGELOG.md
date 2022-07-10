@@ -1,6 +1,7 @@
 ## next
 
-- Added renderer's name & version into sidebar
+- Added renderer's name & version into the toolbar
+- Bumped rempl to [`1.0.0-alpha.23`](https://github.com/rempl/rempl/releases/tag/v1.0.0-alpha.20)
 
 ## 0.6.2 (May 16, 2022)
 

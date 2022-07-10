@@ -20,16 +20,16 @@ const events: Message[] = [];
 declare let __DEV__: boolean;
 declare let __SUBSCRIBER_SRC__: string;
 
-export const publisher = createPublisher(ToolId, (settings, callback) => {
+export const publisher = createPublisher(ToolId, () => {
   if (__DEV__) {
     // const { origin } = new URL(import.meta.url);
     const origin = "http://localhost:3000";
 
-    fetch(`${origin}/subscriber.js`)
+    return fetch(`${origin}/subscriber.js`)
       .then(res => res.text())
-      .then(script => callback(null, "script", script));
+      .then(script => ({ type: "script", value: script }));
   } else {
-    callback(null, "script", __SUBSCRIBER_SRC__);
+    return { type: "script", value: __SUBSCRIBER_SRC__ };
   }
 });
 
@@ -111,6 +111,5 @@ publisher.provide("resolve-source-locations", locations =>
   )
 );
 
-// console.log("!!!!");
-// import { connectPublisherWs } from 'rempl';
+// import { connectPublisherWs } from "rempl";
 // connectPublisherWs("http://localhost:8177/");
