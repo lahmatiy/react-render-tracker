@@ -1,6 +1,6 @@
 {
   "name": "react-render-tracker",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "React render tracker – a tool to discover performance issues related to unintended re-renders",
   "repository": "lahmatiy/react-render-tracker",
   "license": "MIT",

@@ -1,4 +1,4 @@
-## next
+## 0.7.0 (July 10, 2022)
 
 - Added renderer's name & version into the toolbar
 - Reduced a main bundle size by ~53Kb (12%)
