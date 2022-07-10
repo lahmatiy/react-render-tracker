@@ -12,9 +12,9 @@
     "tracker",
     "performance"
   ],
-  "main": "src/publisher/index.js",
-  "unpkg": "dist/react-render-tracker.js",
-  "jsdelivr": "dist/react-render-tracker.js",
+  "main": "./dist/react-render-tracker.js",
+  "unpkg": "./dist/react-render-tracker.js",
+  "jsdelivr": "./dist/react-render-tracker.js",
   "exports": {
     ".": "./dist/react-render-tracker.js",
     "./package.json": "./package.json",
@@ -33,16 +33,9 @@
     "build-gh-pages": "node scripts/build-gh-pages",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "@discoveryjs/json-ext": "^0.5.7",
-    "lodash.debounce": "^4.0.8",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "rempl": "1.0.0-alpha.23",
-    "semver": "^7.3.5",
-    "source-map-js": "^1.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@discoveryjs/json-ext": "^0.5.7",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.3",
     "@types/lodash.debounce": "^4.0.7",
@@ -58,7 +51,13 @@
     "express": "^4.17.1",
     "express-open-in-editor": "^3.1.1",
     "jest": "^27.3.1",
+    "lodash.debounce": "^4.0.8",
     "prettier": "^2.3.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "rempl": "1.0.0-alpha.23",
+    "semver": "^7.3.5",
+    "source-map-js": "^1.0.2",
     "ts-jest": "^27.0.7",
     "typescript": "^4.6.4"
   },
