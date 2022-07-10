@@ -2,6 +2,7 @@
 
 - Added renderer's name & version into the toolbar
 - Reduced a main bundle size by ~53Kb (12%)
+- Excluded source files from the npm package
 - Bumped rempl to [`1.0.0-alpha.23`](https://github.com/rempl/rempl/releases/tag/v1.0.0-alpha.20)
 - Made all dependencies as developer only
 
