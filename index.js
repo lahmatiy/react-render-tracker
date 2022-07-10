@@ -1124,7 +1124,7 @@ function create_test_case_wrapper_default(testcase) {
     }
   });
   return {
-    id: encodeURIComponent(testcase.title.replace(/\s+/g, "-")),
+    id: testcase.title.replace(/\s+/g, "-"),
     testcase,
     render(containerEl, element) {
       if (!containerEl.contains(rootEl)) {
