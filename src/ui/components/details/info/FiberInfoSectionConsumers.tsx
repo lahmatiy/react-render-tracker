@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MessageFiber } from "../../../types";
-import { useFiberMaps, useProviderCustomers } from "../../../utils/fiber-maps";
+import { useFiberMaps, useProviderConsumers } from "../../../utils/fiber-maps";
 import { FiberLink } from "../FiberLink";
 import { FiberInfoSection } from "./FiberInfoSection";
 
@@ -55,7 +55,7 @@ export function FiberInfoSectionConsumers({
   fiber: MessageFiber;
   showUnmounted: boolean;
 }) {
-  const fiberIds = useProviderCustomers(fiber.id);
+  const fiberIds = useProviderConsumers(fiber.id);
   const { fiberById } = useFiberMaps();
   const fiberByType = new Map<number, FiberGroup>();
   let fiberCount = 0;
