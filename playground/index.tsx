@@ -5,8 +5,14 @@ import createTestCaseWrapper from "./create-test-case-wrapper";
 import { createElement } from "./dom-utils";
 
 const initialHashParams = new URLSearchParams(location.hash.slice(1));
-const isProdBundle = initialHashParams.has("prod");
 const reactVersion = initialHashParams.get("version");
+const bundleTypeParam = initialHashParams.get("bundle-type");
+const bundleType =
+  bundleTypeParam === "production"
+    ? "production"
+    : bundleTypeParam === "profiling"
+    ? "profiling"
+    : "development";
 const versions = [
   "18.1.0",
   "18.0.0",
@@ -25,7 +31,7 @@ const versions = [
 
 function createHash(
   version: string | null,
-  prod = false,
+  bundleType: "development" | "production" | "profiling",
   id: string | null = null
 ) {
   const params = new URLSearchParams();
@@ -34,8 +40,8 @@ function createHash(
     params.append("version", version);
   }
 
-  if (prod) {
-    params.append("prod", "");
+  if (bundleType && bundleType !== "development") {
+    params.append("bundle-type", bundleType);
   }
 
   if (id) {
@@ -49,7 +55,7 @@ function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
     createElement(
       "a",
-      { href: createHash(reactVersion, isProdBundle, id) },
+      { href: createHash(reactVersion, bundleType, id) },
       title
     ),
   ]);
@@ -77,7 +83,7 @@ Promise.all(testCases).then(testCases => {
         onchange() {
           location.hash = createHash(
             this.value,
-            isProdBundle,
+            bundleType,
             selectedTestCaseId
           );
         },
@@ -90,20 +96,25 @@ Promise.all(testCases).then(testCases => {
         )
       )
     ),
-    createElement("label", null, [
-      createElement("input", {
-        type: "checkbox",
-        checked: isProdBundle ? "" : undefined,
+    createElement(
+      "select",
+      {
         onchange() {
           location.hash = createHash(
             reactVersion,
-            this.checked,
+            this.value,
             selectedTestCaseId
           );
         },
-      }),
-      "production",
-    ])
+      },
+      ["development", "production", "profiling"].map(type =>
+        createElement(
+          "option",
+          type === bundleType ? { selected: "" } : {},
+          type
+        )
+      )
+    )
   );
 
   for (const testCaseWrapper of testCaseWrappers) {
@@ -119,7 +130,7 @@ Promise.all(testCases).then(testCases => {
     const newSelectedTestCaseId = params.get("case") || null;
     const newSelectedHash = createHash(
       reactVersion,
-      isProdBundle,
+      bundleType,
       newSelectedTestCaseId
     );
 

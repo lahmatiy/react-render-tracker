@@ -34,7 +34,7 @@ function App() {
       setItems(items);
     });
 
-    Promise.resolve({ id: 123, name: "User", avatar: "url to image" }).then(
+    Promise.resolve({ id: 123, name: "User", avatar: "url/to/image" }).then(
       setUser
     );
   }, []);
@@ -91,7 +91,7 @@ Header.displayName = "Header";
 function Avatar({ name, image }: { name: string; image: string }) {
   return (
     <>
-      <img src={image} /> {name}
+      [{image}] {name}
     </>
   );
 }

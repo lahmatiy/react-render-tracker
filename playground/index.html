@@ -27,67 +27,66 @@
       "
     ></script>
     <script type="module" src="./data-client-example.js"></script>
-    <script>
-      (function () {
-        function loadScript(src, type) {
-          return new Promise((resolve, reject) => {
-            const script = document.createElement("script");
+    <script type="module">
+      function loadScript(src, type) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
 
-            if (type) {
-              script.type = type;
-            }
-
-            script.src = src.replace("[version]", version);
-            script.onload = () => resolve();
-            script.onerror = error => {
-              const msg = "Failed to load " + script.src;
-              const errorEl = document.createElement("div");
-              errorEl.append(msg);
-              document.querySelector(".playground__content").append(errorEl);
-              reject(new Error(msg));
-            };
-
-            document.body.append(script);
-          });
-        }
-
-        const params = new URLSearchParams(location.hash.slice(1));
-        const version = params.get("version") || "18.1.0";
-        const bundleType = params.has("prod")
-          ? "production.min"
-          : "development";
-        const scripts = [
-          "https://cdn.jsdelivr.net/npm/react@[version]/umd/react.[bundleType].js",
-          "https://cdn.jsdelivr.net/npm/react-dom@[version]/umd/react-dom.[bundleType].js",
-        ];
-
-        addEventListener("hashchange", () => {
-          const newParams = new URLSearchParams(location.hash.slice(1));
-
-          if (
-            newParams.get("version") !== params.get("version") ||
-            newParams.has("prod") ^ params.has("prod")
-          ) {
-            location.reload();
+          if (type) {
+            script.type = type;
           }
+
+          script.src = src.replace("[version]", version);
+          script.onload = () => resolve();
+          script.onerror = error => {
+            const msg = "Failed to load " + script.src;
+            const errorEl = document.createElement("div");
+            errorEl.append(msg);
+            document.querySelector(".playground__content").append(errorEl);
+            reject(new Error(msg));
+          };
+
+          document.body.append(script);
         });
+      }
 
-        let lastLoadScriptPromise = Promise.resolve();
+      const params = new URLSearchParams(location.hash.slice(1));
+      const version = params.get("version") || "18.1.0";
+      const bundleType = {
+        production: "production.min",
+        profiling: "profiling.min"
+      }[params.get("bundle-type")] || "development";
+      const scripts = [
+        "https://cdn.jsdelivr.net/npm/react@[version]/umd/react.[bundleType].js",
+        "https://cdn.jsdelivr.net/npm/react-dom@[version]/umd/react-dom.[bundleType].js",
+      ];
 
-        for (const src of scripts) {
-          lastLoadScriptPromise = lastLoadScriptPromise.then(() =>
-            loadScript(
-              src
-                .replace("[version]", version)
-                .replace("[bundleType]", bundleType)
-            )
-          );
+      addEventListener("hashchange", () => {
+        const newParams = new URLSearchParams(location.hash.slice(1));
+
+        if (
+          newParams.get("version") !== params.get("version") ||
+          newParams.get("bundle-type") !== params.get("bundle-type")
+        ) {
+          location.reload();
         }
+      });
 
-        lastLoadScriptPromise.then(() => {
-          loadScript("./index.js", "module");
-        });
-      })();
+      let lastLoadScriptPromise = Promise.resolve();
+
+      for (const src of scripts) {
+        lastLoadScriptPromise = lastLoadScriptPromise.then(() =>
+          loadScript(
+            src
+              .replace("[version]", version)
+              .replace("[bundleType]", bundleType)
+          )
+        );
+      }
+
+      lastLoadScriptPromise.then(() => {
+        loadScript("./index.js", "module");
+      });
     </script>
   </body>
 </html>
