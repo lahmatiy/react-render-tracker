@@ -8,6 +8,8 @@ React Render Tracker (RRT) presents component’s tree state over the time and a
 
 [React Render Tracker v0.6 – Overview & Instructions](https://www.icloud.com/keynote/0bBreStPiyDi5wJVTFoqpoPeA#React_Render_Tracker_overview) ([PDF version](https://github.com/lahmatiy/react-render-tracker/files/7963996/React.Render.Tracker.overview.rev.nov.23.2021.pdf))
 
+Supported: React v16.9+ (development bundle only, see [issue #25](https://github.com/lahmatiy/react-render-tracker/issues/25))
+
 > STATUS: MVP / proof of concept
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
@@ -36,7 +38,7 @@ All you need to do is to add a single `<script>` to the HTML page and open the u
 
 First of all the `<script>` should be added before a React app. This script will add a special object to the global which is used by React for providing its internals to the tool for analysis (React Devtools does the same). As soon as React library is loaded and attached to the tool, RRT starts collecting data about what is going on in React's internals.
 
-> NOTE: Multiple React library instances are not supported yet. In this case, the behavior of the RRT is unpredictable.
+> NOTE: Multiple React library instances on the same page are not supported yet. In this case, only first connected React data will be displayed.
 
 ```html
 <script src="path/to/react-render-tracker.js"></script>
