@@ -8,7 +8,7 @@
     "start": "node script.js"
   },
   "dependencies": {
-    "puppeteer": "^13.7.0",
+    "puppeteer": "^18.0.5",
     "react-render-tracker": "file:../..",
     "react-render-tracker-demo-app": "file:../_app"
   }
