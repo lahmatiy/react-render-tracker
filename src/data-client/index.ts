@@ -24,7 +24,7 @@ let syncing = false;
 
 let selectedRendererChannel: EventsNamespace | null = null;
 const rendererReady = new Promise<EventsNamespace>(resolve =>
-  subscriber.ns("react-renderers").subscribe(renderers => {
+  subscriber.ns("react-renderers").subscribe(({ renderers }) => {
     if (selectedRendererChannel === null && renderers.length > 0) {
       selectedRendererChannel = subscriber.ns(renderers[0].channelId);
 

@@ -36,6 +36,10 @@
   line-height: 12px;
   flex: 1;
   min-width: 45px;
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .renderer-info__version {
   position: relative;

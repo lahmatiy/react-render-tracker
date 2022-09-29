@@ -1,5 +1,11 @@
-import { ReactIntegration, ReactInternals, Fiber, FiberRoot } from "./types";
-import { isValidRenderer } from "./utils/renderer-info";
+import { isUnsupportedRenderer } from "./utils/renderer-info";
+import {
+  ReactIntegration,
+  ReactInternals,
+  ReactUnsupportedRendererInfo,
+  Fiber,
+  FiberRoot,
+} from "./types";
 
 type ReactDevtoolsHook = {
   supportsFiber: boolean;
@@ -20,6 +26,7 @@ type ReactDevtoolsHook = {
 
 export function createReactDevtoolsHook(
   attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void,
   existing: ReactDevtoolsHook
 ) {
   const attachedRenderers = new Map<number, ReactIntegration>();
@@ -47,11 +54,22 @@ export function createReactDevtoolsHook(
         id = existing.inject(renderer);
       } else {
         // Follow React Devtools hook's behaviour in order for other tools
-        // like react-render to work
+        // like react-refresh to work
         renderers.set(id, renderer);
       }
 
-      if (isValidRenderer(renderer)) {
+      const unsupportedRender = isUnsupportedRenderer(renderer);
+      if (unsupportedRender) {
+        console.warn(
+          `[react-render-tracker] ${unsupportedRender.reason}`,
+          unsupportedRender.info
+        );
+        onUnsupportedRenderer({
+          id,
+          ...unsupportedRender.info,
+          reason: unsupportedRender.reason,
+        });
+      } else {
         if (attachedRenderers.size === 0) {
           attachedRenderers.set(id, attachRenderer(id, renderer));
           fiberRoots.set(id, new Set());
@@ -149,7 +167,8 @@ const MARKER = Symbol();
 
 export function installReactDevtoolsHook(
   target: any,
-  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void
 ) {
   const existingHook = target[hookName];
 
@@ -159,7 +178,9 @@ export function installReactDevtoolsHook(
     }
   }
 
-  const hook = createReactDevtoolsHook(attachRenderer, { ...existingHook });
+  const hook = createReactDevtoolsHook(attachRenderer, onUnsupportedRenderer, {
+    ...existingHook,
+  });
 
   if (existingHook) {
     existingHook[MARKER] = MARKER;

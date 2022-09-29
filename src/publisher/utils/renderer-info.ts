@@ -1,65 +1,82 @@
-import gte from "semver/functions/gte";
+import versionGreaterThanOrEqual from "semver/functions/gte";
+import { ReactInternals, RendererBundleType } from "../types";
 
 const MIN_SUPPORTED_VERSION = "16.9.0";
 const BUNDLE_TYPE_PROD = 0;
 const BUNDLE_TYPE_DEV = 1;
 
-export function getRendererInfo(
-  id: number,
-  {
-    rendererPackageName,
-    version,
-    bundleType,
-  }: {
-    rendererPackageName?: string;
-    version?: string;
-    bundleType?: number;
+type RendererInfoProps = Pick<
+  ReactInternals,
+  "rendererPackageName" | "version" | "bundleType" | "injectProfilingHooks"
+>;
+
+function resolveBundleType(
+  bundleType: number | undefined,
+  version: string,
+  injectProfilingHooks: (() => void) | undefined
+): RendererBundleType {
+  if (bundleType === BUNDLE_TYPE_DEV) {
+    return "development";
   }
-) {
-  return {
-    id,
-    name: rendererPackageName || "unknown",
-    version: version || "unknown",
-    bundleType,
-  };
+
+  if (bundleType === BUNDLE_TYPE_PROD) {
+    if (
+      version !== "unknown" &&
+      versionGreaterThanOrEqual(version, "18.0.0") &&
+      typeof injectProfilingHooks === "function"
+    ) {
+      return "profiling";
+    }
+
+    return "production";
+  }
+
+  return "unknown";
 }
 
-export function isValidRenderer({
+export function getRendererInfo({
   rendererPackageName,
   version,
   bundleType,
-}: {
-  rendererPackageName?: string;
-  version?: string;
-  bundleType?: number;
-}) {
+  injectProfilingHooks,
+}: RendererInfoProps) {
+  if (typeof version !== "string" || !/^\d+\.\d+\.\d+(-\S+)?$/.test(version)) {
+    version = "unknown";
+  }
+
+  return {
+    name: rendererPackageName || "unknown",
+    version,
+    bundleType: resolveBundleType(bundleType, version, injectProfilingHooks),
+  };
+}
+
+export function isUnsupportedRenderer(renderer: RendererInfoProps) {
+  const info = getRendererInfo(renderer);
+
+  if (info.name !== "react-dom" && info.name !== "react-native-renderer") {
+    return {
+      reason: `Unsupported renderer name, only "react-dom" is supported`,
+      info,
+    };
+  }
+
   if (
-    (rendererPackageName !== "react-dom" &&
-      rendererPackageName !== "react-native-renderer") ||
-    typeof version !== "string" ||
-    !/^\d+\.\d+\.\d+(-\S+)?$/.test(version) ||
-    !gte(version, MIN_SUPPORTED_VERSION)
+    info.version === "unknown" ||
+    !versionGreaterThanOrEqual(info.version, MIN_SUPPORTED_VERSION)
   ) {
-    console.warn(
-      `[react-render-tracker] Unsupported React renderer (only react-dom v${MIN_SUPPORTED_VERSION}+ is supported)`,
-      {
-        name: rendererPackageName || "unknown",
-        version: version || "unknown",
-      }
-    );
-
-    return false;
+    return {
+      reason: `Unsupported renderer version, only v${MIN_SUPPORTED_VERSION}+ is supported`,
+      info,
+    };
   }
 
-  if (bundleType !== BUNDLE_TYPE_DEV) {
-    console.warn(
-      `[react-render-tracker] Unsupported React renderer, only bundle type ${BUNDLE_TYPE_DEV} (development) is supported but ${bundleType} (${
-        bundleType === BUNDLE_TYPE_PROD ? "production" : "unknown"
-      }) is found`
-    );
-
-    return false;
+  if (info.bundleType !== "development") {
+    return {
+      reason: `Unsupported renderer bundle type "${info.bundleType}" (${renderer.bundleType}), only "development" (${BUNDLE_TYPE_DEV}) is supported`,
+      info,
+    };
   }
 
-  return true;
+  return false;
 }

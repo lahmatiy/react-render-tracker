@@ -16,3 +16,12 @@
   color: #888;
   animation: 1.5s 1 waiting-for-renderer-appear;
 }
+
+.unsupported-renderers {
+  margin: 1em 0 0;
+  color: #a07b36;
+}
+.unsupported-renderers__list {
+  margin: 0;
+  padding: 0 0 0 20px;
+}

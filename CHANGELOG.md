@@ -1,3 +1,7 @@
+## next
+
+- Added displaying a list of detected unsupported renderers on the React renderer connection waiting screen. This should help figure out why a React can't be connected.
+
 ## 0.7.0 (July 10, 2022)
 
 - Added renderer's name & version into the toolbar

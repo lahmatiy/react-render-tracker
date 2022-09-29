@@ -1,5 +1,9 @@
 declare module "rempl" {
-  import { Message, ReactRenderer } from "common-types";
+  import {
+    Message,
+    ReactRendererInfo,
+    ReactUnsupportedRendererInfo,
+  } from "common-types";
 
   export function createPublisher(
     name: string,
@@ -55,7 +59,10 @@ declare module "rempl" {
       };
     };
     "react-renderers": {
-      data: ReactRenderer[];
+      data: {
+        renderers: ReactRendererInfo[];
+        unsupportedRenderers: ReactUnsupportedRendererInfo[];
+      };
       methods: never;
     };
     [key: `events:${number}`]: {

@@ -24,34 +24,34 @@ function App() {
     <SourceLocationsContextProvider>
       <OpenFileContextProvider>
         <ReactRenderersContextProvider>
-          <ReactInstanceUI />
+          <ReactRendererUI />
         </ReactRenderersContextProvider>
       </OpenFileContextProvider>
     </SourceLocationsContextProvider>
   );
 }
 
-function ReactInstanceUI() {
-  const { selected } = useReactRenderers();
-  const reactInstanceUI = React.useMemo(
+function ReactRendererUI() {
+  const { selected: renderer } = useReactRenderers();
+  const reactRendererUI = React.useMemo(
     () =>
-      selected && (
-        <FiberMapsContextProvider key={selected.id}>
-          <EventsContextProvider channelId={selected.channelId}>
+      renderer && (
+        <FiberMapsContextProvider key={renderer.id}>
+          <EventsContextProvider channelId={renderer.channelId}>
+            <WaitingForRenderer />
             <SelectionContextProvider>
               <PinnedContextProvider>
-                <WaitingForRenderer />
                 <Layout />
               </PinnedContextProvider>
             </SelectionContextProvider>
           </EventsContextProvider>
         </FiberMapsContextProvider>
       ),
-    [selected]
+    [renderer]
   );
 
-  if (reactInstanceUI) {
-    return reactInstanceUI;
+  if (reactRendererUI) {
+    return reactRendererUI;
   }
 
   return <WaitingForRenderer />;

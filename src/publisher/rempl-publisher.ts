@@ -1,11 +1,16 @@
 import { createPublisher } from "rempl";
 import debounce from "lodash.debounce";
-import { ReactRenderer } from "common-types";
-import { RecordEventHandler, Message, ReactInternals } from "./types";
 import { ToolId } from "../common/constants";
 import config from "./config";
 import { resolveSourceLoc } from "./utils/resolveSourceLoc";
 import { getRendererInfo } from "./utils/renderer-info";
+import {
+  ReactInternals,
+  ReactRendererInfo,
+  ReactUnsupportedRendererInfo,
+  RecordEventHandler,
+  Message,
+} from "./types";
 
 let eventIdSeed = 0;
 const { openSourceLoc } = config;
@@ -33,16 +38,32 @@ export const publisher = createPublisher(ToolId, () => {
   }
 });
 
-const reactInstances: ReactRenderer[] = [];
-const reactInstancesChannel = publisher.ns("react-renderers");
+const reactRenderers: ReactRendererInfo[] = [];
+const reactUnsupportedRenderers: ReactUnsupportedRendererInfo[] = [];
+const reactRenderersChannel = publisher.ns("react-renderers");
 
-reactInstancesChannel.publish([]);
+reactRenderersChannel.publish(getReactRenderersData());
 
-export function publishReactInstance(id: number, renderer: ReactInternals) {
+function getReactRenderersData() {
+  return {
+    renderers: reactRenderers,
+    unsupportedRenderers: reactUnsupportedRenderers,
+  };
+}
+
+export function publishReactUnsupportedRenderer(
+  rendererInfo: ReactUnsupportedRendererInfo
+) {
+  reactUnsupportedRenderers.push(rendererInfo);
+  reactRenderersChannel.publish(getReactRenderersData());
+}
+
+export function publishReactRenderer(id: number, renderer: ReactInternals) {
   const channelId = `events:${id}` as `events:${number}`;
 
-  reactInstances.push({
-    ...getRendererInfo(id, renderer),
+  reactRenderers.push({
+    id,
+    ...getRendererInfo(renderer),
     channelId,
   });
 
@@ -69,7 +90,7 @@ export function publishReactInstance(id: number, renderer: ReactInternals) {
     return id;
   };
 
-  reactInstancesChannel.publish(reactInstances);
+  reactRenderersChannel.publish(getReactRenderersData());
   eventLogChannel.publish(getEventsState());
   eventLogChannel.provide({
     getEventsState() {

@@ -1,11 +1,16 @@
 import { getHost } from "rempl";
 import config from "./config";
 import { installReactDevtoolsHook } from "./react-devtools-hook";
-import { publishReactInstance } from "./rempl-publisher";
+import {
+  publishReactRenderer,
+  publishReactUnsupportedRenderer,
+} from "./rempl-publisher";
 import { attach } from "./react-integration";
 
-installReactDevtoolsHook(window, (id, renderer) =>
-  attach(renderer, publishReactInstance(id, renderer))
+installReactDevtoolsHook(
+  window,
+  (id, renderer) => attach(renderer, publishReactRenderer(id, renderer)),
+  publishReactUnsupportedRenderer
 );
 
 if (config.inpage) {

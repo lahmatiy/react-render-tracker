@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { stringifyInfo } from "@discoveryjs/json-ext";
-import { ReactRenderer } from "common-types";
+import { ReactRendererInfo } from "common-types";
 import { LinkedEvent, Message } from "../types";
 import { remoteSubscriber } from "../rempl-subscriber";
 import { useFiberMaps } from "./fiber-maps";
@@ -45,7 +45,7 @@ export function EventsContextProvider({
   channelId,
   children,
 }: {
-  channelId: ReactRenderer["channelId"];
+  channelId: ReactRendererInfo["channelId"];
   children: React.ReactNode;
 }) {
   const [state, setState] = React.useState(createEventsContextValue);
