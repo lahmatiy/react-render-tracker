@@ -13,6 +13,11 @@ const bundleType =
     : bundleTypeParam === "profiling"
     ? "profiling"
     : "development";
+const bundleTypes: typeof bundleType[] = [
+  "development",
+  "production",
+  "profiling",
+];
 const versions = [
   "18.1.0",
   "18.0.0",
@@ -102,12 +107,12 @@ Promise.all(testCases).then(testCases => {
         onchange() {
           location.hash = createHash(
             reactVersion,
-            this.value,
+            this.value as typeof bundleType,
             selectedTestCaseId
           );
         },
       },
-      ["development", "production", "profiling"].map(type =>
+      bundleTypes.map(type =>
         createElement(
           "option",
           type === bundleType ? { selected: "" } : {},
