@@ -72,6 +72,7 @@ export function createReactDevtoolsHook(
       } else {
         if (attachedRenderers.size === 0) {
           attachedRenderers.set(id, attachRenderer(id, renderer));
+          reactDevtoolsHook.rendererInterfaces = attachedRenderers;
           fiberRoots.set(id, new Set());
         } else {
           console.warn(

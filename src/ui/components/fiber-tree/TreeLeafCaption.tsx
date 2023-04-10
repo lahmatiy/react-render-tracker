@@ -4,6 +4,7 @@ import { useSelectionState } from "../../utils/selection";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
+import { remoteSubscriber } from "../../rempl-subscriber";
 
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
@@ -63,7 +64,7 @@ const TreeLeafCaptionContainer = React.memo(
     showTimings,
     content,
   }: TreeLeafCaptionContainerProps) => {
-    const { id, ownerId } = fiber;
+    const { id, ownerId, displayName } = fiber;
     const { selected, select } = useSelectionState(fiber.id);
     const { pin } = usePinnedContext();
 
@@ -87,6 +88,15 @@ const TreeLeafCaptionContainer = React.memo(
       event.stopPropagation();
       pin(id);
     };
+    const handleMouseEnter = () => {
+      const channel = remoteSubscriber.ns("highlighter");
+      const highlight = channel.getRemoteMethod("highlight");
+      highlight(id, displayName);
+    }
+    const handleMouseLeave = () => {
+      const channel = remoteSubscriber.ns("highlighter");
+      channel.getRemoteMethod("removeHighlight")();
+    }
 
     return (
       <div
@@ -94,6 +104,8 @@ const TreeLeafCaptionContainer = React.memo(
         style={{ "--depth": depth } as React.CSSProperties}
         onClick={handleSelect}
         onDoubleClick={handlePin}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {showTimings && <TreeLeafTimings fiber={fiber} />}
 

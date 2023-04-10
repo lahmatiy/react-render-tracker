@@ -13,6 +13,8 @@ import {
   Play,
 } from "../common/icons";
 import { useReactRenderers } from "../../utils/react-renderers";
+import { remoteSubscriber } from "../../rempl-subscriber";
+import { useSelectedId } from "../../utils/selection";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -55,6 +57,37 @@ const Toolbar = ({
     window.URL.revokeObjectURL(url);
   }, [allEvents]);
 
+  const [highlightActive, setHighlightActive] = React.useState(false);
+  const handleToggleHighlight = () => {
+    setHighlightActive(!highlightActive);
+  };
+
+  React.useEffect(() => {
+    if (highlightActive) {
+      const channel = remoteSubscriber.ns("highlighter");
+      const startInspect = channel.getRemoteMethod("startInspect");
+      startInspect();
+    } else {
+      const channel = remoteSubscriber.ns("highlighter");
+      const stopInspect = channel.getRemoteMethod("stopInspect");
+      stopInspect();
+    }
+  }, [highlightActive]);
+
+  const { select } = useSelectedId();
+
+  React.useEffect(
+    () =>
+      remoteSubscriber
+        .ns("highlighter")
+        .subscribe((event) => {
+          if (event && event.fiberID) {
+            select(event.fiberID);
+          }
+        }),
+    []
+  );
+
   React.useEffect(() => {
     let anchor: HTMLAnchorElement | null = document.createElement("a");
     anchor.setAttribute("style", "display:none");
@@ -84,6 +117,7 @@ const Toolbar = ({
           <span>{selectedReactInstance?.version}</span>
         </span>
       </div>
+      <div onClick={handleToggleHighlight}>x</div>
       <SelectionHistoryNavigation />
       <ComponentSearch
         groupByParent={groupByParent}
