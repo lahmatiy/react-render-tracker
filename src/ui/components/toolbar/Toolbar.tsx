@@ -81,8 +81,12 @@ const Toolbar = ({
       remoteSubscriber
         .ns("highlighter")
         .subscribe((event) => {
-          if (event && event.fiberID) {
+          if (event.fiberID) {
             select(event.fiberID);
+          }
+
+          if (event.stopInspect) {
+            setHighlightActive(false);
           }
         }),
     []

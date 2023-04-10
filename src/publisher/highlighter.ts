@@ -8,7 +8,7 @@ export default class Highlighter {
   }
 
   startInspect() {
-    window.addEventListener('click', this.onClick, true);
+    window.addEventListener('click', this.onClick.bind(this), true);
     window.addEventListener('mousedown', this.onMouseEvent, true);
     window.addEventListener('mouseover', this.onMouseEvent, true);
     window.addEventListener('mouseup', this.onMouseEvent, true);
@@ -30,6 +30,10 @@ export default class Highlighter {
   private onClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
+
+    this.stopInspect();
+
+    this.publisher.ns(HIGHLIGHTER_NS).publish({ stopInspect: true });
   }
 
   private onMouseEvent(event: MouseEvent) {
@@ -40,8 +44,6 @@ export default class Highlighter {
   private onPointerDown(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-
-    this.stopInspect();
   }
 
   private onPointerOver(event: MouseEvent) {
