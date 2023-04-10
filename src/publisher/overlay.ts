@@ -145,7 +145,8 @@ export default class Overlay {
   tip: OverlayTip;
   rects: Array<OverlayRect>;
 
-  constructor() {
+  constructor(hook) {
+    this.hook = hook;
     // Find the root window, because overlays are positioned relative to it.
     const currentWindow = window.__REACT_DEVTOOLS_TARGET_WINDOW__ || window;
     this.window = currentWindow;
@@ -175,7 +176,7 @@ export default class Overlay {
     }
   }
 
-  inspect(nodes: Array<HTMLElement>, name: string) {
+  inspect(nodes: Array<HTMLElement>, name?: string) {
     // We can't get the size of text nodes or comment nodes. React as of v15
     // heavily uses comment nodes to delimit text.
     const elements = nodes.filter(node => node.nodeType === Node.ELEMENT_NODE);
@@ -216,6 +217,25 @@ export default class Overlay {
       const rect = this.rects[index];
       rect.update(box, dims);
     });
+
+    if (!name) {
+      name = elements[0].nodeName.toLowerCase();
+
+      const node = elements[0];
+      const rendererInterface = this.hook.rendererInterfaces.get(1);
+      if (rendererInterface) {
+        const id = rendererInterface.getFiberIDForNative(node, true);
+        if (id) {
+          const ownerName = rendererInterface.getDisplayNameForFiberID(
+            id,
+            true,
+          );
+          if (ownerName) {
+            name += ' (in ' + ownerName + ')';
+          }
+        }
+      }
+    }
 
     this.tip.updateText(
       name,

@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { hook } from "./index";
 import Overlay from "./overlay";
+import Highlighter from "./highlighter";
 
 let eventIdSeed = 0;
 const { openSourceLoc } = config;
@@ -148,7 +149,7 @@ publisher.ns(HIGHLIGHTER_NS).provide("highlight", (fiberId, name: string) => {
   if (nodes.length) {
 
     if (!overlay) {
-      overlay = new Overlay();
+      overlay = new Overlay(hook);
     }
 
     overlay.inspect(nodes, name);
@@ -162,80 +163,30 @@ publisher.ns(HIGHLIGHTER_NS).provide("removeHighlight", (fiberId) => {
   }
 });
 
+let highlighter: Highlighter | null = null;
+
 publisher.ns(HIGHLIGHTER_NS).provide("startInspect", () => {
-  startInspect();
+  if (!overlay) {
+    overlay = new Overlay(hook);
+  }
+  if (!highlighter) {
+    highlighter = new Highlighter(hook, publisher, overlay);
+  }
+
+  highlighter.startInspect();
 });
 
 publisher.ns(HIGHLIGHTER_NS).provide("stopInspect", () => {
-  stopInspect();
+  if (highlighter) {
+    highlighter.stopInspect();
+    highlighter = null;
+  }
+  if (overlay) {
+    overlay.remove();
+    overlay = null;
+  }
 });
 
-function startInspect() {
-  window.addEventListener('click', onClick, true);
-  window.addEventListener('mousedown', onMouseEvent, true);
-  window.addEventListener('mouseover', onMouseEvent, true);
-  window.addEventListener('mouseup', onMouseEvent, true);
-  window.addEventListener('pointerdown', onPointerDown, true);
-  window.addEventListener('pointerover', onPointerOver, true);
-  window.addEventListener('pointerup', onPointerUp, true);
-}
-
-function stopInspect() {
-  window.removeEventListener('click', onClick, true);
-  window.removeEventListener('mousedown', onMouseEvent, true);
-  window.removeEventListener('mouseover', onMouseEvent, true);
-  window.removeEventListener('mouseup', onMouseEvent, true);
-  window.removeEventListener('pointerdown', onPointerDown, true);
-  window.removeEventListener('pointerover', onPointerOver, true);
-  window.removeEventListener('pointerup', onPointerUp, true);
-}
-
-function onClick(event: MouseEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-}
-
-function onMouseEvent(event: MouseEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-}
-
-function onPointerDown(event: MouseEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  // selectFiberForNode(((event.target: any): HTMLElement));
-}
-
-function onPointerOver(event: MouseEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  const target = event.target;
-
-  if (!overlay) {
-    overlay = new Overlay();
-  }
-
-  if (target) {
-    overlay.inspect([target], "FOO");
-
-    selectFiberForNode(target);
-  }
-}
-
-function onPointerUp(event: MouseEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-}
-
-const selectFiberForNode = (node) => {
-  const fiberID = hook.rendererInterfaces.get(1).getFiberIDForNative(node, true);
-
-  if (fiberID) {
-    publisher.ns(HIGHLIGHTER_NS).publish({ fiberID });
-  }
-}
 
 // import { connectPublisherWs } from "rempl";
 // connectPublisherWs("http://localhost:8177/");
