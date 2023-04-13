@@ -73,7 +73,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
   // We track both Fibers to support Fast Refresh,
   // which may forcefully replace one of the pair as part of hot reloading.
   // In that case it's still important to be able to locate the previous ID during subsequent renders.
-  const fiberToId = new Map<Fiber, number>();
+  const fiberToId = new WeakMap<Fiber, number>();
   let fiberIdSeed = 0;
 
   // Map of id to one (arbitrary) Fiber in a pair.
