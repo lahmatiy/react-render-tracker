@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
-import { useSelectionState } from "../../utils/selection";
+import { useSelectionState, useHighlightingState } from "../../utils/selection";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
@@ -66,12 +66,14 @@ const TreeLeafCaptionContainer = React.memo(
   }: TreeLeafCaptionContainerProps) => {
     const { id, ownerId, displayName } = fiber;
     const { selected, select } = useSelectionState(fiber.id);
+    const { highlighted } = useHighlightingState(fiber.id);
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
     const classes = ["tree-leaf-caption"];
     for (const [cls, add] of Object.entries({
       selected,
+      highlighted,
       pinned,
       "render-root": isRenderRoot,
     })) {

@@ -33,6 +33,7 @@ export default class Highlighter {
 
     this.stopInspect();
 
+    this.selectFiberForNode(event.target, true);
     this.publisher.ns(HIGHLIGHTER_NS).publish({ stopInspect: true });
   }
 
@@ -50,13 +51,8 @@ export default class Highlighter {
     event.preventDefault();
     event.stopPropagation();
 
-    const target = event.target;
-
-    if (target) {
-      this.overlay.inspect([target]);
-
-      this.selectFiberForNode(target);
-    }
+    this.overlay.inspect([event.target ?? null]);
+    this.selectFiberForNode(event.target);
   }
 
   private onPointerUp(event: MouseEvent) {
@@ -64,11 +60,9 @@ export default class Highlighter {
     event.stopPropagation();
   }
 
-  private selectFiberForNode(node) {
+  private selectFiberForNode(node, selected = false) {
     const fiberID = this.hook.rendererInterfaces.get(1).getFiberIDForNative(node, true);
 
-    if (fiberID) {
-      this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID });
-    }
+    this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
   }
 }

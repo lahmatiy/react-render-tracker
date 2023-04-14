@@ -63,13 +63,19 @@ export const SelectionContextProvider = ({
     }
 
     let selectedId: number | null = null;
+    let highlightedId: number | null = null;
     let historyIndex = -1;
     let history: number[] = [];
     let historyState: SelectionHistoryState = createHistoryState();
     const subscriptions: Subscriptions<IdChangeCallback> = new Set();
+    const subscriptionsHighlight: Subscriptions<IdChangeCallback> = new Set();
     const historySubscriptions: Subscriptions<HistoryChangeCallback> =
       new Set();
     const stateSubscriptionsById: SubscriptionsMap<
+      number,
+      StateChangeCallback
+    > = new Map();
+    const highlightSubscriptionsById: SubscriptionsMap<
       number,
       StateChangeCallback
     > = new Map();
@@ -112,6 +118,23 @@ export const SelectionContextProvider = ({
 
       notify(subscriptions, selectedId);
     };
+    const highlight = (nextHighlightedId) => {
+      if (highlightedId == nextHighlightedId) {
+        return;
+      }
+
+      if (highlightedId !== null) {
+        notifyById(highlightSubscriptionsById, highlightedId, false);
+      }
+
+      highlightedId = nextHighlightedId;
+
+      if (nextHighlightedId !== null) {
+        notifyById(highlightSubscriptionsById, nextHighlightedId, true);
+      }
+
+      notify(subscriptionsHighlight, nextHighlightedId);
+    }
 
     return {
       get selectedId() {
@@ -121,12 +144,29 @@ export const SelectionContextProvider = ({
         select(id);
       },
       select,
+      get highlightedId() {
+        return highlightedId;
+      },
+      set highlightedId(id) {
+        highlight(id);
+      },
+      highlight,
       subscribe(fn) {
         return subscribe(subscriptions, fn);
+      },
+      subscribeHighlight(fn) {
+        return subscribe(subscriptionsHighlight, fn);
       },
       subscribeToIdState(id, fn) {
         return subscribeById<number, StateChangeCallback>(
           stateSubscriptionsById,
+          id,
+          fn
+        );
+      },
+      subscribeToHighlightState(id, fn) {
+        return subscribeById<number, StateChangeCallback>(
+          highlightSubscriptionsById,
           id,
           fn
         );
@@ -159,6 +199,15 @@ export const SelectedIdConsumer = ({
   return children(selectedId);
 };
 
+export const useHighlightingState = (id: number) => {
+  const { highlightedId, subscribeToHighlightState } = useSelectionContext();
+  const [state, setState] = React.useState(id === highlightedId);
+
+  useSubscription(() => subscribeToHighlightState(id, setState), [id]);
+
+  return { highlighted: state };
+};
+
 export const useSelectionState = (id: number) => {
   const { selectedId, subscribeToIdState, select } = useSelectionContext();
   const [state, setState] = React.useState(id === selectedId);
@@ -178,10 +227,19 @@ export const useSelectionHistoryState = () => {
 };
 
 export const useSelectedId = () => {
-  const { selectedId, subscribe, select } = useSelectionContext();
+  const { selectedId, subscribe, select, highlight } = useSelectionContext();
   const [state, setState] = React.useState(selectedId);
 
   useSubscription(() => subscribe(setState));
 
-  return { selectedId: state, select };
+  return { selectedId: state, select, highlight };
+};
+
+export const useHighlightedId = () => {
+  const { highlightedId, highlight, subscribeHighlight } = useSelectionContext();
+  const [state, setState] = React.useState(highlightedId);
+
+  useSubscription(() => subscribeHighlight(setState));
+
+  return { highlightedId: state, highlight };
 };

@@ -14,7 +14,7 @@ import {
 } from "../common/icons";
 import { useReactRenderers } from "../../utils/react-renderers";
 import { remoteSubscriber } from "../../rempl-subscriber";
-import { useSelectedId } from "../../utils/selection";
+import { useSelectedId, useHighlightedId } from "../../utils/selection";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -75,17 +75,25 @@ const Toolbar = ({
   }, [highlightActive]);
 
   const { select } = useSelectedId();
+  const { highlight } = useHighlightedId();
 
   React.useEffect(
     () =>
       remoteSubscriber
         .ns("highlighter")
         .subscribe((event) => {
-          if (event.fiberID) {
-            select(event.fiberID);
+          if (!event) {
+            return;
           }
 
-          if (event.stopInspect) {
+          const { fiberID, stopInspect, selected = false } = event;
+
+          highlight(fiberID);
+          if (fiberID && selected) {
+            select(fiberID);
+          }
+
+          if (stopInspect) {
             setHighlightActive(false);
           }
         }),
