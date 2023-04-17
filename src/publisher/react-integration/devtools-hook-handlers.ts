@@ -111,7 +111,10 @@ export function createReactDevtoolsHookHandlers(
   const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
   const unmountedFiberIdBeforeSiblingId = new Map<number, number>();
   const unmountedFiberIdForParentId = new Map<number, number>();
-  const unmountedFiberAlternate = new WeakMap();
+  const unmountedFiberRefs = new WeakMap<
+    Fiber,
+    { stateNode: unknown; alternate: Fiber | null }
+  >();
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -147,7 +150,8 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const fiber of untrackFibersSet) {
-      removeFiber(fiber, unmountedFiberAlternate.get(fiber));
+      removeFiber(fiber, unmountedFiberRefs.get(fiber));
+      unmountedFiberRefs.delete(fiber);
     }
 
     untrackFibersSet.clear();
@@ -676,8 +680,15 @@ export function createReactDevtoolsHookHandlers(
 
     const fiber = getFiberById(fiberId);
     if (fiber !== null) {
-      // removeFiber(fiber, unmountedFiberAlternate.get(fiber));
+      // removeFiber(fiber, unmountedFiberRefs.get(fiber));
       untrackFiber(fiber);
+
+      if (fiber.stateNode || fiber.alternate) {
+        unmountedFiberRefs.set(fiber, {
+          stateNode: fiber.stateNode,
+          alternate: fiber.alternate,
+        });
+      }
     }
 
     const eventId = recordEvent({
@@ -772,12 +783,16 @@ export function createReactDevtoolsHookHandlers(
 
         unmountedFiberIds.add(id);
 
-        if (fiber.alternate) {
-          unmountedFiberAlternate.set(fiber, fiber.alternate);
+        if (fiber.stateNode || fiber.alternate) {
+          unmountedFiberRefs.set(fiber, {
+            stateNode: fiber.stateNode,
+            alternate: fiber.alternate,
+          });
         }
       }
     } else {
       removeFiber(fiber);
+      unmountedFiberRefs.delete(fiber);
     }
 
     if (!fiber._debugNeedsRemount) {
@@ -1305,7 +1320,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     // Normally unmounted fibers should removed on component's tree traversal,
-    // but in case it's not then flush what's left
+    // but in case it's not then (e.g. ownerId is not computed right) flush what's left
     for (const fiberId of unmountedFiberIds) {
       recordUnmount(fiberId);
     }

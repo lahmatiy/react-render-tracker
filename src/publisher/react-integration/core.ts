@@ -32,6 +32,9 @@ import {
   ElementTypeSuspenseList,
   ElementTypeProfiler,
   ElementTypeOtherOrUnknown,
+  TrackingObjectFiber,
+  TrackingObjectStateNode,
+  TrackingObjectAlternate,
 } from "../../common/constants";
 import { createUnmountedFiberLeakDetectionApi } from "./unmounted-fiber-leak-detector";
 
@@ -103,7 +106,7 @@ export function createIntegrationCore(
   const rootDisplayNameCounter = new Map();
 
   // Unmounted fiber leak tracking
-  const { trackUnmountedFiber, getLeakedUnmountedFibers } =
+  const { trackObjectForLeaking, getLeakedObjectsProbe } =
     createUnmountedFiberLeakDetectionApi(recordEvent);
 
   // NOTICE Keep in sync with get*ForFiber methods
@@ -361,20 +364,42 @@ export function createIntegrationCore(
 
   function removeFiber(
     fiber: Fiber,
-    alternate: Fiber | null = fiber.alternate
+    refs?: { stateNode: unknown; alternate: Fiber | null }
   ) {
-    const id = getFiberIdUnsafe(fiber) as number;
-    const displayName = getDisplayNameForFiber(fiber) || "unknown";
+    const id = getFiberIdUnsafe(fiber);
+    const displayName = getDisplayNameForFiber(fiber);
+    const { stateNode, alternate } = refs || fiber;
     // console.log("removeFiber", id);
 
-    idToArbitraryFiber.delete(id as number);
+    if (typeof id !== "number") {
+      console.error(
+        "[React Render Tracker] removeFiber can't resolve an id by a given fiber"
+      );
+      return;
+    }
+
+    idToArbitraryFiber.delete(id);
 
     fiberToId.delete(fiber);
-    trackUnmountedFiber(fiber, `${displayName}-${id}`);
+    trackObjectForLeaking(fiber, id, TrackingObjectFiber, displayName);
+
+    if (stateNode) {
+      trackObjectForLeaking(
+        stateNode,
+        id,
+        TrackingObjectStateNode,
+        displayName
+      );
+    }
 
     if (alternate) {
-      trackUnmountedFiber(alternate, `${displayName}(alt)-${id}`);
-      fiberToId.delete(alternate as Fiber);
+      trackObjectForLeaking(
+        alternate,
+        id,
+        TrackingObjectAlternate,
+        displayName
+      );
+      fiberToId.delete(alternate);
     }
   }
 
@@ -462,6 +487,6 @@ export function createIntegrationCore(
     didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
-    getLeakedUnmountedFibers,
+    getLeakedObjectsProbe,
   };
 }

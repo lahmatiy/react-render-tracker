@@ -1,47 +1,76 @@
+import { MaybeLeakDescriptor, TrackingObjectType } from "common-types";
 import {
-  Fiber,
-  ReactUnmountedFiberLeakDetectionApi,
+  MemoryLeakDetectionApi,
   RecordEventHandler,
+  TrackingObject,
+  TrackingObjectMap,
 } from "../types";
+import { TrackingObjectTypeName } from "../../common/constants";
 
+const DEBUG_OUTPUT = true;
+const LEAK_CHECK_INTERVAL = 1000;
 declare global {
   let __leakedFibers: number;
 }
 
-class FakeWeakRef implements WeakRef<Fiber> {
+class FakeWeakRef implements WeakRef<TrackingObject> {
   [Symbol.toStringTag] = "WeakRef" as const;
   deref() {
     return undefined;
   }
 }
 
-// a hack to keep class name the same even when code is minified
 // the class is used for TypeScript only
-class LeakedReactFibersMarkerTS {
-  fibers: Fiber[] | null;
-  constructor(fibers: Fiber[]) {
-    this.fibers = fibers;
+class LeakedObjectsRRTMarkerTS {
+  // objects: TrackingObjectMap;
+
+  constructor(public objects: TrackingObjectMap) {
+    // this.objects = objects;
   }
 }
-const LeakedReactFibersMarker = {
-  LeakedReactFibersMarker: class {
-    fibers: Fiber[] | null;
+// a hack with object to keep class name the same even when code is minified
+const LeakedObjectsRRTMarker = {
+  LeakedObjectsRRTMarker: class {
+    // objects: TrackingObjectMap;
 
-    constructor(leakedFibers: Fiber[]) {
-      this.fibers = leakedFibers;
+    constructor(public objects: TrackingObjectMap) {
+      // this.objects = objects;
     }
   },
-}[String("LeakedReactFibersMarker")] as typeof LeakedReactFibersMarkerTS;
+}[String("LeakedObjectsRRTMarker")] as typeof LeakedObjectsRRTMarkerTS;
 
-let unknownFiberId = 1;
 const WeakRefBase = typeof WeakRef === "undefined" ? FakeWeakRef : WeakRef;
-class WeakFiberRef extends WeakRefBase<Fiber> {
-  id: string;
+class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
   generation: number;
-  constructor(fiber: Fiber, fiberId: string | null, generation: number) {
-    super(fiber);
-    this.id = fiberId !== null ? fiberId : `unknown-fiber-${unknownFiberId++}`;
+  fiberId: number;
+  type: TrackingObjectType;
+  displayName: string | null;
+
+  constructor(
+    object: TrackingObject,
+    generation: number,
+    fiberId: number,
+    type: TrackingObjectType,
+    displayName: string | null
+  ) {
+    super(object);
     this.generation = generation;
+    this.fiberId = fiberId;
+    this.type = type;
+    this.displayName = displayName;
+  }
+
+  get tag() {
+    return `${this.displayName || "unknown"}(${
+      TrackingObjectTypeName[this.type]
+    })-${this.fiberId}`;
+  }
+
+  get descriptor() {
+    return {
+      fiberId: this.fiberId,
+      type: this.type,
+    };
   }
 }
 
@@ -55,68 +84,71 @@ class Canary extends WeakRefBase<any> {
 
 export function createUnmountedFiberLeakDetectionApi(
   recordEvent: RecordEventHandler
-): ReactUnmountedFiberLeakDetectionApi & {
-  trackUnmountedFiber: (fiber: Fiber, id?: string | null) => void;
+): MemoryLeakDetectionApi & {
+  trackObjectForLeaking: (
+    fiber: TrackingObject,
+    id: number,
+    type: TrackingObjectType,
+    displayName: string | null
+  ) => void;
 } {
-  const unmountedFiberWeakRefs = new Set<WeakFiberRef>();
-  const unmountedLeakedFiberWeakRefs = new Set<WeakFiberRef>();
-  const unmountedFiberToWeakRef = new WeakMap<Fiber, WeakFiberRef>();
+  const leakCandidateObjectsWeakRefs = new Set<TrackingObjectWeakRef>();
+  const leakedObjectsWeakRefs = new Set<TrackingObjectWeakRef>();
+  const objectToWeakRef = new WeakMap<TrackingObject, TrackingObjectWeakRef>();
   const canaries = new Set<Canary>();
   let lastCanaryGeneration = 0;
-  let lastGeneration = 1;
-  let unmountedFiberGeneration = 1;
-  let unmountedFiberLeakDetectionTimer: ReturnType<typeof setTimeout> | null =
-    null;
+  let lastCheckGeneration = 1;
+  let generation = 1;
+  let checkTrackingRefsTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function getLeakedUnmountedFibers() {
-    let leakedFibers: Fiber[] | null = [];
-    let markedLeakedFibers: LeakedReactFibersMarkerTS | null =
-      new LeakedReactFibersMarker(leakedFibers);
+  function getLeakedObjectsProbe() {
+    let markedLeakedObjects: LeakedObjectsRRTMarkerTS | null =
+      new LeakedObjectsRRTMarker(Object.create(null));
 
-    for (const weakRef of unmountedFiberWeakRefs) {
-      const fiber = weakRef.deref();
+    for (const weakRef of [...leakedObjectsWeakRefs].sort((a, b) =>
+      a.tag < b.tag ? -1 : 1
+    )) {
+      const object = weakRef.deref();
 
-      if (fiber !== undefined) {
-        leakedFibers.push(fiber);
+      if (object !== undefined) {
+        markedLeakedObjects.objects[weakRef.tag] = weakRef;
       }
     }
 
-    leakedFibers = null;
-
     return {
-      get fibers() {
-        return leakedFibers;
+      get objects() {
+        return markedLeakedObjects?.objects || null;
       },
-      get markedFibers() {
-        return markedLeakedFibers;
+      get markedObjects() {
+        return markedLeakedObjects;
       },
       release() {
-        if (markedLeakedFibers !== null) {
-          markedLeakedFibers.fibers = null;
-          markedLeakedFibers = null;
-        }
-
-        leakedFibers = null;
+        markedLeakedObjects = null;
       },
     };
   }
 
-  function checkLeaks() {
-    if (unmountedFiberLeakDetectionTimer !== null) {
-      clearTimeout(unmountedFiberLeakDetectionTimer);
-      unmountedFiberLeakDetectionTimer = null;
+  function checkTrackingRefs() {
+    // Reset check timer
+    if (checkTrackingRefsTimer !== null) {
+      clearTimeout(checkTrackingRefsTimer);
+      checkTrackingRefsTimer = null;
     }
 
-    if (lastGeneration === unmountedFiberGeneration) {
-      unmountedFiberGeneration++;
+    // Check if object generation should be changed, create a canary for previous generation
+    if (lastCheckGeneration === generation) {
+      generation++;
 
-      const canary = new Canary(lastGeneration);
+      const canary = new Canary(lastCheckGeneration);
       canaries.add(canary);
     }
 
-    const sizeBeforeCheck = unmountedFiberWeakRefs.size;
-    const leaksAdded = [];
-    const leaksRemoved = [];
+    const leakCandidatesBeforeCheck = leakCandidateObjectsWeakRefs.size;
+    const leaksBeforeCheck = leakedObjectsWeakRefs.size;
+    const checkLeaksStart = Date.now();
+
+    const leaksAdded: MaybeLeakDescriptor[] = [];
+    const leaksRemoved: MaybeLeakDescriptor[] = [];
 
     for (const canary of [...canaries].reverse()) {
       if (canary.deref() === undefined) {
@@ -131,24 +163,31 @@ export function createUnmountedFiberLeakDetectionApi(
       }
     }
 
-    for (const weakRef of unmountedFiberWeakRefs) {
+    // Revisit leaked objects if they stop to be a leak
+    for (const weakRef of leakedObjectsWeakRefs) {
       if (weakRef.deref() === undefined) {
-        if (unmountedLeakedFiberWeakRefs.has(weakRef)) {
-          leaksRemoved.push(weakRef.id);
-          unmountedLeakedFiberWeakRefs.delete(weakRef);
-        }
-        unmountedFiberWeakRefs.delete(weakRef);
-      } else if (weakRef.generation <= lastCanaryGeneration) {
-        if (!unmountedLeakedFiberWeakRefs.has(weakRef)) {
-          leaksAdded.push(weakRef.id);
-          unmountedLeakedFiberWeakRefs.add(weakRef);
-        }
+        leakedObjectsWeakRefs.delete(weakRef);
+        leaksRemoved.push(weakRef.descriptor);
       }
     }
 
+    // Revisit leak candidates refs
+    for (const weakRef of leakCandidateObjectsWeakRefs) {
+      if (weakRef.deref() === undefined) {
+        // A candidate has been collected by GC
+        leakCandidateObjectsWeakRefs.delete(weakRef);
+      } else if (weakRef.generation <= lastCanaryGeneration) {
+        // A candidate considered as leaked since coresponding canary object was collected
+        leakCandidateObjectsWeakRefs.delete(weakRef);
+        leakedObjectsWeakRefs.add(weakRef);
+        leaksAdded.push(weakRef.descriptor);
+      }
+    }
+
+    // Record an event when leaks set is changed
     if (leaksAdded.length || leaksRemoved.length) {
       recordEvent({
-        op: "leaks",
+        op: "maybe-leaks",
         commitId: -1,
         added: leaksAdded,
         removed: leaksRemoved,
@@ -159,45 +198,70 @@ export function createUnmountedFiberLeakDetectionApi(
       // });
     }
 
-    // const ghosts = [...unmountedFiberWeakRefs]
-    //   .filter(ref => !unmountedLeakedFiberWeakRefs.has(ref))
-    //   .map(ref => ref.id);
-    // const leaks = [...unmountedLeakedFiberWeakRefs].map(ref => ref.id);
+    // Debug output
+    if (DEBUG_OUTPUT) {
+      const candidates = [...leakCandidateObjectsWeakRefs].map(ref => ref.tag);
+      const leaks = [...leakedObjectsWeakRefs].map(ref => ref.tag);
 
-    // console.log(
-    //   `Track unmounted fibers for leaks (gen: ${lastGeneration}):`,
-    //   ...(sizeBeforeCheck !== unmountedFiberWeakRefs.size
-    //     ? [sizeBeforeCheck, "->", unmountedFiberWeakRefs.size]
-    //     : [unmountedFiberWeakRefs.size]),
-    //   ...(ghosts.length ? ["ghosts:", ghosts] : []),
-    //   ...(leaks.length ? ["leaks:", leaks] : [])
-    // );
+      console.log(
+        `[React Render Tracker] Track objects for leaks (gen: ${lastCheckGeneration}, check: ${
+          Date.now() - checkLeaksStart
+        }ms, candidates: ${
+          leakCandidatesBeforeCheck !== leakCandidateObjectsWeakRefs.size
+            ? `${leakCandidatesBeforeCheck} → ${leakCandidateObjectsWeakRefs.size}`
+            : leakCandidateObjectsWeakRefs.size
+        }, leaks: ${
+          leaksBeforeCheck !== leakedObjectsWeakRefs.size
+            ? `${leaksBeforeCheck} → ${leakedObjectsWeakRefs.size}`
+            : leakedObjectsWeakRefs.size
+        }):`,
+        ...(candidates.length ? ["candidates:", candidates] : []),
+        ...(leaks.length ? ["leaks:", leaks] : [])
+      );
+    }
 
-    if (unmountedFiberWeakRefs.size) {
-      unmountedFiberLeakDetectionTimer = setTimeout(checkLeaks, 1000);
+    // Set up a new timer in case any candidate or leak are still tracking
+    if (leakCandidateObjectsWeakRefs.size || leakedObjectsWeakRefs.size) {
+      checkTrackingRefsTimer = setTimeout(
+        checkTrackingRefs,
+        LEAK_CHECK_INTERVAL
+      );
     }
   }
 
-  function trackUnmountedFiber(fiber: Fiber, id: string | null = null) {
-    let fiberRef = unmountedFiberToWeakRef.get(fiber);
+  function trackObjectForLeaking(
+    object: TrackingObject,
+    id: number,
+    type: TrackingObjectType,
+    displayName: string | null = null
+  ) {
+    let objectWeakRef = objectToWeakRef.get(object);
 
-    if (fiberRef === undefined) {
-      lastGeneration = unmountedFiberGeneration;
-      fiberRef = new WeakFiberRef(fiber, id, unmountedFiberGeneration);
-      unmountedFiberToWeakRef.set(fiber, fiberRef);
+    if (objectWeakRef === undefined) {
+      lastCheckGeneration = generation;
+      objectWeakRef = new TrackingObjectWeakRef(
+        object,
+        generation,
+        id,
+        type,
+        displayName
+      );
+      objectToWeakRef.set(object, objectWeakRef);
+    } else {
+      console.log("!!!occupied", id);
     }
 
-    if (unmountedFiberLeakDetectionTimer === null) {
-      unmountedFiberLeakDetectionTimer = setTimeout(checkLeaks, 1000);
+    if (checkTrackingRefsTimer === null) {
+      checkTrackingRefsTimer = setTimeout(checkTrackingRefs, 1000);
     }
 
-    unmountedFiberWeakRefs.add(fiberRef);
+    leakCandidateObjectsWeakRefs.add(objectWeakRef);
   }
 
-  globalThis.exposeLeaks = getLeakedUnmountedFibers;
+  globalThis.exposeLeaks = getLeakedObjectsProbe;
 
   return {
-    trackUnmountedFiber,
-    getLeakedUnmountedFibers,
+    trackObjectForLeaking,
+    getLeakedObjectsProbe,
   };
 }

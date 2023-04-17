@@ -255,9 +255,9 @@ export function processEvents(
         });
         continue;
 
-      case "leaks": {
+      case "maybe-leaks": {
         for (const added of event.added) {
-          const fiberId = Number((added.match(/\d+$/) || [])[0]);
+          const fiberId = added.fiberId;
 
           if (!fiberById.has(fiberId)) {
             continue;
@@ -266,14 +266,15 @@ export function processEvents(
           fiber = fiberById.get(fiberId) as MessageFiber;
           fiber = {
             ...fiber,
-            leaked: 1,
+            leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
           };
           fiberById.set(fiberId, fiber);
           parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
           ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
         }
+
         for (const removed of event.removed) {
-          const fiberId = Number((removed.match(/\d+$/) || [])[0]);
+          const fiberId = removed.fiberId;
 
           if (!fiberById.has(fiberId)) {
             continue;
@@ -282,7 +283,7 @@ export function processEvents(
           fiber = fiberById.get(fiberId) as MessageFiber;
           fiber = {
             ...fiber,
-            leaked: 0,
+            leaked: fiber.leaked & ~(1 << removed.type), // set a type bit to 0
           };
           fiberById.set(fiberId, fiber);
           parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);

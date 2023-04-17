@@ -1,5 +1,5 @@
 import * as React from "react";
-import { fiberTypeName } from "../../../common/constants";
+import { FiberTypeName } from "../../../common/constants";
 import { MessageFiber } from "../../types";
 import { useFiberMaps } from "../../utils/fiber-maps";
 import FiberId from "../common/FiberId";
@@ -26,7 +26,7 @@ const FiberInfoHeaderPrelude = ({
     <div className="fiber-info-header-prelude">
       <div className="fiber-info-header-prelude__content">
         <span className="fiber-info-header-type-badge" data-type="type">
-          {fiberTypeName[fiber.type]}
+          {FiberTypeName[fiber.type]}
         </span>
         {!fiber.mounted && (
           <span className="fiber-info-header-type-badge">Unmounted</span>

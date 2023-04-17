@@ -20,6 +20,7 @@ declare module "common-types" {
 
   export type FiberType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   export type FiberRootMode = 0 | 1 | 2;
+  export type TrackingObjectType = 0 | 1 | 2;
 
   export type TransferFiber = {
     id: number;
@@ -199,10 +200,15 @@ declare module "common-types" {
     path?: string[];
   }
 
-  export interface LeaksMessage extends BaseMessage {
-    op: "leaks";
-    added: string[];
-    removed: string[];
+  export type MaybeLeakDescriptor = {
+    fiberId: number;
+    type: TrackingObjectType;
+  };
+
+  export interface MaybeLeaksMessage extends BaseMessage {
+    op: "maybe-leaks";
+    added: MaybeLeakDescriptor[];
+    removed: MaybeLeakDescriptor[];
   }
 
   export type Message =
@@ -216,5 +222,5 @@ declare module "common-types" {
     | UnmountFiberMessage
     | CreateEffectFiberMessage
     | DestroyEffectFiberMessage
-    | LeaksMessage;
+    | MaybeLeaksMessage;
 }

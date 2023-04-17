@@ -33,7 +33,7 @@ const opTooltip: Record<
   "effect-create": "Create effect",
   "effect-destroy": "Destroy effect",
   "commit-start": "Commit start",
-  leaks: "leaks",
+  "maybe-leaks": "Potential memory leaks list changed",
 };
 
 const EventListEntry = ({

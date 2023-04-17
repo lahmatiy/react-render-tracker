@@ -1,6 +1,6 @@
 import { isUnsupportedRenderer } from "./utils/renderer-info";
 import {
-  ReactIntegration,
+  ReactIntegrationApi,
   ReactInternals,
   ReactUnsupportedRendererInfo,
   Fiber,
@@ -25,11 +25,11 @@ type ReactDevtoolsHook = {
 };
 
 export function createReactDevtoolsHook(
-  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegrationApi,
   onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void,
   existing: ReactDevtoolsHook
 ) {
-  const attachedIntegrations = new Map<number, ReactIntegration>();
+  const attachedIntegrations = new Map<number, ReactIntegrationApi>();
   const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
@@ -152,7 +152,7 @@ const MARKER = Symbol();
 
 export function installReactDevtoolsHook(
   target: any,
-  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegrationApi,
   onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void
 ) {
   const existingHook = target[hookName];
