@@ -5,6 +5,7 @@ import createTestCaseWrapper from "./create-test-case-wrapper";
 import { createElement } from "./dom-utils";
 
 const initialHashParams = new URLSearchParams(location.hash.slice(1));
+const dataClientParam = initialHashParams.has("data-client");
 const reactVersion = initialHashParams.get("version");
 const bundleTypeParam = initialHashParams.get("bundle-type");
 const bundleType =
@@ -38,7 +39,8 @@ const versions = [
 function createHash(
   version: string | null,
   bundleType: "development" | "production" | "profiling",
-  id: string | null = null
+  id: string | null = null,
+  dataClient: boolean
 ) {
   const params = new URLSearchParams();
 
@@ -54,6 +56,10 @@ function createHash(
     params.append("case", id);
   }
 
+  if (dataClient) {
+    params.append("data-client", "");
+  }
+
   return `#${params}`;
 }
 
@@ -61,7 +67,7 @@ function createTocItem(id: string | undefined, title: string) {
   return createElement("li", null, [
     createElement(
       "a",
-      { href: createHash(reactVersion, bundleType, id) },
+      { href: createHash(reactVersion, bundleType, id, dataClientParam) },
       title
     ),
   ]);
@@ -90,7 +96,8 @@ Promise.all(testCases).then(testCases => {
           location.hash = createHash(
             this.value,
             bundleType,
-            selectedTestCaseId
+            selectedTestCaseId,
+            dataClientParam
           );
         },
       },
@@ -109,7 +116,8 @@ Promise.all(testCases).then(testCases => {
           location.hash = createHash(
             reactVersion,
             this.value as typeof bundleType,
-            selectedTestCaseId
+            selectedTestCaseId,
+            dataClientParam
           );
         },
       },
@@ -120,7 +128,22 @@ Promise.all(testCases).then(testCases => {
           type
         )
       )
-    )
+    ),
+    createElement("label", {}, [
+      createElement("input", {
+        type: "checkbox",
+        checked: dataClientParam || undefined,
+        onclick() {
+          location.hash = createHash(
+            reactVersion,
+            bundleType,
+            selectedTestCaseId,
+            this.checked
+          );
+        },
+      }),
+      "Data client example (see output in console)",
+    ])
   );
 
   for (const testCaseWrapper of testCaseWrappers) {
@@ -137,7 +160,8 @@ Promise.all(testCases).then(testCases => {
     const newSelectedHash = createHash(
       reactVersion,
       bundleType,
-      newSelectedTestCaseId
+      newSelectedTestCaseId,
+      dataClientParam
     );
 
     for (const link of tocEl.querySelectorAll("a[href]")) {
