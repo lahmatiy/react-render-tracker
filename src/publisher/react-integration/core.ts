@@ -13,7 +13,12 @@ import {
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
 } from "./utils/constants.js";
-import { ReactInternals, Fiber, NativeType } from "../types";
+import {
+  ReactInternals,
+  Fiber,
+  NativeType,
+  RecordEventHandler,
+} from "../types";
 import {
   ElementTypeClass,
   ElementTypeFunction,
@@ -28,10 +33,14 @@ import {
   ElementTypeProfiler,
   ElementTypeOtherOrUnknown,
 } from "../../common/constants";
+import { createUnmountedFiberLeakDetectionApi } from "./unmounted-fiber-leak-detector";
 
 export type CoreApi = ReturnType<typeof createIntegrationCore>;
 
-export function createIntegrationCore(renderer: ReactInternals) {
+export function createIntegrationCore(
+  renderer: ReactInternals,
+  recordEvent: RecordEventHandler
+) {
   // Newer versions of the reconciler package also specific reconciler version.
   // If that version number is present, use it.
   // Third party renderer versions may not match the reconciler version,
@@ -92,6 +101,10 @@ export function createIntegrationCore(renderer: ReactInternals) {
   // We will use this to try to disambiguate roots when restoring selection between reloads.
   const rootPseudoKeys = new Map();
   const rootDisplayNameCounter = new Map();
+
+  // Unmounted fiber leak tracking
+  const { trackUnmountedFiber, getLeakedUnmountedFibers } =
+    createUnmountedFiberLeakDetectionApi(recordEvent);
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber: Fiber) {
@@ -346,10 +359,23 @@ export function createIntegrationCore(renderer: ReactInternals) {
     return renderer.findFiberByHostInstance(hostInstance);
   }
 
-  function removeFiber(fiber: Fiber) {
-    idToArbitraryFiber.delete(getFiberIdUnsafe(fiber) as number);
+  function removeFiber(
+    fiber: Fiber,
+    alternate: Fiber | null = fiber.alternate
+  ) {
+    const id = getFiberIdUnsafe(fiber) as number;
+    const displayName = getDisplayNameForFiber(fiber) || "unknown";
+    // console.log("removeFiber", id);
+
+    idToArbitraryFiber.delete(id as number);
+
     fiberToId.delete(fiber);
-    fiberToId.delete(fiber.alternate as Fiber);
+    trackUnmountedFiber(fiber, `${displayName}-${id}`);
+
+    if (alternate) {
+      trackUnmountedFiber(alternate, `${displayName}(alt)-${id}`);
+      fiberToId.delete(alternate as Fiber);
+    }
   }
 
   function isFiberRoot(fiber: Fiber) {
@@ -436,5 +462,6 @@ export function createIntegrationCore(renderer: ReactInternals) {
     didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
+    getLeakedUnmountedFibers,
   };
 }

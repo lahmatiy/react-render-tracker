@@ -73,7 +73,7 @@ function extractHookPath(depth = 0) {
   return result;
 }
 
-export function dispatcherTrap(
+export function createDispatcherTrap(
   renderer: ReactInternals,
   { getFiberTypeId, isFiberRoot }: CoreApi
 ): ReactDispatcherTrapApi {

@@ -26,6 +26,7 @@ const TreeLeafCaptionContent = ({
     id,
     key,
     mounted,
+    leaked,
     events,
     hocDisplayNames,
     typeDef,
@@ -90,6 +91,14 @@ const TreeLeafCaptionContent = ({
             {typeDef.contexts.length}
           </span>
         )}
+        {leaked ? (
+          <span
+            className="tree-leaf-caption__leaked"
+            title="The fiber is considered as a memory leak"
+          >
+            Maybe mem leak
+          </span>
+        ) : null}
       </div>
     </div>
   );

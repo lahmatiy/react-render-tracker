@@ -155,6 +155,7 @@ export function processEvents(
             event.fiber.displayName ||
             (!event.fiber.ownerId ? "Render root" : "Unknown"),
           mounted: true,
+          leaked: 0,
           events: [],
           updatesCount: 0,
           updatesBailoutCount: 0,
@@ -254,6 +255,43 @@ export function processEvents(
         });
         continue;
 
+      case "leaks": {
+        for (const added of event.added) {
+          const fiberId = Number((added.match(/\d+$/) || [])[0]);
+
+          if (!fiberById.has(fiberId)) {
+            continue;
+          }
+
+          fiber = fiberById.get(fiberId) as MessageFiber;
+          fiber = {
+            ...fiber,
+            leaked: 1,
+          };
+          fiberById.set(fiberId, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+        }
+        for (const removed of event.removed) {
+          const fiberId = Number((removed.match(/\d+$/) || [])[0]);
+
+          if (!fiberById.has(fiberId)) {
+            continue;
+          }
+
+          fiber = fiberById.get(fiberId) as MessageFiber;
+          fiber = {
+            ...fiber,
+            leaked: 0,
+          };
+          fiberById.set(fiberId, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+        }
+
+        continue;
+      }
+
       default:
         continue;
     }
@@ -272,7 +310,7 @@ export function processEvents(
       ),
     };
 
-    fiberById.set(event.fiberId, fiber);
+    fiberById.set(fiber.id, fiber);
     parentTree.setFiber(fiber.id, fiber);
     parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
     ownerTree.setFiber(fiber.id, fiber);

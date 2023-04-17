@@ -199,6 +199,12 @@ declare module "common-types" {
     path?: string[];
   }
 
+  export interface LeaksMessage extends BaseMessage {
+    op: "leaks";
+    added: string[];
+    removed: string[];
+  }
+
   export type Message =
     | FiberTypeDefMessage
     | CommitStartMessage
@@ -209,5 +215,6 @@ declare module "common-types" {
     | UpdateBailoutSCUFiberMessage
     | UnmountFiberMessage
     | CreateEffectFiberMessage
-    | DestroyEffectFiberMessage;
+    | DestroyEffectFiberMessage
+    | LeaksMessage;
 }

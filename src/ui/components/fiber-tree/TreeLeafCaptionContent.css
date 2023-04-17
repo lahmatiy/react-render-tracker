@@ -49,7 +49,8 @@
 
 .tree-leaf-caption__update-count,
 .tree-leaf-caption__update-bailout-count,
-.tree-leaf-caption__context-count {
+.tree-leaf-caption__context-count,
+.tree-leaf-caption__leaked {
   display: inline-block;
   min-width: 16px;
   margin-left: 2px;
@@ -74,6 +75,11 @@
 .tree-leaf-caption__context-count {
   background-color: #eadcea;
   color: #ca8fd0;
+}
+.tree-leaf-caption__leaked {
+  background-color: #fcc4c4;
+  color: #c25454;
+  text-transform: uppercase;
 }
 
 .tree-leaf-caption__warnings {

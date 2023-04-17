@@ -466,6 +466,13 @@ export type ReactInterationApi = {
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
+export type ReactUnmountedFiberLeakDetectionApi = {
+  getLeakedUnmountedFibers: () => {
+    readonly fibers: Fiber[] | null;
+    readonly markedFibers: { fibers: Fiber[] | null } | null;
+    release: () => void;
+  };
+};
 export type ReactDispatcherTrapApi = {
   getDispatchHookIndex: (dispatch: (state: any) => any) => number | null;
   getFiberTypeHookInfo: (fiberTypeId: number) => HookInfo[];
@@ -473,7 +480,9 @@ export type ReactDispatcherTrapApi = {
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
-export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
+export type ReactIntegration = ReactDevtoolsHookHandlers &
+  ReactInterationApi &
+  ReactUnmountedFiberLeakDetectionApi;
 
 export type RecordEventHandler = (
   payload: DistributiveOmit<Message, "id">
