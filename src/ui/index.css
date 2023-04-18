@@ -6,6 +6,7 @@
 @import url("./components/common/FiberId.css");
 @import url("./components/common/FiberKey.css");
 @import url("./components/common/SourceLoc.css");
+@import url("./components/appbar/AppBar.css");
 @import url("./components/details/CallStack.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventChangesSummary.css");
@@ -40,6 +41,7 @@
 @import url("./components/toolbar/SearchMatchesNav.css");
 @import url("./components/toolbar/SelectionHistoryNavigation.css");
 @import url("./components/toolbar/Toolbar.css");
+@import url("./pages/ComponentsTree.css");
 
 html,
 body {

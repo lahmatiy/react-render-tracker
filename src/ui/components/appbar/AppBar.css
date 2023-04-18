@@ -1,0 +1,63 @@
+.app-bar {
+  grid-area: appbar;
+  display: flex;
+  background-color: #fcfcfc;
+}
+.app-bar::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.app-bar__tab {
+  font-size: 11px;
+  padding: 0px 6px;
+  border-right: 1px solid #d4d4d4;
+  border-bottom: 1px solid #ddd;
+  background-color: #f4f4f4;
+  color: #888;
+  user-select: none;
+}
+.app-bar__tab:hover {
+  background-color: white;
+  cursor: pointer;
+}
+.app-bar__tab.selected {
+  color: inherit;
+  border-bottom-color: transparent;
+  background-color: white;
+  cursor: default;
+}
+
+.renderer-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  order: 1;
+  gap: 4px;
+  padding: 0 6px 0 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 11px;
+  color: #888;
+}
+.renderer-info::before {
+  content: "";
+  border-left: 1px solid #ddd;
+  height: 12px;
+  padding-right: 2px;
+}
+.renderer-info__name {
+  opacity: 0.85;
+  line-height: 12px;
+  min-width: 45px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.renderer-info__version {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60px;
+}

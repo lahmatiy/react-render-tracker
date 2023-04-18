@@ -1,12 +1,16 @@
 import * as React from "react";
 import { useReactRenderers } from "../../utils/react-renderers";
 
-export default function WaitingForRenderer() {
+export default function WaitingForRenderer({
+  children,
+}: {
+  children: JSX.Element;
+}) {
   const { selected: selectedReactInstance, unsupportedRenderers } =
     useReactRenderers();
 
   if (selectedReactInstance) {
-    return null;
+    return children;
   }
 
   return (

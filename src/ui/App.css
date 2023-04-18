@@ -9,21 +9,16 @@
 
 .app {
   display: grid;
-  grid-template:
-    "toolbar" auto
-    "fiber-tree-header" auto
-    "fiber-tree" 1fr
-    "statusbar" auto;
+  grid-template-areas:
+    "appbar"
+    "page"
+    "statusbar";
+  grid-template-rows: auto 1fr auto;
   height: 100vh;
   overflow: hidden;
   animation: 0.1s 1 app-appear;
 }
 
-.app[data-has-selected] {
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "toolbar toolbar"
-    "fiber-tree-header details"
-    "fiber-tree details"
-    "statusbar statusbar";
+.app-page {
+  overflow: hidden;
 }
