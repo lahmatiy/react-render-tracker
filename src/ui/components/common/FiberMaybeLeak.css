@@ -1,0 +1,13 @@
+.fiber-maybe-leak {
+  display: inline-block;
+  min-width: 16px;
+  padding: 3px 4px 2px;
+  border-radius: 3px;
+  background-clip: padding-box;
+  background-color: #fcc4c4;
+  color: #c25454;
+  text-transform: uppercase;
+  font-size: 9px;
+  line-height: 10px;
+  text-align: center;
+}

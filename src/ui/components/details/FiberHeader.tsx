@@ -9,6 +9,7 @@ import { useTreeUpdateSubscription } from "../../utils/tree";
 import { usePinnedId } from "../../utils/pinned";
 import { FiberLink } from "./FiberLink";
 import { SourceLoc } from "../common/SourceLoc";
+import FiberMaybeLeak from "../common/FiberMaybeLeak";
 
 const FiberInfoHeaderPrelude = ({
   fiber,
@@ -31,6 +32,7 @@ const FiberInfoHeaderPrelude = ({
         {!fiber.mounted && (
           <span className="fiber-info-header-type-badge">Unmounted</span>
         )}
+        {fiber.leaked ? <FiberMaybeLeak leaked={fiber.leaked} /> : null}
       </div>
       <span className="fiber-info-header-prelude__buttons">
         <InstanceSwitcher

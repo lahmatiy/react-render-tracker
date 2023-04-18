@@ -1,7 +1,7 @@
 import * as React from "react";
 import FiberInfo from "./info/FiberInfo";
 import { FiberInfoHeader } from "./FiberHeader";
-import { useFiberMaps } from "../../utils/fiber-maps";
+import { useFiber } from "../../utils/fiber-maps";
 
 interface DetailsProps {
   rootId: number;
@@ -17,8 +17,7 @@ const Details = ({
   showTimings = false,
 }: DetailsProps) => {
   const [scrolled, setScrolled] = React.useState(false);
-  const { fiberById } = useFiberMaps();
-  const fiber = fiberById.get(rootId);
+  const fiber = useFiber(rootId);
 
   if (fiber === undefined) {
     return (

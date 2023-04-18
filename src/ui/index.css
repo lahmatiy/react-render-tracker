@@ -5,6 +5,7 @@
 @import url("./components/common/FiberHocNames.css");
 @import url("./components/common/FiberId.css");
 @import url("./components/common/FiberKey.css");
+@import url("./components/common/FiberMaybeLeak.css");
 @import url("./components/common/SourceLoc.css");
 @import url("./components/appbar/AppBar.css");
 @import url("./components/details/CallStack.css");

@@ -5,40 +5,10 @@ import FiberKey from "../common/FiberKey";
 import FiberHocNames from "../common/FiberHocNames";
 import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
-import {
-  TrackingObjectTypeName,
-  fiberRootMode,
-} from "../../../common/constants";
-import { TrackingObjectType } from "common-types";
+import { fiberRootMode } from "../../../common/constants";
+import FiberMaybeLeak from "../common/FiberMaybeLeak";
 
 const noop = () => undefined;
-const nothingLeaked: string[] = [];
-function listOfLeaks(leaked: number) {
-  if (leaked === 0) {
-    return nothingLeaked;
-  }
-
-  const result = [];
-  let bitNum = 0;
-
-  while (leaked >= 1 << bitNum) {
-    if (leaked | (1 << bitNum)) {
-      const title = TrackingObjectTypeName[bitNum as TrackingObjectType];
-      result.push(`${title} (${title[0].toUpperCase()})`);
-    }
-    bitNum++;
-  }
-
-  return result;
-}
-
-function formatListOfLeaks(leaks: string[]) {
-  return "\n- " + leaks.join("\n- ");
-}
-
-function codesOfLeaks(leaks: string[]) {
-  return leaks.map(leak => leak[0]);
-}
 
 interface TreeLeafCaptionMainProps {
   fiber: MessageFiber;
@@ -67,7 +37,6 @@ const TreeLeafCaptionContent = ({
     warnings,
   } = fiber;
 
-  const leaks = listOfLeaks(leaked);
   const setMainElementRef = React.useCallback(
     element => setFiberElement(id, element),
     [setFiberElement]
@@ -123,16 +92,7 @@ const TreeLeafCaptionContent = ({
             {typeDef.contexts.length}
           </span>
         )}
-        {leaked ? (
-          <span
-            className="tree-leaf-caption__leaked"
-            title={`A component is considered as a source of potential memory leak.\nThe following objects from the unmounted component are still being referenced and not garbage collected: ${formatListOfLeaks(
-              leaks
-            )}`}
-          >
-            Maybe mem leak ({codesOfLeaks(leaks)})
-          </span>
-        ) : null}
+        {leaked ? <FiberMaybeLeak leaked={leaked} /> : null}
       </div>
     </div>
   );

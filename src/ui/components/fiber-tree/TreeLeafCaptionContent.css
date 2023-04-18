@@ -15,6 +15,11 @@
   scroll-margin-left: var(--scroll-margin-left, 0px);
 }
 
+.tree-leaf-caption__main-content .fiber-maybe-leak {
+  margin-left: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
 .tree-leaf-caption-content__name {
   position: relative;
 }
@@ -49,8 +54,7 @@
 
 .tree-leaf-caption__update-count,
 .tree-leaf-caption__update-bailout-count,
-.tree-leaf-caption__context-count,
-.tree-leaf-caption__leaked {
+.tree-leaf-caption__context-count {
   display: inline-block;
   min-width: 16px;
   margin-left: 2px;
@@ -75,11 +79,6 @@
 .tree-leaf-caption__context-count {
   background-color: #eadcea;
   color: #ca8fd0;
-}
-.tree-leaf-caption__leaked {
-  background-color: #fcc4c4;
-  color: #c25454;
-  text-transform: uppercase;
 }
 
 .tree-leaf-caption__warnings {
