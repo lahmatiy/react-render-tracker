@@ -7,8 +7,9 @@ const {
   buildPublisher,
   buildSubscriber,
   buildPlayground,
-  buildSelfSubscriber,
   buildDataUtils,
+  buildBundle,
+  buildDataClient,
 } = require("./build");
 const playgroundDir = path.join(__dirname, "../playground");
 
@@ -31,8 +32,11 @@ app.listen(process.env.PORT || 3000, function () {
     "/publisher.js": () =>
       buildPublisher({ define: { "import.meta.url": JSON.stringify(host) } }),
     "/subscriber.js": () => buildSubscriber(),
-    "/rrt-data-client.js": () => buildSelfSubscriber({ sourcemap: "inline" }),
+    "/rrt-data-client.js": () => buildDataClient({ sourcemap: "inline" }),
     "/rrt-data-utils.js": () => buildDataUtils({ sourcemap: "inline" }),
+    "/dist/react-render-tracker.js": () => buildBundle(),
+    "/dist/data-client.js": () => buildDataClient(),
+    "/dist/data-utils.js": () => buildDataUtils(),
   })) {
     app.get(url, asyncResponse(generator));
   }
