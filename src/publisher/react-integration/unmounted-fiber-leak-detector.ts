@@ -1,4 +1,4 @@
-import { MaybeLeakDescriptor, TrackingObjectType } from "common-types";
+import { TrackingObjectType } from "common-types";
 import {
   MemoryLeakDetectionApi,
   RecordEventHandler,
@@ -8,7 +8,7 @@ import {
 import { TrackingObjectTypeName } from "../../common/constants";
 
 const DEBUG_OUTPUT = true;
-const LEAK_CHECK_INTERVAL = 1000;
+
 declare global {
   let __leakedFibers: number;
 }
@@ -19,45 +19,15 @@ class FakeWeakRef implements WeakRef<TrackingObject> {
     return undefined;
   }
 }
-
-// the class is used for TypeScript only
-class LeakedObjectsRRTMarkerTS {
-  // objects: TrackingObjectMap;
-
-  constructor(public objects: TrackingObjectMap) {
-    // this.objects = objects;
-  }
-}
-// a hack with object to keep class name the same even when code is minified
-const LeakedObjectsRRTMarker = {
-  LeakedObjectsRRTMarker: class {
-    // objects: TrackingObjectMap;
-
-    constructor(public objects: TrackingObjectMap) {
-      // this.objects = objects;
-    }
-  },
-}[String("LeakedObjectsRRTMarker")] as typeof LeakedObjectsRRTMarkerTS;
-
 const WeakRefBase = typeof WeakRef === "undefined" ? FakeWeakRef : WeakRef;
 class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
-  generation: number;
-  fiberId: number;
-  type: TrackingObjectType;
-  displayName: string | null;
-
   constructor(
-    object: TrackingObject,
-    generation: number,
-    fiberId: number,
-    type: TrackingObjectType,
-    displayName: string | null
+    target: TrackingObject,
+    public fiberId: number,
+    public type: TrackingObjectType,
+    public displayName: string | null
   ) {
-    super(object);
-    this.generation = generation;
-    this.fiberId = fiberId;
-    this.type = type;
-    this.displayName = displayName;
+    super(target);
   }
 
   get tag() {
@@ -72,40 +42,80 @@ class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
       type: this.type,
     };
   }
-}
 
-class Canary extends WeakRefBase<any> {
-  generation: number;
-  constructor(generation: number) {
-    super({});
-    this.generation = generation;
+  get alive() {
+    return this.deref() !== undefined;
   }
 }
+
+// the class is used for TypeScript only
+class LeakedObjectsRRTMarkerTS {
+  constructor(public objects: TrackingObjectMap) {}
+}
+// a hack with object to keep class name the same even when code is minified
+const LeakedObjectsRRTMarker = {
+  LeakedObjectsRRTMarker: class {
+    constructor(public objects: TrackingObjectMap) {}
+  },
+}[String("LeakedObjectsRRTMarker")] as typeof LeakedObjectsRRTMarkerTS;
 
 export function createUnmountedFiberLeakDetectionApi(
   recordEvent: RecordEventHandler
 ): MemoryLeakDetectionApi & {
   trackObjectForLeaking: (
-    fiber: TrackingObject,
-    id: number,
+    target: TrackingObject,
+    fiberId: number,
     type: TrackingObjectType,
     displayName: string | null
   ) => void;
 } {
-  const leakCandidateObjectsWeakRefs = new Set<TrackingObjectWeakRef>();
-  const leakedObjectsWeakRefs = new Set<TrackingObjectWeakRef>();
-  const objectToWeakRef = new WeakMap<TrackingObject, TrackingObjectWeakRef>();
-  const canaries = new Set<Canary>();
-  let lastCanaryGeneration = 0;
-  let lastCheckGeneration = 1;
-  let generation = 1;
-  let checkTrackingRefsTimer: ReturnType<typeof setTimeout> | null = null;
+  const knownObjects = new WeakSet<TrackingObject>();
+  const candidatesByCanary = new Set<Set<TrackingObjectWeakRef>>();
+  const leakedObjects = new Set<TrackingObjectWeakRef>();
+  const leaksAdded = new Set<TrackingObjectWeakRef>();
+  const leaksRemoved = new Set<TrackingObjectWeakRef>();
+  const lastStat = { candidates: 0, leaks: 0 };
+  let newCandidates = new Set<TrackingObjectWeakRef>();
+  let updateTimer: ReturnType<typeof setTimeout> | null = null;
+  let debugOutputTimer: ReturnType<typeof setTimeout> | null = null;
+  let trackingNewCandidatesTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const canariesRegistry = new FinalizationRegistry<Set<TrackingObjectWeakRef>>(
+    candidates => {
+      candidatesByCanary.delete(candidates);
+
+      for (const candidate of candidates) {
+        const target = candidate.deref();
+
+        if (target !== undefined) {
+          leaksRegistry.register(target, candidate);
+          leakedObjects.add(candidate);
+          leaksAdded.add(candidate);
+        }
+      }
+
+      scheduleUpdate();
+    }
+  );
+  const leaksRegistry = new FinalizationRegistry<TrackingObjectWeakRef>(
+    leak => {
+      leakedObjects.delete(leak);
+
+      if (leaksAdded.has(leak)) {
+        leaksAdded.delete(leak); // added leak is not recorded yet, just remove it
+      } else {
+        leaksRemoved.add(leak);
+      }
+
+      scheduleUpdate();
+    }
+  );
 
   function getLeakedObjectsProbe() {
     let markedLeakedObjects: LeakedObjectsRRTMarkerTS | null =
       new LeakedObjectsRRTMarker(Object.create(null));
 
-    for (const weakRef of [...leakedObjectsWeakRefs].sort((a, b) =>
+    for (const weakRef of [...leakedObjects].sort((a, b) =>
       a.tag < b.tag ? -1 : 1
     )) {
       const object = weakRef.deref();
@@ -128,134 +138,108 @@ export function createUnmountedFiberLeakDetectionApi(
     };
   }
 
-  function checkTrackingRefs() {
-    // Reset check timer
-    if (checkTrackingRefsTimer !== null) {
-      clearTimeout(checkTrackingRefsTimer);
-      checkTrackingRefsTimer = null;
+  function debugOutput() {
+    const candidates = [];
+    const leaks = [...leakedObjects].map(ref => ref.tag);
+
+    if (debugOutputTimer !== null) {
+      clearTimeout(debugOutputTimer);
+      debugOutputTimer = null;
     }
 
-    // Check if object generation should be changed, create a canary for previous generation
-    if (lastCheckGeneration === generation) {
-      generation++;
-
-      const canary = new Canary(lastCheckGeneration);
-      canaries.add(canary);
-    }
-
-    const leakCandidatesBeforeCheck = leakCandidateObjectsWeakRefs.size;
-    const leaksBeforeCheck = leakedObjectsWeakRefs.size;
-    const checkLeaksStart = Date.now();
-
-    const leaksAdded: MaybeLeakDescriptor[] = [];
-    const leaksRemoved: MaybeLeakDescriptor[] = [];
-
-    for (const canary of [...canaries].reverse()) {
-      if (canary.deref() === undefined) {
-        if (lastCanaryGeneration < canary.generation) {
-          // console.log("canary", lastCanaryGeneration, "->", canary.generation);
-          lastCanaryGeneration = canary.generation;
+    for (const canaryCandidates of candidatesByCanary) {
+      console.log("candidate", canaryCandidates);
+      for (const candidate of canaryCandidates) {
+        if (candidate.alive) {
+          candidates.push(candidate.tag);
         }
       }
-
-      if (canary.generation <= lastCanaryGeneration) {
-        canaries.delete(canary);
-      }
     }
 
-    // Revisit leaked objects if they stop to be a leak
-    for (const weakRef of leakedObjectsWeakRefs) {
-      if (weakRef.deref() === undefined) {
-        leakedObjectsWeakRefs.delete(weakRef);
-        leaksRemoved.push(weakRef.descriptor);
-      }
-    }
+    console.log(
+      `[React Render Tracker] Track React objects for memory leaks (candidates: ${
+        lastStat.candidates !== candidates.length
+          ? `${lastStat.candidates} → ${candidates.length}`
+          : candidates.length
+      }, leaks: ${
+        lastStat.leaks !== leakedObjects.size
+          ? `${lastStat.leaks} → ${leakedObjects.size}`
+          : leakedObjects.size
+      }):`,
+      ...(candidates.length ? ["candidates:", candidates] : []),
+      ...(leaks.length ? ["leaks:", leaks] : [])
+    );
 
-    // Revisit leak candidates refs
-    for (const weakRef of leakCandidateObjectsWeakRefs) {
-      if (weakRef.deref() === undefined) {
-        // A candidate has been collected by GC
-        leakCandidateObjectsWeakRefs.delete(weakRef);
-      } else if (weakRef.generation <= lastCanaryGeneration) {
-        // A candidate considered as leaked since coresponding canary object was collected
-        leakCandidateObjectsWeakRefs.delete(weakRef);
-        leakedObjectsWeakRefs.add(weakRef);
-        leaksAdded.push(weakRef.descriptor);
-      }
-    }
+    lastStat.candidates = candidates.length;
+    lastStat.leaks = leakedObjects.size;
+  }
 
-    // Record an event when leaks set is changed
-    if (leaksAdded.length || leaksRemoved.length) {
-      recordEvent({
-        op: "maybe-leaks",
-        commitId: -1,
-        added: leaksAdded,
-        removed: leaksRemoved,
-      });
-      // console.log("Changes in leaks", {
-      //   added: leaksAdded,
-      //   removed: leaksRemoved,
-      // });
-    }
-
-    // Debug output
-    if (DEBUG_OUTPUT) {
-      const candidates = [...leakCandidateObjectsWeakRefs].map(ref => ref.tag);
-      const leaks = [...leakedObjectsWeakRefs].map(ref => ref.tag);
-
-      console.log(
-        `[React Render Tracker] Track objects for leaks (gen: ${lastCheckGeneration}, check: ${
-          Date.now() - checkLeaksStart
-        }ms, candidates: ${
-          leakCandidatesBeforeCheck !== leakCandidateObjectsWeakRefs.size
-            ? `${leakCandidatesBeforeCheck} → ${leakCandidateObjectsWeakRefs.size}`
-            : leakCandidateObjectsWeakRefs.size
-        }, leaks: ${
-          leaksBeforeCheck !== leakedObjectsWeakRefs.size
-            ? `${leaksBeforeCheck} → ${leakedObjectsWeakRefs.size}`
-            : leakedObjectsWeakRefs.size
-        }):`,
-        ...(candidates.length ? ["candidates:", candidates] : []),
-        ...(leaks.length ? ["leaks:", leaks] : [])
-      );
-    }
-
-    // Set up a new timer in case any candidate or leak are still tracking
-    if (leakCandidateObjectsWeakRefs.size || leakedObjectsWeakRefs.size) {
-      checkTrackingRefsTimer = setTimeout(
-        checkTrackingRefs,
-        LEAK_CHECK_INTERVAL
-      );
+  function scheduleDebugOutput() {
+    if (DEBUG_OUTPUT && debugOutputTimer === null) {
+      debugOutputTimer = setTimeout(debugOutput, 10);
     }
   }
 
+  function recordUpdate() {
+    if (updateTimer !== null) {
+      clearTimeout(updateTimer);
+      updateTimer = null;
+    }
+
+    if (leaksAdded.size || leaksRemoved.size) {
+      recordEvent({
+        op: "maybe-leaks",
+        commitId: -1,
+        added: [...leaksAdded].map(leak => leak.descriptor),
+        removed: [...leaksRemoved].map(leak => leak.descriptor),
+      });
+
+      leaksAdded.clear();
+      leaksRemoved.clear();
+    }
+
+    scheduleDebugOutput();
+  }
+
+  function scheduleUpdate() {
+    if (updateTimer === null) {
+      updateTimer = setTimeout(recordUpdate, 100);
+    }
+  }
+
+  function startTrackingNewCandidates() {
+    const canary = {};
+
+    canariesRegistry.register(canary, newCandidates);
+    candidatesByCanary.add(newCandidates);
+    newCandidates = new Set();
+    trackingNewCandidatesTimer = null;
+
+    scheduleDebugOutput();
+  }
+
   function trackObjectForLeaking(
-    object: TrackingObject,
-    id: number,
+    target: TrackingObject,
+    fiberId: number,
     type: TrackingObjectType,
     displayName: string | null = null
   ) {
-    let objectWeakRef = objectToWeakRef.get(object);
-
-    if (objectWeakRef === undefined) {
-      lastCheckGeneration = generation;
-      objectWeakRef = new TrackingObjectWeakRef(
-        object,
-        generation,
-        id,
+    if (knownObjects.has(target)) {
+      console.warn("[React Render Tracker] An object is already tracking", {
+        fiberId,
         type,
-        displayName
-      );
-      objectToWeakRef.set(object, objectWeakRef);
-    } else {
-      console.log("!!!occupied", id);
+        displayName,
+      });
+      return;
     }
 
-    if (checkTrackingRefsTimer === null) {
-      checkTrackingRefsTimer = setTimeout(checkTrackingRefs, 1000);
-    }
+    newCandidates.add(
+      new TrackingObjectWeakRef(target, fiberId, type, displayName)
+    );
 
-    leakCandidateObjectsWeakRefs.add(objectWeakRef);
+    if (trackingNewCandidatesTimer === null) {
+      trackingNewCandidatesTimer = setTimeout(startTrackingNewCandidates, 1000);
+    }
   }
 
   globalThis.exposeLeaks = getLeakedObjectsProbe;

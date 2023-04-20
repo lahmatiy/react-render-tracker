@@ -139,7 +139,7 @@ export function createReactDevtoolsHookHandlers(
     untrackFibersSet.add(fiber);
 
     if (untrackFibersTimer === null) {
-      untrackFibersTimer = setTimeout(untrackFibers, 1000);
+      untrackFibersTimer = setTimeout(untrackFibers, 900);
     }
   }
 
