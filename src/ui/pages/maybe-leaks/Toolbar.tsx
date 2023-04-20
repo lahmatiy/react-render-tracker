@@ -1,17 +1,14 @@
 import * as React from "react";
-import ComponentSearch from "./ComponentSearch";
-import ButtonToggle from "../common/ButtonToggle";
+import ButtonToggle from "../../components/common/ButtonToggle";
 import { useEventsContext } from "../../utils/events";
-import SelectionHistoryNavigation from "./SelectionHistoryNavigation";
 import {
   ToggleGrouping,
   ToggleUnmounted,
   ClearEventLog,
   ToggleTimings,
-  Download,
   Pause,
   Play,
-} from "../common/icons";
+} from "../../components/common/icons";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -22,51 +19,6 @@ interface ToolbarProps {
   onShowTimings: BooleanToggle;
   showTimings: boolean;
 }
-
-const DownloadButton = () => {
-  const { allEvents } = useEventsContext();
-  const downloadAnchorRef = React.useRef<HTMLAnchorElement | null>(null);
-  const onDownload = React.useCallback(() => {
-    const anchor = downloadAnchorRef.current;
-
-    if (anchor === null) {
-      return;
-    }
-
-    const json = JSON.stringify(allEvents);
-    const blob = new Blob([json], { type: "octet/stream" });
-    const url = window.URL.createObjectURL(blob);
-
-    anchor.href = url;
-    anchor.download = `react-render-tracker-data-${new Date()
-      .toISOString()
-      .replace(/\..+$/, "")
-      .replace(/\D/g, "")}.json`;
-    anchor.click();
-    window.URL.revokeObjectURL(url);
-  }, [allEvents]);
-
-  React.useEffect(() => {
-    let anchor: HTMLAnchorElement | null = document.createElement("a");
-    anchor.setAttribute("style", "display:none");
-    downloadAnchorRef.current = anchor;
-    document.body.appendChild(anchor);
-
-    return () => {
-      anchor?.remove();
-      downloadAnchorRef.current = anchor = null;
-    };
-  });
-
-  return (
-    <ButtonToggle
-      icon={Download}
-      isActive={false}
-      onChange={onDownload}
-      tooltip={"Download event log"}
-    />
-  );
-};
 
 const Toolbar = ({
   onGroupingChange,
@@ -80,12 +32,9 @@ const Toolbar = ({
 
   return (
     <div className="toolbar">
-      <SelectionHistoryNavigation />
-      <ComponentSearch
-        groupByParent={groupByParent}
-        showUnmounted={showUnmounted}
-      />
+      <div style={{ flex: 1 }} />
       <div className="toolbar__buttons">
+        <span className="toolbar__buttons-splitter" />
         <ButtonToggle
           icon={ToggleGrouping}
           isActive={groupByParent}
@@ -127,7 +76,6 @@ const Toolbar = ({
           onChange={clearAllEvents}
           tooltip={"Clear event log"}
         />
-        {false && <DownloadButton />}
       </div>
     </div>
   );
