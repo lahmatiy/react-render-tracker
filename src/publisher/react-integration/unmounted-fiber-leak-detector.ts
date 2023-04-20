@@ -31,9 +31,9 @@ class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
   }
 
   get tag() {
-    return `${this.displayName || "unknown"}(${
+    return `${this.displayName || "unknown"} #${this.fiberId} (${
       TrackingObjectTypeName[this.type]
-    })-${this.fiberId}`;
+    })`;
   }
 
   get descriptor() {
@@ -148,7 +148,6 @@ export function createUnmountedFiberLeakDetectionApi(
     }
 
     for (const canaryCandidates of candidatesByCanary) {
-      console.log("candidate", canaryCandidates);
       for (const candidate of canaryCandidates) {
         if (candidate.alive) {
           candidates.push(candidate.tag);
