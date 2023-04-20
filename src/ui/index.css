@@ -42,7 +42,9 @@
 @import url("./components/toolbar/SearchMatchesNav.css");
 @import url("./components/toolbar/SelectionHistoryNavigation.css");
 @import url("./components/toolbar/Toolbar.css");
+@import url("./pages/Commits.css");
 @import url("./pages/ComponentsTree.css");
+@import url("./pages/MaybeLeaks.css");
 
 html,
 body {
@@ -52,5 +54,5 @@ body {
   font-size: 14px;
   line-height: 21px;
   color: #333;
-  background-color: transparent;
+  background-color: white;
 }

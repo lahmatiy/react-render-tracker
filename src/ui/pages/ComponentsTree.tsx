@@ -8,7 +8,7 @@ import FiberTreeKeyboardNav from "../components/misc/FiberTreeKeyboardNav";
 import { useSelectedId } from "../utils/selection";
 import { usePinnedId } from "../utils/pinned";
 
-export function ComponentsTreePage() {
+function ComponentsTreePage() {
   const [groupByParent, setGroupByParent] = React.useState(false);
   const [showUnmounted, setShowUnmounted] = React.useState(true);
   const [showTimings, setShowTimings] = React.useState(false);
@@ -58,3 +58,8 @@ export function ComponentsTreePage() {
     </div>
   );
 }
+
+const ComponentsTreePageMemo = React.memo(ComponentsTreePage);
+ComponentsTreePageMemo.displayName = "ComponentsTreePage";
+
+export { ComponentsTreePageMemo as ComponentsTreePage };

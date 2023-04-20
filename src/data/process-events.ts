@@ -54,6 +54,7 @@ export function processEvents(
     fiberTypeDefById,
     fibersByTypeId,
     fibersByProviderId,
+    leakedFibers,
     parentTree,
     parentTreeIncludeUnmounted,
     ownerTree,
@@ -268,6 +269,8 @@ export function processEvents(
             ...fiber,
             leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
           };
+
+          leakedFibers.add(fiberId);
           fiberById.set(fiberId, fiber);
           parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
           ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
@@ -285,6 +288,11 @@ export function processEvents(
             ...fiber,
             leaked: fiber.leaked & ~(1 << removed.type), // set a type bit to 0
           };
+
+          if (!fiber.leaked) {
+            leakedFibers.delete(fiberId);
+          }
+
           fiberById.set(fiberId, fiber);
           parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
           ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);

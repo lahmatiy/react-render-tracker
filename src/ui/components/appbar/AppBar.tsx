@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AppPageId, AppPage } from "../../pages";
+import { AppPage, AppPageConfig } from "../../pages";
 import { useReactRenderers } from "../../utils/react-renderers";
 
 const AppBar = ({
@@ -7,21 +7,26 @@ const AppBar = ({
   page,
   setPage,
 }: {
-  pages: Record<AppPageId, AppPage>;
-  page: AppPageId;
-  setPage: (page: AppPageId) => void;
+  pages: Record<AppPage, AppPageConfig>;
+  page: AppPage;
+  setPage: (page: AppPage) => void;
 }) => {
   const { selected: selectedReactInstance } = useReactRenderers();
 
   return (
     <div className="app-bar">
-      {Object.values(pages).map(({ id, title }) => (
+      {Object.values(pages).map(({ id, title, badge: Badge }) => (
         <div
           key={id}
           className={"app-bar__tab" + (page === id ? " selected" : "")}
           onClick={() => setPage(id)}
         >
           {title}
+          {Badge ? (
+            <span className="app-bar__tab-badge">
+              <Badge />
+            </span>
+          ) : null}
         </div>
       ))}
 

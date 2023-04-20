@@ -28,6 +28,12 @@
   background-color: white;
   cursor: default;
 }
+.app-bar__tab-badge {
+  margin-left: 1ex;
+  border-radius: 7px;
+  font-size: 9px;
+  color: #aaa;
+}
 
 .renderer-info {
   display: flex;

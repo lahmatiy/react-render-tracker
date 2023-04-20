@@ -1,0 +1,24 @@
+.app-page-maybe-leaks {
+  overflow-y: scroll;
+  overflow-x: auto;
+}
+
+.app-page-maybe-leaks .no-leaks {
+  position: relative;
+  grid-area: page;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #888;
+}
+
+.maybe-leaks__type-header {
+  padding-left: 19px;
+  font-size: 12px;
+}
+.maybe-leaks__type-header-count {
+  margin-left: 1ex;
+  color: #aaa;
+}
+.maybe-leaks__type-fibers .fiber-maybe-leak {
+  display: none;
+}

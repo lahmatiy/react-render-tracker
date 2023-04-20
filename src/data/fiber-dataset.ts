@@ -6,7 +6,7 @@ import {
   MessageFiber,
 } from "../common/consumer-types";
 import { processEvents } from "./process-events";
-import { SubscribeMap, SubsetSplit } from "./subscription";
+import { SubscribeMap, Subset, SubsetSplit } from "./subscription";
 import { Tree } from "./tree";
 
 export function createFiberDataset(events: Message[] = []) {
@@ -17,6 +17,7 @@ export function createFiberDataset(events: Message[] = []) {
   const fiberTypeDefById = new SubscribeMap<number, FiberTypeDef>();
   const fibersByTypeId = new SubsetSplit<number, number>();
   const fibersByProviderId = new SubsetSplit<number, number>();
+  const leakedFibers = new Subset<number>();
   const parentTree = new Tree();
   const parentTreeIncludeUnmounted = new Tree();
   const ownerTree = new Tree();
@@ -30,6 +31,7 @@ export function createFiberDataset(events: Message[] = []) {
     fiberTypeDefById,
     fibersByTypeId,
     fibersByProviderId,
+    leakedFibers,
     parentTree,
     parentTreeIncludeUnmounted,
     ownerTree,

@@ -13,7 +13,7 @@ import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";
 import WaitingForRenderer from "./components/misc/WaitingForRenderer";
 import AppBar from "./components/appbar/AppBar";
-import { AppPageId, pages } from "./pages";
+import { AppPage, pages } from "./pages";
 
 function App() {
   return (
@@ -56,7 +56,7 @@ function ReactRendererUI() {
 }
 
 function Layout() {
-  const [page, setPage] = React.useState<AppPageId>("component-tree");
+  const [page, setPage] = React.useState<AppPage>(AppPage.ComponentTree);
   const PageContent = pages[page].content;
 
   return (

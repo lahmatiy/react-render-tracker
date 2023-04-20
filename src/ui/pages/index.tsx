@@ -1,24 +1,28 @@
 import { ComponentsTreePage } from "./ComponentsTree";
-import { MaybeLeaksPage } from "./MaybeLeaks";
+import { MaybeLeaksPage, MaybeLeaksPageBadge } from "./MaybeLeaks";
 
-export type AppPageId = typeof AppPageComponentTree | typeof AppPageMaybeLeaks;
-export type AppPage = {
-  id: AppPageId;
+export const enum AppPage {
+  ComponentTree = "component-tree",
+  MaybeLeaks = "maybe-leaks",
+}
+
+export type AppPageConfig = {
+  id: AppPage;
   title: string;
-  content: () => JSX.Element;
+  content: React.FunctionComponent;
+  badge?: React.FunctionComponent;
 };
 
-export const AppPageComponentTree = "component-tree";
-export const AppPageMaybeLeaks = "maybe-leaks";
-export const pages: Record<AppPageId, AppPage> = {
-  [AppPageComponentTree]: {
-    id: AppPageComponentTree,
+export const pages: Record<AppPage, AppPageConfig> = {
+  [AppPage.ComponentTree]: {
+    id: AppPage.ComponentTree,
     title: "Component tree",
     content: ComponentsTreePage,
   },
-  [AppPageMaybeLeaks]: {
-    id: AppPageMaybeLeaks,
+  [AppPage.MaybeLeaks]: {
+    id: AppPage.MaybeLeaks,
     title: "Memory leaks",
     content: MaybeLeaksPage,
+    badge: MaybeLeaksPageBadge,
   },
 };

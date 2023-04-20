@@ -105,3 +105,15 @@ export const useProviderConsumers = (providerId: number) => {
 
   return useComputeSubscription(compute, subscribe);
 };
+
+export const useLeakedFibers = () => {
+  const { leakedFibers } = useFiberMaps();
+
+  const compute = React.useCallback(() => leakedFibers.value, [leakedFibers]);
+  const subscribe = React.useCallback(
+    requestRecompute => leakedFibers.subscribe(requestRecompute),
+    [leakedFibers]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};

@@ -8,7 +8,7 @@ import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
   depth?: number;
-  showTimings: boolean;
+  showTimings?: boolean;
   pinned?: boolean;
   expanded?: boolean;
   setExpanded?: (value: boolean) => void;
@@ -26,7 +26,7 @@ interface TreeLeafCaptionContainerProps {
 const TreeLeafCaption = ({
   fiber,
   depth = 0,
-  showTimings,
+  showTimings = false,
   pinned = false,
   expanded = false,
   setExpanded,
@@ -64,19 +64,22 @@ const TreeLeafCaptionContainer = React.memo(
     content,
   }: TreeLeafCaptionContainerProps) => {
     const { id, ownerId } = fiber;
-    const { selected, select } = useSelectionState(fiber.id);
+    const { selected, select } = useSelectionState(id);
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
     const classes = ["tree-leaf-caption"];
-    for (const [cls, add] of Object.entries({
-      selected,
-      pinned,
-      "render-root": isRenderRoot,
-    })) {
-      if (add) {
-        classes.push(cls);
-      }
+
+    if (selected) {
+      classes.push("selected");
+    }
+
+    if (pinned) {
+      classes.push("pinned");
+    }
+
+    if (isRenderRoot) {
+      classes.push("render-root");
     }
 
     const handleSelect = (event: React.MouseEvent) => {
