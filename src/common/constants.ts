@@ -31,12 +31,10 @@ export const FiberTypeName: Record<FiberType, string> = {
 };
 
 export const LegacyRoot: FiberRootMode = 0;
-export const BlockingRoot: FiberRootMode = 1;
-export const ConcurrentRoot: FiberRootMode = 2;
+export const ConcurrentRoot: FiberRootMode = 1;
 
 export const fiberRootMode: Record<FiberRootMode, string> = {
   [LegacyRoot]: "Legacy Mode",
-  [BlockingRoot]: "Blocking Mode",
   [ConcurrentRoot]: "Concurrent Mode",
 };
 

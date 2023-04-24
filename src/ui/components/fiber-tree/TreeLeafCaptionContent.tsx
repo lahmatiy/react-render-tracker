@@ -60,7 +60,7 @@ const TreeLeafCaptionContent = ({
             href="https://reactjs.org/docs/concurrent-mode-adoption.html#why-so-many-modes"
             rel="noreferrer"
             target="_blank"
-            title="Read more about root mode"
+            title="Read more about render root modes"
           >
             {fiberRootMode[rootMode]}
           </a>

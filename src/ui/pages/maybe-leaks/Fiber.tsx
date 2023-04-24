@@ -11,7 +11,9 @@ type FiberProps = {
   setFiberElement?: (id: number, element: HTMLElement) => void;
 };
 
-const noop = () => {};
+const noop = () => {
+  /* noop */
+};
 export const Fiber = ({ fiberId, setFiberElement = noop }: FiberProps) => {
   const { selected, select } = useSelectionState(fiberId);
   const fiber = useFiber(fiberId) as MessageFiber;
@@ -54,7 +56,7 @@ export const Fiber = ({ fiberId, setFiberElement = noop }: FiberProps) => {
             href="https://reactjs.org/docs/concurrent-mode-adoption.html#why-so-many-modes"
             rel="noreferrer"
             target="_blank"
-            title="Read more about root mode"
+            title="Read more about render root modes"
           >
             {fiberRootMode[rootMode]}
           </a>
