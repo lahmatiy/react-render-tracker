@@ -1,0 +1,54 @@
+.renderer-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  order: 1;
+  gap: 4px;
+  padding: 0 6px 0 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 11px;
+  color: #888;
+}
+.renderer-info::before {
+  content: "";
+  border-left: 1px solid #ddd;
+  height: 12px;
+  padding-right: 2px;
+}
+
+.renderer-info__type {
+  background: #eee;
+  text-transform: uppercase;
+  font-size: 10px;
+  margin: 0px -1px 0px -3px;
+  line-height: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: help;
+}
+.renderer-info__type[data-type="development"] {
+  background-color: #d9ecd1;
+  color: #88a06f;
+}
+.renderer-info__type[data-type="production"],
+.renderer-info__type[data-type="profiling"] {
+  background: #eaeac7;
+  color: #949c35;
+}
+
+.renderer-info__name {
+  opacity: 0.85;
+  line-height: 12px;
+  min-width: 45px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.renderer-info__version {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60px;
+}

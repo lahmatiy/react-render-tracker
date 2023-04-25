@@ -465,7 +465,11 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (fiberType === ElementTypeConsumer) {
-      const context = fiber.type._context || fiber.type.context;
+      const context =
+        fiber.type._context ||
+        fiber.type.context ||
+        // in profiling/prod mode
+        fiber.type;
 
       return [
         {

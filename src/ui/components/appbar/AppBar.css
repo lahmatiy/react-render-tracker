@@ -34,36 +34,3 @@
   font-size: 9px;
   color: #aaa;
 }
-
-.renderer-info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  order: 1;
-  gap: 4px;
-  padding: 0 6px 0 0;
-  border-bottom: 1px solid #ddd;
-  font-size: 11px;
-  color: #888;
-}
-.renderer-info::before {
-  content: "";
-  border-left: 1px solid #ddd;
-  height: 12px;
-  padding-right: 2px;
-}
-.renderer-info__name {
-  opacity: 0.85;
-  line-height: 12px;
-  min-width: 45px;
-  max-width: 100px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.renderer-info__version {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 60px;
-}

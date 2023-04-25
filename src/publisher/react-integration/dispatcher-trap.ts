@@ -284,99 +284,101 @@ export function createDispatcherTrap(
     return dispatcher;
   }
 
-  Object.defineProperty(renderer.currentDispatcherRef, "current", {
-    get() {
-      return currentDispatcher;
-    },
-    set(nextDispatcher: Dispatcher | null) {
-      const nextCurrentFiber = renderer.getCurrentFiber();
-      const prevDispatcher = currentDispatcher;
+  if (typeof renderer.getCurrentFiber === "function") {
+    Object.defineProperty(renderer.currentDispatcherRef, "current", {
+      get() {
+        return currentDispatcher;
+      },
+      set(nextDispatcher: Dispatcher | null) {
+        const nextCurrentFiber = renderer.getCurrentFiber();
+        const prevDispatcher = currentDispatcher;
 
-      currentDispatcher = patchDispatcher(nextDispatcher);
+        currentDispatcher = patchDispatcher(nextDispatcher);
 
-      // render
-      if (nextCurrentFiber !== currentFiber) {
-        currentFiber = nextCurrentFiber;
-        currentFiberCollectInfo = null;
-        currentFiberHookIndex = 0;
+        // render
+        if (nextCurrentFiber !== currentFiber) {
+          currentFiber = nextCurrentFiber;
+          currentFiberCollectInfo = null;
+          currentFiberHookIndex = 0;
 
-        if (currentFiber !== null) {
-          const alternate = currentFiber.alternate;
+          if (currentFiber !== null) {
+            const alternate = currentFiber.alternate;
 
-          // collect info on mount only
-          if (alternate === null) {
-            const fiberTypeId = getFiberTypeId(currentFiber.type);
+            // collect info on mount only
+            if (alternate === null) {
+              const fiberTypeId = getFiberTypeId(currentFiber.type);
 
-            if (!fiberTypeInfo.has(fiberTypeId)) {
-              fiberTypeInfo.set(
-                fiberTypeId,
-                (currentFiberCollectInfo = {
-                  hooks: [],
-                })
-              );
+              if (!fiberTypeInfo.has(fiberTypeId)) {
+                fiberTypeInfo.set(
+                  fiberTypeId,
+                  (currentFiberCollectInfo = {
+                    hooks: [],
+                  })
+                );
+              }
+            } else {
+              // reset stat on update
+              fiberComputedMemo.delete(currentFiber);
             }
-          } else {
-            // reset stat on update
-            fiberComputedMemo.delete(currentFiber);
-          }
 
-          let nextCurrentRoot =
-            fiberRoot.get(currentFiber) ||
-            (alternate !== null && fiberRoot.get(alternate)) ||
-            null;
+            let nextCurrentRoot =
+              fiberRoot.get(currentFiber) ||
+              (alternate !== null && fiberRoot.get(alternate)) ||
+              null;
 
-          if (nextCurrentRoot === null) {
-            let cursor = currentFiber.return;
+            if (nextCurrentRoot === null) {
+              let cursor = currentFiber.return;
 
-            while (cursor !== null) {
-              const root = fiberRoot.get(currentFiber);
+              while (cursor !== null) {
+                const root = fiberRoot.get(currentFiber);
 
-              if (root !== undefined) {
-                nextCurrentRoot = root;
-                break;
+                if (root !== undefined) {
+                  nextCurrentRoot = root;
+                  break;
+                }
+
+                if (isFiberRoot(cursor)) {
+                  nextCurrentRoot = cursor.stateNode as FiberRoot;
+                  break;
+                }
+
+                cursor = cursor.return;
               }
 
-              if (isFiberRoot(cursor)) {
-                nextCurrentRoot = cursor.stateNode as FiberRoot;
-                break;
+              if (nextCurrentRoot !== null) {
+                fiberRoot.set(currentFiber, nextCurrentRoot);
               }
-
-              cursor = cursor.return;
             }
 
-            if (nextCurrentRoot !== null) {
-              fiberRoot.set(currentFiber, nextCurrentRoot);
-            }
+            currentRoot = nextCurrentRoot;
           }
 
-          currentRoot = nextCurrentRoot;
+          // currentFiberRerenderState = null;
+          // rerenderStates.delete(currentFiber as Fiber);
         }
+        // re-render
+        else if (
+          currentFiber !== null &&
+          prevDispatcher !== null &&
+          nextDispatcher !== null &&
+          !ignoreDispatcherTransition.has(prevDispatcher) &&
+          !ignoreDispatcherTransition.has(nextDispatcher)
+        ) {
+          //   if (currentFiberRerenderState) {
+          //     if (rerenderStates.has(currentFiber)) {
+          //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
+          //     } else {
+          //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
+          //     }
+          //   }
 
-        // currentFiberRerenderState = null;
-        // rerenderStates.delete(currentFiber as Fiber);
-      }
-      // re-render
-      else if (
-        currentFiber !== null &&
-        prevDispatcher !== null &&
-        nextDispatcher !== null &&
-        !ignoreDispatcherTransition.has(prevDispatcher) &&
-        !ignoreDispatcherTransition.has(nextDispatcher)
-      ) {
-        //   if (currentFiberRerenderState) {
-        //     if (rerenderStates.has(currentFiber)) {
-        //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
-        //     } else {
-        //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
-        //     }
-        //   }
-
-        // avoid collecting info on re-renders
-        currentFiberCollectInfo = null;
-        currentFiberHookIndex = 0;
-      }
-    },
-  });
+          // avoid collecting info on re-renders
+          currentFiberCollectInfo = null;
+          currentFiberHookIndex = 0;
+        }
+      },
+    });
+  }
 
   return {
     getDispatchHookIndex(dispatch: DispatchFn) {

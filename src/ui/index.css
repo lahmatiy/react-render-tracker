@@ -8,6 +8,7 @@
 @import url("./components/common/FiberMaybeLeak.css");
 @import url("./components/common/SourceLoc.css");
 @import url("./components/appbar/AppBar.css");
+@import url("./components/appbar/Renderer.css");
 @import url("./components/details/CallStack.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventChangesSummary.css");
