@@ -80,6 +80,8 @@ export interface ValueTransition {
 }
 
 export interface Commit {
+  commitId: number;
   start: CommitEvent;
   finish: LinkedEvent | null;
+  events: Message[];
 }

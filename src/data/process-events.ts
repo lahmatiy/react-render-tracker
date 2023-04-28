@@ -61,6 +61,7 @@ export function processEvents(
     ownerTreeIncludeUnmounted,
   }: ReturnType<typeof createFiberDataset>
 ) {
+  const newEventsByCommitId = new Map<number, Message[]>();
   let mountCount = 0;
   let unmountCount = 0;
   let updateCount = 0;
@@ -246,6 +247,7 @@ export function processEvents(
 
       case "commit-start":
         commitById.set(event.commitId, {
+          commitId: event.commitId,
           start: linkEvent({
             target: "commit",
             targetId: event.commitId,
@@ -253,6 +255,7 @@ export function processEvents(
             trigger: null,
           }),
           finish: null,
+          events: [],
         });
         continue;
 
@@ -324,6 +327,26 @@ export function processEvents(
     parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
     ownerTree.setFiber(fiber.id, fiber);
     ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+
+    if (event.commitId >= 0) {
+      const events = newEventsByCommitId.get(event.commitId);
+      if (events) {
+        events.push(event);
+      } else {
+        newEventsByCommitId.set(event.commitId, [event]);
+      }
+    }
+  }
+
+  for (const [commitId, events] of newEventsByCommitId) {
+    const commit = commitById.get(commitId);
+
+    if (commit) {
+      commitById.set(commitId, {
+        ...commit,
+        events: commit.events.concat(events),
+      });
+    }
   }
 
   return {
