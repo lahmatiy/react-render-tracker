@@ -22,7 +22,7 @@ export default function WaitingForReady({
           : `Loading events (${Math.trunc(
               (100 * loadedEventsCount) / totalEventsCount
             )}%)...`
-        : "Waiting for a React's render root to be mount..."}
+        : "Waiting for a React render root to be mounted..."}
     </div>
   );
 }
