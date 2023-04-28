@@ -165,8 +165,7 @@ export function createUnmountedFiberLeakDetectionApi(
           ? `${lastStat.leaks} → ${leakedObjects.size}`
           : leakedObjects.size
       }):`,
-      ...(candidates.length ? ["candidates:", candidates] : []),
-      ...(leaks.length ? ["leaks:", leaks] : [])
+      { candidates, leaks }
     );
 
     lastStat.candidates = candidates.length;
