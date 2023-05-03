@@ -26,6 +26,7 @@
 @import url("./components/details/info/ChangesMatrix.css");
 @import url("./components/details/info/FiberInfo.css");
 @import url("./components/details/info/FiberInfoSection.css");
+@import url("./components/details/info/FiberInfoSectionAncestors.css");
 @import url("./components/details/info/FiberInfoSectionConsumers.css");
 @import url("./components/details/info/FiberInfoSectionContexts.css");
 @import url("./components/details/info/FiberInfoSectionEvents.css");

@@ -7,6 +7,7 @@ import { FiberInfoSectionMemoHooks } from "./FiberInfoSectionMemoHooks";
 import { FiberInfoSectionProps } from "./FiberInfoSectionProps";
 import { MessageFiber } from "../../../types";
 import { FiberInfoSectionEvents } from "./FiberInfoSectionEvents";
+import { FiberInfoSectionAncestors } from "./FiberInfoSectionAncestors";
 
 interface IFiberInfo {
   fiber: MessageFiber;
@@ -46,6 +47,7 @@ const FiberInfo = ({
   return (
     <div className="fiber-info">
       <SectionStateContext.Provider value={sectionStatesContextValue}>
+        <FiberInfoSectionAncestors fiber={fiber} />
         <FiberInfoSectionProps fiber={fiber} />
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>

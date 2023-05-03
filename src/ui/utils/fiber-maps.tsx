@@ -72,6 +72,21 @@ export const useFiberChildren = (
   return useComputeSubscription(compute, subscribe);
 };
 
+export const useFiberAncestors = (fiberId: number, groupByParent = false) => {
+  const { selectTree } = useFiberMaps();
+  const tree = selectTree(groupByParent, true);
+  const leaf = tree.getOrCreate(fiberId);
+
+  const compute = React.useCallback(() => leaf.ancestors(), [leaf]);
+
+  const subscribe = React.useCallback(
+    requestRecompute => leaf.subscribe(requestRecompute),
+    [leaf]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};
+
 export const useTypeIdFibers = (typeId: number) => {
   const { fibersByTypeId } = useFiberMaps();
   const subset = fibersByTypeId.get(typeId);
