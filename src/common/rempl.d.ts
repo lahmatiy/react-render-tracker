@@ -76,6 +76,19 @@ declare module "rempl" {
       data: OpenSourceSettings;
       methods: never;
     };
+    "highlighter": {
+      data: {
+        fiberID?: number;
+        selected?: boolean;
+        stopInspect?: boolean
+      };
+      methods: {
+        highlight(fiberId: number, name: string): void;
+        removeHighlight(): void;
+        startInspect(): void;
+        stopInspect(): void;
+      }
+    }
   }>;
 
   type PublisherNS<NS extends NamespaceDef> = {

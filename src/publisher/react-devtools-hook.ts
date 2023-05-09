@@ -7,7 +7,7 @@ import {
   FiberRoot,
 } from "./types";
 
-type ReactDevtoolsHook = {
+export type ReactDevtoolsHook = {
   supportsFiber: boolean;
   inject: (renderer: ReactInternals) => number;
   // onScheduleRoot(rendererId: number, root: FiberRoot, children: any[]) {},
@@ -18,6 +18,7 @@ type ReactDevtoolsHook = {
     priorityLevel: any
   ) => void;
   onPostCommitFiberRoot: (rendererId: number, root: FiberRoot) => void;
+  rendererInterfaces: Map<number, ReactIntegration>;
 
   // Not used. It is declared to follow React Devtools hook's behaviour
   // in order for other tools like react-render to work
@@ -46,6 +47,8 @@ export function createReactDevtoolsHook(
     // in order for other tools like react-refresh to work
     // see https://github.com/facebook/react/blob/4ff5f5719b348d9d8db14aaa49a48532defb4ab7/packages/react-refresh/src/ReactFreshRuntime.js#L509
     renderers,
+
+    rendererInterfaces: new Map<number, ReactIntegration>(),
 
     inject(renderer) {
       let id = ++rendererSeedId;

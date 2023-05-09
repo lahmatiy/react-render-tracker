@@ -1,3 +1,5 @@
+import type { ReactDevtoolsHook } from "./react-devtools-hook";
+
 const assign = Object.assign;
 
 interface Rect {
@@ -145,7 +147,9 @@ export default class Overlay {
   tip: OverlayTip;
   rects: Array<OverlayRect>;
 
-  constructor(hook) {
+  private hook: ReactDevtoolsHook;
+
+  constructor(hook: ReactDevtoolsHook) {
     this.hook = hook;
     // Find the root window, because overlays are positioned relative to it.
     const currentWindow = window.__REACT_DEVTOOLS_TARGET_WINDOW__ || window;

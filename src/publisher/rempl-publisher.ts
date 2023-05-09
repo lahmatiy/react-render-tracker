@@ -137,55 +137,58 @@ publisher.provide("resolve-source-locations", locations =>
 
 const HIGHLIGHTER_NS = "highlighter";
 let overlay: Overlay | null = null;
+let highlighter: Highlighter | null = null;
 
-publisher.ns(HIGHLIGHTER_NS).provide("highlight", (fiberId, name: string) => {
-  let nodes = hook.rendererInterfaces.get(1).findNativeNodesForFiberID(fiberId)
-  if (!nodes || !nodes.length) {
-    return;
-  }
+publisher.ns(HIGHLIGHTER_NS)
+  .provide("highlight", (fiberId: number, name: string) => {
+    let nodes = hook.rendererInterfaces.get(1).findNativeNodesForFiberID(fiberId)
+    if (!nodes || !nodes.length) {
+      return;
+    }
 
-  nodes = nodes.filter(node => node.nodeType === 1);
+    nodes = nodes.filter(node => node.nodeType === 1);
 
-  if (nodes.length) {
+    if (nodes.length) {
 
+      if (!overlay) {
+        overlay = new Overlay(hook);
+      }
+
+      overlay.inspect(nodes, name);
+    }
+  });
+
+publisher.ns(HIGHLIGHTER_NS)
+  .provide("removeHighlight", () => {
+    if (overlay) {
+      overlay.remove();
+      overlay = null;
+    }
+  });
+
+publisher.ns(HIGHLIGHTER_NS)
+  .provide("startInspect", () => {
     if (!overlay) {
       overlay = new Overlay(hook);
     }
+    if (!highlighter) {
+      highlighter = new Highlighter(hook, publisher, overlay);
+    }
 
-    overlay.inspect(nodes, name);
-  }
-});
+    highlighter.startInspect();
+  })
 
-publisher.ns(HIGHLIGHTER_NS).provide("removeHighlight", (fiberId) => {
-  if (overlay) {
-    overlay.remove();
-    overlay = null;
-  }
-});
-
-let highlighter: Highlighter | null = null;
-
-publisher.ns(HIGHLIGHTER_NS).provide("startInspect", () => {
-  if (!overlay) {
-    overlay = new Overlay(hook);
-  }
-  if (!highlighter) {
-    highlighter = new Highlighter(hook, publisher, overlay);
-  }
-
-  highlighter.startInspect();
-});
-
-publisher.ns(HIGHLIGHTER_NS).provide("stopInspect", () => {
-  if (highlighter) {
-    highlighter.stopInspect();
-    highlighter = null;
-  }
-  if (overlay) {
-    overlay.remove();
-    overlay = null;
-  }
-});
+publisher.ns(HIGHLIGHTER_NS)
+  .provide("stopInspect", () => {
+    if (highlighter) {
+      highlighter.stopInspect();
+      highlighter = null;
+    }
+    if (overlay) {
+      overlay.remove();
+      overlay = null;
+    }
+  });
 
 
 // import { connectPublisherWs } from "rempl";

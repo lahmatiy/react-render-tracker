@@ -1,7 +1,18 @@
+import type Overlay from "./overlay";
+import type { ReactDevtoolsHook } from "./react-devtools-hook";
+import type { Publisher } from "rempl";
 const HIGHLIGHTER_NS = "highlighter";
 
 export default class Highlighter {
-  constructor(hook, publisher, overlay) {
+  private overlay: Overlay;
+  private publisher: Publisher;
+  private hook: ReactDevtoolsHook;
+
+  constructor(
+    hook: ReactDevtoolsHook,
+    publisher: Publisher,
+    overlay: Overlay
+  ) {
     this.hook = hook;
     this.publisher = publisher;
     this.overlay = overlay;
@@ -61,8 +72,16 @@ export default class Highlighter {
   }
 
   private selectFiberForNode(node, selected = false) {
-    const fiberID = this.hook.rendererInterfaces.get(1).getFiberIDForNative(node, true);
+    const rendererInterface = this.hook.rendererInterfaces.get(1);
 
-    this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
+    let fiberID;
+
+    if (rendererInterface) {
+      fiberID = rendererInterface.getFiberIDForNative(node, true);
+    }
+
+    if (fiberID) {
+      this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
+    }
   }
 }
