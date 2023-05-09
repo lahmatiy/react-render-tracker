@@ -271,6 +271,10 @@ export function processEvents(
           fiber = fiberById.get(fiberId) as MessageFiber;
 
           if (added.type === TrackingObjectHook) {
+            if (added.hookIdx === null) {
+              continue;
+            }
+
             fiber = {
               ...fiber,
               leakedHooks: fiber.leakedHooks

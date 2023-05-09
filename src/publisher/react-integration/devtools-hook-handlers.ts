@@ -796,6 +796,7 @@ export function createReactDevtoolsHookHandlers(
           unmountedFiberRefs.set(fiber, {
             stateNode: fiber.stateNode,
             alternate: fiber.alternate,
+            memoizedState: fiber.memoizedState,
           });
         }
       }

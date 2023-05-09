@@ -27,7 +27,7 @@ type Dispatcher = {
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
 };
-type DispatchFn = ((value: any) => any) & { hookIdx: number };
+type DispatchFn = ((value: any) => any) & { hookIdx?: number };
 type FiberDispatcherInfo = {
   hooks: HookInfo[];
 };
@@ -92,10 +92,7 @@ export function createDispatcherTrap(
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
   const fiberComputedMemo = new WeakMap<Fiber, HookCompute[]>();
-  const patchedHookFn = new WeakMap<
-    DispatchFn,
-    { hook: number; fn: DispatchFn }
-  >();
+  const patchedHookFn = new WeakMap<DispatchFn, DispatchFn>();
 
   function trackUseHook(
     name: string,
@@ -184,59 +181,56 @@ export function createDispatcherTrap(
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
         dispatch.hookIdx = currentFiberHookIndex;
-        dispatchWrapper = {
-          hook: currentFiberHookIndex,
-          fn: value => {
-            // if (
-            //   !currentFiberRerenderState &&
-            //   currentFiber !== null &&
-            //   (currentFiber === hookOwnerFiber ||
-            //     currentFiber?.alternate === hookOwnerFiber)
-            // ) {
-            //   currentFiberRerenderState = {
-            //     state: currentFiber.memoizedState,
-            //   };
-            // }
-            // console.log(hookName, currentFiberRerenderState);
-            // console.log(
-            //   "dispatch",
-            //   hookOwnerFiberId,
-            //   currentFiber && getOrGenerateFiberId(currentFiber),
-            //   window.event?.type
-            // );
-            // console.dir(new Error());
-            // if (
-            //   !currentFiber &&
-            //   !currentEffectFiber &&
-            //   window.event?.type === "message"
-            // ) {
-            //   debugger;
-            // }
+        dispatchWrapper = value => {
+          // if (
+          //   !currentFiberRerenderState &&
+          //   currentFiber !== null &&
+          //   (currentFiber === hookOwnerFiber ||
+          //     currentFiber?.alternate === hookOwnerFiber)
+          // ) {
+          //   currentFiberRerenderState = {
+          //     state: currentFiber.memoizedState,
+          //   };
+          // }
+          // console.log(hookName, currentFiberRerenderState);
+          // console.log(
+          //   "dispatch",
+          //   hookOwnerFiberId,
+          //   currentFiber && getOrGenerateFiberId(currentFiber),
+          //   window.event?.type
+          // );
+          // console.dir(new Error());
+          // if (
+          //   !currentFiber &&
+          //   !currentEffectFiber &&
+          //   window.event?.type === "message"
+          // ) {
+          //   debugger;
+          // }
 
-            dispatchCalls.push({
-              dispatch,
-              dispatchName: hookName === "useState" ? "setState" : "dispatch",
-              root: hookOwnerFiberRoot,
-              fiber: hookOwnerFiber,
-              renderFiber: currentFiber,
-              effectFiber: currentEffectFiber,
-              effectName: currentEffectName,
-              event:
-                (!currentFiber && !currentEffectFiber && window.event?.type) ||
-                null,
-              loc: extractCallLoc(0),
-              // stack: String(new Error().stack),
-            });
+          dispatchCalls.push({
+            dispatch,
+            dispatchName: hookName === "useState" ? "setState" : "dispatch",
+            root: hookOwnerFiberRoot,
+            fiber: hookOwnerFiber,
+            renderFiber: currentFiber,
+            effectFiber: currentEffectFiber,
+            effectName: currentEffectName,
+            event:
+              (!currentFiber && !currentEffectFiber && window.event?.type) ||
+              null,
+            loc: extractCallLoc(0),
+            // stack: String(new Error().stack),
+          });
 
-            // console.log("dispatch", new Error().stack, ...args);
-            return dispatch(value);
-          },
+          // console.log("dispatch", new Error().stack, ...args);
+          return dispatch(value);
         };
 
         patchedHookFn.set(dispatch, dispatchWrapper);
       }
 
-      return [state, dispatchWrapper.fn];
+      return [state, dispatchWrapper];
     };
   }
 
@@ -383,8 +377,7 @@ export function createDispatcherTrap(
 
   return {
     getDispatchHookIndex(dispatch: DispatchFn) {
-      const dispatchWrapper = patchedHookFn.get(dispatch);
-      return dispatchWrapper !== undefined ? dispatchWrapper.hook : null;
+      return dispatch.hookIdx || null;
     },
     getFiberTypeHookInfo(fiberTypeId: number) {
       return fiberTypeInfo.get(fiberTypeId)?.hooks || [];
