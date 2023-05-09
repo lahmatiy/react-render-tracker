@@ -10,6 +10,7 @@ import {
   ReactUnsupportedRendererInfo,
   RecordEventHandler,
   Message,
+  RemoteCommandsApi,
 } from "./types";
 
 let eventIdSeed = 0;
@@ -131,6 +132,12 @@ publisher.provide("resolve-source-locations", locations =>
     result.map((resolved, idx) => ({ loc: locations[idx], resolved }))
   )
 );
+
+export function remoteCommands({ breakLeakedObjectRefs }: RemoteCommandsApi) {
+  publisher.provide("break-leaked-object-refs", () => {
+    breakLeakedObjectRefs();
+  });
+}
 
 // import { connectPublisherWs } from "rempl";
 // connectPublisherWs("http://localhost:8177/");

@@ -20,6 +20,7 @@ function listOfLeaks(leaked: number) {
       const title = TrackingObjectTypeName[bitNum as TrackingObjectType];
       result.push(`${title} (${title[0].toUpperCase()})`);
     }
+
     bitNum++;
   }
 

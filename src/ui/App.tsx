@@ -14,16 +14,19 @@ import WaitingForReady from "./components/misc/WaitingForReady";
 import WaitingForRenderer from "./components/misc/WaitingForRenderer";
 import AppBar from "./components/appbar/AppBar";
 import { AppPage, pages } from "./pages";
+import { MemoryLeaksApiContextProvider } from "./utils/memory-leaks";
 
 function App() {
   return (
     <SourceLocationsContextProvider>
       <OpenFileContextProvider>
-        <ReactRenderersContextProvider>
-          <WaitingForRenderer>
-            <ReactRendererUI />
-          </WaitingForRenderer>
-        </ReactRenderersContextProvider>
+        <MemoryLeaksApiContextProvider>
+          <ReactRenderersContextProvider>
+            <WaitingForRenderer>
+              <ReactRendererUI />
+            </WaitingForRenderer>
+          </ReactRenderersContextProvider>
+        </MemoryLeaksApiContextProvider>
       </OpenFileContextProvider>
     </SourceLocationsContextProvider>
   );

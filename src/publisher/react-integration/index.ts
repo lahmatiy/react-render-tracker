@@ -5,15 +5,21 @@ import {
   ReactInternals,
   ReactIntegrationApi,
   RecordEventHandler,
+  RemoteCommandsApi,
 } from "../types";
 import { createDispatcherTrap } from "./dispatcher-trap";
 
 export function attach(
   renderer: ReactInternals,
-  recordEvent: RecordEventHandler
+  recordEvent: RecordEventHandler,
+  removeCommands: (api: RemoteCommandsApi) => void
 ): ReactIntegrationApi {
   const integrationCore = createIntegrationCore(renderer, recordEvent);
   const dispatcherApi = createDispatcherTrap(renderer, integrationCore);
+
+  removeCommands({
+    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
+  });
 
   return {
     ...createReactDevtoolsHookHandlers(
@@ -23,5 +29,6 @@ export function attach(
     ),
     ...createReactInteractionApi(integrationCore),
     getLeakedObjectsProbe: integrationCore.getLeakedObjectsProbe,
+    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
   };
 }

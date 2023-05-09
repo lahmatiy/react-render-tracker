@@ -475,6 +475,7 @@ export type MemoryLeakDetectionApi = {
     readonly markedObjects: { objects: TrackingObjectMap | null } | null;
     release: () => void;
   };
+  breakLeakedObjectRefs: () => void;
 };
 
 export type ReactDispatcherTrapApi = {
@@ -483,6 +484,10 @@ export type ReactDispatcherTrapApi = {
   getFiberComputes: (fiber: Fiber) => HookCompute[];
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
+};
+
+export type RemoteCommandsApi = {
+  breakLeakedObjectRefs: () => void;
 };
 
 export type ReactIntegrationApi = ReactDevtoolsHookHandlers &

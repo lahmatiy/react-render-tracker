@@ -240,10 +240,56 @@ export function createUnmountedFiberLeakDetectionApi(
     }
   }
 
+  const fiberProps = [
+    "alternate",
+    "child",
+    "sibling",
+    "return",
+    "dependencies",
+    "stateNode",
+    "_debugOwner",
+    "firstEffect",
+    "lastEffect",
+    "nextEffect",
+    "memoizedState",
+    "memoizedProps",
+    "pendingProps",
+  ];
+  const stateNodeProps = ["_reactInternals", "_reactInternalInstance"];
+  function breakLeakedObjectRefs() {
+    for (const leakRef of leakedObjects) {
+      const object = leakRef.deref();
+      if (object !== undefined) {
+        switch (leakRef.type) {
+          case TrackingObjectFiber:
+          case TrackingObjectAlternate:
+            // console.log(object);
+            for (const prop of fiberProps) {
+              if (object[prop]) {
+                object[prop] = null;
+              }
+            }
+            break;
+
+          case TrackingObjectStateNode:
+            for (const prop of stateNodeProps) {
+              if (object[prop]) {
+                object[prop] = null;
+              }
+            }
+            // console.log(object);
+            break;
+        }
+        // console.log(object);
+      }
+    }
+  }
+
   globalThis.exposeLeaks = getLeakedObjectsProbe;
 
   return {
     trackObjectForLeaking,
     getLeakedObjectsProbe,
+    breakLeakedObjectRefs,
   };
 }

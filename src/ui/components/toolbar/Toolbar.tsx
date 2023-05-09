@@ -11,7 +11,9 @@ import {
   Download,
   Pause,
   Play,
+  BreakRefs,
 } from "../common/icons";
+import { useMemoryLeaksApi } from "../../utils/memory-leaks";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -77,6 +79,7 @@ const Toolbar = ({
   showTimings,
 }: ToolbarProps) => {
   const { clearAllEvents, paused, setPaused } = useEventsContext();
+  const { breakUnmountedFiberRefs } = useMemoryLeaksApi();
 
   return (
     <div className="toolbar">
@@ -116,16 +119,25 @@ const Toolbar = ({
         <span className="toolbar__buttons-splitter" />
 
         <ButtonToggle
-          icon={!paused ? Play : Pause}
-          isActive={!paused}
-          onChange={() => setPaused(!paused)}
-          tooltip={paused ? "Resume event loading" : "Pause event loading"}
+          icon={BreakRefs}
+          isActive={false}
+          onChange={breakUnmountedFiberRefs}
+          tooltip={"Break leaked objects refs"}
         />
         <ButtonToggle
           icon={ClearEventLog}
           isActive={false}
           onChange={clearAllEvents}
           tooltip={"Clear event log"}
+        />
+
+        <span className="toolbar__buttons-splitter" />
+
+        <ButtonToggle
+          icon={!paused ? Play : Pause}
+          isActive={!paused}
+          onChange={() => setPaused(!paused)}
+          tooltip={paused ? "Resume event loading" : "Pause event loading"}
         />
         {false && <DownloadButton />}
       </div>
