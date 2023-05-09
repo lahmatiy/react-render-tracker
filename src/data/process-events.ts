@@ -1,4 +1,4 @@
-import { ElementTypeProvider } from "../common/constants";
+import { ElementTypeProvider, TrackingObjectHook } from "../common/constants";
 import {
   Message,
   TransferFiberChanges,
@@ -158,6 +158,7 @@ export function processEvents(
             (!event.fiber.ownerId ? "Render root" : "Unknown"),
           mounted: true,
           leaked: 0,
+          leakedHooks: null,
           events: [],
           updatesCount: 0,
           updatesBailoutCount: 0,
@@ -268,15 +269,26 @@ export function processEvents(
           }
 
           fiber = fiberById.get(fiberId) as MessageFiber;
-          fiber = {
-            ...fiber,
-            leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
-          };
+
+          if (added.type === TrackingObjectHook) {
+            fiber = {
+              ...fiber,
+              leakedHooks: fiber.leakedHooks
+                ? fiber.leakedHooks.concat(added.hookIdx)
+                : [added.hookIdx],
+              leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
+            };
+          } else {
+            fiber = {
+              ...fiber,
+              leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
+            };
+          }
 
           leakedFibers.add(fiberId);
           fiberById.set(fiberId, fiber);
-          parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
-          ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiberId, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiberId, fiber);
         }
 
         for (const removed of event.removed) {
@@ -287,18 +299,30 @@ export function processEvents(
           }
 
           fiber = fiberById.get(fiberId) as MessageFiber;
-          fiber = {
-            ...fiber,
-            leaked: fiber.leaked & ~(1 << removed.type), // set a type bit to 0
-          };
+          if (removed.type === TrackingObjectHook) {
+            const leakedHooks =
+              fiber.leakedHooks?.filter(idx => idx !== removed.hookIdx) || [];
+            fiber = {
+              ...fiber,
+              leakedHooks: leakedHooks.length ? leakedHooks : null,
+              leaked: leakedHooks.length
+                ? fiber.leaked
+                : fiber.leaked & ~(1 << removed.type), // set a type bit to 1
+            };
+          } else {
+            fiber = {
+              ...fiber,
+              leaked: fiber.leaked & ~(1 << removed.type), // set a type bit to 0
+            };
+          }
 
           if (!fiber.leaked) {
             leakedFibers.delete(fiberId);
           }
 
           fiberById.set(fiberId, fiber);
-          parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
-          ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiberId, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiberId, fiber);
         }
 
         continue;

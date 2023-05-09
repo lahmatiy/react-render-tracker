@@ -113,7 +113,11 @@ export function createReactDevtoolsHookHandlers(
   const unmountedFiberIdForParentId = new Map<number, number>();
   const unmountedFiberRefs = new WeakMap<
     Fiber,
-    { stateNode: unknown; alternate: Fiber | null }
+    {
+      stateNode: unknown;
+      alternate: Fiber | null;
+      memoizedState: Fiber["memoizedState"] | null;
+    }
   >();
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
@@ -691,6 +695,7 @@ export function createReactDevtoolsHookHandlers(
         unmountedFiberRefs.set(fiber, {
           stateNode: fiber.stateNode,
           alternate: fiber.alternate,
+          memoizedState: fiber.memoizedState,
         });
       }
     }

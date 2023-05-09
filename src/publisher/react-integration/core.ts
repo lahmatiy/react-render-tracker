@@ -35,6 +35,7 @@ import {
   TrackingObjectFiber,
   TrackingObjectStateNode,
   TrackingObjectAlternate,
+  TrackingObjectHook,
 } from "../../common/constants";
 import { createUnmountedFiberLeakDetectionApi } from "./unmounted-fiber-leak-detector";
 
@@ -367,11 +368,15 @@ export function createIntegrationCore(
 
   function removeFiber(
     fiber: Fiber,
-    refs?: { stateNode: unknown; alternate: Fiber | null }
+    refs?: {
+      stateNode: unknown;
+      alternate: Fiber | null;
+      memoizedState: Fiber["memoizedState"];
+    }
   ) {
     const id = getFiberIdUnsafe(fiber);
     const displayName = getDisplayNameForFiber(fiber);
-    const { stateNode, alternate } = refs || fiber;
+    const { stateNode, alternate, memoizedState } = refs || fiber;
     // console.log("removeFiber", id);
 
     if (typeof id !== "number") {
@@ -384,14 +389,15 @@ export function createIntegrationCore(
     idToArbitraryFiber.delete(id);
 
     fiberToId.delete(fiber);
-    trackObjectForLeaking(fiber, id, TrackingObjectFiber, displayName);
+    trackObjectForLeaking(fiber, id, TrackingObjectFiber, displayName, null);
 
     if (stateNode) {
       trackObjectForLeaking(
         stateNode,
         id,
         TrackingObjectStateNode,
-        displayName
+        displayName,
+        null
       );
     }
 
@@ -400,9 +406,36 @@ export function createIntegrationCore(
         alternate,
         id,
         TrackingObjectAlternate,
-        displayName
+        displayName,
+        null
       );
       fiberToId.delete(alternate);
+    }
+
+    if (memoizedState && "next" in memoizedState) {
+      let cursor = memoizedState;
+
+      while (cursor !== null) {
+        if (typeof cursor.queue?.dispatch === "function") {
+          trackObjectForLeaking(
+            fiber,
+            id,
+            TrackingObjectHook,
+            displayName,
+            cursor.queue?.dispatch.hookIdx
+          );
+        } else if (typeof cursor.memoizedState?.create === "function") {
+          trackObjectForLeaking(
+            fiber,
+            id,
+            TrackingObjectHook,
+            displayName,
+            cursor.memoizedState?.create.hookIdx
+          );
+        }
+
+        cursor = cursor.next;
+      }
     }
   }
 

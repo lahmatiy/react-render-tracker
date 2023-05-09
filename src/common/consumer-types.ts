@@ -49,6 +49,7 @@ export interface MessageFiber extends TransferFiber {
   typeDef: FiberTypeDef;
   mounted: boolean;
   leaked: number;
+  leakedHooks: number[] | null;
   events: FiberEvent[];
   updatesCount: number;
   updatesBailoutCount: number;

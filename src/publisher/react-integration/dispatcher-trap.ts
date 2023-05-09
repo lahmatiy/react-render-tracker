@@ -27,7 +27,7 @@ type Dispatcher = {
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
 };
-type DispatchFn = (value: any) => any;
+type DispatchFn = ((value: any) => any) & { hookIdx: number };
 type FiberDispatcherInfo = {
   hooks: HookInfo[];
 };
@@ -128,8 +128,7 @@ export function createDispatcherTrap(
     const orig = dispatcher[hookName];
 
     dispatcher[hookName] = function (create: any, deps?: any[]) {
-      trackUseHook(hookName);
-
+      const hookIdx = trackUseHook(hookName);
       const hookOwnerFiber = currentFiber;
 
       // const path = trackHookLocation();
@@ -166,6 +165,7 @@ export function createDispatcherTrap(
 
         return destroy;
       };
+      wrappedCreate.hookIdx = hookIdx;
 
       return orig(wrappedCreate, deps);
     };
@@ -183,6 +183,7 @@ export function createDispatcherTrap(
         const hookOwnerFiber = currentFiber as Fiber;
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
+        dispatch.hookIdx = currentFiberHookIndex;
         dispatchWrapper = {
           hook: currentFiberHookIndex,
           fn: value => {

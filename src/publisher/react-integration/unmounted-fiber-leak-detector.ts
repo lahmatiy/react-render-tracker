@@ -5,7 +5,12 @@ import {
   TrackingObject,
   TrackingObjectMap,
 } from "../types";
-import { TrackingObjectTypeName } from "../../common/constants";
+import {
+  TrackingObjectAlternate,
+  TrackingObjectStateNode,
+  TrackingObjectTypeName,
+} from "../../common/constants";
+import { TrackingObjectFiber } from "../../common/constants";
 
 const DEBUG_OUTPUT = true;
 
@@ -25,7 +30,8 @@ class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
     target: TrackingObject,
     public fiberId: number,
     public type: TrackingObjectType,
-    public displayName: string | null
+    public displayName: string | null,
+    public hookIdx: number | null = null
   ) {
     super(target);
   }
@@ -40,6 +46,7 @@ class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
     return {
       fiberId: this.fiberId,
       type: this.type,
+      hookIdx: this.hookIdx,
     };
   }
 
@@ -66,7 +73,8 @@ export function createUnmountedFiberLeakDetectionApi(
     target: TrackingObject,
     fiberId: number,
     type: TrackingObjectType,
-    displayName: string | null
+    displayName: string | null,
+    hookIdx: number | null
   ) => void;
 } {
   const knownObjects = new WeakSet<TrackingObject>();
@@ -220,7 +228,8 @@ export function createUnmountedFiberLeakDetectionApi(
     target: TrackingObject,
     fiberId: number,
     type: TrackingObjectType,
-    displayName: string | null = null
+    displayName: string | null = null,
+    hookIdx: number | null = null
   ) {
     if (knownObjects.has(target)) {
       console.warn("[React Render Tracker] An object is already tracking", {
@@ -232,7 +241,7 @@ export function createUnmountedFiberLeakDetectionApi(
     }
 
     newCandidates.add(
-      new TrackingObjectWeakRef(target, fiberId, type, displayName)
+      new TrackingObjectWeakRef(target, fiberId, type, displayName, hookIdx)
     );
 
     if (trackingNewCandidatesTimer === null) {

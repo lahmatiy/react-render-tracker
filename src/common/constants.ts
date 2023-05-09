@@ -42,9 +42,11 @@ export const fiberRootMode: Record<FiberRootMode, string> = {
 export const TrackingObjectFiber: TrackingObjectType = 0;
 export const TrackingObjectAlternate: TrackingObjectType = 1;
 export const TrackingObjectStateNode: TrackingObjectType = 2;
+export const TrackingObjectHook: TrackingObjectType = 3;
 
 export const TrackingObjectTypeName: Record<TrackingObjectType, string> = {
   [TrackingObjectFiber]: "fiber",
   [TrackingObjectAlternate]: "alternate",
   [TrackingObjectStateNode]: "stateNode",
+  [TrackingObjectHook]: "hook",
 };
