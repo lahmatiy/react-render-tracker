@@ -30,7 +30,6 @@ export function createReactDevtoolsHook(
   existing: ReactDevtoolsHook
 ) {
   const attachedIntegrations = new Map<number, ReactIntegrationApi>();
-  const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
   // Not used. It is declared to follow React Devtools hook's behaviour
@@ -72,7 +71,6 @@ export function createReactDevtoolsHook(
       } else {
         if (attachedIntegrations.size === 0) {
           attachedIntegrations.set(id, attachRenderer(id, renderer));
-          fiberRoots.set(id, new Set());
         } else {
           console.warn(
             `[react-render-tracker] Only one React instance per page is supported for now, but one more React instance (${renderer.rendererPackageName} v${renderer.version}) was detected`
