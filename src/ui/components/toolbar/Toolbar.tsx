@@ -14,6 +14,7 @@ import {
   BreakRefs,
 } from "../common/icons";
 import { useMemoryLeaksApi } from "../../utils/memory-leaks";
+import { FeatureMemLeaks } from "../../../common/constants";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -118,12 +119,12 @@ const Toolbar = ({
 
         <span className="toolbar__buttons-splitter" />
 
-        <ButtonToggle
+        {FeatureMemLeaks && <ButtonToggle
           icon={BreakRefs}
           isActive={false}
           onChange={breakUnmountedFiberRefs}
-          tooltip={"Break leaked objects refs"}
-        />
+          tooltip={"Break leaked React objects references\n\nWARNING: This action interferes with how React works, which can lead to behavior that is not possible naturally. Such interference can break the functionality of React. However, this technique allows you to localize the source of the memory leak and greatly simplify the investigation of root causes. Use with caution and for debugging purposes only."}
+        />}
         <ButtonToggle
           icon={ClearEventLog}
           isActive={false}

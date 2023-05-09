@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ElementTypeProvider } from "../../../../common/constants";
+import { ElementTypeProvider, FeatureMemLeaks } from "../../../../common/constants";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
@@ -49,7 +49,7 @@ const FiberInfo = ({
     <div className="fiber-info">
       <SectionStateContext.Provider value={sectionStatesContextValue}>
         <FiberInfoSectionAncestors fiber={fiber} />
-        <FiberInfoSectionLeakedHooks fiber={fiber} />
+        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         <FiberInfoSectionProps fiber={fiber} />
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>

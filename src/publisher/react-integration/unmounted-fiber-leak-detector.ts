@@ -6,6 +6,7 @@ import {
   TrackingObjectMap,
 } from "../types";
 import {
+  FeatureMemLeaks,
   TrackingObjectAlternate,
   TrackingObjectStateNode,
   TrackingObjectTypeName,
@@ -231,6 +232,10 @@ export function createUnmountedFiberLeakDetectionApi(
     displayName: string | null = null,
     hookIdx: number | null = null
   ) {
+    if (!FeatureMemLeaks) {
+      return;
+    }
+
     if (knownObjects.has(target)) {
       console.warn("[React Render Tracker] An object is already tracking", {
         fiberId,
@@ -267,34 +272,39 @@ export function createUnmountedFiberLeakDetectionApi(
   const stateNodeProps = ["_reactInternals", "_reactInternalInstance"];
   function breakLeakedObjectRefs() {
     for (const leakRef of leakedObjects) {
-      const object = leakRef.deref();
+      const object = leakRef.deref() as any;
+
       if (object !== undefined) {
         switch (leakRef.type) {
           case TrackingObjectFiber:
-          case TrackingObjectAlternate:
-            // console.log(object);
+          case TrackingObjectAlternate: {
             for (const prop of fiberProps) {
               if (object[prop]) {
                 object[prop] = null;
               }
             }
-            break;
 
-          case TrackingObjectStateNode:
+            break;
+          }
+
+          case TrackingObjectStateNode: {
             for (const prop of stateNodeProps) {
               if (object[prop]) {
                 object[prop] = null;
               }
             }
-            // console.log(object);
+
             break;
+          }
         }
-        // console.log(object);
       }
     }
   }
 
-  globalThis.exposeLeaks = getLeakedObjectsProbe;
+  if (FeatureMemLeaks) {
+    // @ts-ignore
+    globalThis.exposeLeaks = getLeakedObjectsProbe;
+  }
 
   return {
     trackObjectForLeaking,
