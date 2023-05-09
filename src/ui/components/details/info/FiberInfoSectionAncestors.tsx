@@ -105,6 +105,14 @@ export function FiberInfoSectionAncestors({ fiber }: { fiber: MessageFiber }) {
                 />
               )}
               <span key="content" className="fiber-ancestor__content">
+                {ancestor.fiber?.leaked ? (
+                  <span
+                    className="fiber-ancestor__maybe-leak"
+                    title={`Maybe memory leak`}
+                  >
+                    MML
+                  </span>
+                ) : null}
                 {ancestor.id === fiber.ownerId ? (
                   <span
                     className="fiber-ancestor__owner"
@@ -113,7 +121,10 @@ export function FiberInfoSectionAncestors({ fiber }: { fiber: MessageFiber }) {
                     owner
                   </span>
                 ) : null}
-                <Fiber fiberId={ancestor.id} />
+                <Fiber
+                  fiberId={ancestor.id}
+                  unmounted={!ancestor.fiber?.mounted}
+                />
               </span>
             </div>
           ))}
@@ -122,7 +133,15 @@ export function FiberInfoSectionAncestors({ fiber }: { fiber: MessageFiber }) {
             {markers.update && <span className="dot update" />}
             {markers.unmount && <span className="dot unmount" />}
             <span className="fiber-ancestor__content">
-              <Fiber fiberId={fiber.id} />
+              {fiber.leaked ? (
+                <span
+                  className="fiber-ancestor__maybe-leak"
+                  title={`Maybe memory leak`}
+                >
+                  MML
+                </span>
+              ) : null}
+              <Fiber fiberId={fiber.id} unmounted={!fiber.mounted} />
             </span>
           </div>
         </div>

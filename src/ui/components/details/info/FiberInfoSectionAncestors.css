@@ -63,6 +63,9 @@
   --type-image: url("../../../images/event-unmount.svg");
   --type-image-size: 13px;
 }
+.fiber-info-section-ancestors .details-fiber__name_unmounted {
+  text-decoration: none;
+}
 .fiber-info-section-ancestors .fiber-ancestor__owner {
   display: inline-block;
   font-size: 8px;
@@ -79,6 +82,25 @@
   text-transform: uppercase;
   cursor: help;
 }
-.fiber-info-section-ancestors .fiber-ancestor.fiber-self .details-fiber__name {
+.fiber-info-section-ancestors .fiber-ancestor__maybe-leak {
+  display: inline-block;
+  font-size: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background-color: #f6d8d8;
+  background-clip: padding-box;
+  padding: 2px 4px 1px;
+  border-radius: 3px;
+  color: #a36c6c;
+  line-height: 11px;
+  vertical-align: baseline;
+  margin-right: 3px;
+  position: relative;
+  top: -1px;
+  text-transform: uppercase;
+  cursor: help;
+}
+.fiber-info-section-ancestors
+  .fiber-ancestor.fiber-ancestor__self
+  .details-fiber__name {
   font-weight: bold;
 }
