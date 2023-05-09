@@ -36,6 +36,21 @@ export const useCommit = (commitId: number) => {
   return useComputeSubscription(compute, subscribe);
 };
 
+export const useCommits = () => {
+  const { commitById } = useFiberMaps();
+
+  const compute = React.useCallback(
+    () => [...commitById.values()],
+    [commitById]
+  );
+  const subscribe = React.useCallback(
+    requestRecompute => commitById.subscribeValues(requestRecompute),
+    [commitById]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};
+
 export const useFiber = (fiberId: number) => {
   const { fiberById } = useFiberMaps();
 

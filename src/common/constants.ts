@@ -52,3 +52,4 @@ export const TrackingObjectTypeName: Record<TrackingObjectType, string> = {
 };
 
 export const FeatureMemLeaks = false;
+export const FeatureCommits = false;

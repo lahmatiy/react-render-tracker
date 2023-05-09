@@ -1,0 +1,8 @@
+.app-page-commits {
+  overflow-y: scroll;
+}
+
+.app-page-commits tbody td {
+  text-align: right;
+  min-width: 32px;
+}
