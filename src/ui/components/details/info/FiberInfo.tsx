@@ -1,5 +1,8 @@
 import * as React from "react";
-import { ElementTypeProvider, FeatureMemLeaks } from "../../../../common/constants";
+import {
+  ElementTypeProvider,
+  FeatureMemLeaks,
+} from "../../../../common/constants";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";

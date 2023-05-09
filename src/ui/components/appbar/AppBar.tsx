@@ -14,20 +14,24 @@ const AppBar = ({
 }) => {
   return (
     <div className="app-bar">
-      {Object.values(pages).map(({ id, title, disabled, badge: Badge }) => (
-        disabled ? <React.Fragment key={id} /> : <div
-          key={id}
-          className={"app-bar__tab" + (page === id ? " selected" : "")}
-          onClick={() => setPage(id)}
-        >
-          {title}
-          {Badge ? (
-            <span className="app-bar__tab-badge">
-              <Badge />
-            </span>
-          ) : null}
-        </div>
-      ))}
+      {Object.values(pages).map(({ id, title, disabled, badge: Badge }) =>
+        disabled ? (
+          <React.Fragment key={id} />
+        ) : (
+          <div
+            key={id}
+            className={"app-bar__tab" + (page === id ? " selected" : "")}
+            onClick={() => setPage(id)}
+          >
+            {title}
+            {Badge ? (
+              <span className="app-bar__tab-badge">
+                <Badge />
+              </span>
+            ) : null}
+          </div>
+        )
+      )}
 
       {renderer}
     </div>

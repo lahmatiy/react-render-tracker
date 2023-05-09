@@ -17,6 +17,7 @@ const DEBUG_OUTPUT = true;
 
 declare global {
   let __leakedFibers: number;
+  let exposeLeaks: MemoryLeakDetectionApi["getLeakedObjectsProbe"];
 }
 
 class FakeWeakRef implements WeakRef<TrackingObject> {
@@ -301,10 +302,7 @@ export function createUnmountedFiberLeakDetectionApi(
     }
   }
 
-  if (FeatureMemLeaks) {
-    // @ts-ignore
-    globalThis.exposeLeaks = getLeakedObjectsProbe;
-  }
+  // globalThis.exposeLeaks = getLeakedObjectsProbe;
 
   return {
     trackObjectForLeaking,
