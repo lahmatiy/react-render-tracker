@@ -228,7 +228,6 @@ export function getInternalReactConstants(version: string) {
     const symbolOrNumber =
       typeof type === "object" && type !== null ? type.$$typeof : type;
 
-    // $FlowFixMe Flow doesn't know about typeof "symbol"
     return typeof symbolOrNumber === "symbol"
       ? symbolOrNumber.toString()
       : symbolOrNumber;
@@ -287,7 +286,6 @@ export function getInternalReactConstants(version: string) {
         return "Cache";
       case ClassComponent:
       case IncompleteClassComponent:
-        return getDisplayName(resolvedType);
       case FunctionComponent:
       case IndeterminateComponent:
         return getDisplayName(resolvedType);
@@ -295,13 +293,15 @@ export function getInternalReactConstants(version: string) {
         // Mirror https://github.com/facebook/react/blob/7c21bf72ace77094fd1910cc350a548287ef8350/packages/shared/getComponentName.js#L27-L37
         return type?.displayName || getDisplayName(resolvedType);
       case HostRoot:
-        return null;
+        return "HostRoot";
       case HostComponent:
         return type;
       case HostPortal:
+        return "HostPortal";
       case HostText:
+        return "HostText";
       case Fragment:
-        return null;
+        return "Fragment";
       case LazyComponent:
         // This display name will not be user visible.
         // Once a Lazy component loads its inner component, React replaces the tag and type.

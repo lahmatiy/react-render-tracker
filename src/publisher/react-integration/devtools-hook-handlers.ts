@@ -82,9 +82,9 @@ export function createReactDevtoolsHookHandlers(
 
   const idToOwnerId = new Map<number, number>();
   const commitUpdatedFiberId = new Map<number, number | undefined>();
-  const commitTriggeredFiber = new Set<Fiber>();
+  const commitTriggeredFiberId = new Set<number>();
   const commitClassFiberUpdateCalls = new Map<
-    Fiber,
+    number,
     ClassComponentUpdateCall[]
   >();
   const commitFiberUpdateCalls = new Map<any, FiberDispatchCall[]>();
@@ -97,7 +97,7 @@ export function createReactDevtoolsHookHandlers(
   const patchedClassComponentUpdater = new Set<any>();
   const classComponentInstanceToFiber = new WeakMap<
     any,
-    { rootId: number; fiber: Fiber }
+    { rootId: number; fiberId: number }
   >();
   const recordedTypeDef = new Map<
     number,
@@ -370,7 +370,9 @@ export function createReactDevtoolsHookHandlers(
       return undefined;
     }
 
-    const calls = commitClassFiberUpdateCalls.get(fiber);
+    const fiberId = getFiberIdUnsafe(fiber);
+    const calls =
+      fiberId !== null ? commitClassFiberUpdateCalls.get(fiberId) : null;
     const setStateCall = calls?.find(call => call.type === "setState");
     const changes: TransferStateChange = {
       hook: null,
@@ -662,7 +664,7 @@ export function createReactDevtoolsHookHandlers(
     if (transferFiber.type === ElementTypeClass) {
       classComponentInstanceToFiber.set(fiber.stateNode, {
         rootId: currentRootId,
-        fiber,
+        fiberId,
       });
     }
   }
@@ -767,6 +769,8 @@ export function createReactDevtoolsHookHandlers(
 
         unmountedFiberIds.add(id);
       }
+    } else {
+      removeFiber(fiber);
     }
 
     if (!fiber._debugNeedsRemount) {
@@ -931,7 +935,7 @@ export function createReactDevtoolsHookHandlers(
     if (didFiberRender(alternate, fiber)) {
       const { selfTime, totalTime } = getDurations(fiber);
       const changes = getComponentChange(alternate, fiber);
-      const classUpdateCalls = commitClassFiberUpdateCalls.get(fiber);
+      const classUpdateCalls = commitClassFiberUpdateCalls.get(fiberId);
       const specialReasons = [];
 
       if (classUpdateCalls !== undefined) {
@@ -991,7 +995,7 @@ export function createReactDevtoolsHookHandlers(
         },
         trigger: triggerEventId,
       });
-    } else if (commitTriggeredFiber.has(fiber)) {
+    } else if (commitTriggeredFiberId.has(fiberId)) {
       recordEvent({
         op: "update-bailout-state",
         commitId: currentCommitId,
@@ -1163,7 +1167,7 @@ export function createReactDevtoolsHookHandlers(
       }
 
       fiberDispatchCalls.push(call);
-      commitTriggeredFiber.add(call.fiber);
+      commitTriggeredFiberId.add(fiberId);
 
       if (call.effectFiber) {
         triggers.push({
@@ -1192,19 +1196,17 @@ export function createReactDevtoolsHookHandlers(
     }
 
     classComponentUpdateCalls = classComponentUpdateCalls.filter(call => {
-      if (call.fiber && call.rootId === currentRootId) {
-        const fiberId = getOrGenerateFiberId(call.fiber);
-        let fiberDispatchCalls = commitClassFiberUpdateCalls.get(call.fiber);
+      const fiberId = call.fiberId;
+
+      if (fiberId && call.rootId === currentRootId) {
+        let fiberDispatchCalls = commitClassFiberUpdateCalls.get(fiberId);
 
         if (fiberDispatchCalls === undefined) {
-          commitClassFiberUpdateCalls.set(
-            call.fiber,
-            (fiberDispatchCalls = [])
-          );
+          commitClassFiberUpdateCalls.set(fiberId, (fiberDispatchCalls = []));
         }
 
         fiberDispatchCalls.push(call);
-        commitTriggeredFiber.add(call.fiber);
+        commitTriggeredFiberId.add(fiberId);
 
         triggers.push({
           type: "unknown",
@@ -1303,7 +1305,7 @@ export function createReactDevtoolsHookHandlers(
 
     // We're done here
     currentCommitId = -1;
-    commitTriggeredFiber.clear();
+    commitTriggeredFiberId.clear();
     commitUpdatedFiberId.clear();
     commitFiberUpdateCalls.clear();
     commitContext.clear();

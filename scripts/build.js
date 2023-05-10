@@ -72,6 +72,8 @@ async function buildSubscriber(config, configCSS) {
         setup({ onLoad }) {
           onLoad({ filter: /socket\.io-client/ }, () => ({
             contents: "export default {}",
+            // for socket.io 4+
+            // contents: "export const connect = () => {};export class Manager {}",
           }));
         },
       },

@@ -433,7 +433,7 @@ export type FiberDispatchCall = {
 export type ClassComponentUpdateCall = {
   type: "setState" | "forceUpdate";
   rootId?: number;
-  fiber?: Fiber;
+  fiberId?: number;
   loc: string | null;
 };
 

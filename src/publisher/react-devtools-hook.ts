@@ -30,7 +30,7 @@ export function createReactDevtoolsHook(
   onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void,
   existing: ReactDevtoolsHook
 ) {
-  const attachedRenderers = new Map<number, ReactIntegration>();
+  const attachedIntegrations = new Map<number, ReactIntegration>();
   const fiberRoots = new Map<number, Set<FiberRoot>>();
   let rendererSeedId = 0;
 
@@ -73,9 +73,9 @@ export function createReactDevtoolsHook(
           reason: unsupportedRender.reason,
         });
       } else {
-        if (attachedRenderers.size === 0) {
-          attachedRenderers.set(id, attachRenderer(id, renderer));
-          reactDevtoolsHook.rendererInterfaces = attachedRenderers;
+        if (attachedIntegrations.size === 0) {
+          attachedIntegrations.set(id, attachRenderer(id, renderer));
+          reactDevtoolsHook.rendererInterfaces = attachedIntegrations;
           fiberRoots.set(id, new Set());
         } else {
           console.warn(
@@ -94,12 +94,12 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberUnmount(rendererId, fiber);
       }
 
-      const renderer = attachedRenderers.get(rendererId);
+      const integration = attachedIntegrations.get(rendererId);
 
-      if (renderer) {
+      if (integration) {
         try {
           // console.log("handleCommitFiberUnmount");
-          renderer.handleCommitFiberUnmount(fiber);
+          integration.handleCommitFiberUnmount(fiber);
         } catch (e) {
           console.error("[react-render-tracker]", e);
           // debugger;
@@ -112,31 +112,16 @@ export function createReactDevtoolsHook(
         existing.onCommitFiberRoot(rendererId, root, priorityLevel);
       }
 
-      const renderer = attachedRenderers.get(rendererId);
-      const mountedRoots = fiberRoots.get(rendererId);
+      const integration = attachedIntegrations.get(rendererId);
 
-      if (!renderer || !mountedRoots) {
-        return;
-      }
-
-      const isKnownRoot = mountedRoots.has(root);
-      const current = root.current;
-      const isUnmounting =
-        current.memoizedState == null || current.memoizedState.element == null;
-
-      // Keep track of mounted roots so we can hydrate when DevTools connect.
-      if (!isKnownRoot && !isUnmounting) {
-        mountedRoots.add(root);
-      } else if (isKnownRoot && isUnmounting) {
-        mountedRoots.delete(root);
-      }
-
-      try {
-        // console.log("handleCommitFiberRoot");
-        renderer.handleCommitFiberRoot(root, priorityLevel);
-      } catch (e) {
-        console.error("[react-render-tracker]", e);
-        // debugger;
+      if (integration) {
+        try {
+          // console.log("handleCommitFiberRoot");
+          integration.handleCommitFiberRoot(root, priorityLevel);
+        } catch (e) {
+          console.error("[react-render-tracker]", e);
+          // debugger;
+        }
       }
     },
 
@@ -148,12 +133,12 @@ export function createReactDevtoolsHook(
         existing.onPostCommitFiberRoot(rendererId, root);
       }
 
-      const renderer = attachedRenderers.get(rendererId);
+      const integration = attachedIntegrations.get(rendererId);
 
-      if (renderer) {
+      if (integration) {
         try {
           // console.log("handlePostCommitFiberRoot");
-          renderer.handlePostCommitFiberRoot(root);
+          integration.handlePostCommitFiberRoot(root);
         } catch (e) {
           console.error("[react-render-tracker]", e);
           // debugger;
