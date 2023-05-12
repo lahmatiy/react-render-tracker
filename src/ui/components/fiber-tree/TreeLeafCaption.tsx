@@ -1,11 +1,10 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useSelectionState } from "../../utils/selection";
-import { useHighlightingState } from "../../utils/highlighting";
+import { useHighlightingState, useHighlighting } from "../../utils/highlighting";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
-import { remoteSubscriber } from "../../rempl-subscriber";
 
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
@@ -68,6 +67,7 @@ const TreeLeafCaptionContainer = React.memo(
     const { id, ownerId, displayName } = fiber;
     const { selected, select } = useSelectionState(fiber.id);
     const { highlighted } = useHighlightingState(fiber.id);
+    const { startHighlight, stopHighlight } = useHighlighting();
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
@@ -92,12 +92,10 @@ const TreeLeafCaptionContainer = React.memo(
       pin(id);
     };
     const handleMouseEnter = () => {
-      const channel = remoteSubscriber.ns("highlighter");
-      channel.callRemote("startHighlight", id, displayName);
+      startHighlight(id, displayName);
     }
     const handleMouseLeave = () => {
-      const channel = remoteSubscriber.ns("highlighter");
-      channel.callRemote("stopHighlight");
+      stopHighlight();
     }
 
     return (

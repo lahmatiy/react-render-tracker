@@ -13,9 +13,7 @@ import {
   Play,
 } from "../common/icons";
 import { useReactRenderers } from "../../utils/react-renderers";
-import { remoteSubscriber } from "../../rempl-subscriber";
-import { useSelectedId } from "../../utils/selection";
-import { useHighlightedId } from "../../utils/highlighting";
+import { useHighlighting } from "../../utils/highlighting";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -63,43 +61,15 @@ const Toolbar = ({
     setHighlightActive(!highlightActive);
   };
 
+  const { startInspect, stopInpect } = useHighlighting();
+
   React.useEffect(() => {
     if (highlightActive) {
-      const channel = remoteSubscriber.ns("highlighter");
-      const startInspect = channel.getRemoteMethod("startInspect");
       startInspect();
     } else {
-      const channel = remoteSubscriber.ns("highlighter");
-      const stopInspect = channel.getRemoteMethod("stopInspect");
-      stopInspect();
+      stopInpect();
     }
   }, [highlightActive]);
-
-  const { select } = useSelectedId();
-  const { highlight } = useHighlightedId();
-
-  React.useEffect(
-    () =>
-      remoteSubscriber
-        .ns("highlighter")
-        .subscribe((event) => {
-          if (!event) {
-            return;
-          }
-
-          const { fiberID, stopInspect, selected = false } = event;
-
-          if (fiberID) {
-            highlight(fiberID);
-            selected && select(fiberID);
-          }
-
-          if (stopInspect) {
-            setHighlightActive(false);
-          }
-        }),
-    []
-  );
 
   React.useEffect(() => {
     let anchor: HTMLAnchorElement | null = document.createElement("a");

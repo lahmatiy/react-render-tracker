@@ -40,13 +40,13 @@ function ReactRendererUI() {
         <FiberMapsContextProvider key={renderer.id}>
           <EventsContextProvider channelId={renderer.channelId}>
             <WaitingForRenderer />
-            <HighlightingContextProvider>
-              <SelectionContextProvider>
+            <SelectionContextProvider>
+              <HighlightingContextProvider>
                 <PinnedContextProvider>
                   <Layout />
                 </PinnedContextProvider>
-              </SelectionContextProvider>
-            </HighlightingContextProvider>
+              </HighlightingContextProvider>
+            </SelectionContextProvider>
           </EventsContextProvider>
         </FiberMapsContextProvider>
       ),

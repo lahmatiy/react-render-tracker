@@ -8,6 +8,8 @@ import {
   SubscriptionsMap,
   useSubscription,
 } from "./subscription";
+import { remoteSubscriber } from "../rempl-subscriber";
+import { useSelectedId } from "./selection";
 
 type IdChangeCallback = (id: number | null) => void;
 type StateChangeCallback = (state: boolean) => void;
@@ -17,6 +19,10 @@ interface Highlighting {
   highlight: (nextSelectedId: number | null, pushHistory?: boolean) => void;
   subscribe: (fn: (value: number) => void) => () => void;
   subscribeToIdState: (id: number, fn: StateChangeCallback) => () => void;
+  startHighlight: (id: number, displayName: string) => void;
+  stopHighlight: () => void;
+  startInspect: () => void;
+  stopInpect: () => void;
 }
 
 const HighlightingContext = React.createContext<Highlighting>({} as any);
@@ -69,8 +75,46 @@ export const HighlightingContextProvider = ({
           fn
         );
       },
+      startHighlight(id: number, displayName: string) {
+        const channel = remoteSubscriber.ns("highlighter");
+        channel.callRemote("startHighlight", id, displayName);
+      },
+      stopHighlight() {
+        const channel = remoteSubscriber.ns("highlighter");
+        channel.callRemote("stopHighlight");
+      },
+      startInspect() {
+        const channel = remoteSubscriber.ns("highlighter");
+        channel.callRemote("startInspect");
+      },
+      stopInpect() {
+        const channel = remoteSubscriber.ns("highlighter");
+        channel.callRemote("stopInspect");
+      }
     }
-	}, []);
+  }, []);
+
+  const { highlight } = value;
+  const { select } = useSelectedId();
+
+  React.useEffect(
+    () =>
+      remoteSubscriber
+        .ns("highlighter")
+        .subscribe((event) => {
+          if (!event) {
+            return;
+          }
+
+          const { fiberID, selected = false } = event;
+
+          if (fiberID) {
+            highlight(fiberID);
+            selected && select(fiberID);
+          }
+        }),
+    []
+  );
 
   return (
     <HighlightingContext.Provider value={value}>
@@ -96,3 +140,19 @@ export const useHighlightedId = () => {
 
   return { highlightedId: state, highlight };
 };
+
+export const useHighlighting = () => {
+  const {
+    startHighlight,
+    stopHighlight,
+    startInspect,
+    stopInpect,
+  } = useHighlightingContext();
+
+  return {
+    startHighlight,
+    stopHighlight,
+    startInspect,
+    stopInpect,
+  };
+}
