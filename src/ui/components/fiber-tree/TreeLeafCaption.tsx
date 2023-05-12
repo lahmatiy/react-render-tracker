@@ -92,12 +92,11 @@ const TreeLeafCaptionContainer = React.memo(
     };
     const handleMouseEnter = () => {
       const channel = remoteSubscriber.ns("highlighter");
-      const highlight = channel.getRemoteMethod("highlight");
-      highlight(id, displayName);
+      channel.callRemote("startHighlight", id, displayName);
     }
     const handleMouseLeave = () => {
       const channel = remoteSubscriber.ns("highlighter");
-      channel.getRemoteMethod("removeHighlight")();
+      channel.callRemote("stopHighlight");
     }
 
     return (

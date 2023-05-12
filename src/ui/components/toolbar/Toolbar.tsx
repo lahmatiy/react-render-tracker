@@ -88,9 +88,9 @@ const Toolbar = ({
 
           const { fiberID, stopInspect, selected = false } = event;
 
-          highlight(fiberID);
-          if (fiberID && selected) {
-            select(fiberID);
+          if (fiberID) {
+            highlight(fiberID);
+            selected && select(fiberID);
           }
 
           if (stopInspect) {

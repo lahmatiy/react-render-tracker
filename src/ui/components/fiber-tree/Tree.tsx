@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useFiberChildren } from "../../utils/fiber-maps";
-import { ScrollSelectedIntoViewIfNeeded } from "./ScrollSelectedIntoViewIfNeeded";
+import { ScrollFiberIntoViewIfNeeded } from "./ScrollSelectedIntoViewIfNeeded";
 import TreeLeaf from "./TreeLeaf";
 import { TreeViewSettings, TreeViewSettingsContext } from "./contexts";
 
@@ -47,7 +47,7 @@ const Tree = ({
                 />
               ))
             )}
-            <ScrollSelectedIntoViewIfNeeded />
+            <ScrollFiberIntoViewIfNeeded />
           </TreeViewSettingsContext.Provider>
         </div>
       </div>

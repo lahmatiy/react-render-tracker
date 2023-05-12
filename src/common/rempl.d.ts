@@ -83,8 +83,8 @@ declare module "rempl" {
         stopInspect?: boolean
       };
       methods: {
-        highlight(fiberId: number, name: string): void;
-        removeHighlight(): void;
+        startHighlight(fiberId: number, name: string): void;
+        stopHighlight(): void;
         startInspect(): void;
         stopInspect(): void;
       }

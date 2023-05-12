@@ -8,6 +8,12 @@ export default class Highlighter {
   private publisher: Publisher;
   private hook: ReactDevtoolsHook;
 
+  private onClickHandler: (event: MouseEvent) => void;
+  private onPointerDownHandler: (event: MouseEvent) => void;
+  private onPointerOverHandler: (event: MouseEvent) => void;
+
+  private isInspectEnabled: boolean;
+
   constructor(
     hook: ReactDevtoolsHook,
     publisher: Publisher,
@@ -16,26 +22,40 @@ export default class Highlighter {
     this.hook = hook;
     this.publisher = publisher;
     this.overlay = overlay;
+
+    this.onClickHandler = this.onClick.bind(this);
+    this.onPointerDownHandler = this.onPointerDown.bind(this);
+    this.onPointerOverHandler = this.onPointerOver.bind(this);
+
+    this.isInspectEnabled = false;
   }
 
   startInspect() {
-    window.addEventListener('click', this.onClick.bind(this), true);
+    if (this.isInspectEnabled) {
+      return;
+    }
+
+    window.addEventListener('click', this.onClickHandler, true);
     window.addEventListener('mousedown', this.onMouseEvent, true);
     window.addEventListener('mouseover', this.onMouseEvent, true);
     window.addEventListener('mouseup', this.onMouseEvent, true);
-    window.addEventListener('pointerdown', this.onPointerDown.bind(this), true);
-    window.addEventListener('pointerover', this.onPointerOver.bind(this), true);
+    window.addEventListener('pointerdown', this.onPointerDownHandler, true);
+    window.addEventListener('pointerover', this.onPointerOverHandler, true);
     window.addEventListener('pointerup', this.onPointerUp, true);
+
+    this.isInspectEnabled = true;
   }
 
   stopInspect() {
-    window.removeEventListener('click', this.onClick, true);
+    window.removeEventListener('click', this.onClickHandler, true);
     window.removeEventListener('mousedown', this.onMouseEvent, true);
     window.removeEventListener('mouseover', this.onMouseEvent, true);
     window.removeEventListener('mouseup', this.onMouseEvent, true);
-    window.removeEventListener('pointerdown', this.onPointerDown, true);
-    window.removeEventListener('pointerover', this.onPointerOver, true);
+    window.removeEventListener('pointerdown', this.onPointerDownHandler, true);
+    window.removeEventListener('pointerover', this.onPointerOverHandler, true);
     window.removeEventListener('pointerup', this.onPointerUp, true);
+
+    this.isInspectEnabled = false;
   }
 
   private onClick(event: MouseEvent) {
@@ -72,16 +92,19 @@ export default class Highlighter {
   }
 
   private selectFiberForNode(node, selected = false) {
-    const rendererInterface = this.hook.rendererInterfaces.get(1);
+    for (const rendererInterface of this.hook.rendererInterfaces.values()) {
+      let fiberID;
 
-    let fiberID;
+      if (rendererInterface) {
+        fiberID = rendererInterface.getFiberIDForNative(node, true);
+      }
 
-    if (rendererInterface) {
-      fiberID = rendererInterface.getFiberIDForNative(node, true);
-    }
+      if (fiberID) {
+        this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
+      }
 
-    if (fiberID) {
-      this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
+      // Breaking because currently supported only one interface
+      break;
     }
   }
 }

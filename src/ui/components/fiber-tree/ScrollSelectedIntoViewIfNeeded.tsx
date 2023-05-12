@@ -3,14 +3,14 @@ import { useSelectedId, useHighlightedId } from "../../utils/selection";
 import { getBoundingRect, getOverflowParent } from "../../utils/layout";
 import { useTreeViewSettingsContext } from "./contexts";
 
-export const ScrollSelectedIntoViewIfNeeded = () => {
+export const ScrollFiberIntoViewIfNeeded = () => {
   const { selectedId } = useSelectedId();
   const { highlightedId } = useHighlightedId();
   const { getFiberElement } = useTreeViewSettingsContext();
   const { groupByParent, showUnmounted } = useTreeViewSettingsContext();
 
   React.useEffect(() => {
-    const id = selectedId || highlightedId;
+    const id = highlightedId || selectedId;
     const element =
       id !== null ? getFiberElement(id) || null : null;
 
