@@ -5,8 +5,8 @@ const HIGHLIGHTER_NS = "highlighter";
 
 export default class Highlighter {
   private overlay: Overlay;
-  private publisher: Publisher;
   private hook: ReactDevtoolsHook;
+  private onPublish: () => void;
 
   private onClickHandler: (event: MouseEvent) => void;
   private onPointerDownHandler: (event: MouseEvent) => void;
@@ -16,12 +16,12 @@ export default class Highlighter {
 
   constructor(
     hook: ReactDevtoolsHook,
-    publisher: Publisher,
-    overlay: Overlay
+    overlay: Overlay,
+    onPublish: () => void,
   ) {
     this.hook = hook;
-    this.publisher = publisher;
     this.overlay = overlay;
+    this.onPublish = onPublish;
 
     this.onClickHandler = this.onClick.bind(this);
     this.onPointerDownHandler = this.onPointerDown.bind(this);
@@ -65,7 +65,7 @@ export default class Highlighter {
     this.stopInspect();
 
     this.selectFiberForNode(event.target, true);
-    this.publisher.ns(HIGHLIGHTER_NS).publish({ stopInspect: true });
+    this.onPublish({ stopInspect: true });
   }
 
   private onMouseEvent(event: MouseEvent) {
@@ -100,7 +100,7 @@ export default class Highlighter {
       }
 
       if (fiberID) {
-        this.publisher.ns(HIGHLIGHTER_NS).publish({ fiberID, selected });
+        this.onPublish({ fiberID, selected });
       }
 
       // Breaking because currently supported only one interface

@@ -1,6 +1,7 @@
 import { createIntegrationCore } from "./core";
 import { createReactDevtoolsHookHandlers } from "./devtools-hook-handlers";
 import { createReactInteractionApi } from "./interaction-api";
+import { createHighlightApi } from "./highlight-api";
 import {
   ReactInternals,
   ReactIntegrationApi,
@@ -8,6 +9,8 @@ import {
   RemoteCommandsApi,
 } from "../types";
 import { createDispatcherTrap } from "./dispatcher-trap";
+import { hook } from "../index";
+import { publishHighlightEvent } from "../rempl-publisher";
 
 export function attach(
   renderer: ReactInternals,
@@ -16,9 +19,11 @@ export function attach(
 ): ReactIntegrationApi {
   const integrationCore = createIntegrationCore(renderer, recordEvent);
   const dispatcherApi = createDispatcherTrap(renderer, integrationCore);
+  const highlightApi = createHighlightApi(hook, publishHighlightEvent);
 
   removeCommands({
     breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
+    highlightApi
   });
 
   return {

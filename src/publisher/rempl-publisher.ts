@@ -12,9 +12,6 @@ import {
   Message,
   RemoteCommandsApi,
 } from "./types";
-import { hook } from "./index";
-import Overlay from "./overlay";
-import Highlighter from "./highlighter";
 
 let eventIdSeed = 0;
 const { openSourceLoc } = config;
@@ -136,61 +133,30 @@ publisher.provide("resolve-source-locations", locations =>
   )
 );
 
-const HIGHLIGHTER_NS = "highlighter";
-let overlay: Overlay | null = null;
-let highlighter: Highlighter | null = null;
+export function publishHighlightEvent(event) {
+  publisher.ns("highlighter")
+    .publish(event);
+}
 
-publisher.ns(HIGHLIGHTER_NS)
-  .provide({
-    startHighlight: (fiberId: number, name: string) => {
-      let nodes = hook.rendererInterfaces.get(1).findNativeNodesForFiberID(fiberId)
-      if (!nodes || !nodes.length) {
-        return;
-      }
-
-      nodes = nodes.filter(node => node.nodeType === 1);
-
-      if (nodes.length) {
-
-        if (!overlay) {
-          overlay = new Overlay(hook);
-        }
-
-        overlay.inspect(nodes, name);
-      }
-    },
-    stopHighlight: () => {
-      if (overlay) {
-        overlay.remove();
-        overlay = null;
-      }
-    },
-    startInspect: () => {
-      if (!overlay) {
-        overlay = new Overlay(hook);
-      }
-      if (!highlighter) {
-        highlighter = new Highlighter(hook, publisher, overlay);
-      }
-
-      highlighter.startInspect();
-    },
-    stopInspect: () => {
-      if (highlighter) {
-        highlighter.stopInspect();
-        highlighter = null;
-      }
-      if (overlay) {
-        overlay.remove();
-        overlay = null;
-      }
-    }
-  });
-
-export function remoteCommands({ breakLeakedObjectRefs }: RemoteCommandsApi) {
+export function remoteCommands({
+  breakLeakedObjectRefs,
+  highlightApi: {
+    startHighlight,
+    stopHighlight,
+    startInspect,
+    stopInspect,
+  },
+}: RemoteCommandsApi) {
   publisher.provide("break-leaked-object-refs", () => {
     breakLeakedObjectRefs();
   });
+  publisher.ns("highlighter")
+    .provide({
+      startHighlight,
+      stopHighlight,
+      startInspect,
+      stopInspect,
+    });
 }
 
 // import { connectPublisherWs } from "rempl";
