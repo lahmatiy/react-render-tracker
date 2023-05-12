@@ -48,6 +48,8 @@ export interface MessageFiber extends TransferFiber {
   displayName: string;
   typeDef: FiberTypeDef;
   mounted: boolean;
+  leaked: number;
+  leakedHooks: number[] | null;
   events: FiberEvent[];
   updatesCount: number;
   updatesBailoutCount: number;
@@ -79,6 +81,8 @@ export interface ValueTransition {
 }
 
 export interface Commit {
+  commitId: number;
   start: CommitEvent;
   finish: LinkedEvent | null;
+  events: Message[];
 }

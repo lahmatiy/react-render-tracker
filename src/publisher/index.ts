@@ -4,12 +4,14 @@ import { installReactDevtoolsHook } from "./react-devtools-hook";
 import {
   publishReactRenderer,
   publishReactUnsupportedRenderer,
+  remoteCommands,
 } from "./rempl-publisher";
 import { attach } from "./react-integration";
 
 export const hook = installReactDevtoolsHook(
   window,
-  (id, renderer) => attach(renderer, publishReactRenderer(id, renderer)),
+  (id, renderer) =>
+    attach(renderer, publishReactRenderer(id, renderer), remoteCommands),
   publishReactUnsupportedRenderer
 );
 

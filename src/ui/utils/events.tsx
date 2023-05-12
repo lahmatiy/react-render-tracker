@@ -58,14 +58,19 @@ export function EventsContextProvider({
     setEffectPaused.current(paused);
   }, []);
   const maps = useFiberMaps();
-  const { fiberById, parentTreeIncludeUnmounted, ownerTreeIncludeUnmounted } =
-    maps;
+  const {
+    fiberById,
+    parentTreeIncludeUnmounted,
+    ownerTreeIncludeUnmounted,
+    leakedFibers,
+  } = maps;
   const clearAllEvents = React.useCallback(() => {
     for (const [id, fiber] of fiberById) {
       if (fiber.events.length > 0) {
         fiberById.set(id, {
           ...fiber,
           events: [],
+          leaked: 0,
           warnings: 0,
           updatesCount: 0,
           updatesBailoutCount: 0,
@@ -78,6 +83,10 @@ export function EventsContextProvider({
       if (!fiber.mounted) {
         parentTreeIncludeUnmounted.delete(fiber.id);
         ownerTreeIncludeUnmounted.delete(fiber.id);
+      }
+
+      if (fiber.leaked) {
+        leakedFibers.delete(fiber.id);
       }
     }
 

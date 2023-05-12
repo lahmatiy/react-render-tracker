@@ -1,7 +1,7 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useSelectionState } from "../../utils/selection";
-import { useHighlightingState, useHighlighting } from "../../utils/highlighting";
+import { useHighlighting } from "../../utils/highlighting";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
@@ -9,7 +9,7 @@ import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
 interface TreeLeafCaptionProps {
   fiber: MessageFiber;
   depth?: number;
-  showTimings: boolean;
+  showTimings?: boolean;
   pinned?: boolean;
   expanded?: boolean;
   setExpanded?: (value: boolean) => void;
@@ -27,7 +27,7 @@ interface TreeLeafCaptionContainerProps {
 const TreeLeafCaption = ({
   fiber,
   depth = 0,
-  showTimings,
+  showTimings = false,
   pinned = false,
   expanded = false,
   setExpanded,
@@ -65,22 +65,23 @@ const TreeLeafCaptionContainer = React.memo(
     content,
   }: TreeLeafCaptionContainerProps) => {
     const { id, ownerId, displayName } = fiber;
-    const { selected, select } = useSelectionState(fiber.id);
-    const { highlighted } = useHighlightingState(fiber.id);
+    const { selected, select } = useSelectionState(id);
     const { startHighlight, stopHighlight } = useHighlighting();
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
     const classes = ["tree-leaf-caption"];
-    for (const [cls, add] of Object.entries({
-      selected,
-      highlighted,
-      pinned,
-      "render-root": isRenderRoot,
-    })) {
-      if (add) {
-        classes.push(cls);
-      }
+
+    if (selected) {
+      classes.push("selected");
+    }
+
+    if (pinned) {
+      classes.push("pinned");
+    }
+
+    if (isRenderRoot) {
+      classes.push("render-root");
     }
 
     const handleSelect = (event: React.MouseEvent) => {

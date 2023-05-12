@@ -36,9 +36,10 @@ function FiberPath({
 }) {
   const { fiberById } = useFiberMaps();
   const { pin } = usePinnedContext();
-
   const path = [];
-  let cursor = fiber[groupByParent ? "parentId" : "ownerId"];
+  const ancestorProp = groupByParent ? "parentId" : "ownerId";
+  let cursor = fiber[ancestorProp];
+
   while (cursor !== 0) {
     const ancestor = fiberById.get(cursor);
 
@@ -51,7 +52,7 @@ function FiberPath({
       />
     );
 
-    cursor = ancestor?.[groupByParent ? "parentId" : "ownerId"] || 0;
+    cursor = ancestor?.[ancestorProp] || 0;
   }
 
   if (path.length === 0) {

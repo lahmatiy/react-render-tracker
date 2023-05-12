@@ -1,4 +1,9 @@
-import { FiberType, FiberRootMode } from "common-types";
+import {
+  FiberType,
+  FiberRootMode,
+  TrackingObjectType,
+  TrackingObjectTypeHook,
+} from "common-types";
 
 export const ToolId = "React Render Tracker";
 
@@ -15,7 +20,7 @@ export const ElementTypeSuspenseList: FiberType = 10;
 export const ElementTypeProfiler: FiberType = 11;
 export const ElementTypeOtherOrUnknown: FiberType = 12;
 
-export const fiberTypeName: Record<FiberType, string> = {
+export const FiberTypeName: Record<FiberType, string> = {
   [ElementTypeClass]: "Class component",
   [ElementTypeFunction]: "Function component",
   [ElementTypeMemo]: "Memo",
@@ -31,11 +36,25 @@ export const fiberTypeName: Record<FiberType, string> = {
 };
 
 export const LegacyRoot: FiberRootMode = 0;
-export const BlockingRoot: FiberRootMode = 1;
-export const ConcurrentRoot: FiberRootMode = 2;
+export const ConcurrentRoot: FiberRootMode = 1;
 
 export const fiberRootMode: Record<FiberRootMode, string> = {
   [LegacyRoot]: "Legacy Mode",
-  [BlockingRoot]: "Blocking Mode",
   [ConcurrentRoot]: "Concurrent Mode",
 };
+
+// Tracking object types must a power of 2
+export const TrackingObjectFiber: TrackingObjectType = 0;
+export const TrackingObjectAlternate: TrackingObjectType = 1;
+export const TrackingObjectStateNode: TrackingObjectType = 2;
+export const TrackingObjectHook: TrackingObjectTypeHook = 3;
+
+export const TrackingObjectTypeName: Record<TrackingObjectType, string> = {
+  [TrackingObjectFiber]: "fiber",
+  [TrackingObjectAlternate]: "alternate",
+  [TrackingObjectStateNode]: "stateNode",
+  [TrackingObjectHook]: "hook",
+};
+
+export const FeatureMemLeaks = false;
+export const FeatureCommits = false;

@@ -470,6 +470,18 @@ export class TreeNode {
     return this.walkBack(accept);
   }
 
+  ancestors() {
+    const ancestors: TreeNode[] = [];
+    let cursor = this.parent;
+
+    while (cursor !== null && cursor.fiber !== null) {
+      ancestors.unshift(cursor);
+      cursor = cursor.#parent;
+    }
+
+    return ancestors;
+  }
+
   descendants() {
     const subtree: TreeNode[] = [];
 

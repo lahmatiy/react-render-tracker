@@ -1,5 +1,8 @@
 import * as React from "react";
-import { ElementTypeProvider } from "../../../../common/constants";
+import {
+  ElementTypeProvider,
+  FeatureMemLeaks,
+} from "../../../../common/constants";
 import { FiberInfoSection } from "./FiberInfoSection";
 import { FiberInfoSectionContexts } from "./FiberInfoSectionContexts";
 import { FiberInfoSectionConsumers } from "./FiberInfoSectionConsumers";
@@ -7,6 +10,8 @@ import { FiberInfoSectionMemoHooks } from "./FiberInfoSectionMemoHooks";
 import { FiberInfoSectionProps } from "./FiberInfoSectionProps";
 import { MessageFiber } from "../../../types";
 import { FiberInfoSectionEvents } from "./FiberInfoSectionEvents";
+import { FiberInfoSectionAncestors } from "./FiberInfoSectionAncestors";
+import { FiberInfoSectionLeakedHooks } from "./FiberInfoSectionLeakedHooks";
 
 interface IFiberInfo {
   fiber: MessageFiber;
@@ -46,6 +51,8 @@ const FiberInfo = ({
   return (
     <div className="fiber-info">
       <SectionStateContext.Provider value={sectionStatesContextValue}>
+        <FiberInfoSectionAncestors fiber={fiber} />
+        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         <FiberInfoSectionProps fiber={fiber} />
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>

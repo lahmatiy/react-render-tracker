@@ -1,0 +1,28 @@
+.maybe-leaks__group-header {
+  --scroll-margin-top: 0px;
+
+  position: sticky;
+  top: -1px;
+  z-index: 2;
+  margin-top: -1px;
+  border: solid transparent;
+  border-width: 1px 0;
+  border-color: #ddd;
+  background-color: #f4f4f4;
+  padding-left: 19px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.maybe-leaks__group-header:hover {
+  background-color: #eee;
+}
+
+.maybe-leaks__group-header-count {
+  margin-left: 1ex;
+  color: #aaa;
+}
+
+.maybe-leaks__group-fibers {
+  padding: 1px 0 4px;
+}

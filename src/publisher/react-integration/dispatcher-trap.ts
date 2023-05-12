@@ -27,7 +27,7 @@ type Dispatcher = {
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
 };
-type DispatchFn = (value: any) => any;
+type DispatchFn = ((value: any) => any) & { hookIdx?: number };
 type FiberDispatcherInfo = {
   hooks: HookInfo[];
 };
@@ -73,7 +73,7 @@ function extractHookPath(depth = 0) {
   return result;
 }
 
-export function dispatcherTrap(
+export function createDispatcherTrap(
   renderer: ReactInternals,
   { getFiberTypeId, isFiberRoot }: CoreApi
 ): ReactDispatcherTrapApi {
@@ -92,10 +92,7 @@ export function dispatcherTrap(
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
   const fiberComputedMemo = new WeakMap<Fiber, HookCompute[]>();
-  const patchedHookFn = new WeakMap<
-    DispatchFn,
-    { hook: number; fn: DispatchFn }
-  >();
+  const patchedHookFn = new WeakMap<DispatchFn, DispatchFn>();
 
   function trackUseHook(
     name: string,
@@ -128,8 +125,7 @@ export function dispatcherTrap(
     const orig = dispatcher[hookName];
 
     dispatcher[hookName] = function (create: any, deps?: any[]) {
-      trackUseHook(hookName);
-
+      const hookIdx = trackUseHook(hookName);
       const hookOwnerFiber = currentFiber;
 
       // const path = trackHookLocation();
@@ -166,6 +162,7 @@ export function dispatcherTrap(
 
         return destroy;
       };
+      wrappedCreate.hookIdx = hookIdx;
 
       return orig(wrappedCreate, deps);
     };
@@ -183,59 +180,57 @@ export function dispatcherTrap(
         const hookOwnerFiber = currentFiber as Fiber;
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
-        dispatchWrapper = {
-          hook: currentFiberHookIndex,
-          fn: value => {
-            // if (
-            //   !currentFiberRerenderState &&
-            //   currentFiber !== null &&
-            //   (currentFiber === hookOwnerFiber ||
-            //     currentFiber?.alternate === hookOwnerFiber)
-            // ) {
-            //   currentFiberRerenderState = {
-            //     state: currentFiber.memoizedState,
-            //   };
-            // }
-            // console.log(hookName, currentFiberRerenderState);
-            // console.log(
-            //   "dispatch",
-            //   hookOwnerFiberId,
-            //   currentFiber && getOrGenerateFiberId(currentFiber),
-            //   window.event?.type
-            // );
-            // console.dir(new Error());
-            // if (
-            //   !currentFiber &&
-            //   !currentEffectFiber &&
-            //   window.event?.type === "message"
-            // ) {
-            //   debugger;
-            // }
+        dispatch.hookIdx = currentFiberHookIndex;
+        dispatchWrapper = value => {
+          // if (
+          //   !currentFiberRerenderState &&
+          //   currentFiber !== null &&
+          //   (currentFiber === hookOwnerFiber ||
+          //     currentFiber?.alternate === hookOwnerFiber)
+          // ) {
+          //   currentFiberRerenderState = {
+          //     state: currentFiber.memoizedState,
+          //   };
+          // }
+          // console.log(hookName, currentFiberRerenderState);
+          // console.log(
+          //   "dispatch",
+          //   hookOwnerFiberId,
+          //   currentFiber && getOrGenerateFiberId(currentFiber),
+          //   window.event?.type
+          // );
+          // console.dir(new Error());
+          // if (
+          //   !currentFiber &&
+          //   !currentEffectFiber &&
+          //   window.event?.type === "message"
+          // ) {
+          //   debugger;
+          // }
 
-            dispatchCalls.push({
-              dispatch,
-              dispatchName: hookName === "useState" ? "setState" : "dispatch",
-              root: hookOwnerFiberRoot,
-              fiber: hookOwnerFiber,
-              renderFiber: currentFiber,
-              effectFiber: currentEffectFiber,
-              effectName: currentEffectName,
-              event:
-                (!currentFiber && !currentEffectFiber && window.event?.type) ||
-                null,
-              loc: extractCallLoc(0),
-              // stack: String(new Error().stack),
-            });
+          dispatchCalls.push({
+            dispatch,
+            dispatchName: hookName === "useState" ? "setState" : "dispatch",
+            root: hookOwnerFiberRoot,
+            fiber: hookOwnerFiber,
+            renderFiber: currentFiber,
+            effectFiber: currentEffectFiber,
+            effectName: currentEffectName,
+            event:
+              (!currentFiber && !currentEffectFiber && window.event?.type) ||
+              null,
+            loc: extractCallLoc(0),
+            // stack: String(new Error().stack),
+          });
 
-            // console.log("dispatch", new Error().stack, ...args);
-            return dispatch(value);
-          },
+          // console.log("dispatch", new Error().stack, ...args);
+          return dispatch(value);
         };
 
         patchedHookFn.set(dispatch, dispatchWrapper);
       }
 
-      return [state, dispatchWrapper.fn];
+      return [state, dispatchWrapper];
     };
   }
 
@@ -284,104 +279,105 @@ export function dispatcherTrap(
     return dispatcher;
   }
 
-  Object.defineProperty(renderer.currentDispatcherRef, "current", {
-    get() {
-      return currentDispatcher;
-    },
-    set(nextDispatcher: Dispatcher | null) {
-      const nextCurrentFiber = renderer.getCurrentFiber();
-      const prevDispatcher = currentDispatcher;
+  if (typeof renderer.getCurrentFiber === "function") {
+    Object.defineProperty(renderer.currentDispatcherRef, "current", {
+      get() {
+        return currentDispatcher;
+      },
+      set(nextDispatcher: Dispatcher | null) {
+        const nextCurrentFiber = renderer.getCurrentFiber();
+        const prevDispatcher = currentDispatcher;
 
-      currentDispatcher = patchDispatcher(nextDispatcher);
+        currentDispatcher = patchDispatcher(nextDispatcher);
 
-      // render
-      if (nextCurrentFiber !== currentFiber) {
-        currentFiber = nextCurrentFiber;
-        currentFiberCollectInfo = null;
-        currentFiberHookIndex = 0;
+        // render
+        if (nextCurrentFiber !== currentFiber) {
+          currentFiber = nextCurrentFiber;
+          currentFiberCollectInfo = null;
+          currentFiberHookIndex = 0;
 
-        if (currentFiber !== null) {
-          const alternate = currentFiber.alternate;
+          if (currentFiber !== null) {
+            const alternate = currentFiber.alternate;
 
-          // collect info on mount only
-          if (alternate === null) {
-            const fiberTypeId = getFiberTypeId(currentFiber.type);
+            // collect info on mount only
+            if (alternate === null) {
+              const fiberTypeId = getFiberTypeId(currentFiber.type);
 
-            if (!fiberTypeInfo.has(fiberTypeId)) {
-              fiberTypeInfo.set(
-                fiberTypeId,
-                (currentFiberCollectInfo = {
-                  hooks: [],
-                })
-              );
+              if (!fiberTypeInfo.has(fiberTypeId)) {
+                fiberTypeInfo.set(
+                  fiberTypeId,
+                  (currentFiberCollectInfo = {
+                    hooks: [],
+                  })
+                );
+              }
+            } else {
+              // reset stat on update
+              fiberComputedMemo.delete(currentFiber);
             }
-          } else {
-            // reset stat on update
-            fiberComputedMemo.delete(currentFiber);
-          }
 
-          let nextCurrentRoot =
-            fiberRoot.get(currentFiber) ||
-            (alternate !== null && fiberRoot.get(alternate)) ||
-            null;
+            let nextCurrentRoot =
+              fiberRoot.get(currentFiber) ||
+              (alternate !== null && fiberRoot.get(alternate)) ||
+              null;
 
-          if (nextCurrentRoot === null) {
-            let cursor = currentFiber.return;
+            if (nextCurrentRoot === null) {
+              let cursor = currentFiber.return;
 
-            while (cursor !== null) {
-              const root = fiberRoot.get(currentFiber);
+              while (cursor !== null) {
+                const root = fiberRoot.get(currentFiber);
 
-              if (root !== undefined) {
-                nextCurrentRoot = root;
-                break;
+                if (root !== undefined) {
+                  nextCurrentRoot = root;
+                  break;
+                }
+
+                if (isFiberRoot(cursor)) {
+                  nextCurrentRoot = cursor.stateNode as FiberRoot;
+                  break;
+                }
+
+                cursor = cursor.return;
               }
 
-              if (isFiberRoot(cursor)) {
-                nextCurrentRoot = cursor.stateNode as FiberRoot;
-                break;
+              if (nextCurrentRoot !== null) {
+                fiberRoot.set(currentFiber, nextCurrentRoot);
               }
-
-              cursor = cursor.return;
             }
 
-            if (nextCurrentRoot !== null) {
-              fiberRoot.set(currentFiber, nextCurrentRoot);
-            }
+            currentRoot = nextCurrentRoot;
           }
 
-          currentRoot = nextCurrentRoot;
+          // currentFiberRerenderState = null;
+          // rerenderStates.delete(currentFiber as Fiber);
         }
+        // re-render
+        else if (
+          currentFiber !== null &&
+          prevDispatcher !== null &&
+          nextDispatcher !== null &&
+          !ignoreDispatcherTransition.has(prevDispatcher) &&
+          !ignoreDispatcherTransition.has(nextDispatcher)
+        ) {
+          //   if (currentFiberRerenderState) {
+          //     if (rerenderStates.has(currentFiber)) {
+          //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
+          //     } else {
+          //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
+          //     }
+          //   }
 
-        // currentFiberRerenderState = null;
-        // rerenderStates.delete(currentFiber as Fiber);
-      }
-      // re-render
-      else if (
-        currentFiber !== null &&
-        prevDispatcher !== null &&
-        nextDispatcher !== null &&
-        !ignoreDispatcherTransition.has(prevDispatcher) &&
-        !ignoreDispatcherTransition.has(nextDispatcher)
-      ) {
-        //   if (currentFiberRerenderState) {
-        //     if (rerenderStates.has(currentFiber)) {
-        //       rerenderStates.get(currentFiber)?.push(currentFiberRerenderState);
-        //     } else {
-        //       rerenderStates.set(currentFiber, [currentFiberRerenderState]);
-        //     }
-        //   }
-
-        // avoid collecting info on re-renders
-        currentFiberCollectInfo = null;
-        currentFiberHookIndex = 0;
-      }
-    },
-  });
+          // avoid collecting info on re-renders
+          currentFiberCollectInfo = null;
+          currentFiberHookIndex = 0;
+        }
+      },
+    });
+  }
 
   return {
     getDispatchHookIndex(dispatch: DispatchFn) {
-      const dispatchWrapper = patchedHookFn.get(dispatch);
-      return dispatchWrapper !== undefined ? dispatchWrapper.hook : null;
+      return dispatch.hookIdx || null;
     },
     getFiberTypeHookInfo(fiberTypeId: number) {
       return fiberTypeInfo.get(fiberTypeId)?.hooks || [];

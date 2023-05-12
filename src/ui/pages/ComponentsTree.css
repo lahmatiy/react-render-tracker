@@ -1,0 +1,17 @@
+.app-page-components-tree {
+  grid-area: page;
+  display: grid;
+  grid-template-areas:
+    "toolbar"
+    "fiber-tree-header"
+    "fiber-tree";
+  grid-template-rows: auto auto 1fr;
+}
+
+.app-page-components-tree[data-has-selected] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "toolbar toolbar"
+    "fiber-tree-header details"
+    "fiber-tree details";
+}

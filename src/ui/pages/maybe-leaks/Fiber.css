@@ -1,0 +1,36 @@
+.maybe-leaks-page-fiber {
+  padding-left: calc(var(--depth, 0) * 14px);
+  border: solid transparent;
+  border-width: 1px 0;
+  background-color: white;
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.maybe-leaks-page-fiber:hover {
+  background-color: #eee;
+}
+.maybe-leaks-page-fiber:hover:not(.selected) {
+  border-color: #e6e6e6;
+}
+.maybe-leaks-page-fiber.selected {
+  background-color: #dde8f4;
+  border-color: #cfdeef;
+  cursor: default;
+}
+.maybe-leaks-page-fiber.selected.render-root {
+  background-color: #deebf7;
+}
+
+.maybe-leaks-page-fiber__content {
+  display: inline-block;
+  padding-left: 19px;
+  padding-right: 4px;
+  scroll-margin-top: var(--scroll-margin-top, 0px);
+  scroll-margin-left: var(--scroll-margin-left, 0px);
+}
+
+.maybe-leaks-page-fiber__name {
+  color: #666;
+}

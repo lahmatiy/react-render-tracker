@@ -14,7 +14,7 @@
 .fiber-info-header-prelude {
   display: flex;
   flex-wrap: wrap-reverse;
-  align-items: center;
+  align-items: start;
   justify-content: flex-end;
   gap: 2px 8px;
   margin-top: -2px;
@@ -24,7 +24,8 @@
 }
 .fiber-info-header-prelude__content {
   display: flex;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: 1px;
   flex: 1;
   white-space: nowrap;
 }

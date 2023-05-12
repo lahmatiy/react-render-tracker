@@ -1,0 +1,106 @@
+.fiber-info-section-ancestors {
+  margin-left: -16px;
+  margin-right: -8px;
+}
+.fiber-info-section-ancestors .fiber-ancestor {
+  display: flex;
+  line-height: 19px;
+  padding: 0 7px;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 3px;
+}
+.fiber-info-section-ancestors .fiber-ancestor:hover {
+  background-color: #eee;
+}
+.fiber-info-section-ancestors .fiber-ancestor__content {
+  display: inline-block;
+  margin-left: 2px;
+  flex: 1;
+}
+.fiber-info-section-ancestors .dot {
+  --type-image-size: 10px;
+  width: 17px;
+  background-image: linear-gradient(
+    to right,
+    #ddd 0px,
+    #ddd 1px,
+    transparent 0px
+  );
+  background-repeat: repeat-y;
+  background-size: 1px 10px;
+  background-position: center;
+}
+.fiber-info-section-ancestors .dot:not(.skip)::before {
+  content: "";
+  display: block;
+  margin-top: 1px;
+  aspect-ratio: 1/1;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: var(--type-color, #e8e8e8);
+  background-image: var(--type-image);
+  background-size: var(--type-image-size);
+  background-clip: padding-box;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.fiber-info-section-ancestors .dot.mount {
+  --type-image-size: 11px;
+  --type-color: #cbe4b4;
+  --type-image: url("../../../images/event-mount.svg");
+}
+.fiber-info-section-ancestors .dot.update {
+  --type-color: #efe6a9;
+  --type-image: url("../../../images/event-update.svg");
+}
+.fiber-info-section-ancestors .dot.update-trigger {
+  --type-color: #efe6a9;
+  --type-image: url("../../../images/update-trigger.svg");
+  --type-image-size: 9px;
+}
+.fiber-info-section-ancestors .dot.unmount {
+  --type-image: url("../../../images/event-unmount.svg");
+  --type-image-size: 13px;
+}
+.fiber-info-section-ancestors .details-fiber__name_unmounted {
+  text-decoration: none;
+}
+.fiber-info-section-ancestors .fiber-ancestor__owner {
+  display: inline-block;
+  font-size: 8px;
+  border: 1px solid #ccc;
+  background-color: white;
+  padding: 1px 3px 0;
+  border-radius: 3px;
+  color: #999;
+  line-height: 11px;
+  vertical-align: baseline;
+  margin-right: 3px;
+  position: relative;
+  top: -1px;
+  text-transform: uppercase;
+  cursor: help;
+}
+.fiber-info-section-ancestors .fiber-ancestor__maybe-leak {
+  display: inline-block;
+  font-size: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background-color: #f6d8d8;
+  background-clip: padding-box;
+  padding: 2px 4px 1px;
+  border-radius: 3px;
+  color: #a36c6c;
+  line-height: 11px;
+  vertical-align: baseline;
+  margin-right: 3px;
+  position: relative;
+  top: -1px;
+  text-transform: uppercase;
+  cursor: help;
+}
+.fiber-info-section-ancestors
+  .fiber-ancestor.fiber-ancestor__self
+  .details-fiber__name {
+  font-weight: bold;
+}

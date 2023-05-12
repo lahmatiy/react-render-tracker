@@ -2,12 +2,16 @@ import * as React from "react";
 import { useEventsContext } from "../../utils/events";
 import { useFiberChildren } from "../../utils/fiber-maps";
 
-export default function WaitingForReady() {
-  const children = useFiberChildren(0);
+export default function WaitingForReady({
+  children,
+}: {
+  children: JSX.Element;
+}) {
+  const fiberRoots = useFiberChildren(0);
   const { loadedEventsCount, totalEventsCount } = useEventsContext();
 
-  if (children.length > 0) {
-    return null;
+  if (fiberRoots.length > 0) {
+    return children;
   }
 
   return (
@@ -18,7 +22,7 @@ export default function WaitingForReady() {
           : `Loading events (${Math.trunc(
               (100 * loadedEventsCount) / totalEventsCount
             )}%)...`
-        : "Waiting for a React's render root to be mount..."}
+        : "Waiting for a React render root to be mounted..."}
     </div>
   );
 }

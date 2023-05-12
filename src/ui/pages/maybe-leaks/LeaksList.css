@@ -1,0 +1,7 @@
+.app-page-maybe-leaks .no-leaks {
+  position: relative;
+  grid-area: page;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #888;
+}

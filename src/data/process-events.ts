@@ -1,4 +1,4 @@
-import { ElementTypeProvider } from "../common/constants";
+import { ElementTypeProvider, TrackingObjectHook } from "../common/constants";
 import {
   Message,
   TransferFiberChanges,
@@ -54,12 +54,14 @@ export function processEvents(
     fiberTypeDefById,
     fibersByTypeId,
     fibersByProviderId,
+    leakedFibers,
     parentTree,
     parentTreeIncludeUnmounted,
     ownerTree,
     ownerTreeIncludeUnmounted,
   }: ReturnType<typeof createFiberDataset>
 ) {
+  const newEventsByCommitId = new Map<number, Message[]>();
   let mountCount = 0;
   let unmountCount = 0;
   let updateCount = 0;
@@ -155,6 +157,8 @@ export function processEvents(
             event.fiber.displayName ||
             (!event.fiber.ownerId ? "Render root" : "Unknown"),
           mounted: true,
+          leaked: 0,
+          leakedHooks: null,
           events: [],
           updatesCount: 0,
           updatesBailoutCount: 0,
@@ -244,6 +248,7 @@ export function processEvents(
 
       case "commit-start":
         commitById.set(event.commitId, {
+          commitId: event.commitId,
           start: linkEvent({
             target: "commit",
             targetId: event.commitId,
@@ -251,8 +256,81 @@ export function processEvents(
             trigger: null,
           }),
           finish: null,
+          events: [],
         });
         continue;
+
+      case "maybe-leaks": {
+        for (const added of event.added) {
+          const fiberId = added.fiberId;
+
+          if (!fiberById.has(fiberId)) {
+            continue;
+          }
+
+          fiber = fiberById.get(fiberId) as MessageFiber;
+
+          if (added.type === TrackingObjectHook) {
+            if (added.hookIdx === null) {
+              continue;
+            }
+
+            fiber = {
+              ...fiber,
+              leakedHooks: fiber.leakedHooks
+                ? fiber.leakedHooks.concat(added.hookIdx)
+                : [added.hookIdx],
+              leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
+            };
+          } else {
+            fiber = {
+              ...fiber,
+              leaked: fiber.leaked | (1 << added.type), // set a type bit to 1
+            };
+          }
+
+          leakedFibers.add(fiberId);
+          fiberById.set(fiberId, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiberId, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiberId, fiber);
+        }
+
+        for (const removed of event.removed) {
+          const fiberId = removed.fiberId;
+
+          if (!fiberById.has(fiberId)) {
+            continue;
+          }
+
+          fiber = fiberById.get(fiberId) as MessageFiber;
+          if (removed.type === TrackingObjectHook) {
+            const leakedHooks =
+              fiber.leakedHooks?.filter(idx => idx !== removed.hookIdx) || [];
+            fiber = {
+              ...fiber,
+              leakedHooks: leakedHooks.length ? leakedHooks : null,
+              leaked: leakedHooks.length
+                ? fiber.leaked
+                : fiber.leaked & ~(1 << removed.type), // set a type bit to 1
+            };
+          } else {
+            fiber = {
+              ...fiber,
+              leaked: fiber.leaked & ~(1 << removed.type), // set a type bit to 0
+            };
+          }
+
+          if (!fiber.leaked) {
+            leakedFibers.delete(fiberId);
+          }
+
+          fiberById.set(fiberId, fiber);
+          parentTreeIncludeUnmounted.setFiber(fiberId, fiber);
+          ownerTreeIncludeUnmounted.setFiber(fiberId, fiber);
+        }
+
+        continue;
+      }
 
       default:
         continue;
@@ -272,11 +350,31 @@ export function processEvents(
       ),
     };
 
-    fiberById.set(event.fiberId, fiber);
+    fiberById.set(fiber.id, fiber);
     parentTree.setFiber(fiber.id, fiber);
     parentTreeIncludeUnmounted.setFiber(fiber.id, fiber);
     ownerTree.setFiber(fiber.id, fiber);
     ownerTreeIncludeUnmounted.setFiber(fiber.id, fiber);
+
+    if (event.commitId >= 0) {
+      const events = newEventsByCommitId.get(event.commitId);
+      if (events) {
+        events.push(event);
+      } else {
+        newEventsByCommitId.set(event.commitId, [event]);
+      }
+    }
+  }
+
+  for (const [commitId, events] of newEventsByCommitId) {
+    const commit = commitById.get(commitId);
+
+    if (commit) {
+      commitById.set(commitId, {
+        ...commit,
+        events: commit.events.concat(events),
+      });
+    }
   }
 
   return {

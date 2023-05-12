@@ -111,6 +111,14 @@ export function createReactDevtoolsHookHandlers(
   const unmountedFiberIdsByOwnerId = new Map<number, Set<number>>();
   const unmountedFiberIdBeforeSiblingId = new Map<number, number>();
   const unmountedFiberIdForParentId = new Map<number, number>();
+  const unmountedFiberRefs = new WeakMap<
+    Fiber,
+    {
+      stateNode: unknown;
+      alternate: Fiber | null;
+      memoizedState: Fiber["memoizedState"] | null;
+    }
+  >();
   const untrackFibersSet = new Set<Fiber>();
   let untrackFibersTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -135,7 +143,7 @@ export function createReactDevtoolsHookHandlers(
     untrackFibersSet.add(fiber);
 
     if (untrackFibersTimer === null) {
-      untrackFibersTimer = setTimeout(untrackFibers, 1000);
+      untrackFibersTimer = setTimeout(untrackFibers, 900);
     }
   }
 
@@ -146,7 +154,8 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const fiber of untrackFibersSet) {
-      removeFiber(fiber);
+      removeFiber(fiber, unmountedFiberRefs.get(fiber));
+      unmountedFiberRefs.delete(fiber);
     }
 
     untrackFibersSet.clear();
@@ -460,7 +469,11 @@ export function createReactDevtoolsHookHandlers(
     }
 
     if (fiberType === ElementTypeConsumer) {
-      const context = fiber.type._context || fiber.type.context;
+      const context =
+        fiber.type._context ||
+        fiber.type.context ||
+        // in profiling/prod mode
+        fiber.type;
 
       return [
         {
@@ -672,6 +685,21 @@ export function createReactDevtoolsHookHandlers(
   function recordUnmount(fiberId: number) {
     const ownerId = idToOwnerId.get(fiberId);
     const triggerEventId = commitUpdatedFiberId.get(ownerId as number);
+
+    const fiber = getFiberById(fiberId);
+    if (fiber !== null) {
+      // removeFiber(fiber, unmountedFiberRefs.get(fiber));
+      untrackFiber(fiber);
+
+      if (fiber.stateNode || fiber.alternate) {
+        unmountedFiberRefs.set(fiber, {
+          stateNode: fiber.stateNode,
+          alternate: fiber.alternate,
+          memoizedState: fiber.memoizedState,
+        });
+      }
+    }
+
     const eventId = recordEvent({
       op: "unmount",
       commitId: currentCommitId,
@@ -681,11 +709,6 @@ export function createReactDevtoolsHookHandlers(
 
     commitUpdatedFiberId.set(fiberId, triggerEventId ?? eventId);
     idToOwnerId.delete(fiberId);
-
-    const fiber = getFiberById(fiberId);
-    if (fiber !== null) {
-      untrackFiber(fiber);
-    }
   }
 
   function recordSubtreeUnmount(fiberId: number) {
@@ -768,9 +791,18 @@ export function createReactDevtoolsHookHandlers(
         }
 
         unmountedFiberIds.add(id);
+
+        if (fiber.stateNode || fiber.alternate) {
+          unmountedFiberRefs.set(fiber, {
+            stateNode: fiber.stateNode,
+            alternate: fiber.alternate,
+            memoizedState: fiber.memoizedState,
+          });
+        }
       }
     } else {
       removeFiber(fiber);
+      unmountedFiberRefs.delete(fiber);
     }
 
     if (!fiber._debugNeedsRemount) {
@@ -1298,7 +1330,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     // Normally unmounted fibers should removed on component's tree traversal,
-    // but in case it's not then flush what's left
+    // but in case it's not then (e.g. ownerId is not computed right) flush what's left
     for (const fiberId of unmountedFiberIds) {
       recordUnmount(fiberId);
     }

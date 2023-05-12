@@ -6,7 +6,7 @@ module.exports = {
   buildPlayground,
   buildDataUtils,
   buildSubscriber,
-  buildSelfSubscriber: buildDataClient,
+  buildDataClient,
   buildPublisher,
   buildBundle,
 };

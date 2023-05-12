@@ -11,8 +11,10 @@ import {
   Download,
   Pause,
   Play,
+  BreakRefs,
 } from "../common/icons";
-import { useReactRenderers } from "../../utils/react-renderers";
+import { useMemoryLeaksApi } from "../../utils/memory-leaks";
+import { FeatureMemLeaks } from "../../../common/constants";
 import { useHighlighting } from "../../utils/highlighting";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
@@ -25,18 +27,10 @@ interface ToolbarProps {
   showTimings: boolean;
 }
 
-const Toolbar = ({
-  onGroupingChange,
-  groupByParent,
-  onShowUnmounted,
-  showUnmounted,
-  onShowTimings,
-  showTimings,
-}: ToolbarProps) => {
-  const { selected: selectedReactInstance } = useReactRenderers();
-  const { clearAllEvents, allEvents, paused, setPaused } = useEventsContext();
+const DownloadButton = () => {
+  const { allEvents } = useEventsContext();
   const downloadAnchorRef = React.useRef<HTMLAnchorElement | null>(null);
-  const onDonwload = React.useCallback(() => {
+  const onDownload = React.useCallback(() => {
     const anchor = downloadAnchorRef.current;
 
     if (anchor === null) {
@@ -56,6 +50,39 @@ const Toolbar = ({
     window.URL.revokeObjectURL(url);
   }, [allEvents]);
 
+  React.useEffect(() => {
+    let anchor: HTMLAnchorElement | null = document.createElement("a");
+    anchor.setAttribute("style", "display:none");
+    downloadAnchorRef.current = anchor;
+    document.body.appendChild(anchor);
+
+    return () => {
+      anchor?.remove();
+      downloadAnchorRef.current = anchor = null;
+    };
+  });
+
+  return (
+    <ButtonToggle
+      icon={Download}
+      isActive={false}
+      onChange={onDownload}
+      tooltip={"Download event log"}
+    />
+  );
+};
+
+const Toolbar = ({
+  onGroupingChange,
+  groupByParent,
+  onShowUnmounted,
+  showUnmounted,
+  onShowTimings,
+  showTimings,
+}: ToolbarProps) => {
+  const { clearAllEvents, paused, setPaused } = useEventsContext();
+  const { breakUnmountedFiberRefs } = useMemoryLeaksApi();
+
   const [highlightActive, setHighlightActive] = React.useState(false);
   const handleToggleHighlight = () => {
     setHighlightActive(!highlightActive);
@@ -71,35 +98,8 @@ const Toolbar = ({
     }
   }, [highlightActive]);
 
-  React.useEffect(() => {
-    let anchor: HTMLAnchorElement | null = document.createElement("a");
-    anchor.setAttribute("style", "display:none");
-    downloadAnchorRef.current = anchor;
-    document.body.appendChild(anchor);
-
-    return () => {
-      anchor?.remove();
-      downloadAnchorRef.current = anchor = null;
-    };
-  });
-
   return (
     <div className="toolbar">
-      <div
-        className="renderer-info"
-        title={
-          selectedReactInstance
-            ? `${selectedReactInstance?.name} v${selectedReactInstance?.version}`
-            : undefined
-        }
-      >
-        <span className="renderer-info__name">
-          {selectedReactInstance?.name}
-        </span>
-        <span className="renderer-info__version">
-          <span>{selectedReactInstance?.version}</span>
-        </span>
-      </div>
       <div onClick={handleToggleHighlight}>x</div>
       <SelectionHistoryNavigation />
       <ComponentSearch
@@ -136,26 +136,32 @@ const Toolbar = ({
 
         <span className="toolbar__buttons-splitter" />
 
-        <ButtonToggle
-          icon={!paused ? Play : Pause}
-          isActive={!paused}
-          onChange={() => setPaused(!paused)}
-          tooltip={paused ? "Resume event loading" : "Pause event loading"}
-        />
+        {FeatureMemLeaks && (
+          <ButtonToggle
+            icon={BreakRefs}
+            isActive={false}
+            onChange={breakUnmountedFiberRefs}
+            tooltip={
+              "Break leaked React objects references\n\nWARNING: This action interferes with how React works, which can lead to behavior that is not possible naturally. Such interference can break the functionality of React. However, this technique allows you to localize the source of the memory leak and greatly simplify the investigation of root causes. Use with caution and for debugging purposes only."
+            }
+          />
+        )}
         <ButtonToggle
           icon={ClearEventLog}
           isActive={false}
           onChange={clearAllEvents}
           tooltip={"Clear event log"}
         />
-        {false && (
-          <ButtonToggle
-            icon={Download}
-            isActive={false}
-            onChange={onDonwload}
-            tooltip={"Download event log"}
-          />
-        )}
+
+        <span className="toolbar__buttons-splitter" />
+
+        <ButtonToggle
+          icon={!paused ? Play : Pause}
+          isActive={!paused}
+          onChange={() => setPaused(!paused)}
+          tooltip={paused ? "Resume event loading" : "Pause event loading"}
+        />
+        {false && <DownloadButton />}
       </div>
     </div>
   );

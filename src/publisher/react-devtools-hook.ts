@@ -1,6 +1,6 @@
 import { isUnsupportedRenderer } from "./utils/renderer-info";
 import {
-  ReactIntegration,
+  ReactIntegrationApi,
   ReactInternals,
   ReactUnsupportedRendererInfo,
   Fiber,
@@ -18,7 +18,7 @@ export type ReactDevtoolsHook = {
     priorityLevel: any
   ) => void;
   onPostCommitFiberRoot: (rendererId: number, root: FiberRoot) => void;
-  rendererInterfaces: Map<number, ReactIntegration>;
+  rendererInterfaces: Map<number, ReactIntegrationApi>;
 
   // Not used. It is declared to follow React Devtools hook's behaviour
   // in order for other tools like react-render to work
@@ -26,12 +26,11 @@ export type ReactDevtoolsHook = {
 };
 
 export function createReactDevtoolsHook(
-  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegrationApi,
   onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void,
   existing: ReactDevtoolsHook
 ) {
-  const attachedIntegrations = new Map<number, ReactIntegration>();
-  const fiberRoots = new Map<number, Set<FiberRoot>>();
+  const attachedIntegrations = new Map<number, ReactIntegrationApi>();
   let rendererSeedId = 0;
 
   // Not used. It is declared to follow React Devtools hook's behaviour
@@ -48,7 +47,7 @@ export function createReactDevtoolsHook(
     // see https://github.com/facebook/react/blob/4ff5f5719b348d9d8db14aaa49a48532defb4ab7/packages/react-refresh/src/ReactFreshRuntime.js#L509
     renderers,
 
-    rendererInterfaces: new Map<number, ReactIntegration>(),
+    rendererInterfaces: new Map<number, ReactIntegrationApi>(),
 
     inject(renderer) {
       let id = ++rendererSeedId;
@@ -76,7 +75,6 @@ export function createReactDevtoolsHook(
         if (attachedIntegrations.size === 0) {
           attachedIntegrations.set(id, attachRenderer(id, renderer));
           reactDevtoolsHook.rendererInterfaces = attachedIntegrations;
-          fiberRoots.set(id, new Set());
         } else {
           console.warn(
             `[react-render-tracker] Only one React instance per page is supported for now, but one more React instance (${renderer.rendererPackageName} v${renderer.version}) was detected`
@@ -156,7 +154,7 @@ const MARKER = Symbol();
 
 export function installReactDevtoolsHook(
   target: any,
-  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegration,
+  attachRenderer: (id: number, renderer: ReactInternals) => ReactIntegrationApi,
   onUnsupportedRenderer: (rendererInfo: ReactUnsupportedRendererInfo) => void
 ) {
   const existingHook = target[hookName];

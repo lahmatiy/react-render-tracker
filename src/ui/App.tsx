@@ -3,30 +3,31 @@ import { FiberMapsContextProvider } from "./utils/fiber-maps";
 import { EventsContextProvider } from "./utils/events";
 import { SourceLocationsContextProvider } from "./utils/source-locations";
 import { OpenFileContextProvider } from "./utils/open-file";
-import { SelectionContextProvider, useSelectedId } from "./utils/selection";
+import { SelectionContextProvider } from "./utils/selection";
 import { HighlightingContextProvider } from "./utils/highlighting";
-import { PinnedContextProvider, usePinnedId } from "./utils/pinned";
-import { FindMatchContextProvider } from "./utils/find-match";
-import Toolbar from "./components/toolbar/Toolbar";
-import FiberTree from "./components/fiber-tree/Tree";
-import FiberTreeHeader from "./components/fiber-tree/TreeHeader";
-import Details from "./components/details/Details";
-import StatusBar from "./components/statusbar/StatusBar";
-import WaitingForReady from "./components/misc/WaitingForReady";
-import WaitingForRenderer from "./components/misc/WaitingForRenderer";
-import FiberTreeKeyboardNav from "./components/misc/FiberTreeKeyboardNav";
+import { PinnedContextProvider } from "./utils/pinned";
 import {
   ReactRenderersContextProvider,
   useReactRenderers,
 } from "./utils/react-renderers";
+import StatusBar from "./components/statusbar/StatusBar";
+import WaitingForReady from "./components/misc/WaitingForReady";
+import WaitingForRenderer from "./components/misc/WaitingForRenderer";
+import AppBar from "./components/appbar/AppBar";
+import { AppPage, pages } from "./pages";
+import { MemoryLeaksApiContextProvider } from "./utils/memory-leaks";
 
 function App() {
   return (
     <SourceLocationsContextProvider>
       <OpenFileContextProvider>
-        <ReactRenderersContextProvider>
-          <ReactRendererUI />
-        </ReactRenderersContextProvider>
+        <MemoryLeaksApiContextProvider>
+          <ReactRenderersContextProvider>
+            <WaitingForRenderer>
+              <ReactRendererUI />
+            </WaitingForRenderer>
+          </ReactRenderersContextProvider>
+        </MemoryLeaksApiContextProvider>
       </OpenFileContextProvider>
     </SourceLocationsContextProvider>
   );
@@ -34,12 +35,12 @@ function App() {
 
 function ReactRendererUI() {
   const { selected: renderer } = useReactRenderers();
+
   const reactRendererUI = React.useMemo(
     () =>
       renderer && (
         <FiberMapsContextProvider key={renderer.id}>
           <EventsContextProvider channelId={renderer.channelId}>
-            <WaitingForRenderer />
             <SelectionContextProvider>
               <HighlightingContextProvider>
                 <PinnedContextProvider>
@@ -57,55 +58,21 @@ function ReactRendererUI() {
     return reactRendererUI;
   }
 
-  return <WaitingForRenderer />;
+  return null;
 }
 
 function Layout() {
-  const [groupByParent, setGroupByParent] = React.useState(false);
-  const [showUnmounted, setShowUnmounted] = React.useState(true);
-  const [showTimings, setShowTimings] = React.useState(false);
-  const { selectedId } = useSelectedId();
-  const { pinnedId } = usePinnedId();
+  const [page, setPage] = React.useState<AppPage>(AppPage.ComponentTree);
+  const PageContent = pages[page].content;
 
   return (
-    <div className="app" data-has-selected={selectedId !== null || undefined}>
-      <FindMatchContextProvider>
-        <Toolbar
-          onGroupingChange={setGroupByParent}
-          groupByParent={groupByParent}
-          onShowUnmounted={setShowUnmounted}
-          showUnmounted={showUnmounted}
-          onShowTimings={setShowTimings}
-          showTimings={showTimings}
-        />
+    <div className="app">
+      <AppBar pages={pages} page={page} setPage={setPage} />
 
-        <WaitingForReady />
+      <WaitingForReady>
+        <PageContent />
+      </WaitingForReady>
 
-        <FiberTreeHeader
-          rootId={pinnedId}
-          groupByParent={groupByParent}
-          showTimings={showTimings}
-        />
-        <FiberTreeKeyboardNav
-          groupByParent={groupByParent}
-          showUnmounted={showUnmounted}
-        />
-        <FiberTree
-          rootId={pinnedId}
-          groupByParent={groupByParent}
-          showUnmounted={showUnmounted}
-          showTimings={showTimings}
-        />
-      </FindMatchContextProvider>
-
-      {selectedId !== null && (
-        <Details
-          rootId={selectedId}
-          groupByParent={groupByParent}
-          showUnmounted={showUnmounted}
-          showTimings={showTimings}
-        />
-      )}
       <StatusBar />
     </div>
   );

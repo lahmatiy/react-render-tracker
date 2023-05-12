@@ -1,5 +1,6 @@
 export type Subscriptions<T> = Set<{ fn: T }>;
 export type SubscriptionsMap<I, T> = Map<I, Subscriptions<T>>;
+export type ValuesChangeCallback<V> = (values: V[]) => void;
 
 const EmptySet = new Set();
 
@@ -45,6 +46,8 @@ type callback<V> = (value: V) => void;
 export class SubscribeMap<K, V> extends Map<K, V> {
   private subscriptionsMap = new Map<K, Set<{ fn: callback<V | null> }>>();
   private awaitingNotify = new Set<K>();
+  private valuesSubscriptions: Subscriptions<ValuesChangeCallback<V>> =
+    new Set();
 
   hasSubscriptions(id: K) {
     const subscriptions = this.subscriptionsMap.get(id);
@@ -55,9 +58,17 @@ export class SubscribeMap<K, V> extends Map<K, V> {
     return subscribeById<K, callback<V>>(this.subscriptionsMap, id, fn);
   }
 
+  subscribeValues(fn: ValuesChangeCallback<V>) {
+    return subscribe<ValuesChangeCallback<V>>(this.valuesSubscriptions, fn);
+  }
+
   notify() {
     for (const id of this.awaitingNotify) {
       notifyById(this.subscriptionsMap, id, this.get(id) || null);
+    }
+
+    if (this.valuesSubscriptions.size) {
+      notify(this.valuesSubscriptions, []);
     }
   }
 
@@ -83,7 +94,7 @@ export class SubscribeMap<K, V> extends Map<K, V> {
   }
 }
 
-class Subset<V> extends Set<V> {
+export class Subset<V> extends Set<V> {
   subscriptions: Subscriptions<callback<V[]>> = new Set();
   value: V[] = [];
 

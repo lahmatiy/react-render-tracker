@@ -13,7 +13,12 @@ import {
   STRICT_MODE_NUMBER,
   STRICT_MODE_SYMBOL_STRING,
 } from "./utils/constants.js";
-import { ReactInternals, Fiber, NativeType } from "../types";
+import {
+  ReactInternals,
+  Fiber,
+  NativeType,
+  RecordEventHandler,
+} from "../types";
 import {
   ElementTypeClass,
   ElementTypeFunction,
@@ -27,11 +32,19 @@ import {
   ElementTypeSuspenseList,
   ElementTypeProfiler,
   ElementTypeOtherOrUnknown,
+  TrackingObjectFiber,
+  TrackingObjectStateNode,
+  TrackingObjectAlternate,
+  TrackingObjectHook,
 } from "../../common/constants";
+import { createUnmountedFiberLeakDetectionApi } from "./unmounted-fiber-leak-detector";
 
 export type CoreApi = ReturnType<typeof createIntegrationCore>;
 
-export function createIntegrationCore(renderer: ReactInternals) {
+export function createIntegrationCore(
+  renderer: ReactInternals,
+  recordEvent: RecordEventHandler
+) {
   // Newer versions of the reconciler package also specific reconciler version.
   // If that version number is present, use it.
   // Third party renderer versions may not match the reconciler version,
@@ -92,6 +105,13 @@ export function createIntegrationCore(renderer: ReactInternals) {
   // We will use this to try to disambiguate roots when restoring selection between reloads.
   const rootPseudoKeys = new Map();
   const rootDisplayNameCounter = new Map();
+
+  // Unmounted fiber leak tracking
+  const {
+    trackObjectForLeaking,
+    getLeakedObjectsProbe,
+    breakLeakedObjectRefs,
+  } = createUnmountedFiberLeakDetectionApi(recordEvent);
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber: Fiber) {
@@ -346,10 +366,77 @@ export function createIntegrationCore(renderer: ReactInternals) {
     return renderer.findFiberByHostInstance(hostInstance);
   }
 
-  function removeFiber(fiber: Fiber) {
-    idToArbitraryFiber.delete(getFiberIdUnsafe(fiber) as number);
+  function removeFiber(
+    fiber: Fiber,
+    refs?: {
+      stateNode: unknown;
+      alternate: Fiber | null;
+      memoizedState: Fiber["memoizedState"];
+    }
+  ) {
+    const id = getFiberIdUnsafe(fiber);
+    const displayName = getDisplayNameForFiber(fiber);
+    const { stateNode, alternate, memoizedState } = refs || fiber;
+    // console.log("removeFiber", id);
+
+    if (typeof id !== "number") {
+      console.error(
+        "[React Render Tracker] removeFiber can't resolve an id by a given fiber"
+      );
+      return;
+    }
+
+    idToArbitraryFiber.delete(id);
+
     fiberToId.delete(fiber);
-    fiberToId.delete(fiber.alternate as Fiber);
+    trackObjectForLeaking(fiber, id, TrackingObjectFiber, displayName, null);
+
+    if (stateNode) {
+      trackObjectForLeaking(
+        stateNode,
+        id,
+        TrackingObjectStateNode,
+        displayName,
+        null
+      );
+    }
+
+    if (alternate) {
+      trackObjectForLeaking(
+        alternate,
+        id,
+        TrackingObjectAlternate,
+        displayName,
+        null
+      );
+      fiberToId.delete(alternate);
+    }
+
+    if (memoizedState && "next" in memoizedState) {
+      let cursor = memoizedState;
+
+      while (cursor !== null) {
+        if (typeof cursor.queue?.dispatch === "function") {
+          trackObjectForLeaking(
+            fiber,
+            id,
+            TrackingObjectHook,
+            displayName,
+            cursor.queue?.dispatch.hookIdx
+          );
+        } else if (typeof cursor.memoizedState?.create === "function") {
+          trackObjectForLeaking(
+            fiber,
+            id,
+            TrackingObjectHook,
+            displayName,
+            cursor.memoizedState?.create.hookIdx
+          );
+        }
+
+        cursor = cursor.next;
+      }
+    }
   }
 
   function isFiberRoot(fiber: Fiber) {
@@ -436,5 +523,7 @@ export function createIntegrationCore(renderer: ReactInternals) {
     didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
+    getLeakedObjectsProbe,
+    breakLeakedObjectRefs,
   };
 }

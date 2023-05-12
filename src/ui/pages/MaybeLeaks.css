@@ -1,0 +1,10 @@
+.app-page-maybe-leaks {
+  display: grid;
+  grid-template: "toolbar" "content";
+  grid-template-rows: auto 1fr;
+}
+.app-page-content {
+  grid-area: content;
+  overflow-y: scroll;
+  overflow-x: auto;
+}

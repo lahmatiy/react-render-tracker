@@ -466,6 +466,18 @@ export type ReactInterationApi = {
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
+
+export type TrackingObject = Fiber | object;
+export type TrackingObjectMap = Record<string, TrackingObject>;
+export type MemoryLeakDetectionApi = {
+  getLeakedObjectsProbe: () => {
+    readonly objects: TrackingObjectMap | null;
+    readonly markedObjects: { objects: TrackingObjectMap | null } | null;
+    release: () => void;
+  };
+  breakLeakedObjectRefs: () => void;
+};
+
 export type ReactDispatcherTrapApi = {
   getDispatchHookIndex: (dispatch: (state: any) => any) => number | null;
   getFiberTypeHookInfo: (fiberTypeId: number) => HookInfo[];
@@ -473,7 +485,14 @@ export type ReactDispatcherTrapApi = {
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
-export type ReactIntegration = ReactDevtoolsHookHandlers & ReactInterationApi;
+
+export type RemoteCommandsApi = {
+  breakLeakedObjectRefs: () => void;
+};
+
+export type ReactIntegrationApi = ReactDevtoolsHookHandlers &
+  ReactInterationApi &
+  MemoryLeakDetectionApi;
 
 export type RecordEventHandler = (
   payload: DistributiveOmit<Message, "id">

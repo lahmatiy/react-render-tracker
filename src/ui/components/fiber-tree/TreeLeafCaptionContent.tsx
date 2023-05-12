@@ -6,6 +6,7 @@ import FiberHocNames from "../common/FiberHocNames";
 import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
 import { fiberRootMode } from "../../../common/constants";
+import FiberMaybeLeak from "../common/FiberMaybeLeak";
 
 const noop = () => undefined;
 
@@ -26,6 +27,7 @@ const TreeLeafCaptionContent = ({
     id,
     key,
     mounted,
+    leaked,
     events,
     hocDisplayNames,
     typeDef,
@@ -58,7 +60,7 @@ const TreeLeafCaptionContent = ({
             href="https://reactjs.org/docs/concurrent-mode-adoption.html#why-so-many-modes"
             rel="noreferrer"
             target="_blank"
-            title="Read more about root mode"
+            title="Read more about render root modes"
           >
             {fiberRootMode[rootMode]}
           </a>
@@ -90,6 +92,7 @@ const TreeLeafCaptionContent = ({
             {typeDef.contexts.length}
           </span>
         )}
+        {leaked ? <FiberMaybeLeak leaked={leaked} /> : null}
       </div>
     </div>
   );

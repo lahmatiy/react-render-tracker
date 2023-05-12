@@ -10,6 +10,7 @@ import {
   ReactUnsupportedRendererInfo,
   RecordEventHandler,
   Message,
+  RemoteCommandsApi,
 } from "./types";
 import { hook } from "./index";
 import Overlay from "./overlay";
@@ -185,6 +186,12 @@ publisher.ns(HIGHLIGHTER_NS)
       }
     }
   });
+
+export function remoteCommands({ breakLeakedObjectRefs }: RemoteCommandsApi) {
+  publisher.provide("break-leaked-object-refs", () => {
+    breakLeakedObjectRefs();
+  });
+}
 
 // import { connectPublisherWs } from "rempl";
 // connectPublisherWs("http://localhost:8177/");

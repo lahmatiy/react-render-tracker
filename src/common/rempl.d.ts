@@ -56,6 +56,7 @@ declare module "rempl" {
         "resolve-source-locations"(
           locations: string[]
         ): Array<{ loc: string; resolved: string }>;
+        "break-leaked-object-refs"(): void;
       };
     };
     "react-renderers": {

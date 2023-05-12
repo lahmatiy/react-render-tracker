@@ -5,7 +5,10 @@
 @import url("./components/common/FiberHocNames.css");
 @import url("./components/common/FiberId.css");
 @import url("./components/common/FiberKey.css");
+@import url("./components/common/FiberMaybeLeak.css");
 @import url("./components/common/SourceLoc.css");
+@import url("./components/appbar/AppBar.css");
+@import url("./components/appbar/Renderer.css");
 @import url("./components/details/CallStack.css");
 @import url("./components/details/Details.css");
 @import url("./components/details/EventChangesSummary.css");
@@ -23,6 +26,7 @@
 @import url("./components/details/info/ChangesMatrix.css");
 @import url("./components/details/info/FiberInfo.css");
 @import url("./components/details/info/FiberInfoSection.css");
+@import url("./components/details/info/FiberInfoSectionAncestors.css");
 @import url("./components/details/info/FiberInfoSectionConsumers.css");
 @import url("./components/details/info/FiberInfoSectionContexts.css");
 @import url("./components/details/info/FiberInfoSectionEvents.css");
@@ -40,6 +44,12 @@
 @import url("./components/toolbar/SearchMatchesNav.css");
 @import url("./components/toolbar/SelectionHistoryNavigation.css");
 @import url("./components/toolbar/Toolbar.css");
+@import url("./pages/Commits.css");
+@import url("./pages/ComponentsTree.css");
+@import url("./pages/MaybeLeaks.css");
+@import url("./pages/maybe-leaks/Fiber.css");
+@import url("./pages/maybe-leaks/FiberGroup.css");
+@import url("./pages/maybe-leaks/LeaksList.css");
 
 html,
 body {
@@ -49,5 +59,5 @@ body {
   font-size: 14px;
   line-height: 21px;
   color: #333;
-  background-color: transparent;
+  background-color: white;
 }

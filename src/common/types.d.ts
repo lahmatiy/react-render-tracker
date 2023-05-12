@@ -19,7 +19,9 @@ declare module "common-types" {
     | "unknown";
 
   export type FiberType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  export type FiberRootMode = 0 | 1 | 2;
+  export type FiberRootMode = 0 | 1;
+  export type TrackingObjectTypeHook = 3;
+  export type TrackingObjectType = 0 | 1 | 2 | TrackingObjectTypeHook;
 
   export type TransferFiber = {
     id: number;
@@ -199,6 +201,18 @@ declare module "common-types" {
     path?: string[];
   }
 
+  export type MaybeLeakDescriptor = {
+    fiberId: number;
+    type: TrackingObjectType;
+    hookIdx: number | null;
+  };
+
+  export interface MaybeLeaksMessage extends BaseMessage {
+    op: "maybe-leaks";
+    added: MaybeLeakDescriptor[];
+    removed: MaybeLeakDescriptor[];
+  }
+
   export type Message =
     | FiberTypeDefMessage
     | CommitStartMessage
@@ -209,5 +223,6 @@ declare module "common-types" {
     | UpdateBailoutSCUFiberMessage
     | UnmountFiberMessage
     | CreateEffectFiberMessage
-    | DestroyEffectFiberMessage;
+    | DestroyEffectFiberMessage
+    | MaybeLeaksMessage;
 }
