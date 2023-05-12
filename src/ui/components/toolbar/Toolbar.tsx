@@ -14,7 +14,8 @@ import {
 } from "../common/icons";
 import { useReactRenderers } from "../../utils/react-renderers";
 import { remoteSubscriber } from "../../rempl-subscriber";
-import { useSelectedId, useHighlightedId } from "../../utils/selection";
+import { useSelectedId } from "../../utils/selection";
+import { useHighlightedId } from "../../utils/highlighting";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {

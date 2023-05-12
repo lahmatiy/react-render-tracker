@@ -1,5 +1,6 @@
 import * as React from "react";
-import { useSelectedId, useHighlightedId } from "../../utils/selection";
+import { useSelectedId } from "../../utils/selection";
+import { useHighlightedId } from "../../utils/highlighting";
 import { getBoundingRect, getOverflowParent } from "../../utils/layout";
 import { useTreeViewSettingsContext } from "./contexts";
 

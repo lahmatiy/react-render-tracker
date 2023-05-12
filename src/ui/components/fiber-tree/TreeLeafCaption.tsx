@@ -1,6 +1,7 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
-import { useSelectionState, useHighlightingState } from "../../utils/selection";
+import { useSelectionState } from "../../utils/selection";
+import { useHighlightingState } from "../../utils/highlighting";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
