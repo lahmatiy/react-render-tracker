@@ -12,13 +12,13 @@ import {
   TrackingObjectTypeName,
 } from "../../common/constants";
 import { TrackingObjectFiber } from "../../common/constants";
+import { ExposedToGlobalLeaksState } from "rempl";
 
 const DEBUG_OUTPUT = true;
 
-declare global {
-  let __leakedFibers: number;
-  let exposeLeaks: MemoryLeakDetectionApi["getLeakedObjectsProbe"];
-}
+export type ExposedLeaksStateSubscription = (
+  state: ExposedToGlobalLeaksState | null
+) => void;
 
 class FakeWeakRef implements WeakRef<TrackingObject> {
   [Symbol.toStringTag] = "WeakRef" as const;
@@ -27,7 +27,7 @@ class FakeWeakRef implements WeakRef<TrackingObject> {
   }
 }
 const WeakRefBase = typeof WeakRef === "undefined" ? FakeWeakRef : WeakRef;
-class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
+export class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
   constructor(
     target: TrackingObject,
     public fiberId: number,
@@ -121,7 +121,8 @@ export function createUnmountedFiberLeakDetectionApi(
     }
   );
 
-  function getLeakedObjectsProbe() {
+  function getLeakedObjectsProbe(fibersIds?: number[]) {
+    const fiberFilter = Array.isArray(fibersIds) ? new Set(fibersIds) : false;
     let markedLeakedObjects: LeakedObjectsRRTMarkerTS | null =
       new LeakedObjectsRRTMarker(Object.create(null));
 
@@ -130,7 +131,10 @@ export function createUnmountedFiberLeakDetectionApi(
     )) {
       const object = weakRef.deref();
 
-      if (object !== undefined) {
+      if (
+        object !== undefined &&
+        (!fiberFilter || fiberFilter.has(weakRef.fiberId))
+      ) {
         markedLeakedObjects.objects[weakRef.tag] = weakRef;
       }
     }
@@ -271,42 +275,136 @@ export function createUnmountedFiberLeakDetectionApi(
     "pendingProps",
   ];
   const stateNodeProps = ["_reactInternals", "_reactInternalInstance"];
-  function breakLeakedObjectRefs() {
-    for (const leakRef of leakedObjects) {
-      const object = leakRef.deref() as any;
+  function breakObjectRefs<T extends string[]>(
+    object: { [P in T[number]]?: unknown },
+    props: T
+  ) {
+    for (const prop of props) {
+      if (object[prop as T[number]] !== undefined) {
+        object[prop as T[number]] = null;
+      }
+    }
+  }
+  function breakLeakedObjectRefsInternal(
+    trackingTrackingWeakRefs: Iterable<TrackingObjectWeakRef>
+  ) {
+    for (const trackingObjectWeakRef of trackingTrackingWeakRefs) {
+      const object = trackingObjectWeakRef.deref() as any;
 
       if (object !== undefined) {
-        switch (leakRef.type) {
+        switch (trackingObjectWeakRef.type) {
           case TrackingObjectFiber:
           case TrackingObjectAlternate: {
-            for (const prop of fiberProps) {
-              if (object[prop]) {
-                object[prop] = null;
-              }
-            }
-
+            breakObjectRefs(object, fiberProps);
             break;
           }
 
           case TrackingObjectStateNode: {
-            for (const prop of stateNodeProps) {
-              if (object[prop]) {
-                object[prop] = null;
-              }
-            }
-
+            breakObjectRefs(object, stateNodeProps);
             break;
           }
         }
       }
     }
   }
+  function breakLeakedObjectRefs() {
+    breakLeakedObjectRefsInternal(leakedObjects);
+    for (const candidates of candidatesByCanary) {
+      breakLeakedObjectRefsInternal(candidates);
+    }
+  }
 
-  // globalThis.exposeLeaks = getLeakedObjectsProbe;
+  // expose to global
+  const exportToGlobalName = "LeakedObjectsRRTMarker";
+  let exposedLeaksStateSubscriptions: { fn: ExposedLeaksStateSubscription }[] =
+    [];
+  let exposedToGlobalLeaksState: ExposedToGlobalLeaksState | null = null;
+  let exposedToGlobalProbe: ReturnType<typeof getLeakedObjectsProbe> | null =
+    null;
+  function subscribeToExposedToGlobalLeaksState(
+    fn: ExposedLeaksStateSubscription
+  ) {
+    const subscription = { fn };
+    exposedLeaksStateSubscriptions.push(subscription);
+
+    return () => {
+      exposedLeaksStateSubscriptions = exposedLeaksStateSubscriptions.filter(
+        item => item !== subscription
+      );
+    };
+  }
+  function notifyExposedToGlobalLeaksStateChange() {
+    for (const { fn } of exposedLeaksStateSubscriptions) {
+      fn(exposedToGlobalLeaksState);
+    }
+  }
+  function cancelExposingLeakedObjectsToGlobalInternal() {
+    const global = window as any;
+
+    if (exposedToGlobalProbe !== null) {
+      exposedToGlobalProbe.release();
+      exposedToGlobalProbe = null;
+    }
+
+    if (exposedToGlobalLeaksState !== null) {
+      delete global[exposedToGlobalLeaksState.globalName];
+      exposedToGlobalLeaksState = null;
+    }
+  }
+  function cancelExposingLeakedObjectsToGlobal() {
+    if (exposedToGlobalLeaksState === null) {
+      return;
+    }
+
+    cancelExposingLeakedObjectsToGlobalInternal();
+    notifyExposedToGlobalLeaksStateChange();
+  }
+  function exposeLeakedObjectsToGlobal(fibersIds?: number[]) {
+    const global = window as any;
+    const prevExposedToGlobalLeaksState = exposedToGlobalLeaksState;
+
+    cancelExposingLeakedObjectsToGlobalInternal();
+
+    // generate a name
+    let nameIdx = 0;
+    let name = exportToGlobalName;
+    while (name in global) {
+      nameIdx++;
+      name = exportToGlobalName + nameIdx;
+    }
+
+    // generate probe
+    const probe = getLeakedObjectsProbe(fibersIds);
+    const objectRefsCount = Object.keys(probe.objects || {}).length;
+    const fiberIds = [
+      ...new Set(Object.values(probe.objects || {}).map(ref => ref.fiberId)),
+    ];
+
+    // expose to global
+    if (objectRefsCount) {
+      global[name] = probe.markedObjects;
+      exposedToGlobalProbe = probe;
+      exposedToGlobalLeaksState = {
+        globalName: name,
+        objectRefsCount,
+        fiberIds,
+      };
+    }
+
+    if (exposedToGlobalLeaksState !== prevExposedToGlobalLeaksState) {
+      notifyExposedToGlobalLeaksStateChange();
+    }
+
+    return exposedToGlobalLeaksState;
+  }
 
   return {
     trackObjectForLeaking,
     getLeakedObjectsProbe,
     breakLeakedObjectRefs,
+    getExposedToGlobalLeaksState: () => exposedToGlobalLeaksState,
+    subscribeToExposedToGlobalLeaksState,
+    exposeLeakedObjectsToGlobal,
+    cancelExposingLeakedObjectsToGlobal,
   };
 }

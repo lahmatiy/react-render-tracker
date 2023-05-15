@@ -107,11 +107,8 @@ export function createIntegrationCore(
   const rootDisplayNameCounter = new Map();
 
   // Unmounted fiber leak tracking
-  const {
-    trackObjectForLeaking,
-    getLeakedObjectsProbe,
-    breakLeakedObjectRefs,
-  } = createUnmountedFiberLeakDetectionApi(recordEvent);
+  const { trackObjectForLeaking, ...memoryLeaksApi } =
+    createUnmountedFiberLeakDetectionApi(recordEvent);
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber: Fiber) {
@@ -523,7 +520,6 @@ export function createIntegrationCore(
     didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
-    getLeakedObjectsProbe,
-    breakLeakedObjectRefs,
+    memoryLeaksApi,
   };
 }

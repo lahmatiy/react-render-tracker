@@ -8,7 +8,11 @@ import {
   ToggleTimings,
   Pause,
   Play,
+  BreakRefs,
+  ExposeToGlobal,
 } from "../../components/common/icons";
+import { FeatureMemLeaks } from "../../../common/constants";
+import { useMemoryLeaks } from "../../utils/memory-leaks";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -29,6 +33,8 @@ const Toolbar = ({
   showTimings,
 }: ToolbarProps) => {
   const { clearAllEvents, paused, setPaused } = useEventsContext();
+  const { breakLeakedObjectRefs, exposeLeakedObjectsToGlobal } =
+    useMemoryLeaks();
 
   return (
     <div className="toolbar">
@@ -62,19 +68,39 @@ const Toolbar = ({
           tooltip={showTimings ? "Hide timings" : "Show timings"}
         />
 
+        {FeatureMemLeaks && (
+          <>
+            <span className="toolbar__buttons-splitter" />
+
+            <ButtonToggle
+              icon={BreakRefs}
+              onChange={breakLeakedObjectRefs}
+              tooltip={
+                "Break leaked React objects references\n\nWARNING: This action interferes with how React works, which can lead to behavior that is not possible naturally. Such interference can break the functionality of React. However, this technique allows you to localize the source of the memory leak and greatly simplify the investigation of root causes. Use with caution and for debugging purposes only."
+              }
+            />
+            <ButtonToggle
+              icon={ExposeToGlobal}
+              onChange={exposeLeakedObjectsToGlobal}
+              tooltip={
+                "Store potential leaked objects as global variable.\n\nThis allows investigate retainers in heap snapshot."
+              }
+            />
+          </>
+        )}
+
         <span className="toolbar__buttons-splitter" />
 
+        <ButtonToggle
+          icon={ClearEventLog}
+          onChange={clearAllEvents}
+          tooltip={"Clear event log"}
+        />
         <ButtonToggle
           icon={!paused ? Play : Pause}
           isActive={!paused}
           onChange={() => setPaused(!paused)}
           tooltip={paused ? "Resume event loading" : "Pause event loading"}
-        />
-        <ButtonToggle
-          icon={ClearEventLog}
-          isActive={false}
-          onChange={clearAllEvents}
-          tooltip={"Clear event log"}
         />
       </div>
     </div>

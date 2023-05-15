@@ -18,7 +18,7 @@ export function attach(
   const dispatcherApi = createDispatcherTrap(renderer, integrationCore);
 
   removeCommands({
-    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
+    ...integrationCore.memoryLeaksApi,
   });
 
   return {
@@ -28,7 +28,6 @@ export function attach(
       recordEvent
     ),
     ...createReactInteractionApi(integrationCore),
-    getLeakedObjectsProbe: integrationCore.getLeakedObjectsProbe,
-    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
+    ...integrationCore.memoryLeaksApi,
   };
 }

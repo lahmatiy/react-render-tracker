@@ -1,0 +1,23 @@
+.statebar-exposed-leaks {
+  display: flex;
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #f5f5d3;
+  color: #898927;
+  border-top: 1px solid #ddd;
+}
+.statebar-exposed-leaks__message {
+  flex: 1;
+}
+.statebar-exposed-leaks__cancel-button {
+  border: none;
+  background: none;
+  margin: -4px -8px -4px 0;
+  padding: 0 8px;
+  opacity: 0.5;
+}
+.statebar-exposed-leaks__cancel-button:hover,
+.statebar-exposed-leaks__cancel-button:active {
+  background: #e1e1ba;
+  cursor: pointer;
+}

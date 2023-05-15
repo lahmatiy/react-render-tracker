@@ -133,9 +133,22 @@ publisher.provide("resolve-source-locations", locations =>
   )
 );
 
-export function remoteCommands({ breakLeakedObjectRefs }: RemoteCommandsApi) {
-  publisher.provide("break-leaked-object-refs", () => {
-    breakLeakedObjectRefs();
+export function remoteCommands({
+  breakLeakedObjectRefs,
+  getExposedToGlobalLeaksState,
+  subscribeToExposedToGlobalLeaksState,
+  cancelExposingLeakedObjectsToGlobal,
+  exposeLeakedObjectsToGlobal,
+}: RemoteCommandsApi) {
+  const memoryLeaksNs = publisher.ns("memory-leaks");
+
+  memoryLeaksNs.publish(getExposedToGlobalLeaksState());
+  subscribeToExposedToGlobalLeaksState(state => memoryLeaksNs.publish(state));
+
+  memoryLeaksNs.provide({
+    breakLeakedObjectRefs,
+    exposeLeakedObjectsToGlobal,
+    cancelExposingLeakedObjectsToGlobal,
   });
 }
 

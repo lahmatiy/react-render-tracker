@@ -32,5 +32,9 @@
   margin-left: 1ex;
   border-radius: 7px;
   font-size: 9px;
+  line-height: 10px;
   color: #aaa;
+}
+.app-bar__tab-badge:empty {
+  display: none;
 }

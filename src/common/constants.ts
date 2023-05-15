@@ -56,5 +56,5 @@ export const TrackingObjectTypeName: Record<TrackingObjectType, string> = {
   [TrackingObjectHook]: "hook",
 };
 
-export const FeatureMemLeaks = false;
+export const FeatureMemLeaks = true;
 export const FeatureCommits = false;
