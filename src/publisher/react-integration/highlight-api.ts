@@ -1,3 +1,4 @@
+import { HighlighterEvent } from "rempl";
 import type { ReactDevtoolsHook } from "../react-devtools-hook";
 import Overlay from "../overlay";
 import Highlighter from "../highlighter";
@@ -7,7 +8,7 @@ let highlighter: Highlighter | null = null;
 
 export function createHighlightApi(
   hook: ReactDevtoolsHook,
-  publish,
+  publish: (event: HighlighterEvent) => void,
 ) {
 
   const startHighlight = (fiberId: number, name: string) => {

@@ -1,12 +1,11 @@
+import type { HighlighterEvent } from "rempl";
 import type Overlay from "./overlay";
 import type { ReactDevtoolsHook } from "./react-devtools-hook";
-import type { Publisher } from "rempl";
-const HIGHLIGHTER_NS = "highlighter";
 
 export default class Highlighter {
   private overlay: Overlay;
   private hook: ReactDevtoolsHook;
-  private onPublish: () => void;
+  private onPublish: (event: HighlighterEvent) => void;
 
   private onClickHandler: (event: MouseEvent) => void;
   private onPointerDownHandler: (event: MouseEvent) => void;
@@ -17,7 +16,7 @@ export default class Highlighter {
   constructor(
     hook: ReactDevtoolsHook,
     overlay: Overlay,
-    onPublish: () => void,
+    onPublish: (event: HighlighterEvent) => void,
   ) {
     this.hook = hook;
     this.overlay = overlay;
@@ -82,8 +81,11 @@ export default class Highlighter {
     event.preventDefault();
     event.stopPropagation();
 
-    this.overlay.inspect([event.target ?? null]);
-    this.selectFiberForNode(event.target);
+    if (event.target) {
+      const node = event.target as HTMLElement;
+      this.overlay.inspect([node]);
+      this.selectFiberForNode(node);
+    }
   }
 
   private onPointerUp(event: MouseEvent) {
@@ -91,7 +93,7 @@ export default class Highlighter {
     event.stopPropagation();
   }
 
-  private selectFiberForNode(node, selected = false) {
+  private selectFiberForNode(node: HTMLElement, selected = false) {
     for (const rendererInterface of this.hook.rendererInterfaces.values()) {
       let fiberID;
 

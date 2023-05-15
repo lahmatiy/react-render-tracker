@@ -488,6 +488,12 @@ export type ReactDispatcherTrapApi = {
 
 export type RemoteCommandsApi = {
   breakLeakedObjectRefs: () => void;
+  highlightApi: {
+    startHighlight: (fiberId: number, name: string) => void;
+    stopHighlight: () => void;
+    startInspect: () => void;
+    stopInspect: () => void;
+  }
 };
 
 export type ReactIntegrationApi = ReactDevtoolsHookHandlers &

@@ -48,6 +48,12 @@ declare module "rempl" {
     basedir: string;
     basedirJsx: string;
   } | null;
+  export type HighlighterEvent = {
+    fiberID?: number;
+    selected?: boolean;
+    stopInspect?: boolean
+  }
+
   export type RemoteProtocol = DefinedNamespaceMap<{
     "*": {
       data: never;
@@ -78,11 +84,7 @@ declare module "rempl" {
       methods: never;
     };
     "highlighter": {
-      data: {
-        fiberID?: number;
-        selected?: boolean;
-        stopInspect?: boolean
-      };
+      data: HighlighterEvent;
       methods: {
         startHighlight(fiberId: number, name: string): void;
         stopHighlight(): void;
