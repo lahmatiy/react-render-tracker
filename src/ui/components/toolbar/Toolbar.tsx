@@ -16,6 +16,7 @@ import {
 } from "../common/icons";
 import { useMemoryLeaks } from "../../utils/memory-leaks";
 import { FeatureMemLeaks } from "../../../common/constants";
+import { useFiberMaps } from "../../utils/fiber-maps";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -79,6 +80,7 @@ const Toolbar = ({
   onShowTimings,
   showTimings,
 }: ToolbarProps) => {
+  const { leakedFibers } = useFiberMaps();
   const { clearAllEvents, paused, setPaused } = useEventsContext();
   const { breakLeakedObjectRefs, exposeLeakedObjectsToGlobal } =
     useMemoryLeaks();
@@ -131,9 +133,9 @@ const Toolbar = ({
             />
             <ButtonToggle
               icon={ExposeToGlobal}
-              onChange={exposeLeakedObjectsToGlobal}
+              onChange={() => exposeLeakedObjectsToGlobal([...leakedFibers])}
               tooltip={
-                "Store potential leaked objects as global variable.\n\nThis allows investigate retainers in heap snapshot."
+                "Store potential leaked objects as global variable.\n\nThis allows to investigate retainers in a heap snapshot."
               }
             />
           </>

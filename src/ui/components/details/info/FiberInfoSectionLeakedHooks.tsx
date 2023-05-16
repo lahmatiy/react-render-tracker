@@ -12,10 +12,14 @@ export function FiberInfoSectionLeakedHooks({
 }) {
   const { typeDef, leakedHooks } = useFiber(fiber.id) || {};
 
+  if (!leakedHooks || !leakedHooks.length) {
+    return null;
+  }
+
   return (
     <FiberInfoSection
       id="leaked-hooks"
-      header={`Leaked hooks (${leakedHooks?.length})`}
+      header={`Leaked hooks (${leakedHooks.length})`}
     >
       <ol className="fiber-info-section-leaks-content">
         {leakedHooks &&

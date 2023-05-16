@@ -5,6 +5,7 @@ import FiberId from "../../components/common/FiberId";
 import { MessageFiber } from "../../types";
 import { useSelectionState } from "../../utils/selection";
 import { useFiber } from "../../utils/fiber-maps";
+import FiberMaybeLeak from "../../components/common/FiberMaybeLeak";
 
 type FiberProps = {
   fiberId: number;
@@ -88,6 +89,7 @@ export const Fiber = ({ fiberId, setFiberElement = noop }: FiberProps) => {
             {typeDef.contexts.length}
           </span>
         )}
+        {leaked ? <FiberMaybeLeak leaked={leaked} /> : null}
       </div>
     </div>
   );

@@ -1,10 +1,23 @@
 .app-page-maybe-leaks {
   display: grid;
-  grid-template: "toolbar" "content";
+  grid-template:
+    "toolbar"
+    "content";
   grid-template-rows: auto 1fr;
 }
-.app-page-content {
+.app-page-maybe-leaks[data-has-selected] {
+  grid-template-areas:
+    "toolbar toolbar"
+    "content details";
+  grid-template-columns: 1fr 1fr;
+}
+.app-page-content-wrapper {
   grid-area: content;
   overflow-y: scroll;
   overflow-x: auto;
+  position: relative;
+}
+.app-page-content {
+  position: absolute;
+  min-width: 100%;
 }

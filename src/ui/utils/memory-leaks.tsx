@@ -4,7 +4,7 @@ import { ExposedToGlobalLeaksState } from "rempl";
 
 interface MemoryLeaksContext {
   breakLeakedObjectRefs: () => void;
-  exposeLeakedObjectsToGlobal: () => void;
+  exposeLeakedObjectsToGlobal: (fiberIds?: number[]) => void;
   cancelExposingLeakedObjectsToGlobal: () => void;
   exposedLeaks: ExposedToGlobalLeaksState;
 }
@@ -30,8 +30,8 @@ export function MemoryLeaksContextProvider({
       breakLeakedObjectRefs() {
         ns.callRemote("breakLeakedObjectRefs");
       },
-      exposeLeakedObjectsToGlobal() {
-        ns.callRemote("exposeLeakedObjectsToGlobal");
+      exposeLeakedObjectsToGlobal(fiberIds?: number[]) {
+        ns.callRemote("exposeLeakedObjectsToGlobal", fiberIds);
       },
       cancelExposingLeakedObjectsToGlobal() {
         ns.callRemote("cancelExposingLeakedObjectsToGlobal");

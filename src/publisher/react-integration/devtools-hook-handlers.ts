@@ -94,7 +94,7 @@ export function createReactDevtoolsHookHandlers(
   let commitIdSeed = 0;
 
   let classComponentUpdateCalls: Array<ClassComponentUpdateCall> = [];
-  const patchedClassComponentUpdater = new Set<any>();
+  const patchedClassComponentUpdater = new WeakSet<any>();
   const classComponentInstanceToFiber = new WeakMap<
     any,
     { rootId: number; fiberId: number }
@@ -154,7 +154,9 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const fiber of untrackFibersSet) {
-      removeFiber(fiber, unmountedFiberRefs.get(fiber));
+      const refs = unmountedFiberRefs.get(fiber);
+      removeFiber(fiber, refs);
+      patchedClassComponentUpdater.delete(refs?.stateNode);
       unmountedFiberRefs.delete(fiber);
     }
 
@@ -802,6 +804,7 @@ export function createReactDevtoolsHookHandlers(
       }
     } else {
       removeFiber(fiber);
+      patchedClassComponentUpdater.delete(fiber.stateNode);
       unmountedFiberRefs.delete(fiber);
     }
 

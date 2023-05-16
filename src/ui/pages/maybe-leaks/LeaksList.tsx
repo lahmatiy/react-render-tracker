@@ -40,6 +40,7 @@ function LeaksList() {
         .map(fibers => (
           <FiberGroup
             key={fibers[0].typeId}
+            typeId={fibers[0].typeId}
             fibers={fibers}
             initExpanded={false}
           />
