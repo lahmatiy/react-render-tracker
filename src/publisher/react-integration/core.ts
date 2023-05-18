@@ -108,10 +108,11 @@ export function createIntegrationCore(
   // We will use this to try to disambiguate roots when restoring selection between reloads.
   const rootPseudoKeys = new Map();
   const rootDisplayNameCounter = new Map();
+  const roots = new Map<number, Fiber>();
 
   // Unmounted fiber leak tracking
   const { trackObjectForLeaking, ...memoryLeaksApi } =
-    createUnmountedFiberLeakDetectionApi(recordEvent);
+    createUnmountedFiberLeakDetectionApi(recordEvent, roots, fiberToId);
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber: Fiber) {
@@ -226,6 +227,7 @@ export function createIntegrationCore(
           break;
 
         default:
+          // debugger;
           return -1;
       }
     }
@@ -359,7 +361,11 @@ export function createIntegrationCore(
     }
 
     const { return: parentFiber = null } = fiber;
-    if (parentFiber?._debugOwner) {
+    if (parentFiber !== null) {
+      if (typeof parentFiber._debugOwner !== "number") {
+        return getOrGenerateFiberId(parentFiber);
+      }
+
       if (
         parentFiber.tag === ForwardRef ||
         parentFiber.tag === MemoComponent ||
@@ -464,6 +470,7 @@ export function createIntegrationCore(
 
     rootDisplayNameCounter.set(name, counter + 1);
     rootPseudoKeys.set(id, pseudoKey);
+    roots.set(id, fiber);
   }
 
   function getRootPseudoKey(id: number) {
@@ -471,6 +478,8 @@ export function createIntegrationCore(
   }
 
   function removeRootPseudoKey(id: number) {
+    roots.delete(id);
+
     const pseudoKey = rootPseudoKeys.get(id);
 
     if (pseudoKey === undefined) {

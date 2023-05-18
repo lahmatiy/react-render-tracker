@@ -1,5 +1,6 @@
 import { TrackingObjectType } from "common-types";
 import {
+  Fiber,
   MemoryLeakDetectionApi,
   RecordEventHandler,
   TrackingObject,
@@ -69,7 +70,9 @@ const LeakedObjectsRRTMarker = {
 }[String("LeakedObjectsRRTMarker")] as typeof LeakedObjectsRRTMarkerTS;
 
 export function createUnmountedFiberLeakDetectionApi(
-  recordEvent: RecordEventHandler
+  recordEvent: RecordEventHandler,
+  roots: Map<number, Fiber>,
+  fiberToId: WeakMap<Fiber, number>
 ): MemoryLeakDetectionApi & {
   trackObjectForLeaking: (
     target: TrackingObject,
@@ -282,7 +285,7 @@ export function createUnmountedFiberLeakDetectionApi(
     props: T
   ) {
     for (const prop of props) {
-      if (object[prop as T[number]] !== undefined) {
+      if (object[prop as T[number]]) {
         object[prop as T[number]] = null;
       }
     }
@@ -309,10 +312,41 @@ export function createUnmountedFiberLeakDetectionApi(
       }
     }
   }
+  function cleanupAliveTreeFiber(fiber: Fiber) {
+    if (fiber.firstEffect && !fiberToId.has(fiber.firstEffect)) {
+      fiber.firstEffect = null;
+    }
+    if (fiber.lastEffect && !fiberToId.has(fiber.lastEffect)) {
+      fiber.lastEffect = null;
+    }
+    if (fiber.child && !fiberToId.has(fiber.child)) {
+      fiber.child = null;
+    }
+  }
+  function cleanupAliveTree(root: Fiber) {
+    cleanupAliveTreeFiber(root);
+
+    if (root.alternate) {
+      cleanupAliveTreeFiber(root.alternate);
+    }
+
+    if (root.child) {
+      cleanupAliveTree(root.child);
+    }
+
+    if (root.sibling) {
+      cleanupAliveTree(root.sibling);
+    }
+  }
   function breakLeakedObjectRefs() {
     breakLeakedObjectRefsInternal(leakedObjects);
+
     for (const candidates of candidatesByCanary) {
       breakLeakedObjectRefsInternal(candidates);
+    }
+
+    for (const root of roots.values()) {
+      cleanupAliveTree(root);
     }
   }
 
