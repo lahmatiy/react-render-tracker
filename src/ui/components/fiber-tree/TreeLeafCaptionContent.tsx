@@ -7,6 +7,8 @@ import { MessageFiber } from "../../types";
 import { useFindMatch } from "../../utils/find-match";
 import { fiberRootMode } from "../../../common/constants";
 import FiberMaybeLeak from "../common/FiberMaybeLeak";
+import { FiberType } from "common-types";
+import { isHostType } from "../../utils/fiber";
 
 const noop = () => undefined;
 
@@ -25,6 +27,7 @@ const TreeLeafCaptionContent = ({
 }: TreeLeafCaptionMainProps) => {
   const {
     id,
+    type,
     key,
     mounted,
     leaked,
@@ -50,6 +53,7 @@ const TreeLeafCaptionContent = ({
         )}
         <DisplayName
           displayName={fiber.displayName}
+          type={type}
           mounted={mounted}
           events={events.length > 0}
         />
@@ -100,10 +104,12 @@ const TreeLeafCaptionContent = ({
 
 const DisplayName = ({
   displayName,
+  type,
   mounted,
   events,
 }: {
   displayName: string | null;
+  type: FiberType;
   mounted: boolean;
   events: boolean;
 }) => {
@@ -126,6 +132,7 @@ const DisplayName = ({
     <span
       className={
         "tree-leaf-caption-content__name" +
+        (isHostType(type) ? " host-type" : "") +
         (mounted ? "" : " unmounted") +
         (events ? "" : " no-events")
       }

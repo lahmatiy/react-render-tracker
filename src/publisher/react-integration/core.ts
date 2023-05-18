@@ -28,6 +28,8 @@ import {
   ElementTypeConsumer,
   ElementTypeHostRoot,
   ElementTypeHostComponent,
+  ElementTypeHostText,
+  ElementTypeHostPortal,
   ElementTypeSuspense,
   ElementTypeSuspenseList,
   ElementTypeProfiler,
@@ -75,6 +77,7 @@ export function createIntegrationCore(
     LegacyHiddenComponent,
     MemoComponent,
     OffscreenComponent,
+    Profiler,
     SimpleMemoComponent,
     SuspenseComponent,
     SuspenseListComponent,
@@ -121,9 +124,9 @@ export function createIntegrationCore(
         // https://github.com/bvaughn/react-devtools-experimental/issues/197
         return true;
 
-      case HostPortal:
-      case HostComponent:
-      case HostText:
+      // case HostPortal:
+      // case HostComponent:
+      // case HostText:
       case Fragment:
       case LegacyHiddenComponent:
       case OffscreenComponent:
@@ -172,14 +175,21 @@ export function createIntegrationCore(
       case HostComponent:
         return ElementTypeHostComponent;
 
+      case HostText:
+        return ElementTypeHostText;
+
+      case HostPortal:
+        return ElementTypeHostPortal;
+
+      case Profiler:
+        return ElementTypeProfiler;
+
       case SuspenseComponent:
         return ElementTypeSuspense;
 
       case SuspenseListComponent:
         return ElementTypeSuspenseList;
 
-      case HostPortal:
-      case HostText:
       case Fragment:
         return ElementTypeOtherOrUnknown;
 
@@ -208,9 +218,16 @@ export function createIntegrationCore(
     }
   }
 
-  function getFiberTypeId(type: any): number {
+  function getFiberTypeId(type: any, tag: number): number {
     if (type === null) {
-      return 0;
+      switch (tag) {
+        case HostText:
+          type = "#text";
+          break;
+
+        default:
+          return -1;
+      }
     }
 
     if (typeof type !== "object" && typeof type !== "function") {

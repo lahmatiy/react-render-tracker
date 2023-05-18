@@ -23,6 +23,9 @@
 .tree-leaf-caption-content__name {
   position: relative;
 }
+.tree-leaf-caption-content__name.host-type {
+  color: #8c629a;
+}
 .tree-leaf-caption-content__name.no-events {
   color: #90bce5;
 }
