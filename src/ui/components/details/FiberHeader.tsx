@@ -68,17 +68,20 @@ function InstanceSwitcher({
   groupByParent: boolean;
   showUnmounted: boolean;
 }) {
-  const { select } = useSelectedId();
+  const { selectedId, select } = useSelectedId();
   const { pinnedId } = usePinnedId();
   const { selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
+  const treeRoot = tree.getOrCreate(pinnedId);
+  const selectedNode =
+    selectedId !== null ? tree.get(selectedId) || null : null;
   const treeUpdate = useTreeUpdateSubscription(tree);
 
   const { index, total } = React.useMemo(() => {
     let index = 0;
     let total = 0;
 
-    tree.get(pinnedId)?.walk(node => {
+    treeRoot.walk(node => {
       if (node.fiber?.typeId === typeId) {
         total++;
 
@@ -89,7 +92,7 @@ function InstanceSwitcher({
     });
 
     return { index, total };
-  }, [tree, treeUpdate, pinnedId, fiberId]);
+  }, [tree, treeUpdate, treeRoot, fiberId]);
 
   const disableButtons = total === 0 || (total === 1 && index === 1);
 
@@ -103,9 +106,15 @@ function InstanceSwitcher({
           className="fiber-info-header-prelude__button"
           disabled={disableButtons}
           onClick={() => {
-            const node = tree.findBack(
+            const startNode =
+              treeRoot === tree.root
+                ? selectedNode
+                : selectedNode !== null && treeRoot.contains(selectedNode)
+                ? selectedNode
+                : null;
+            const node = treeRoot.findBack(
               node => node.id !== fiberId && node.fiber?.typeId === typeId,
-              fiberId
+              startNode
             );
 
             if (node !== null) {
@@ -119,9 +128,15 @@ function InstanceSwitcher({
           className="fiber-info-header-prelude__button"
           disabled={disableButtons}
           onClick={() => {
-            const node = tree.find(
+            const startNode =
+              treeRoot === tree.root
+                ? selectedNode
+                : selectedNode !== null && treeRoot.contains(selectedNode)
+                ? selectedNode
+                : null;
+            const node = treeRoot.find(
               node => node.id !== fiberId && node.fiber?.typeId === typeId,
-              fiberId
+              startNode
             );
 
             if (node !== null) {

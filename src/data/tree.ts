@@ -494,6 +494,10 @@ export class TreeNode {
     return subtree;
   }
 
+  contains(node: TreeNode) {
+    return this.find(cursor => cursor === node);
+  }
+
   get children(): number[] {
     if (this.#children !== null) {
       return this.#children;

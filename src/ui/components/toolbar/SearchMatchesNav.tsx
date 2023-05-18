@@ -23,6 +23,9 @@ const SearchMatchesNav = ({
   const { match } = useFindMatchContext();
   const { selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, showUnmounted);
+  const treeRoot = tree.getOrCreate(pinnedId);
+  const selectedNode =
+    selectedId !== null ? tree.get(selectedId) || null : null;
   const treeUpdate = useTreeUpdateSubscription(tree);
   const [matches, setMatches] = React.useState<{
     index: number;
@@ -41,7 +44,7 @@ const SearchMatchesNav = ({
     let index = 0;
     let total = 0;
 
-    tree.get(pinnedId)?.walk(node => {
+    treeRoot.walk(node => {
       if (match(node.fiber?.displayName || null) !== null) {
         total++;
 
@@ -62,7 +65,7 @@ const SearchMatchesNav = ({
 
     autoselect.current = false;
     setMatches({ index, total });
-  }, [selectedId, pinnedId, match, tree, treeUpdate, pattern]);
+  }, [selectedId, match, tree, treeRoot, treeUpdate, pattern]);
 
   if (matches === null) {
     return null;
@@ -83,11 +86,17 @@ const SearchMatchesNav = ({
           className="component-search-matches-nav__button"
           disabled={disableButtons}
           onClick={() => {
-            const node = tree.findBack(
+            const startNode =
+              treeRoot === tree.root
+                ? selectedNode
+                : selectedNode !== null && treeRoot.contains(selectedNode)
+                ? selectedNode
+                : null;
+            const node = treeRoot.findBack(
               node =>
                 node.id !== selectedId &&
                 match(node.fiber?.displayName || null) !== null,
-              selectedId
+              startNode
             );
 
             if (node) {
@@ -101,11 +110,17 @@ const SearchMatchesNav = ({
           className="component-search-matches-nav__button"
           disabled={disableButtons}
           onClick={() => {
-            const node = tree.find(
+            const startNode =
+              treeRoot === tree.root
+                ? selectedNode
+                : selectedNode !== null && treeRoot.contains(selectedNode)
+                ? selectedNode
+                : null;
+            const node = treeRoot.find(
               node =>
                 node.id !== selectedId &&
                 match(node.fiber?.displayName || null) !== null,
-              selectedId
+              startNode
             );
 
             if (node) {
