@@ -52,7 +52,6 @@ const FiberInfo = ({
     <div className="fiber-info">
       <SectionStateContext.Provider value={sectionStatesContextValue}>
         <FiberInfoSectionAncestors fiber={fiber} />
-        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         <FiberInfoSectionProps fiber={fiber} />
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>
@@ -65,6 +64,7 @@ const FiberInfo = ({
           />
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
+        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         <FiberInfoSectionEvents
           fiber={fiber}
           groupByParent={groupByParent}

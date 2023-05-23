@@ -2,7 +2,8 @@ import * as React from "react";
 
 interface ButtonToggleProps {
   icon: JSX.Element;
-  isActive: boolean;
+  isActive?: boolean;
+  isDisabled?: boolean;
   onChange: (fn: (state: boolean) => boolean) => void;
   tooltip: string;
   className?: string;
@@ -10,21 +11,26 @@ interface ButtonToggleProps {
 
 const ButtonToggle = ({
   icon,
-  isActive,
+  isActive = false,
+  isDisabled = false,
   onChange,
   tooltip,
   className,
 }: ButtonToggleProps) => {
-  const handleClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onChange((prev: boolean) => !prev);
-  };
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onChange((prev: boolean) => !prev);
+    },
+    [onChange]
+  );
 
   return (
     <button
       className={`button-toggle${isActive ? " active" : ""}${
         className ? " " + className : ""
       }`}
+      disabled={isDisabled}
       onClick={handleClick}
       title={tooltip}
     >

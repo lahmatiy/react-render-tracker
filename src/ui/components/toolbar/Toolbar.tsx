@@ -12,9 +12,11 @@ import {
   Pause,
   Play,
   BreakRefs,
+  ExposeToGlobal,
 } from "../common/icons";
-import { useMemoryLeaksApi } from "../../utils/memory-leaks";
+import { useMemoryLeaks } from "../../utils/memory-leaks";
 import { FeatureMemLeaks } from "../../../common/constants";
+import { useFiberMaps } from "../../utils/fiber-maps";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -64,7 +66,6 @@ const DownloadButton = () => {
   return (
     <ButtonToggle
       icon={Download}
-      isActive={false}
       onChange={onDownload}
       tooltip={"Download event log"}
     />
@@ -79,8 +80,10 @@ const Toolbar = ({
   onShowTimings,
   showTimings,
 }: ToolbarProps) => {
+  const { leakedFibers } = useFiberMaps();
   const { clearAllEvents, paused, setPaused } = useEventsContext();
-  const { breakUnmountedFiberRefs } = useMemoryLeaksApi();
+  const { breakLeakedObjectRefs, exposeLeakedObjectsToGlobal } =
+    useMemoryLeaks();
 
   return (
     <div className="toolbar">
@@ -117,26 +120,34 @@ const Toolbar = ({
           tooltip={showTimings ? "Hide timings" : "Show timings"}
         />
 
+        {FeatureMemLeaks && (
+          <>
+            <span className="toolbar__buttons-splitter" />
+
+            <ButtonToggle
+              icon={BreakRefs}
+              onChange={breakLeakedObjectRefs}
+              tooltip={
+                "Break leaked React objects references\n\nWARNING: This action interferes with how React works, which can lead to behavior that is not possible naturally. Such interference can break the functionality of React. However, this technique allows you to localize the source of the memory leak and greatly simplify the investigation of root causes. Use with caution and for debugging purposes only."
+              }
+            />
+            <ButtonToggle
+              icon={ExposeToGlobal}
+              onChange={() => exposeLeakedObjectsToGlobal([...leakedFibers])}
+              tooltip={
+                "Store potential leaked objects as global variable.\n\nThis allows to investigate retainers in a heap snapshot."
+              }
+            />
+          </>
+        )}
+
         <span className="toolbar__buttons-splitter" />
 
-        {FeatureMemLeaks && (
-          <ButtonToggle
-            icon={BreakRefs}
-            isActive={false}
-            onChange={breakUnmountedFiberRefs}
-            tooltip={
-              "Break leaked React objects references\n\nWARNING: This action interferes with how React works, which can lead to behavior that is not possible naturally. Such interference can break the functionality of React. However, this technique allows you to localize the source of the memory leak and greatly simplify the investigation of root causes. Use with caution and for debugging purposes only."
-            }
-          />
-        )}
         <ButtonToggle
           icon={ClearEventLog}
-          isActive={false}
           onChange={clearAllEvents}
           tooltip={"Clear event log"}
         />
-
-        <span className="toolbar__buttons-splitter" />
 
         <ButtonToggle
           icon={!paused ? Play : Pause}

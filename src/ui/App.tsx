@@ -10,24 +10,25 @@ import {
   ReactRenderersContextProvider,
   useReactRenderers,
 } from "./utils/react-renderers";
-import StatusBar from "./components/statusbar/StatusBar";
 import WaitingForReady from "./components/misc/WaitingForReady";
 import WaitingForRenderer from "./components/misc/WaitingForRenderer";
 import AppBar from "./components/appbar/AppBar";
+import StateBar from "./components/statebar/StateBar";
+import StatusBar from "./components/statusbar/StatusBar";
 import { AppPage, pages } from "./pages";
-import { MemoryLeaksApiContextProvider } from "./utils/memory-leaks";
+import { MemoryLeaksContextProvider } from "./utils/memory-leaks";
 
 function App() {
   return (
     <SourceLocationsContextProvider>
       <OpenFileContextProvider>
-        <MemoryLeaksApiContextProvider>
+        <MemoryLeaksContextProvider>
           <ReactRenderersContextProvider>
             <WaitingForRenderer>
               <ReactRendererUI />
             </WaitingForRenderer>
           </ReactRenderersContextProvider>
-        </MemoryLeaksApiContextProvider>
+        </MemoryLeaksContextProvider>
       </OpenFileContextProvider>
     </SourceLocationsContextProvider>
   );
@@ -72,6 +73,8 @@ function Layout() {
       <WaitingForReady>
         <PageContent />
       </WaitingForReady>
+
+      <StateBar />
 
       <StatusBar />
     </div>

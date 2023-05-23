@@ -301,7 +301,10 @@ export function createDispatcherTrap(
 
             // collect info on mount only
             if (alternate === null) {
-              const fiberTypeId = getFiberTypeId(currentFiber.type);
+              const fiberTypeId = getFiberTypeId(
+                currentFiber.type,
+                currentFiber.tag
+              );
 
               if (!fiberTypeInfo.has(fiberTypeId)) {
                 fiberTypeInfo.set(

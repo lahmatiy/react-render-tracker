@@ -15,10 +15,12 @@ export const ElementTypeProvider: FiberType = 5;
 export const ElementTypeConsumer: FiberType = 6;
 export const ElementTypeHostRoot: FiberType = 7;
 export const ElementTypeHostComponent: FiberType = 8;
-export const ElementTypeSuspense: FiberType = 9;
-export const ElementTypeSuspenseList: FiberType = 10;
-export const ElementTypeProfiler: FiberType = 11;
-export const ElementTypeOtherOrUnknown: FiberType = 12;
+export const ElementTypeHostText: FiberType = 9;
+export const ElementTypeHostPortal: FiberType = 10;
+export const ElementTypeSuspense: FiberType = 11;
+export const ElementTypeSuspenseList: FiberType = 12;
+export const ElementTypeProfiler: FiberType = 13;
+export const ElementTypeOtherOrUnknown: FiberType = 14;
 
 export const FiberTypeName: Record<FiberType, string> = {
   [ElementTypeClass]: "Class component",
@@ -29,6 +31,8 @@ export const FiberTypeName: Record<FiberType, string> = {
   [ElementTypeConsumer]: "Consumer",
   [ElementTypeHostRoot]: "Render root",
   [ElementTypeHostComponent]: "Host component",
+  [ElementTypeHostText]: "Host text",
+  [ElementTypeHostPortal]: "Host portal",
   [ElementTypeSuspense]: "Suspense",
   [ElementTypeSuspenseList]: "Suspense list",
   [ElementTypeProfiler]: "Profiler",
@@ -56,5 +60,5 @@ export const TrackingObjectTypeName: Record<TrackingObjectType, string> = {
   [TrackingObjectHook]: "hook",
 };
 
-export const FeatureMemLeaks = false;
+export const FeatureMemLeaks = true;
 export const FeatureCommits = false;

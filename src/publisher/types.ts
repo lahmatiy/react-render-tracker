@@ -5,6 +5,11 @@ import {
   TransferFiberChanges,
 } from "common-types";
 import { HighlightState } from "rempl";
+import {
+  ExposedLeaksStateSubscription,
+  TrackingObjectWeakRef,
+} from "./react-integration/unmounted-fiber-leak-detector";
+import { ExposedToGlobalLeaksState } from "rempl";
 export * from "common-types";
 
 export type DistributiveOmit<T, K extends keyof T> = T extends any
@@ -469,7 +474,7 @@ export type ReactInterationApi = {
 };
 
 export type TrackingObject = Fiber | object;
-export type TrackingObjectMap = Record<string, TrackingObject>;
+export type TrackingObjectMap = Record<string, TrackingObjectWeakRef>;
 export type MemoryLeakDetectionApi = {
   getLeakedObjectsProbe: () => {
     readonly objects: TrackingObjectMap | null;
@@ -477,6 +482,14 @@ export type MemoryLeakDetectionApi = {
     release: () => void;
   };
   breakLeakedObjectRefs: () => void;
+  getExposedToGlobalLeaksState: () => ExposedToGlobalLeaksState | null;
+  subscribeToExposedToGlobalLeaksState: (
+    fn: ExposedLeaksStateSubscription
+  ) => () => void;
+  exposeLeakedObjectsToGlobal: (
+    fiberIds?: number[]
+  ) => ExposedToGlobalLeaksState | null;
+  cancelExposingLeakedObjectsToGlobal: () => void;
 };
 
 export type ReactDispatcherTrapApi = {
@@ -495,8 +508,10 @@ export type HighlightApi = {
   stopInspect: () => void;
 };
 
-export type RemoteCommandsApi = {
-  breakLeakedObjectRefs: () => void;
+export type RemoteCommandsApi = Omit<
+  MemoryLeakDetectionApi,
+  "getLeakedObjectsProbe"
+> & {
   highlightApi: HighlightApi;
 };
 

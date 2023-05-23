@@ -21,8 +21,8 @@ export function attach(
   const highlightApi = createHighlightApi(interactionApi);
 
   removeCommands({
-    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
     highlightApi,
+    ...integrationCore.memoryLeaksApi,
   });
 
   return {
@@ -32,7 +32,6 @@ export function attach(
       recordEvent
     ),
     ...interactionApi,
-    getLeakedObjectsProbe: integrationCore.getLeakedObjectsProbe,
-    breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
+    ...integrationCore.memoryLeaksApi,
   };
 }

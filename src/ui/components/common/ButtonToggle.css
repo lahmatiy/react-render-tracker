@@ -13,7 +13,11 @@
   color: #555;
   background-color: #e8e8e8;
 }
-.button-toggle:hover {
+.button-toggle[disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.button-toggle:not([disabled]):hover {
   color: #222;
 }
 

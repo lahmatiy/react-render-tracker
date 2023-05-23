@@ -11,6 +11,9 @@
 .details-fiber__name_link:hover {
   color: #0279c9;
 }
+.details-fiber__name_host-type {
+  color: #8c629a;
+}
 .details-fiber__name_unmounted {
   color: #aaa;
   text-decoration: line-through;

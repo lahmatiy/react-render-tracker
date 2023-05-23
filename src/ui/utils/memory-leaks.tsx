@@ -1,30 +1,55 @@
 import * as React from "react";
 import { remoteSubscriber } from "../rempl-subscriber";
+import { ExposedToGlobalLeaksState } from "rempl";
 
-interface MemoryLeaksApiContext {
-  breakUnmountedFiberRefs: () => void;
+interface MemoryLeaksContext {
+  breakLeakedObjectRefs: () => void;
+  exposeLeakedObjectsToGlobal: (fiberIds?: number[]) => void;
+  cancelExposingLeakedObjectsToGlobal: () => void;
+  exposedLeaks: ExposedToGlobalLeaksState;
 }
 
-const MemoryLeaksApiContext = React.createContext<MemoryLeaksApiContext>({
-  breakUnmountedFiberRefs: () => undefined,
+const MemoryLeaksContext = React.createContext<MemoryLeaksContext>({
+  breakLeakedObjectRefs: () => undefined,
+  exposeLeakedObjectsToGlobal: () => undefined,
+  cancelExposingLeakedObjectsToGlobal: () => undefined,
+  exposedLeaks: null,
 });
-export const useMemoryLeaksApi = () => React.useContext(MemoryLeaksApiContext);
-export function MemoryLeaksApiContextProvider({
+export const useMemoryLeaks = () => React.useContext(MemoryLeaksContext);
+export function MemoryLeaksContextProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const value = React.useMemo<MemoryLeaksApiContext>(() => {
+  const ns = remoteSubscriber.ns("memory-leaks");
+  const [exposedLeaksState, setExposedLeaksState] =
+    React.useState<ExposedToGlobalLeaksState>(null);
+  const value = React.useMemo<MemoryLeaksContext>(() => {
     return {
-      breakUnmountedFiberRefs() {
-        remoteSubscriber.callRemote("break-leaked-object-refs");
+      exposedLeaks: exposedLeaksState,
+      breakLeakedObjectRefs() {
+        ns.callRemote("breakLeakedObjectRefs");
+      },
+      exposeLeakedObjectsToGlobal(fiberIds?: number[]) {
+        ns.callRemote("exposeLeakedObjectsToGlobal", fiberIds);
+      },
+      cancelExposingLeakedObjectsToGlobal() {
+        ns.callRemote("cancelExposingLeakedObjectsToGlobal");
       },
     };
-  }, []);
+  }, [exposedLeaksState]);
+
+  React.useEffect(
+    () =>
+      remoteSubscriber
+        .ns("memory-leaks")
+        .subscribe(state => setExposedLeaksState(state)),
+    []
+  );
 
   return (
-    <MemoryLeaksApiContext.Provider value={value}>
+    <MemoryLeaksContext.Provider value={value}>
       {children}
-    </MemoryLeaksApiContext.Provider>
+    </MemoryLeaksContext.Provider>
   );
 }

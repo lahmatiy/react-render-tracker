@@ -7,6 +7,8 @@ import {
   ElementTypeProvider,
   ElementTypeConsumer,
   ElementTypeHostRoot,
+  ElementTypeHostComponent,
+  ElementTypeHostText,
 } from "../../common/constants";
 import type { CoreApi } from "./core";
 import {
@@ -94,7 +96,7 @@ export function createReactDevtoolsHookHandlers(
   let commitIdSeed = 0;
 
   let classComponentUpdateCalls: Array<ClassComponentUpdateCall> = [];
-  const patchedClassComponentUpdater = new Set<any>();
+  const patchedClassComponentUpdater = new WeakSet<any>();
   const classComponentInstanceToFiber = new WeakMap<
     any,
     { rootId: number; fiberId: number }
@@ -154,7 +156,9 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const fiber of untrackFibersSet) {
-      removeFiber(fiber, unmountedFiberRefs.get(fiber));
+      const refs = unmountedFiberRefs.get(fiber);
+      removeFiber(fiber, refs);
+      patchedClassComponentUpdater.delete(refs?.stateNode);
       unmountedFiberRefs.delete(fiber);
     }
 
@@ -166,6 +170,28 @@ export function createReactDevtoolsHookHandlers(
     nextFiber: Fiber
   ): TransferFiberChanges | null {
     const type = getElementTypeForFiber(nextFiber);
+
+    if (type === ElementTypeHostComponent) {
+      return {
+        props: getPropsChanges(
+          prevFiber.memoizedProps,
+          nextFiber.memoizedProps
+        ),
+      };
+    }
+
+    if (type === ElementTypeHostText) {
+      if (prevFiber.memoizedProps === nextFiber.memoizedProps) {
+        return null;
+      }
+
+      return {
+        props: getPropsChanges(
+          { "#text": prevFiber.memoizedProps },
+          { "#text": nextFiber.memoizedProps }
+        ),
+      };
+    }
 
     if (
       type !== ElementTypeClass &&
@@ -268,7 +294,7 @@ export function createReactDevtoolsHookHandlers(
     if (contexts !== null) {
       const seenContexts = new Set<number>();
       const changes = [];
-      const typeId = getFiberTypeId(fiber.type);
+      const typeId = getFiberTypeId(fiber.type, fiber.tag);
       const hookContextIndecies =
         recordedTypeDef.get(typeId)?.hookContextIndecies;
 
@@ -403,7 +429,8 @@ export function createReactDevtoolsHookHandlers(
 
   function getMemoHookChanges(fiber: Fiber) {
     const hookMemoIndecies =
-      recordedTypeDef.get(getFiberTypeId(fiber.type))?.hookMemoIndecies || [];
+      recordedTypeDef.get(getFiberTypeId(fiber.type, fiber.tag))
+        ?.hookMemoIndecies || [];
     const changes = [];
     let nextState = fiber.memoizedState || null;
     let prevState = fiber.alternate?.memoizedState || null;
@@ -630,7 +657,7 @@ export function createReactDevtoolsHookHandlers(
         loc: null,
       };
     } else {
-      const { key, type } = fiber;
+      const { key, type, tag } = fiber;
       const elementType = getElementTypeForFiber(fiber);
       const parentId = parentFiber ? getFiberIdThrows(parentFiber) : 0;
       const ownerIdCandidate = getFiberOwnerId(fiber);
@@ -642,12 +669,11 @@ export function createReactDevtoolsHookHandlers(
         elementType
       );
 
-      props = Object.keys(fiber.memoizedProps);
       triggerEventId = commitUpdatedFiberId.get(ownerId);
       transferFiber = {
         id: fiberId,
         type: elementType,
-        typeId: getFiberTypeId(type),
+        typeId: getFiberTypeId(type, tag),
         key: key === null ? null : String(key),
         ownerId,
         parentId,
@@ -655,6 +681,11 @@ export function createReactDevtoolsHookHandlers(
         hocDisplayNames,
         loc: fiber._debugSource ? locFromDebugSource(fiber._debugSource) : null,
       };
+      props = Object.keys(
+        elementType !== ElementTypeHostText
+          ? fiber.memoizedProps
+          : { "#text": fiber.memoizedProps }
+      );
     }
 
     recordFiberTypeDefIfNeeded(fiber, transferFiber.typeId, transferFiber.type);
@@ -802,6 +833,7 @@ export function createReactDevtoolsHookHandlers(
       }
     } else {
       removeFiber(fiber);
+      patchedClassComponentUpdater.delete(fiber.stateNode);
       unmountedFiberRefs.delete(fiber);
     }
 

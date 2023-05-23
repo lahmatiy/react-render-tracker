@@ -135,10 +135,21 @@ publisher.provide("resolve-source-locations", locations =>
 
 export function remoteCommands({
   breakLeakedObjectRefs,
+  getExposedToGlobalLeaksState,
+  subscribeToExposedToGlobalLeaksState,
+  cancelExposingLeakedObjectsToGlobal,
+  exposeLeakedObjectsToGlobal,
   highlightApi,
 }: RemoteCommandsApi) {
-  publisher.provide("break-leaked-object-refs", () => {
-    breakLeakedObjectRefs();
+  const memoryLeaksNs = publisher.ns("memory-leaks");
+
+  memoryLeaksNs.publish(getExposedToGlobalLeaksState());
+  subscribeToExposedToGlobalLeaksState(state => memoryLeaksNs.publish(state));
+
+  memoryLeaksNs.provide({
+    breakLeakedObjectRefs,
+    exposeLeakedObjectsToGlobal,
+    cancelExposingLeakedObjectsToGlobal,
   });
 
   const { startHighlight, stopHighlight, startInspect, stopInspect } =

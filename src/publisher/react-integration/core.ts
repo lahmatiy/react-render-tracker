@@ -28,6 +28,8 @@ import {
   ElementTypeConsumer,
   ElementTypeHostRoot,
   ElementTypeHostComponent,
+  ElementTypeHostText,
+  ElementTypeHostPortal,
   ElementTypeSuspense,
   ElementTypeSuspenseList,
   ElementTypeProfiler,
@@ -75,6 +77,7 @@ export function createIntegrationCore(
     LegacyHiddenComponent,
     MemoComponent,
     OffscreenComponent,
+    Profiler,
     SimpleMemoComponent,
     SuspenseComponent,
     SuspenseListComponent,
@@ -105,13 +108,11 @@ export function createIntegrationCore(
   // We will use this to try to disambiguate roots when restoring selection between reloads.
   const rootPseudoKeys = new Map();
   const rootDisplayNameCounter = new Map();
+  const roots = new Map<number, Fiber>();
 
   // Unmounted fiber leak tracking
-  const {
-    trackObjectForLeaking,
-    getLeakedObjectsProbe,
-    breakLeakedObjectRefs,
-  } = createUnmountedFiberLeakDetectionApi(recordEvent);
+  const { trackObjectForLeaking, ...memoryLeaksApi } =
+    createUnmountedFiberLeakDetectionApi(recordEvent, roots, fiberToId);
 
   // NOTICE Keep in sync with get*ForFiber methods
   function shouldFilterFiber(fiber: Fiber) {
@@ -124,9 +125,9 @@ export function createIntegrationCore(
         // https://github.com/bvaughn/react-devtools-experimental/issues/197
         return true;
 
-      case HostPortal:
-      case HostComponent:
-      case HostText:
+      // case HostPortal:
+      // case HostComponent:
+      // case HostText:
       case Fragment:
       case LegacyHiddenComponent:
       case OffscreenComponent:
@@ -175,14 +176,21 @@ export function createIntegrationCore(
       case HostComponent:
         return ElementTypeHostComponent;
 
+      case HostText:
+        return ElementTypeHostText;
+
+      case HostPortal:
+        return ElementTypeHostPortal;
+
+      case Profiler:
+        return ElementTypeProfiler;
+
       case SuspenseComponent:
         return ElementTypeSuspense;
 
       case SuspenseListComponent:
         return ElementTypeSuspenseList;
 
-      case HostPortal:
-      case HostText:
       case Fragment:
         return ElementTypeOtherOrUnknown;
 
@@ -211,9 +219,17 @@ export function createIntegrationCore(
     }
   }
 
-  function getFiberTypeId(type: any): number {
+  function getFiberTypeId(type: any, tag: number): number {
     if (type === null) {
-      return 0;
+      switch (tag) {
+        case HostText:
+          type = "#text";
+          break;
+
+        default:
+          // debugger;
+          return -1;
+      }
     }
 
     if (typeof type !== "object" && typeof type !== "function") {
@@ -345,7 +361,11 @@ export function createIntegrationCore(
     }
 
     const { return: parentFiber = null } = fiber;
-    if (parentFiber?._debugOwner) {
+    if (parentFiber !== null) {
+      if (typeof parentFiber._debugOwner !== "number") {
+        return getOrGenerateFiberId(parentFiber);
+      }
+
       if (
         parentFiber.tag === ForwardRef ||
         parentFiber.tag === MemoComponent ||
@@ -450,6 +470,7 @@ export function createIntegrationCore(
 
     rootDisplayNameCounter.set(name, counter + 1);
     rootPseudoKeys.set(id, pseudoKey);
+    roots.set(id, fiber);
   }
 
   function getRootPseudoKey(id: number) {
@@ -457,6 +478,8 @@ export function createIntegrationCore(
   }
 
   function removeRootPseudoKey(id: number) {
+    roots.delete(id);
+
     const pseudoKey = rootPseudoKeys.get(id);
 
     if (pseudoKey === undefined) {
@@ -523,7 +546,6 @@ export function createIntegrationCore(
     didFiberRender,
     shouldFilterFiber,
     findFiberByHostInstance,
-    getLeakedObjectsProbe,
-    breakLeakedObjectRefs,
+    memoryLeaksApi,
   };
 }

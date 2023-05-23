@@ -1,5 +1,5 @@
 .maybe-leaks-page-fiber {
-  padding-left: calc(var(--depth, 0) * 14px);
+  padding-left: 8px;
   border: solid transparent;
   border-width: 1px 0;
   background-color: white;
@@ -29,8 +29,14 @@
   padding-right: 4px;
   scroll-margin-top: var(--scroll-margin-top, 0px);
   scroll-margin-left: var(--scroll-margin-left, 0px);
+  white-space: nowrap;
 }
 
 .maybe-leaks-page-fiber__name {
   color: #666;
+}
+
+.maybe-leaks-page-fiber__content .fiber-maybe-leak {
+  margin-left: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
 }

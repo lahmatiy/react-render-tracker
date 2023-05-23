@@ -8,7 +8,9 @@ function LeaksList() {
   const { fiberById } = useFiberMaps();
 
   if (!leakedFibers.length) {
-    return <div className="no-leaks">No leaks detected</div>;
+    return (
+      <div className="no-leaks">No potential leaked components detected</div>
+    );
   }
 
   const types = new Map<number, MessageFiber[]>();
@@ -38,6 +40,7 @@ function LeaksList() {
         .map(fibers => (
           <FiberGroup
             key={fibers[0].typeId}
+            typeId={fibers[0].typeId}
             fibers={fibers}
             initExpanded={false}
           />

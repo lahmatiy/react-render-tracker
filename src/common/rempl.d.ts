@@ -48,7 +48,12 @@ declare module "rempl" {
     basedir: string;
     basedirJsx: string;
   } | null;
-  export type HighlightState = {
+  type ExposedToGlobalLeaksState = {
+    globalName: string;
+    objectRefsCount: number;
+    fiberIds: number[];
+  } | null;
+  type HighlightState = {
     inspecting: boolean;
     hoveredFiberId: number | null;
   };
@@ -61,7 +66,6 @@ declare module "rempl" {
         "resolve-source-locations"(
           locations: string[]
         ): Array<{ loc: string; resolved: string }>;
-        "break-leaked-object-refs"(): void;
       };
     };
     "react-renderers": {
@@ -81,6 +85,16 @@ declare module "rempl" {
     "open-source-settings": {
       data: OpenSourceSettings;
       methods: never;
+    };
+    "memory-leaks": {
+      data: ExposedToGlobalLeaksState;
+      methods: {
+        breakLeakedObjectRefs(): void;
+        exposeLeakedObjectsToGlobal(
+          fiberIds?: number[]
+        ): ExposedToGlobalLeaksState;
+        cancelExposingLeakedObjectsToGlobal(): void;
+      };
     };
     highlighting: {
       data: HighlightState;

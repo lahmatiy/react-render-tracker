@@ -2,8 +2,18 @@
   grid-area: toolbar;
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 1px 0;
   border-bottom: 1px solid #ddd;
   background-color: rgba(255, 255, 255, 0.75);
+  background-image: linear-gradient(
+    to bottom,
+    transparent 32px,
+    #ddd 32px,
+    #ddd 33px,
+    transparent 0px
+  );
   line-height: 22px;
 }
 .toolbar__buttons {

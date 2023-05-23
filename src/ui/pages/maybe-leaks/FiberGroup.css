@@ -18,11 +18,47 @@
   background-color: #eee;
 }
 
+.maybe-leaks__group-header__expose-button {
+  margin: -2px 18px -2px -20px;
+  border: none;
+  border-right: 1px solid #e0e0e0;
+  background: rgba(0, 0, 0, 0.035) url(../../images/expose-to-global.svg);
+  background-size: 10px;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 23px;
+  vertical-align: middle;
+  aspect-ratio: 1/1;
+  opacity: 0.75;
+}
+.maybe-leaks__group-header__expose-button:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
 .maybe-leaks__group-header-count {
   margin-left: 1ex;
+  margin-right: 1ex;
+  color: #b69815;
+}
+.maybe-leaks__group-header_secondary-count {
+  color: #666;
+}
+.maybe-leaks__group-header_no-collected {
   color: #aaa;
 }
 
 .maybe-leaks__group-fibers {
   padding: 1px 0 4px;
+}
+.maybe-leaks__group-fibers__show-collected {
+  padding: 1px 8px 1px 27px;
+  font-size: 12px;
+  text-decoration: underline;
+  color: #888;
+}
+.maybe-leaks__group-fibers__show-collected:hover {
+  background-color: #eee;
+  color: #666;
+  cursor: pointer;
 }

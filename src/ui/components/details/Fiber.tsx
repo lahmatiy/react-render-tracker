@@ -3,6 +3,7 @@ import FiberId from "../common/FiberId";
 import FiberKey from "../common/FiberKey";
 import { useFiber } from "../../utils/fiber-maps";
 import { useSelectionState } from "../../utils/selection";
+import { isHostType } from "../../utils/fiber";
 
 export const Fiber = ({
   fiberId,
@@ -23,6 +24,7 @@ export const Fiber = ({
       <span
         className={
           "details-fiber__name" +
+          (isHostType(fiber.type) ? " details-fiber__name_host-type" : "") +
           (unmounted ? " details-fiber__name_unmounted" : "") +
           (selected
             ? " details-fiber__name_selected"

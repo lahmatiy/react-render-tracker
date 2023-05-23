@@ -295,11 +295,11 @@ export function getInternalReactConstants(version: string) {
       case HostRoot:
         return "HostRoot";
       case HostComponent:
-        return type;
+        return "<" + type + ">";
       case HostPortal:
-        return "HostPortal";
+        return "#portal";
       case HostText:
-        return "HostText";
+        return "#text";
       case Fragment:
         return "Fragment";
       case LazyComponent:

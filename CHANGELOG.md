@@ -5,6 +5,7 @@
 - Added displaying a list of detected unsupported renderers on the React renderer connection waiting screen. This should help figure out why a React can't be connected.
 - Added ancestors section in component's details panel
 - Fixed memory leaks related to keeping unmounted fibers by RRT internal dictionaries
+- Fixed navigation when a fiber is pinned
 - Removed "Blocking mode" mark for a render root as outdated
 - Considered `production` and `profiling` React builds as partially functional, i.e. RRT works but some data is not capturing
 
@@ -13,7 +14,7 @@
 - Added renderer's name & version into the toolbar
 - Reduced a main bundle size by ~53Kb (12%)
 - Excluded source files from the npm package
-- Bumped rempl to [`1.0.0-alpha.23`](https://github.com/rempl/rempl/releases/tag/v1.0.0-alpha.20)
+- Bumped rempl to [`1.0.0-alpha.23`](https://github.com/rempl/rempl/releases/tag/v1.0.0-alpha.23)
 - Made all dependencies as developer only
 
 ## 0.6.2 (May 16, 2022)
