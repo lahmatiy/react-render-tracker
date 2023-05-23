@@ -8,7 +8,7 @@ import {
 } from "./rempl-publisher";
 import { attach } from "./react-integration";
 
-installReactDevtoolsHook(
+export const hook = installReactDevtoolsHook(
   window,
   (id, renderer) =>
     attach(renderer, publishReactRenderer(id, renderer), remoteCommands),

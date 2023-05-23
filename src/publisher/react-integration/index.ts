@@ -1,6 +1,7 @@
 import { createIntegrationCore } from "./core";
 import { createReactDevtoolsHookHandlers } from "./devtools-hook-handlers";
 import { createReactInteractionApi } from "./interaction-api";
+import { createHighlightApi } from "./highlight-api";
 import {
   ReactInternals,
   ReactIntegrationApi,
@@ -16,8 +17,11 @@ export function attach(
 ): ReactIntegrationApi {
   const integrationCore = createIntegrationCore(renderer, recordEvent);
   const dispatcherApi = createDispatcherTrap(renderer, integrationCore);
+  const interactionApi = createReactInteractionApi(integrationCore);
+  const highlightApi = createHighlightApi(interactionApi);
 
   removeCommands({
+    highlightApi,
     ...integrationCore.memoryLeaksApi,
   });
 
@@ -27,7 +31,7 @@ export function attach(
       dispatcherApi,
       recordEvent
     ),
-    ...createReactInteractionApi(integrationCore),
+    ...interactionApi,
     ...integrationCore.memoryLeaksApi,
   };
 }

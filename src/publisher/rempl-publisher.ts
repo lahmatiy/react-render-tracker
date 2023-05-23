@@ -139,6 +139,7 @@ export function remoteCommands({
   subscribeToExposedToGlobalLeaksState,
   cancelExposingLeakedObjectsToGlobal,
   exposeLeakedObjectsToGlobal,
+  highlightApi,
 }: RemoteCommandsApi) {
   const memoryLeaksNs = publisher.ns("memory-leaks");
 
@@ -149,6 +150,16 @@ export function remoteCommands({
     breakLeakedObjectRefs,
     exposeLeakedObjectsToGlobal,
     cancelExposingLeakedObjectsToGlobal,
+  });
+
+  const { startHighlight, stopHighlight, startInspect, stopInspect } =
+    highlightApi;
+  highlightApi.subscribe(state => publisher.ns("highlighting").publish(state));
+  publisher.ns("highlighting").provide({
+    startHighlight,
+    stopHighlight,
+    startInspect,
+    stopInspect,
   });
 }
 

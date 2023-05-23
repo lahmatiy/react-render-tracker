@@ -1,5 +1,7 @@
 ## next
 
+- Added selecting a component on the page
+- Added DOM elements highlighting of a component on hover in component's tree
 - Added displaying a list of detected unsupported renderers on the React renderer connection waiting screen. This should help figure out why a React can't be connected.
 - Added ancestors section in component's details panel
 - Fixed memory leaks related to keeping unmounted fibers by RRT internal dictionaries

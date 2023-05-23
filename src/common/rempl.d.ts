@@ -53,6 +53,11 @@ declare module "rempl" {
     objectRefsCount: number;
     fiberIds: number[];
   } | null;
+  type HighlightState = {
+    inspecting: boolean;
+    hoveredFiberId: number | null;
+  };
+
   export type RemoteProtocol = DefinedNamespaceMap<{
     "*": {
       data: never;
@@ -89,6 +94,15 @@ declare module "rempl" {
           fiberIds?: number[]
         ): ExposedToGlobalLeaksState;
         cancelExposingLeakedObjectsToGlobal(): void;
+      };
+    };
+    highlighting: {
+      data: HighlightState;
+      methods: {
+        startHighlight(fiberId: number): void;
+        stopHighlight(): void;
+        startInspect(): void;
+        stopInspect(): void;
       };
     };
   }>;

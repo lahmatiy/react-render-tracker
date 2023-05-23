@@ -18,7 +18,10 @@ const rootElAddEventListener = rootEl.addEventListener;
 rootEl.addEventListener = (
   ...args: Parameters<typeof rootElAddEventListener>
 ) => {
-  if (!/^(pointer|mouse)/.test(args[0])) {
+  if (
+    !/^(pointer|mouse)/.test(args[0]) ||
+    ["mouseover", "mouseout"].includes(args[0])
+  ) {
     rootElAddEventListener.call(rootEl, ...args);
   }
 };

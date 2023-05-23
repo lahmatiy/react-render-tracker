@@ -4,6 +4,7 @@ import { EventsContextProvider } from "./utils/events";
 import { SourceLocationsContextProvider } from "./utils/source-locations";
 import { OpenFileContextProvider } from "./utils/open-file";
 import { SelectionContextProvider } from "./utils/selection";
+import { HighlightingContextProvider } from "./utils/highlighting";
 import { PinnedContextProvider } from "./utils/pinned";
 import {
   ReactRenderersContextProvider,
@@ -42,9 +43,11 @@ function ReactRendererUI() {
         <FiberMapsContextProvider key={renderer.id}>
           <EventsContextProvider channelId={renderer.channelId}>
             <SelectionContextProvider>
-              <PinnedContextProvider>
-                <Layout />
-              </PinnedContextProvider>
+              <HighlightingContextProvider>
+                <PinnedContextProvider>
+                  <Layout />
+                </PinnedContextProvider>
+              </HighlightingContextProvider>
             </SelectionContextProvider>
           </EventsContextProvider>
         </FiberMapsContextProvider>

@@ -1,16 +1,19 @@
 import * as React from "react";
 import { useSelectedId } from "../../utils/selection";
+import { useHighlightedId } from "../../utils/highlighting";
 import { getBoundingRect, getOverflowParent } from "../../utils/layout";
 import { useTreeViewSettingsContext } from "./contexts";
 
-export const ScrollSelectedIntoViewIfNeeded = () => {
+export const ScrollFiberIntoViewIfNeeded = () => {
   const { selectedId } = useSelectedId();
+  const { highlightedId } = useHighlightedId();
   const { getFiberElement } = useTreeViewSettingsContext();
   const { groupByParent, showUnmounted } = useTreeViewSettingsContext();
 
   React.useEffect(() => {
+    const id = highlightedId || selectedId;
     const element =
-      selectedId !== null ? getFiberElement(selectedId) || null : null;
+      id !== null ? getFiberElement(id) || null : null;
 
     if (element !== null) {
       const viewportEl = getOverflowParent(element);
@@ -53,7 +56,7 @@ export const ScrollSelectedIntoViewIfNeeded = () => {
 
       viewportEl?.scrollTo(scrollToLeft, scrollToTop);
     }
-  }, [selectedId, groupByParent, showUnmounted]);
+  }, [selectedId, highlightedId, groupByParent, showUnmounted]);
 
   return null;
 };

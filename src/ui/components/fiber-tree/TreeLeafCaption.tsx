@@ -1,6 +1,7 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useSelectionState } from "../../utils/selection";
+import { useHighlightingState } from "../../utils/highlighting";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
@@ -63,12 +64,18 @@ const TreeLeafCaptionContainer = React.memo(
     showTimings,
     content,
   }: TreeLeafCaptionContainerProps) => {
-    const { id, ownerId } = fiber;
+    const { id, ownerId, mounted } = fiber;
     const { selected, select } = useSelectionState(id);
+    const { highlighted, startHighlight, stopHighlight } =
+      useHighlightingState(id);
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
     const classes = ["tree-leaf-caption"];
+
+    if (highlighted) {
+      classes.push("highlighted");
+    }
 
     if (selected) {
       classes.push("selected");
@@ -90,6 +97,8 @@ const TreeLeafCaptionContainer = React.memo(
       event.stopPropagation();
       pin(id);
     };
+    const handleMouseEnter = mounted ? startHighlight : undefined;
+    const handleMouseLeave = mounted ? stopHighlight : undefined;
 
     return (
       <div
@@ -97,6 +106,8 @@ const TreeLeafCaptionContainer = React.memo(
         style={{ "--depth": depth } as React.CSSProperties}
         onClick={handleSelect}
         onDoubleClick={handlePin}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {showTimings && <TreeLeafTimings fiber={fiber} />}
 

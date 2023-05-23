@@ -38,3 +38,26 @@
 .app-bar__tab-badge:empty {
   display: none;
 }
+
+.app-bar__prelude {
+  border: solid #ddd;
+  border-width: 0 1px 1px 0;
+}
+.app-bar__pick-component {
+  width: 25px;
+  height: 21px;
+  vertical-align: top;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  -webkit-mask: center / 16px no-repeat url("../../images/pick-component.svg");
+  mask: center / 16px no-repeat url("../../images/pick-component.svg");
+  background-color: #888;
+  filter: hue-rotate(10, 10, 10);
+}
+.app-bar__pick-component:hover {
+  background-color: #000;
+}
+.app-bar__pick-component.active {
+  background-color: #4f96d5;
+}

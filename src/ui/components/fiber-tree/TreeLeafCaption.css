@@ -42,6 +42,9 @@
 .tree-leaf-caption:hover {
   background-color: #eee;
 }
+.tree-leaf-caption.highlighted {
+  background-color: #eee;
+}
 .tree-leaf-caption:hover:not(.selected) {
   border-color: #e6e6e6;
 }
