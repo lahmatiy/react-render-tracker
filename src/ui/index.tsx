@@ -14,14 +14,17 @@ document.body.appendChild(rootEl);
 // on each pointer move there are 4-12 handlers are firing (pointermove & mousemove
 // and optionally pointerover, pointerout, mouseover, mouseout). Currently, we don't use
 // such event handlers, so avoid adding listeners for them to improve hover performance.
-// const rootElAddEventListener = rootEl.addEventListener;
-// rootEl.addEventListener = (
-//   ...args: Parameters<typeof rootElAddEventListener>
-// ) => {
-//   if (!/^(pointer|mouse)/.test(args[0])) {
-//     rootElAddEventListener.call(rootEl, ...args);
-//   }
-// };
+const rootElAddEventListener = rootEl.addEventListener;
+rootEl.addEventListener = (
+  ...args: Parameters<typeof rootElAddEventListener>
+) => {
+  if (
+    !/^(pointer|mouse)/.test(args[0]) ||
+    ["mouseover", "mouseout"].includes(args[0])
+  ) {
+    rootElAddEventListener.call(rootEl, ...args);
+  }
+};
 
 // render React app
 ReactDOM.render(<App />, rootEl);

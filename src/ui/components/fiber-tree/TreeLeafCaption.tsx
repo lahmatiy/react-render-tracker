@@ -1,7 +1,7 @@
 import * as React from "react";
 import { MessageFiber } from "../../types";
 import { useSelectionState } from "../../utils/selection";
-import { useHighlighting, useHighlightingState } from "../../utils/highlighting";
+import { useHighlightingState } from "../../utils/highlighting";
 import { usePinnedContext } from "../../utils/pinned";
 import TreeLeafTimings from "./TreeLeafTimings";
 import TreeLeafCaptionContent from "./TreeLeafCaptionContent";
@@ -64,10 +64,10 @@ const TreeLeafCaptionContainer = React.memo(
     showTimings,
     content,
   }: TreeLeafCaptionContainerProps) => {
-    const { id, ownerId, displayName } = fiber;
+    const { id, ownerId, mounted } = fiber;
     const { selected, select } = useSelectionState(id);
-    const { startHighlight, stopHighlight } = useHighlighting();
-    const { highlighted } = useHighlightingState(id);
+    const { highlighted, startHighlight, stopHighlight } =
+      useHighlightingState(id);
     const { pin } = usePinnedContext();
 
     const isRenderRoot = ownerId === 0;
@@ -97,12 +97,8 @@ const TreeLeafCaptionContainer = React.memo(
       event.stopPropagation();
       pin(id);
     };
-    const handleMouseEnter = () => {
-      startHighlight(id, displayName);
-    }
-    const handleMouseLeave = () => {
-      stopHighlight();
-    }
+    const handleMouseEnter = mounted ? startHighlight : undefined;
+    const handleMouseLeave = mounted ? stopHighlight : undefined;
 
     return (
       <div

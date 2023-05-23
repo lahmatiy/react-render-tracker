@@ -11,53 +11,105 @@ import {
 import { remoteSubscriber } from "../rempl-subscriber";
 import { useSelectedId } from "./selection";
 
-type IdChangeCallback = (id: number | null) => void;
+type InspectModeCallback = (inspectMode: boolean) => void;
+type HighlightedFiberIdChangeCallback = (id: number | null) => void;
 type StateChangeCallback = (state: boolean) => void;
 
 interface Highlighting {
+  enabled: boolean;
+  inspectMode: boolean;
   highlightedId: number | null;
   highlight: (nextSelectedId: number | null, pushHistory?: boolean) => void;
-  subscribe: (fn: (value: number) => void) => () => void;
-  subscribeToIdState: (id: number, fn: StateChangeCallback) => () => void;
-  startHighlight: (id: number, displayName: string) => void;
+  subscribeToInspectMode: (fn: InspectModeCallback) => () => void;
+  subscribeToHighlightedId: (fn: (value: number) => void) => () => void;
+  subscribeToFiberState: (id: number, fn: StateChangeCallback) => () => void;
+  startHighlight: (id: number) => void;
   stopHighlight: () => void;
   startInspect: () => void;
-  stopInpect: () => void;
+  stopInspect: () => void;
+  toggleInspect: () => void;
 }
 
-const HighlightingContext = React.createContext<Highlighting>({} as any);
+const defaultHighlightingContext: Highlighting = {
+  enabled: false,
+  inspectMode: false,
+  highlightedId: null,
+  highlight: () => undefined,
+  subscribeToInspectMode: () => () => undefined,
+  subscribeToHighlightedId: () => () => undefined,
+  subscribeToFiberState: () => () => undefined,
+  startHighlight: () => undefined,
+  stopHighlight: () => undefined,
+  startInspect: () => undefined,
+  stopInspect: () => undefined,
+  toggleInspect: () => undefined,
+};
+
+const HighlightingContext = React.createContext<Highlighting>(
+  defaultHighlightingContext
+);
 const useHighlightingContext = () => React.useContext(HighlightingContext);
 export const HighlightingContextProvider = ({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) => {
   const value: Highlighting = React.useMemo(() => {
+    const channel = remoteSubscriber.ns("highlighting");
     let highlightedId: number | null = null;
-    const subscriptions: Subscriptions<IdChangeCallback> = new Set();
-    const stateSubscriptionsById: SubscriptionsMap<
+    const inspectModeSubscriptions: Subscriptions<InspectModeCallback> =
+      new Set();
+    const highlightedIdSubscriptions: Subscriptions<HighlightedFiberIdChangeCallback> =
+      new Set();
+    const fiberStateSubscriptionsById: SubscriptionsMap<
       number,
       StateChangeCallback
     > = new Map();
+    let inspectMode = false;
+    const startInspect = () => {
+      channel.callRemote("startInspect");
+    };
+    const stopInspect = () => {
+      channel.callRemote("stopInspect");
+    };
+    const toggleInspect = () => {
+      if (inspectMode) {
+        stopInspect();
+      } else {
+        startInspect();
+      }
+    };
     const highlight = (nextHighlightedId: number | null) => {
-      if (highlightedId == nextHighlightedId) {
+      if (highlightedId === nextHighlightedId) {
         return;
       }
 
       if (highlightedId !== null) {
-        notifyById(stateSubscriptionsById, highlightedId, false);
+        notifyById(fiberStateSubscriptionsById, highlightedId, false);
       }
 
       highlightedId = nextHighlightedId;
 
       if (nextHighlightedId !== null) {
-        notifyById(stateSubscriptionsById, nextHighlightedId, true);
+        notifyById(fiberStateSubscriptionsById, nextHighlightedId, true);
       }
 
-      notify(subscriptions, nextHighlightedId);
+      notify(highlightedIdSubscriptions, nextHighlightedId);
     };
 
     return {
+      enabled: true,
+      get inspectMode() {
+        return inspectMode;
+      },
+      set inspectMode(mode) {
+        mode = Boolean(mode);
+
+        if (mode !== inspectMode) {
+          inspectMode = mode;
+          notify(inspectModeSubscriptions, inspectMode);
+        }
+      },
       get highlightedId() {
         return highlightedId;
       },
@@ -65,94 +117,109 @@ export const HighlightingContextProvider = ({
         highlight(id);
       },
       highlight,
-      subscribe(fn) {
-        return subscribe(subscriptions, fn);
+      subscribeToInspectMode(fn) {
+        return subscribe(inspectModeSubscriptions, fn);
       },
-      subscribeToIdState(id, fn) {
+      subscribeToHighlightedId(fn) {
+        return subscribe(highlightedIdSubscriptions, fn);
+      },
+      subscribeToFiberState(id, fn) {
         return subscribeById<number, StateChangeCallback>(
-          stateSubscriptionsById,
+          fiberStateSubscriptionsById,
           id,
           fn
         );
       },
-      startHighlight(id: number, displayName: string) {
-        const channel = remoteSubscriber.ns("highlighter");
-        channel.callRemote("startHighlight", id, displayName);
+      startHighlight(id) {
+        channel.callRemote("startHighlight", id);
       },
       stopHighlight() {
-        const channel = remoteSubscriber.ns("highlighter");
         channel.callRemote("stopHighlight");
       },
-      startInspect() {
-        const channel = remoteSubscriber.ns("highlighter");
-        channel.callRemote("startInspect");
-      },
-      stopInpect() {
-        const channel = remoteSubscriber.ns("highlighter");
-        channel.callRemote("stopInspect");
-      }
-    }
+      startInspect,
+      stopInspect,
+      toggleInspect,
+    };
   }, []);
 
   const { highlight } = value;
   const { select } = useSelectedId();
 
-  React.useEffect(
-    () =>
-      remoteSubscriber
-        .ns("highlighter")
-        .subscribe((event) => {
-          if (!event) {
-            return;
-          }
+  React.useEffect(() => {
+    let lastInspecting: boolean | undefined = undefined;
 
-          const { fiberID, selected = false } = event;
+    return remoteSubscriber.ns("highlighting").subscribe(state => {
+      if (!state) {
+        return;
+      }
 
-          if (fiberID) {
-            highlight(fiberID);
-            selected && select(fiberID);
-          }
-        }),
-    []
-  );
+      const { inspecting, hoveredFiberId } = state;
+
+      if (lastInspecting && inspecting === false && hoveredFiberId !== null) {
+        select(hoveredFiberId);
+      }
+
+      highlight(inspecting ? hoveredFiberId : null);
+      lastInspecting = inspecting;
+      value.inspectMode = inspecting;
+    });
+  }, []);
 
   return (
     <HighlightingContext.Provider value={value}>
       {children}
     </HighlightingContext.Provider>
-  )
-}
+  );
+};
+
+export const useInspectMode = () => {
+  const {
+    inspectMode,
+    startInspect,
+    stopInspect,
+    toggleInspect,
+    subscribeToInspectMode,
+  } = useHighlightingContext();
+  const [state, setState] = React.useState(inspectMode);
+
+  useSubscription(() => subscribeToInspectMode(setState), []);
+
+  return {
+    inspectMode: state,
+    startInspect,
+    stopInspect,
+    toggleInspect,
+  };
+};
 
 export const useHighlightingState = (id: number) => {
-  const { highlightedId, subscribeToIdState } = useHighlightingContext();
+  const {
+    highlightedId,
+    subscribeToFiberState,
+    startHighlight,
+    stopHighlight,
+  } = useHighlightingContext();
   const [state, setState] = React.useState(id === highlightedId);
+  const startHighlightFiber = React.useCallback(() => startHighlight(id), [id]);
 
-  useSubscription(() => subscribeToIdState(id, setState), [id]);
+  useSubscription(() => subscribeToFiberState(id, setState), [id]);
 
-  return { highlighted: state };
+  return {
+    highlighted: state,
+    startHighlight: startHighlightFiber,
+    stopHighlight,
+  };
 };
 
 export const useHighlightedId = () => {
-  const { highlightedId, highlight, subscribe } = useHighlightingContext();
+  const { highlightedId, highlight, subscribeToHighlightedId } =
+    useHighlightingContext();
   const [state, setState] = React.useState(highlightedId);
 
-  useSubscription(() => subscribe(setState));
-
-  return { highlightedId: state, highlight };
-};
-
-export const useHighlighting = () => {
-  const {
-    startHighlight,
-    stopHighlight,
-    startInspect,
-    stopInpect,
-  } = useHighlightingContext();
+  useSubscription(() => subscribeToHighlightedId(setState));
 
   return {
-    startHighlight,
-    stopHighlight,
-    startInspect,
-    stopInpect,
+    highlightedId: state,
+    highlight,
   };
-}
+};

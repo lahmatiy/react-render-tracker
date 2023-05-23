@@ -133,30 +133,23 @@ publisher.provide("resolve-source-locations", locations =>
   )
 );
 
-export function publishHighlightEvent(event) {
-  publisher.ns("highlighter")
-    .publish(event);
-}
-
 export function remoteCommands({
   breakLeakedObjectRefs,
-  highlightApi: {
-    startHighlight,
-    stopHighlight,
-    startInspect,
-    stopInspect,
-  },
+  highlightApi,
 }: RemoteCommandsApi) {
   publisher.provide("break-leaked-object-refs", () => {
     breakLeakedObjectRefs();
   });
-  publisher.ns("highlighter")
-    .provide({
-      startHighlight,
-      stopHighlight,
-      startInspect,
-      stopInspect,
-    });
+
+  const { startHighlight, stopHighlight, startInspect, stopInspect } =
+    highlightApi;
+  highlightApi.subscribe(state => publisher.ns("highlighting").publish(state));
+  publisher.ns("highlighting").provide({
+    startHighlight,
+    stopHighlight,
+    startInspect,
+    stopInspect,
+  });
 }
 
 // import { connectPublisherWs } from "rempl";

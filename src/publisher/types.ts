@@ -4,6 +4,7 @@ import {
   TransferCallTrace,
   TransferFiberChanges,
 } from "common-types";
+import { HighlightState } from "rempl";
 export * from "common-types";
 
 export type DistributiveOmit<T, K extends keyof T> = T extends any
@@ -457,12 +458,12 @@ export type ReactDevtoolsHookHandlers = {
   handleCommitFiberUnmount: (fiber: Fiber) => void;
 };
 export type ReactInterationApi = {
-  findNativeNodesForFiberID: (id: number) => any[] | null;
-  getFiberIDForNative: (
+  findNativeNodesForFiberId: (id: number) => any[] | null;
+  getFiberIdForNative: (
     hostInstance: NativeType,
     findNearestUnfilteredAncestor?: boolean
   ) => number | null;
-  getDisplayNameForFiberID: (id: number) => string | null;
+  getDisplayNameForFiberId: (id: number) => string | null;
   getOwnersList: (id: number) => Array<SerializedElement> | null;
   getPathForElement: (id: number) => Array<PathFrame> | null;
 };
@@ -486,14 +487,17 @@ export type ReactDispatcherTrapApi = {
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
 
+export type HighlightApi = {
+  subscribe: (fn: (state: HighlightState) => void) => void;
+  startHighlight: (fiberId: number) => void;
+  stopHighlight: () => void;
+  startInspect: () => void;
+  stopInspect: () => void;
+};
+
 export type RemoteCommandsApi = {
   breakLeakedObjectRefs: () => void;
-  highlightApi: {
-    startHighlight: (fiberId: number, name: string) => void;
-    stopHighlight: () => void;
-    startInspect: () => void;
-    stopInspect: () => void;
-  }
+  highlightApi: HighlightApi;
 };
 
 export type ReactIntegrationApi = ReactDevtoolsHookHandlers &

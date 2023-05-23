@@ -1,18 +1,95 @@
-import { HighlighterEvent } from "rempl";
-import type { ReactDevtoolsHook } from "../react-devtools-hook";
+import { HighlightState } from "rempl";
 import Overlay from "../overlay";
-import Highlighter from "../highlighter";
+import { NativeType, ReactInterationApi } from "../types";
 
-let overlay: Overlay | null = null;
-let highlighter: Highlighter | null = null;
+type StateChangeHandler = (state: HighlightState) => void;
+type StateSubscriber = { fn: StateChangeHandler };
 
-export function createHighlightApi(
-  hook: ReactDevtoolsHook,
-  publish: (event: HighlighterEvent) => void,
-) {
+export function createHighlightApi({
+  getFiberIdForNative,
+  findNativeNodesForFiberId,
+  getDisplayNameForFiberId,
+}: ReactInterationApi) {
+  const overlay = new Overlay();
+  let subscriptions: StateSubscriber[] = [];
+  let isInspectEnabled = false;
+  let hoveredFiberId: number | null = null;
 
-  const startHighlight = (fiberId: number, name: string) => {
-    let nodes = hook.rendererInterfaces.get(1).findNativeNodesForFiberID(fiberId)
+  function subscribe(fn: StateChangeHandler) {
+    let handler: StateSubscriber | null = { fn };
+
+    subscriptions.push(handler);
+
+    return function () {
+      subscriptions = subscriptions.filter(elem => elem.fn !== fn);
+      handler = null;
+    };
+  }
+  function notify() {
+    for (const { fn } of subscriptions) {
+      fn({
+        inspecting: isInspectEnabled,
+        hoveredFiberId,
+      });
+    }
+  }
+
+  function onClick(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    stopInspect();
+    selectFiberForNode(event.target as HTMLElement, true);
+    notify();
+  }
+
+  function onMouseEvent(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onPointerDown(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onPointerOver(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.target) {
+      const node = event.target as HTMLElement;
+      const fiberId = getFiberIdForNative(node as unknown as NativeType, true);
+      const ownerName = fiberId
+        ? getDisplayNameForFiberId(fiberId) || undefined
+        : undefined;
+
+      overlay.inspect([node], undefined, ownerName);
+      selectFiberForNode(node);
+    }
+  }
+
+  function onPointerUp(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function selectFiberForNode(node: HTMLElement, selected = false) {
+    const fiberId = getFiberIdForNative(node as unknown as NativeType, true);
+
+    if (fiberId !== hoveredFiberId) {
+      hoveredFiberId = fiberId;
+      if (selected) {
+        stopInspect();
+      } else {
+        notify();
+      }
+    }
+  }
+
+  function startHighlight(fiberId: number) {
+    let nodes = findNativeNodesForFiberId(fiberId);
+
     if (!nodes || !nodes.length) {
       return;
     }
@@ -20,52 +97,53 @@ export function createHighlightApi(
     nodes = nodes.filter(node => node.nodeType === 1);
 
     if (nodes.length) {
-
-      if (!overlay) {
-        overlay = new Overlay(hook);
-      }
-
-      overlay.inspect(nodes, name);
-    }
-  };
-
-  const stopHighlight = () => {
-    if (overlay) {
+      overlay.inspect(nodes, getDisplayNameForFiberId(fiberId) || "Unknown");
+    } else {
       overlay.remove();
-      overlay = null;
     }
-  };
-
-  const startInspect = () => {
-    if (!overlay) {
-      overlay = new Overlay(hook);
-    }
-    if (!highlighter) {
-      highlighter = new Highlighter(
-        hook,
-        overlay,
-        publish,
-      );
-    }
-
-    highlighter.startInspect();
   }
 
-  const stopInspect = () => {
-    if (highlighter) {
-      highlighter.stopInspect();
-      highlighter = null;
+  function stopHighlight() {
+    overlay.remove();
+  }
+
+  function startInspect() {
+    if (isInspectEnabled) {
+      return;
     }
-    if (overlay) {
-      overlay.remove();
-      overlay = null;
-    }
+
+    window.addEventListener("click", onClick, true);
+    window.addEventListener("mousedown", onMouseEvent, true);
+    window.addEventListener("mouseover", onMouseEvent, true);
+    window.addEventListener("mouseup", onMouseEvent, true);
+    window.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("pointerover", onPointerOver, true);
+    window.addEventListener("pointerup", onPointerUp, true);
+
+    isInspectEnabled = true;
+    hoveredFiberId = null;
+    notify();
+  }
+
+  function stopInspect() {
+    window.removeEventListener("click", onClick, true);
+    window.removeEventListener("mousedown", onMouseEvent, true);
+    window.removeEventListener("mouseover", onMouseEvent, true);
+    window.removeEventListener("mouseup", onMouseEvent, true);
+    window.removeEventListener("pointerdown", onPointerDown, true);
+    window.removeEventListener("pointerover", onPointerOver, true);
+    window.removeEventListener("pointerup", onPointerUp, true);
+
+    overlay.remove();
+    isInspectEnabled = false;
+    notify();
   }
 
   return {
+    subscribe,
     startHighlight,
     stopHighlight,
     startInspect,
     stopInspect,
-  }
+  };
 }

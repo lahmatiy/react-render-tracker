@@ -9,8 +9,6 @@ import {
   RemoteCommandsApi,
 } from "../types";
 import { createDispatcherTrap } from "./dispatcher-trap";
-import { hook } from "../index";
-import { publishHighlightEvent } from "../rempl-publisher";
 
 export function attach(
   renderer: ReactInternals,
@@ -19,11 +17,12 @@ export function attach(
 ): ReactIntegrationApi {
   const integrationCore = createIntegrationCore(renderer, recordEvent);
   const dispatcherApi = createDispatcherTrap(renderer, integrationCore);
-  const highlightApi = createHighlightApi(hook, publishHighlightEvent);
+  const interactionApi = createReactInteractionApi(integrationCore);
+  const highlightApi = createHighlightApi(interactionApi);
 
   removeCommands({
     breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
-    highlightApi
+    highlightApi,
   });
 
   return {
@@ -32,7 +31,7 @@ export function attach(
       dispatcherApi,
       recordEvent
     ),
-    ...createReactInteractionApi(integrationCore),
+    ...interactionApi,
     getLeakedObjectsProbe: integrationCore.getLeakedObjectsProbe,
     breakLeakedObjectRefs: integrationCore.breakLeakedObjectRefs,
   };

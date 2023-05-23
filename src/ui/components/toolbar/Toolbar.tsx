@@ -15,7 +15,6 @@ import {
 } from "../common/icons";
 import { useMemoryLeaksApi } from "../../utils/memory-leaks";
 import { FeatureMemLeaks } from "../../../common/constants";
-import { useHighlighting } from "../../utils/highlighting";
 
 type BooleanToggle = (fn: (state: boolean) => boolean) => void;
 interface ToolbarProps {
@@ -83,24 +82,8 @@ const Toolbar = ({
   const { clearAllEvents, paused, setPaused } = useEventsContext();
   const { breakUnmountedFiberRefs } = useMemoryLeaksApi();
 
-  const [highlightActive, setHighlightActive] = React.useState(false);
-  const handleToggleHighlight = () => {
-    setHighlightActive(!highlightActive);
-  };
-
-  const { startInspect, stopInpect } = useHighlighting();
-
-  React.useEffect(() => {
-    if (highlightActive) {
-      startInspect();
-    } else {
-      stopInpect();
-    }
-  }, [highlightActive]);
-
   return (
     <div className="toolbar">
-      <div onClick={handleToggleHighlight}>x</div>
       <SelectionHistoryNavigation />
       <ComponentSearch
         groupByParent={groupByParent}

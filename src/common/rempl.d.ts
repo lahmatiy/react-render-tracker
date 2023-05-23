@@ -48,11 +48,10 @@ declare module "rempl" {
     basedir: string;
     basedirJsx: string;
   } | null;
-  export type HighlighterEvent = {
-    fiberID?: number;
-    selected?: boolean;
-    stopInspect?: boolean
-  }
+  export type HighlightState = {
+    inspecting: boolean;
+    hoveredFiberId: number | null;
+  };
 
   export type RemoteProtocol = DefinedNamespaceMap<{
     "*": {
@@ -83,15 +82,15 @@ declare module "rempl" {
       data: OpenSourceSettings;
       methods: never;
     };
-    "highlighter": {
-      data: HighlighterEvent;
+    highlighting: {
+      data: HighlightState;
       methods: {
-        startHighlight(fiberId: number, name: string): void;
+        startHighlight(fiberId: number): void;
         stopHighlight(): void;
         startInspect(): void;
         stopInspect(): void;
-      }
-    }
+      };
+    };
   }>;
 
   type PublisherNS<NS extends NamespaceDef> = {

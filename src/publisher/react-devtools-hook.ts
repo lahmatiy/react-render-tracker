@@ -7,7 +7,7 @@ import {
   FiberRoot,
 } from "./types";
 
-export type ReactDevtoolsHook = {
+type ReactDevtoolsHook = {
   supportsFiber: boolean;
   inject: (renderer: ReactInternals) => number;
   // onScheduleRoot(rendererId: number, root: FiberRoot, children: any[]) {},
@@ -18,7 +18,6 @@ export type ReactDevtoolsHook = {
     priorityLevel: any
   ) => void;
   onPostCommitFiberRoot: (rendererId: number, root: FiberRoot) => void;
-  rendererInterfaces: Map<number, ReactIntegrationApi>;
 
   // Not used. It is declared to follow React Devtools hook's behaviour
   // in order for other tools like react-render to work
@@ -47,8 +46,6 @@ export function createReactDevtoolsHook(
     // see https://github.com/facebook/react/blob/4ff5f5719b348d9d8db14aaa49a48532defb4ab7/packages/react-refresh/src/ReactFreshRuntime.js#L509
     renderers,
 
-    rendererInterfaces: new Map<number, ReactIntegrationApi>(),
-
     inject(renderer) {
       let id = ++rendererSeedId;
 
@@ -74,7 +71,6 @@ export function createReactDevtoolsHook(
       } else {
         if (attachedIntegrations.size === 0) {
           attachedIntegrations.set(id, attachRenderer(id, renderer));
-          reactDevtoolsHook.rendererInterfaces = attachedIntegrations;
         } else {
           console.warn(
             `[react-render-tracker] Only one React instance per page is supported for now, but one more React instance (${renderer.rendererPackageName} v${renderer.version}) was detected`
