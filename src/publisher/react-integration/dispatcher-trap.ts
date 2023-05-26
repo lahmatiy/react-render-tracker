@@ -18,8 +18,8 @@ type StateHookName = "useState" | "useReducer";
 type MemoHookName = "useMemo" | "useCallback";
 type EffectHookName = "useEffect" | "useLayoutEffect";
 type Dispatcher = {
-  useState(...args: any[]): [any, DispatchFn];
-  useReducer(...args: any[]): [any, DispatchFn];
+  useState(...args: any[]): [any, DispatchFn & { wrapper?: DispatchFn }];
+  useReducer(...args: any[]): [any, DispatchFn & { wrapper?: DispatchFn }];
   useMemo(cb: () => any, deps?: any[]): any;
   useCallback(cb: () => any, deps?: any[]): () => any;
   useEffect(create: () => any, deps?: any[]): void;
@@ -92,7 +92,6 @@ export function createDispatcherTrap(
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
   const fiberComputedMemo = new WeakMap<Fiber, HookCompute[]>();
-  const patchedHookFn = new WeakMap<DispatchFn, DispatchFn>();
 
   function trackUseHook(
     name: string,
@@ -174,14 +173,13 @@ export function createDispatcherTrap(
     dispatcher[hookName] = (...args: any[]) => {
       const currentFiberHookIndex = trackUseHook(hookName);
       const [state, dispatch] = orig(...args);
-      let dispatchWrapper = patchedHookFn.get(dispatch);
 
-      if (dispatchWrapper === undefined) {
+      if (typeof dispatch.wrapper !== "function") {
         const hookOwnerFiber = currentFiber as Fiber;
         const hookOwnerFiberRoot = currentRoot as FiberRoot;
 
         dispatch.hookIdx = currentFiberHookIndex;
-        dispatchWrapper = value => {
+        dispatch.wrapper = value => {
           // if (
           //   !currentFiberRerenderState &&
           //   currentFiber !== null &&
@@ -226,11 +224,9 @@ export function createDispatcherTrap(
           // console.log("dispatch", new Error().stack, ...args);
           return dispatch(value);
         };
-
-        patchedHookFn.set(dispatch, dispatchWrapper);
       }
 
-      return [state, dispatchWrapper];
+      return [state, dispatch.wrapper];
     };
   }
 

@@ -127,7 +127,7 @@ export function createIntegrationCore(
 
       // case HostPortal:
       // case HostComponent:
-      // case HostText:
+      case HostText:
       case Fragment:
       case LegacyHiddenComponent:
       case OffscreenComponent:
@@ -394,9 +394,11 @@ export function createIntegrationCore(
       memoizedState: Fiber["memoizedState"];
     }
   ) {
-    const id = getFiberIdUnsafe(fiber);
     const displayName = getDisplayNameForFiber(fiber);
     const { stateNode, alternate, memoizedState } = refs || fiber;
+    const id = getFiberIdUnsafe(fiber);
+    const aid = alternate ? getFiberIdUnsafe(alternate) : id;
+
     // console.log("removeFiber", id);
 
     if (typeof id !== "number") {
@@ -422,6 +424,7 @@ export function createIntegrationCore(
     }
 
     if (alternate) {
+      fiberToId.delete(alternate);
       trackObjectForLeaking(
         alternate,
         id,
@@ -429,7 +432,6 @@ export function createIntegrationCore(
         displayName,
         null
       );
-      fiberToId.delete(alternate);
     }
 
     if (memoizedState && "next" in memoizedState) {
@@ -438,19 +440,19 @@ export function createIntegrationCore(
       while (cursor !== null) {
         if (typeof cursor.queue?.dispatch === "function") {
           trackObjectForLeaking(
-            fiber,
+            cursor.queue.dispatch,
             id,
             TrackingObjectHook,
             displayName,
-            cursor.queue?.dispatch.hookIdx
+            cursor.queue.dispatch.hookIdx
           );
         } else if (typeof cursor.memoizedState?.create === "function") {
           trackObjectForLeaking(
-            fiber,
+            cursor.memoizedState.create,
             id,
             TrackingObjectHook,
             displayName,
-            cursor.memoizedState?.create.hookIdx
+            cursor.memoizedState.create.hookIdx
           );
         }
 

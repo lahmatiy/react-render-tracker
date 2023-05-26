@@ -42,7 +42,7 @@ export class TrackingObjectWeakRef extends WeakRefBase<TrackingObject> {
   get tag() {
     return `${this.displayName || "unknown"} #${this.fiberId} (${
       TrackingObjectTypeName[this.type]
-    })`;
+    }${this.hookIdx !== null ? " " + this.hookIdx : ""})`;
   }
 
   get descriptor() {
