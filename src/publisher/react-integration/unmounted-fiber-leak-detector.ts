@@ -16,6 +16,24 @@ import { TrackingObjectFiber } from "../../common/constants";
 import { ExposedToGlobalLeaksState } from "rempl";
 
 const DEBUG_OUTPUT = true;
+const fiberProps = [
+  "alternate",
+  "child",
+  "sibling",
+  "return",
+  "current",
+  "dependencies",
+  "stateNode",
+  "_debugOwner",
+  "firstEffect",
+  "lastEffect",
+  "nextEffect",
+  "updateQueue",
+  "memoizedState",
+  "memoizedProps",
+  "pendingProps",
+];
+const stateNodeProps = ["_reactInternals", "_reactInternalInstance"];
 
 export type ExposedLeaksStateSubscription = (
   state: ExposedToGlobalLeaksState | null
@@ -262,24 +280,6 @@ export function createUnmountedFiberLeakDetectionApi(
     }
   }
 
-  const fiberProps = [
-    "alternate",
-    "child",
-    "sibling",
-    "return",
-    "current",
-    "dependencies",
-    "stateNode",
-    "_debugOwner",
-    "firstEffect",
-    "lastEffect",
-    "nextEffect",
-    "updateQueue",
-    "memoizedState",
-    "memoizedProps",
-    "pendingProps",
-  ];
-  const stateNodeProps = ["_reactInternals", "_reactInternalInstance"];
   function breakObjectRefs<T extends string[]>(
     object: { [P in T[number]]?: unknown },
     props: T
@@ -305,6 +305,17 @@ export function createUnmountedFiberLeakDetectionApi(
           }
 
           case TrackingObjectStateNode: {
+            if (object instanceof HTMLElement) {
+              for (const prop of Object.getOwnPropertyNames(object)) {
+                const value = (object as any)[prop];
+
+                if (value !== null && typeof value === "object") {
+                  (object as any)[prop] = null;
+                }
+              }
+              object.remove();
+            }
+
             breakObjectRefs(object, stateNodeProps);
             break;
           }
@@ -321,6 +332,9 @@ export function createUnmountedFiberLeakDetectionApi(
     }
     if (fiber.child && !fiberToId.has(fiber.child)) {
       fiber.child = null;
+    }
+    if (fiber.sibling && !fiberToId.has(fiber.sibling)) {
+      fiber.sibling = null;
     }
   }
   function cleanupAliveTree(root: Fiber) {
@@ -417,7 +431,7 @@ export function createUnmountedFiberLeakDetectionApi(
     ];
 
     // expose to global
-    if (objectRefsCount) {
+    if (objectRefsCount > 0) {
       global[name] = probe.markedObjects;
       exposedToGlobalProbe = probe;
       exposedToGlobalLeaksState = {
