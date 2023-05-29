@@ -16,7 +16,7 @@ function listOfLeaks(leaked: number) {
   let bitNum = 0;
 
   while (leaked >= 1 << bitNum) {
-    if (leaked | (1 << bitNum)) {
+    if (leaked & (1 << bitNum)) {
       const title = TrackingObjectTypeName[bitNum as TrackingObjectType];
       result.push(`${title} (${title[0].toUpperCase()})`);
     }
