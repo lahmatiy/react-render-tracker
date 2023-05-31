@@ -5,10 +5,10 @@
   "description": "Example of using React Render Tracker with playwright",
   "main": "index.js",
   "scripts": {
-    "start": "node script.js"
+    "start": "node script.mjs"
   },
   "dependencies": {
-    "playwright": "^1.26.1",
+    "playwright": "^1.34.3",
     "react-render-tracker": "file:../..",
     "react-render-tracker-demo-app": "file:../_app"
   }

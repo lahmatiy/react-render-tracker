@@ -4,7 +4,7 @@ const newTrackerClient = require("react-render-tracker/headless-browser-client")
 
 async function runReactScenarioSet(run) {
   const [browser, server] = await Promise.all([
-    puppeteer.launch({ headless: true }),
+    puppeteer.launch({ headless: "new" }),
     startAppServer(),
   ]);
 
