@@ -1,6 +1,5 @@
 import {
   getSelfSubscriber,
-  Subscriber,
   RemoteProtocol,
   SubscriberRemoveMethod,
   SubscriberNS,
@@ -13,7 +12,7 @@ type EventsChannelMethods = RemoteProtocol[`events:${number}`]["methods"];
 type RemoteMethod<name extends keyof EventsChannelMethods> =
   SubscriberRemoveMethod<EventsChannelMethods[name]>;
 
-const subscriber = getSelfSubscriber(ToolId) as Subscriber;
+const subscriber = getSelfSubscriber(ToolId);
 let getEventsMethod: RemoteMethod<"getEvents"> | null = null;
 let getEventsStateMethod: RemoteMethod<"getEventsState"> | null = null;
 

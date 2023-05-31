@@ -1,5 +1,6 @@
 const esbuild = require("esbuild");
 const path = require("path");
+const fs = require("fs");
 const basePath = path.join(__dirname, "..");
 
 module.exports = {
@@ -190,17 +191,36 @@ async function buildBundle(config) {
   });
 }
 
-function buildHeadlessBrowserModules(config) {
+async function buildHeadlessBrowserModules(config, skipDepsBuild) {
+  if (!skipDepsBuild) {
+    await Promise.all([
+      buildBundle({ logLevel: "info", write: true }),
+      buildDataClient({ logLevel: "info", write: true }),
+    ]);
+  }
+
+  const define = {
+    __RRT_SOURCE__: JSON.stringify(
+      fs.readFileSync(
+        path.join(basePath, "dist/react-render-tracker.js"),
+        "utf8"
+      )
+    ),
+    __DATA_CLIENT_SOURCE__: JSON.stringify(
+      fs.readFileSync(path.join(basePath, "dist/data-client.js"), "utf8")
+    ),
+    ...(config && config.define),
+  };
+
   return Promise.all([
     esbuild.build({
       entryPoints: [path.join(basePath, "src/data-client/headless-browser.ts")],
       outfile: path.join(basePath, "dist/headless-browser-client.mjs"),
       format: "esm",
       bundle: false,
+      minify: true,
       ...config,
-      banner: {
-        js: 'import { fileURLToPath } from "url";\nconst __dirname = path.dirname(fileURLToPath(import.meta.url));\n',
-      },
+      define,
     }),
     esbuild.build({
       entryPoints: [path.join(basePath, "src/data-client/headless-browser.ts")],
@@ -208,6 +228,7 @@ function buildHeadlessBrowserModules(config) {
       format: "cjs",
       bundle: false,
       ...config,
+      define,
     }),
   ]);
 }
@@ -217,6 +238,6 @@ if (require.main === module) {
     await buildBundle({ logLevel: "info", write: true });
     await buildDataClient({ logLevel: "info", write: true });
     await buildDataUtils({ logLevel: "info", write: true });
-    await buildHeadlessBrowserModules({ logLevel: "info" });
+    await buildHeadlessBrowserModules({ logLevel: "info" }, true);
   })();
 }

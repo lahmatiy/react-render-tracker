@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import * as ns from "./index";
 
 type DataClient = typeof ns;
@@ -32,19 +30,15 @@ type HeadlessBrowserPage = {
     }
 );
 
-const distFolder = __dirname;
-const scripts = {
-  "react-render-tracker": path.join(distFolder, "react-render-tracker.js"),
-  "data-client": path.join(distFolder, "data-client.js"),
-};
+declare const __RRT_SOURCE__ = "source of dist/react-render-tracker.js";
+declare const __DATA_CLIENT_SOURCE__ = "source of dist/data-client.js";
+const RRT_SOURCE = __RRT_SOURCE__;
+const DATA_CLIENT_SOURCE = __DATA_CLIENT_SOURCE__;
+type ScriptSource = typeof RRT_SOURCE | typeof DATA_CLIENT_SOURCE;
 
-function readScript(name: keyof typeof scripts) {
-  return fs.readFileSync(scripts[name], "utf8");
-}
-
-function readScriptWithExports<T>(name: keyof typeof scripts) {
+function readScriptWithExports<T>(scriptSource: ScriptSource) {
   const exportSymbols: (keyof T)[] = [];
-  const source = readScript(name).replace(
+  const source = scriptSource.replace(
     /export\s*(\{(.|\s)+?\})/,
     (_: any, e: string) =>
       "const api=" +
@@ -62,9 +56,11 @@ function readScriptWithExports<T>(name: keyof typeof scripts) {
   };
 }
 
-async function initDataClient(page: HeadlessBrowserPage) {
+async function initDataClient(
+  page: HeadlessBrowserPage,
+  module: ReturnType<typeof readScriptWithExports<DataClient>>
+) {
   const dataClient = Object.create(null);
-  const module = readScriptWithExports<DataClient>("data-client");
   const dataClientHandle = await page.evaluateHandle(
     new Function(module.source) as () => Promise<DataClient>
   );
@@ -84,18 +80,19 @@ async function initDataClient(page: HeadlessBrowserPage) {
 
 module.exports = async function newPageDataClient(page: HeadlessBrowserPage) {
   let pageSessionDataClient: Promise<LazyDataClient>;
+  const dataClientModule =
+    readScriptWithExports<DataClient>(DATA_CLIENT_SOURCE);
   const addInitScript =
     "addInitScript" in page ? page.addInitScript : page.evaluateOnNewDocument;
 
-  addInitScript.call(page, readScript("react-render-tracker"));
+  addInitScript.call(page, RRT_SOURCE);
   page.on("framenavigated", () => {
-    pageSessionDataClient = initDataClient(page);
+    pageSessionDataClient = initDataClient(page, dataClientModule);
   });
 
   const client: LazyDataClient = Object.create(null);
-  const { exportSymbols } =
-    readScriptWithExports<LazyDataClient>("data-client");
-  for (const method of exportSymbols) {
+
+  for (const method of dataClientModule.exportSymbols) {
     client[method] = async (
       ...args: Parameters<LazyDataClient[typeof method]>
     ) => ((await pageSessionDataClient)[method] as any)(...args);
