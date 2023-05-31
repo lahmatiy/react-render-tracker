@@ -267,10 +267,8 @@ The dev server provides the following endpoints:
 - `/publisher.js` – the same as `/react-render-tracker.js`
 - `/subscriber.js` – UI part of the tool, `/react-render-tracker.js` is refering to this script to load UI into a rempl sandbox
 - `/rrt-data-client.js` – data-only client API (see [Option 3](#option-3--data-client-in-a-browser))
-- `/rrt-data-utils.js` – a set on utils to work with captured data
-- `/dist/react-render-tracker.js` – the same as distributive script provided by the package, `publisher` and `subscriber` bundled in a single script
-- `/dist/data-client.js` – the same as distributive script provided by the package
-- `/dist/data-utils.js` – the same as distributive script provided by the package
+- `/dist/react-render-tracker.js` – the same as `/dist/react-render-tracker.js` provided by the package, `publisher` and `subscriber` bundled in a single script
+- `/dist/data-client.js` – the same as `/dist/data-client.js` provided by the package
 
 > NOTE: In this case bundle will be rebuild on each request for the script. This version of bundle contains source maps which is good for debugging
 
