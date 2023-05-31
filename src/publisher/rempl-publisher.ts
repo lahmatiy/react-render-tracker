@@ -60,7 +60,7 @@ export function publishReactUnsupportedRenderer(
 }
 
 export function publishReactRenderer(id: number, renderer: ReactInternals) {
-  const channelId = `events:${id}` as `events:${number}`;
+  const channelId: `events:${number}` = `events:${id}`;
 
   reactRenderers.push({
     id,
