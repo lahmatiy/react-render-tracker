@@ -22,7 +22,10 @@
     "./headless-browser-client": {
       "import": "./dist/headless-browser-client.mjs",
       "require": "./dist/headless-browser-client.js"
-    }
+    },
+    "./dist/*": "./dist/*.js",
+    "./dist/*.js": "./dist/*.js",
+    "./dist/*.mjs": "./dist/*.mjs"
   },
   "scripts": {
     "test": "jest src",

@@ -8,6 +8,7 @@
 - Fixed navigation when a fiber is pinned
 - Removed "Blocking mode" mark for a render root as outdated
 - Considered `production` and `profiling` React builds as partially functional, i.e. RRT works but some data is not capturing
+- Added `dist` files to `exports`
 
 ## 0.7.0 (July 10, 2022)
 
