@@ -261,9 +261,20 @@ The `pattern`'s value might contain placeholders for a value substitution:
 <script src="http://localhost:3000/react-render-tracker.js"></script>
 ```
 
+The dev server provides the following endpoints:
+
+- `/react-render-tracker.js` – a dev build of RRT, UI part (subscriber) is not included (its content is loading by a fetch request)
+- `/publisher.js` – the same as `/react-render-tracker.js`
+- `/subscriber.js` – UI part of the tool, `/react-render-tracker.js` is refering to this script to load UI into a rempl sandbox
+- `/rrt-data-client.js` – data-only client API (see [Option 3](#option-3--data-client-in-a-browser))
+- `/rrt-data-utils.js` – a set on utils to work with captured data
+- `/dist/react-render-tracker.js` – the same as distributive script provided by the package, `publisher` and `subscriber` bundled in a single script
+- `/dist/data-client.js` – the same as distributive script provided by the package
+- `/dist/data-utils.js` – the same as distributive script provided by the package
+
 > NOTE: In this case bundle will be rebuild on each request for the script. This version of bundle contains source maps which is good for debugging
 
-- As alternative you could run `npm run build` to get a bundle in `dist` folder (`dist/react-render-tracker.js`)
+As alternative you could run `npm run build` to get a bundle in `dist` folder (`dist/react-render-tracker.js`)
 
 > NOTE: This version of bundle is the same as for publishing (minified and no source maps included)
 
