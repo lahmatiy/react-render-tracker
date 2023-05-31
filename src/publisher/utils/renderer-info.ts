@@ -71,12 +71,12 @@ export function isUnsupportedRenderer(renderer: RendererInfoProps) {
     };
   }
 
-  if (info.bundleType !== "development") {
-    return {
-      reason: `Unsupported renderer bundle type "${info.bundleType}" (${renderer.bundleType}), only "development" (${BUNDLE_TYPE_DEV}) is supported`,
-      info,
-    };
-  }
+  // if (info.bundleType !== "development") {
+  //   return {
+  //     reason: `Unsupported renderer bundle type "${info.bundleType}" (${renderer.bundleType}), only "development" (${BUNDLE_TYPE_DEV}) is supported`,
+  //     info,
+  //   };
+  // }
 
   return false;
 }
