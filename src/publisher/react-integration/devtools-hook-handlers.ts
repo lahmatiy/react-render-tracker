@@ -46,6 +46,8 @@ function valueDiff(prev: any, next: any) {
   return Array.isArray(prev) ? arrayDiff(prev, next) : objectDiff(prev, next);
 }
 
+const PATCHED_UPDATER = Symbol("react-render-tracker-patched-updater");
+
 export function createReactDevtoolsHookHandlers(
   {
     ReactTypeOfWork,
@@ -96,7 +98,6 @@ export function createReactDevtoolsHookHandlers(
   let commitIdSeed = 0;
 
   let classComponentUpdateCalls: Array<ClassComponentUpdateCall> = [];
-  const patchedClassComponentUpdater = new WeakSet<any>();
   const classComponentInstanceToFiber = new WeakMap<
     any,
     { rootId: number; fiberId: number }
@@ -156,9 +157,7 @@ export function createReactDevtoolsHookHandlers(
     }
 
     for (const fiber of untrackFibersSet) {
-      const refs = unmountedFiberRefs.get(fiber);
-      removeFiber(fiber, refs);
-      patchedClassComponentUpdater.delete(refs?.stateNode);
+      removeFiber(fiber, unmountedFiberRefs.get(fiber));
       unmountedFiberRefs.delete(fiber);
     }
 
@@ -568,29 +567,46 @@ export function createReactDevtoolsHookHandlers(
     if (fiberType === ElementTypeClass) {
       const { updater } = fiber.stateNode;
 
-      if (!patchedClassComponentUpdater.has(updater)) {
-        patchedClassComponentUpdater.add(updater);
-
+      if (updater.enqueueForceUpdate.patched !== PATCHED_UPDATER) {
         const { enqueueForceUpdate, enqueueSetState } = updater;
         Object.defineProperties(updater, {
           enqueueForceUpdate: {
-            value(inst: any, callback: any) {
-              classComponentUpdateCalls.push({
-                type: "forceUpdate",
-                ...classComponentInstanceToFiber.get(inst),
-                loc: extractCallLoc(2),
-              });
+            value: Object.assign(
+              function (inst: any, callback: any) {
+                const classComponentInstance =
+                  classComponentInstanceToFiber.get(inst);
 
-              return enqueueForceUpdate(inst, callback);
-            },
+                if (classComponentInstance !== undefined) {
+                  const { fiberId, rootId } = classComponentInstance;
+
+                  classComponentUpdateCalls.push({
+                    type: "forceUpdate",
+                    fiberId,
+                    rootId,
+                    loc: extractCallLoc(2),
+                  });
+                }
+
+                return enqueueForceUpdate(inst, callback);
+              },
+              { patched: PATCHED_UPDATER }
+            ),
           },
           enqueueSetState: {
             value(inst: any, payload: any, callback: any) {
-              classComponentUpdateCalls.push({
-                type: "setState",
-                ...classComponentInstanceToFiber.get(inst),
-                loc: extractCallLoc(1),
-              });
+              const classComponentInstance =
+                classComponentInstanceToFiber.get(inst);
+
+              if (classComponentInstance !== undefined) {
+                const { fiberId, rootId } = classComponentInstance;
+
+                classComponentUpdateCalls.push({
+                  type: "setState",
+                  fiberId,
+                  rootId,
+                  loc: extractCallLoc(1),
+                });
+              }
 
               return enqueueSetState(inst, payload, callback);
             },
@@ -716,8 +732,8 @@ export function createReactDevtoolsHookHandlers(
   function recordUnmount(fiberId: number) {
     const ownerId = idToOwnerId.get(fiberId);
     const triggerEventId = commitUpdatedFiberId.get(ownerId as number);
-
     const fiber = getFiberById(fiberId);
+
     if (fiber !== null) {
       // removeFiber(fiber, unmountedFiberRefs.get(fiber));
       untrackFiber(fiber);
@@ -833,7 +849,6 @@ export function createReactDevtoolsHookHandlers(
       }
     } else {
       removeFiber(fiber);
-      patchedClassComponentUpdater.delete(fiber.stateNode);
       unmountedFiberRefs.delete(fiber);
     }
 
