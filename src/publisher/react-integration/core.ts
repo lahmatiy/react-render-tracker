@@ -397,7 +397,6 @@ export function createIntegrationCore(
     const displayName = getDisplayNameForFiber(fiber);
     const { stateNode, alternate, memoizedState } = refs || fiber;
     const id = getFiberIdUnsafe(fiber);
-    const aid = alternate ? getFiberIdUnsafe(alternate) : id;
 
     // console.log("removeFiber", id);
 
