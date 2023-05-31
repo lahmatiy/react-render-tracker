@@ -1,3 +1,5 @@
+const startTime = Date.now();
+
 const puppeteer = require("puppeteer");
 const { startAppServer } = require("../demo-app/server");
 const newTrackerClient = require("react-render-tracker/headless-browser-client");
@@ -31,4 +33,6 @@ runReactScenarioSet(async runReactScenario => {
     // dump events after an action
     console.log(await rrt.getEvents(eventCountBeforeAction));
   });
+
+  console.log("DONE in", Date.now() - startTime, "ms");
 });
