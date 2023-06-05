@@ -201,6 +201,13 @@ export function processEvents(
       }
 
       case "update":
+        // This check is potentially required (??) due to an unsupported app
+        // structure (e.g. multiple roots) or otherwise invalid react code.
+        // Knock-on effects of this check are mitigated in `../ui/fiber-maps`
+        if (!fiberById.has(event.fiberId)) {
+          continue;
+        }
+
         updateCount++;
 
         fiber = fiberById.get(event.fiberId) as MessageFiber;

@@ -75,7 +75,20 @@ export const useFiberChildren = (
 ) => {
   const { selectTree } = useFiberMaps();
   const tree = selectTree(groupByParent, includeUnmounted);
-  const leaf = tree.getOrCreate(fiberId);
+  let leaf = tree.getOrCreate(fiberId);
+
+  // Requesting the root node (fiber 0) returns an invalid fiber?
+  // This state is potentially (??) introduced due to an unsupported app
+  // structure and a subsequent workaround in `../data/process-events`
+  if (!fiberId && leaf?.fiber == null) {
+    // find the next node in the tree with a valid fiber and children
+    for (const [activeFiberId, { fiber, firstChild }] of tree.nodes) {
+      if (fiber && firstChild) {
+        leaf = tree.getOrCreate(activeFiberId);
+        break;
+      }
+    }
+  }
 
   const compute = React.useCallback(() => leaf.children || EMPTY_ARRAY, [leaf]);
 
