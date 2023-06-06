@@ -14,7 +14,7 @@ Supported: React v16.9+ (development bundle only, see [issue #25](https://github
 >
 > The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
 
-![Demo](https://user-images.githubusercontent.com/270491/141884908-eea3d0ad-79de-4e84-a5f0-44adb70d4813.png)
+![Demo](https://github.com/lahmatiy/react-render-tracker/assets/270491/f57ca526-c80c-481c-b701-542a95e8d20c)
 
 Features:
 
