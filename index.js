@@ -13,6 +13,7 @@ var __export = (target, all) => {
 var react_default;
 var init_react = __esm({
   "playground/react.tsx"() {
+    "use strict";
     react_default = window.React;
   }
 });
@@ -38,6 +39,7 @@ function Child({ value }) {
 var class_component_default, ClassComponent, ClassComponentWithSetState, ClassComponentWithShouldComponentUpdate, ShouldComponentUpdateChildWrapper, ShouldComponentUpdateChild, PureComponentWrapper, PureComponent, ChildPureComponent, ClassComponentWithForceUpdate, MemoClassComponent;
 var init_class_component = __esm({
   "playground/cases/class-component.tsx"() {
+    "use strict";
     init_react();
     class_component_default = {
       title: "Class components",
@@ -215,6 +217,7 @@ function Child2() {
 var basic_nested_set_state_default;
 var init_basic_nested_set_state = __esm({
   "playground/cases/basic-nested-set-state.tsx"() {
+    "use strict";
     init_react();
     basic_nested_set_state_default = {
       title: "Basic nested render with setState() via useEffect()",
@@ -233,7 +236,10 @@ __export(props_changes_exports, {
 function Root3() {
   const [counter, setCounter] = react_default.useState(0);
   const [mounted, setMounted] = react_default.useState("Fail: waiting for mount");
-  const [memoArray, memoObj] = react_default.useMemo(() => [[counter], { mounted, [mounted[0]]: "test" }], [mounted]);
+  const [memoArray, memoObj] = react_default.useMemo(
+    () => [[counter], { mounted, [mounted[0]]: "test" }],
+    [mounted]
+  );
   react_default.useEffect(() => {
     if (counter === 2) {
       setMounted("OK");
@@ -269,6 +275,7 @@ function Stub() {
 var props_changes_default, MemoChild, Memo, ForwardRef, Lazy, Mix;
 var init_props_changes = __esm({
   "playground/cases/props-changes.tsx"() {
+    "use strict";
     init_react();
     props_changes_default = {
       title: "Props changes",
@@ -311,6 +318,7 @@ function Child4() {
 var basic_parent_element_change_default;
 var init_basic_parent_element_change = __esm({
   "playground/cases/basic-parent-element-change.tsx"() {
+    "use strict";
     init_react();
     basic_parent_element_change_default = {
       title: "Basic render with changed parent element",
@@ -337,9 +345,12 @@ function HookConsumer() {
   });
 }
 function ElementConsumer() {
-  const memoCallback = react_default.useCallback((contextValue) => /* @__PURE__ */ react_default.createElement(Child5, {
-    value: contextValue
-  }), []);
+  const memoCallback = react_default.useCallback(
+    (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, {
+      value: contextValue
+    }),
+    []
+  );
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, {
     value: contextValue
   })), /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, memoCallback));
@@ -375,6 +386,7 @@ function MyContextProvider({ children }) {
 var context_default, MemoWrapper, MyContext;
 var init_context = __esm({
   "playground/cases/context.tsx"() {
+    "use strict";
     init_react();
     context_default = {
       title: "Context",
@@ -404,26 +416,36 @@ __export(hooks_exports, {
 function Root6() {
   const [isVisible, setIsVisible] = react_default.useState(false);
   const [test, setTest] = react_default.useState(0);
-  const [state, dispatch] = react_default.useReducer((_, value) => value, false, () => ({
-    a: false
-  }));
+  const [state, dispatch] = react_default.useReducer(
+    (_, value) => value,
+    false,
+    () => ({
+      a: false
+    })
+  );
   react_default.useCallback(() => isVisible ? setTest : dispatch, [isVisible]);
   react_default.useMemo(() => [isVisible, test, state], [isVisible, test, state]);
   react_default.useDebugValue(Date.now());
   react_default.useRef({ ref: Date.now() });
-  react_default.useEffect(/* @__PURE__ */ __name(function effect() {
-    if (!isVisible) {
-      setIsVisible(true);
-      setTest(333);
-      dispatch({ a: 1 });
-    }
-    return /* @__PURE__ */ __name(function teardown() {
-    }, "teardown");
-  }, "effect"), [isVisible]);
-  react_default.useLayoutEffect(/* @__PURE__ */ __name(function layoutEffect() {
-    return /* @__PURE__ */ __name(function teardown() {
-    }, "teardown");
-  }, "layoutEffect"), [isVisible]);
+  react_default.useEffect(
+    /* @__PURE__ */ __name(function effect() {
+      if (!isVisible) {
+        setIsVisible(true);
+        setTest(333);
+        dispatch({ a: 1 });
+      }
+      return /* @__PURE__ */ __name(function teardown() {
+      }, "teardown");
+    }, "effect"),
+    [isVisible]
+  );
+  react_default.useLayoutEffect(
+    /* @__PURE__ */ __name(function layoutEffect() {
+      return /* @__PURE__ */ __name(function teardown() {
+      }, "teardown");
+    }, "layoutEffect"),
+    [isVisible]
+  );
   react_default.useContext(CtxA);
   react_default.useContext(CtxB);
   useFoo();
@@ -440,6 +462,7 @@ function useBar() {
 var hooks_default, CtxA, CtxB, Child6;
 var init_hooks = __esm({
   "playground/cases/hooks.tsx"() {
+    "use strict";
     init_react();
     hooks_default = {
       title: "Hooks",
@@ -451,11 +474,15 @@ var init_hooks = __esm({
     __name(useFoo, "useFoo");
     __name(useBar, "useBar");
     Child6 = react_default.forwardRef(/* @__PURE__ */ __name(function Child7({ prop = 123 }, ref) {
-      react_default.useImperativeHandle(ref, () => ({
-        focus() {
-          console.log();
-        }
-      }), [prop]);
+      react_default.useImperativeHandle(
+        ref,
+        () => ({
+          focus() {
+            console.log();
+          }
+        }),
+        [prop]
+      );
       return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "OK");
     }, "Child"));
   }
@@ -507,6 +534,7 @@ function ShouldNotUpdate({ value }) {
 var bailouts_default, ClassNewChild, ClassSameChild, ClassSameProps, MemoNoPropsBailout, MemoWithPropsBailout, FunctionStateNoChangeBailout, ClassStateNoChangeBailout;
 var init_bailouts = __esm({
   "playground/cases/bailouts.tsx"() {
+    "use strict";
     init_react();
     bailouts_default = {
       title: "Bailouts",
@@ -576,25 +604,27 @@ var init_bailouts = __esm({
       });
     });
     FunctionStateNoChangeBailout.displayName = "FunctionStateNoChangeBailout";
-    ClassStateNoChangeBailout = react_default.memo(/* @__PURE__ */ __name(class ClassStateNoChangeBailout2 extends react_default.Component {
-      constructor() {
-        super(...arguments);
-        this.initial = true;
-        this.state = { value: 1 };
-      }
-      componentDidMount() {
-        this.setState(() => ({ value: 2 }));
-        this.setState(() => ({ value: 1 }));
-      }
-      render() {
-        if (this.initial) {
-          this.initial = false;
+    ClassStateNoChangeBailout = react_default.memo(
+      /* @__PURE__ */ __name(class ClassStateNoChangeBailout2 extends react_default.Component {
+        constructor() {
+          super(...arguments);
+          this.initial = true;
+          this.state = { value: 1 };
         }
-        return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-          value: "test"
-        });
-      }
-    }, "ClassStateNoChangeBailout"));
+        componentDidMount() {
+          this.setState(() => ({ value: 2 }));
+          this.setState(() => ({ value: 1 }));
+        }
+        render() {
+          if (this.initial) {
+            this.initial = false;
+          }
+          return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
+            value: "test"
+          });
+        }
+      }, "ClassStateNoChangeBailout")
+    );
     ClassStateNoChangeBailout.displayName = "ClassStateNoChangeBailout";
     __name(ShouldUpdate, "ShouldUpdate");
     __name(ShouldNotUpdate, "ShouldNotUpdate");
@@ -627,6 +657,7 @@ function Child8() {
 var mount_unmount_default;
 var init_mount_unmount = __esm({
   "playground/cases/mount-unmount.tsx"() {
+    "use strict";
     init_react();
     mount_unmount_default = {
       title: "Mount/unmount",
@@ -660,6 +691,7 @@ function Qux() {
 var complex_composition_on_one_component_default, BarMemo;
 var init_complex_composition_on_one_component = __esm({
   "playground/cases/complex-composition-on-one-component.tsx"() {
+    "use strict";
     init_react();
     complex_composition_on_one_component_default = {
       title: "Complex composition on one component",
@@ -695,6 +727,7 @@ function Child9() {
 var set_state_by_event_handler_default;
 var init_set_state_by_event_handler = __esm({
   "playground/cases/set-state-by-event-handler.tsx"() {
+    "use strict";
     init_react();
     set_state_by_event_handler_default = {
       title: "Set state by event handler",
@@ -747,6 +780,7 @@ function Child10() {
 var use_effects_default;
 var init_use_effects = __esm({
   "playground/cases/use-effects.tsx"() {
+    "use strict";
     init_react();
     use_effects_default = {
       title: "useEffect()/useLayoutEffect()",
@@ -784,6 +818,7 @@ function Spinner() {
 var suspense_default, LazyContent, LazyContent2;
 var init_suspense = __esm({
   "playground/cases/suspense.tsx"() {
+    "use strict";
     init_react();
     suspense_default = {
       title: "Using suspense",
@@ -852,6 +887,7 @@ function ListItem({ caption }) {
 var app_default, List;
 var init_app = __esm({
   "playground/cases/app.tsx"() {
+    "use strict";
     init_react();
     app_default = {
       title: "App #1",
@@ -888,7 +924,9 @@ function App() {
       setSelectedId(23);
       setItems(items2);
     });
-    Promise.resolve({ id: 123, name: "User", avatar: "url to image" }).then(setUser);
+    Promise.resolve({ id: 123, name: "User", avatar: "url/to/image" }).then(
+      setUser
+    );
   }, []);
   return /* @__PURE__ */ react_default.createElement(Settings.Provider, {
     value: { darkmode: false }
@@ -903,9 +941,7 @@ function App() {
   }), /* @__PURE__ */ react_default.createElement(Overlay, null));
 }
 function Avatar({ name, image }) {
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("img", {
-    src: image
-  }), " ", name);
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", image, "] ", name);
 }
 function ListItem2({
   caption,
@@ -969,6 +1005,7 @@ function useDarkmode() {
 var screenshot_demo_default, Settings, Header, List3;
 var init_screenshot_demo = __esm({
   "playground/cases/screenshot-demo.tsx"() {
+    "use strict";
     init_react();
     screenshot_demo_default = {
       title: "RRT readme demo screenshot",
@@ -983,10 +1020,13 @@ var init_screenshot_demo = __esm({
       user
     }) {
       const formattedDate = useFormattedDate(datetime);
-      const avatar = react_default.useMemo(() => user ? /* @__PURE__ */ react_default.createElement(Avatar, {
-        name: user.name,
-        image: user.avatar
-      }) : /* @__PURE__ */ react_default.createElement(Loader, null, /* @__PURE__ */ react_default.createElement(AvatarPlaceholder, null)), [user?.name, user?.avatar]);
+      const avatar = react_default.useMemo(
+        () => user ? /* @__PURE__ */ react_default.createElement(Avatar, {
+          name: user.name,
+          image: user.avatar
+        }) : /* @__PURE__ */ react_default.createElement(Loader, null, /* @__PURE__ */ react_default.createElement(AvatarPlaceholder, null)),
+        [user?.name, user?.avatar]
+      );
       return /* @__PURE__ */ react_default.createElement("h1", null, avatar, title, " (", formattedDate, ")");
     });
     Header.displayName = "Header";
@@ -1089,7 +1129,9 @@ function emulateEvent(target) {
       target.click();
       break;
     default:
-      console.warn(`Unknown event type "${value}" in "${emulateEventAttribute}" attribute`);
+      console.warn(
+        `Unknown event type "${value}" in "${emulateEventAttribute}" attribute`
+      );
   }
 }
 __name(emulateEvent, "emulateEvent");
@@ -1162,9 +1204,17 @@ __name(create_test_case_wrapper_default, "default");
 
 // playground/index.tsx
 var initialHashParams = new URLSearchParams(location.hash.slice(1));
-var isProdBundle = initialHashParams.has("prod");
+var dataClientParam = initialHashParams.has("data-client");
 var reactVersion = initialHashParams.get("version");
+var bundleTypeParam = initialHashParams.get("bundle-type");
+var bundleType = bundleTypeParam === "production" ? "production" : bundleTypeParam === "profiling" ? "profiling" : "development";
+var bundleTypes = [
+  "development",
+  "production",
+  "profiling"
+];
 var versions = [
+  "18.2.0",
   "18.1.0",
   "18.0.0",
   "17.0.2",
@@ -1179,23 +1229,30 @@ var versions = [
   "16.10.1",
   "16.9.0"
 ];
-function createHash(version, prod = false, id = null) {
+function createHash(version, bundleType2, id = null, dataClient) {
   const params = new URLSearchParams();
   if (version) {
     params.append("version", version);
   }
-  if (prod) {
-    params.append("prod", "");
+  if (bundleType2 && bundleType2 !== "development") {
+    params.append("bundle-type", bundleType2);
   }
   if (id) {
     params.append("case", id);
+  }
+  if (dataClient) {
+    params.append("data-client", "");
   }
   return `#${params}`;
 }
 __name(createHash, "createHash");
 function createTocItem(id, title) {
   return createElement("li", null, [
-    createElement("a", { href: createHash(reactVersion, isProdBundle, id) }, title)
+    createElement(
+      "a",
+      { href: createHash(reactVersion, bundleType, id, dataClientParam) },
+      title
+    )
   ]);
 }
 __name(createTocItem, "createTocItem");
@@ -1208,21 +1265,67 @@ Promise.all(cases_default).then((testCases) => {
   const headerEl = selectElement(".playground__header");
   const sidebarEl = selectElement(".playground__sidebar");
   const contentEl = selectElement(".playground__content");
-  const tocEl = sidebarEl.appendChild(createElement("ul", "playground__toc", [createTocItem(void 0, "All")]));
-  headerEl.append("React version:\xA0", createElement("select", {
-    onchange() {
-      location.hash = createHash(this.value, isProdBundle, selectedTestCaseId);
-    }
-  }, versions.map((version) => createElement("option", version === reactVersion ? { selected: "" } : {}, version))), createElement("label", null, [
-    createElement("input", {
-      type: "checkbox",
-      checked: isProdBundle ? "" : void 0,
-      onchange() {
-        location.hash = createHash(reactVersion, this.checked, selectedTestCaseId);
-      }
-    }),
-    "production"
-  ]));
+  const tocEl = sidebarEl.appendChild(
+    createElement("ul", "playground__toc", [createTocItem(void 0, "All")])
+  );
+  headerEl.append(
+    "React version:\xA0",
+    createElement(
+      "select",
+      {
+        onchange() {
+          location.hash = createHash(
+            this.value,
+            bundleType,
+            selectedTestCaseId,
+            dataClientParam
+          );
+        }
+      },
+      versions.map(
+        (version) => createElement(
+          "option",
+          version === reactVersion ? { selected: "" } : {},
+          version
+        )
+      )
+    ),
+    createElement(
+      "select",
+      {
+        onchange() {
+          location.hash = createHash(
+            reactVersion,
+            this.value,
+            selectedTestCaseId,
+            dataClientParam
+          );
+        }
+      },
+      bundleTypes.map(
+        (type) => createElement(
+          "option",
+          type === bundleType ? { selected: "" } : {},
+          type
+        )
+      )
+    ),
+    createElement("label", {}, [
+      createElement("input", {
+        type: "checkbox",
+        checked: dataClientParam || void 0,
+        onclick() {
+          location.hash = createHash(
+            reactVersion,
+            bundleType,
+            selectedTestCaseId,
+            this.checked
+          );
+        }
+      }),
+      "Data client example (see output in console)"
+    ])
+  );
   for (const testCaseWrapper of testCaseWrappers) {
     const { id, testcase } = testCaseWrapper;
     tocEl.append(createTocItem(id, testcase.title));
@@ -1232,9 +1335,17 @@ Promise.all(cases_default).then((testCases) => {
   const syncSelectedTestCase = /* @__PURE__ */ __name(() => {
     const params = new URLSearchParams(location.hash.slice(1));
     const newSelectedTestCaseId = params.get("case") || null;
-    const newSelectedHash = createHash(reactVersion, isProdBundle, newSelectedTestCaseId);
+    const newSelectedHash = createHash(
+      reactVersion,
+      bundleType,
+      newSelectedTestCaseId,
+      dataClientParam
+    );
     for (const link of tocEl.querySelectorAll("a[href]")) {
-      link.classList.toggle("selected", link.getAttribute("href") === newSelectedHash);
+      link.classList.toggle(
+        "selected",
+        link.getAttribute("href") === newSelectedHash
+      );
     }
     for (const testCaseWrapper of renderedTestCases) {
       renderedTestCases.delete(testCaseWrapper);
