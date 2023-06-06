@@ -2,12 +2,13 @@
 
 - Added selecting a component on the page (#31)
 - Added DOM elements highlighting of a component on hover in component's tree (#31)
-- Added displaying a list of detected unsupported renderers on the React renderer connection waiting screen. This should help figure out why a React can't be connected.
+- Added capturing and displaying host components (DOM elements for `react-dom`) and portals
 - Added ancestors section in component's details panel
+- Added displaying a list of detected unsupported renderers on the React renderer connection waiting screen. This should help figure out why a React can't be connected.
+- (experimental) Considered `production` and `profiling` React builds as partially functional, i.e. RRT works but some data might is not capturing (e.g. a component owner and most of update triggers)
 - Fixed memory leaks related to keeping unmounted fibers by RRT internal dictionaries
 - Fixed navigation when a fiber is pinned
 - Removed "Blocking mode" mark for a render root as outdated
-- Considered `production` and `profiling` React builds as partially functional, i.e. RRT works but some data is not capturing
 - Added `dist` files to `exports`
 - Reworked `headless-browser-client` build to provide a standalone bundles
 

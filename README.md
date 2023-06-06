@@ -8,7 +8,7 @@ React Render Tracker (RRT) presents component’s tree state over the time and a
 
 [React Render Tracker v0.6 – Overview & Instructions](https://www.icloud.com/keynote/0bBreStPiyDi5wJVTFoqpoPeA#React_Render_Tracker_overview) ([PDF version](https://github.com/lahmatiy/react-render-tracker/files/7963996/React.Render.Tracker.overview.rev.nov.23.2021.pdf))
 
-Supported: React v16.9+ (development bundle only, see [issue #25](https://github.com/lahmatiy/react-render-tracker/issues/25))
+Supported: React v16.9+ (fully functional for a React development build, for build & production builds is not capturing some data, see [issue #25](https://github.com/lahmatiy/react-render-tracker/issues/25))
 
 > STATUS: MVP / proof of concept
 >
