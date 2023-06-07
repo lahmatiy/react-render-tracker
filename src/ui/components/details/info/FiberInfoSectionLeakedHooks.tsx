@@ -25,7 +25,6 @@ export function FiberInfoSectionLeakedHooks({
         {leakedHooks &&
           leakedHooks.map(hookIdx => {
             const hook = typeDef?.hooks[hookIdx];
-            console.log(hookIdx, hook);
 
             return (
               hook && (
