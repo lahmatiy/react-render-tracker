@@ -432,6 +432,7 @@ function Root6() {
       if (!isVisible) {
         setIsVisible(true);
         setTest(333);
+        setTimeout(() => setTest(42));
         dispatch({ a: 1 });
       }
       return /* @__PURE__ */ __name(function teardown() {
@@ -449,6 +450,31 @@ function Root6() {
   react_default.useContext(CtxA);
   react_default.useContext(CtxB);
   useFoo();
+  if (react_default.useId) {
+    react_default.useId();
+    react_default.useDeferredValue(state);
+    const [, startTransition] = react_default.useTransition();
+    const storage = react_default.useRef();
+    const storageTrigger = react_default.useRef(function() {
+    });
+    react_default.useSyncExternalStore(
+      (listener) => (storageTrigger.current = listener, () => void 0),
+      () => storage.current || state
+    );
+    react_default.useInsertionEffect(() => void 0, []);
+    react_default.useEffect(
+      /* @__PURE__ */ __name(function effect() {
+        if (!isVisible) {
+          startTransition(() => void 0);
+          setTimeout(() => {
+            storage.current = { a: 42 };
+            storageTrigger.current();
+          }, 500);
+        }
+      }, "effect"),
+      [isVisible]
+    );
+  }
   return /* @__PURE__ */ react_default.createElement(Child6, {
     prop: 42
   });
