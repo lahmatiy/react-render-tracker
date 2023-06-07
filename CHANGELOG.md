@@ -1,4 +1,4 @@
-## next
+## 0.7.2 (June 7, 2023)
 
 - Added tracking for `useSyncExternalStore` hook changes
 - Added tracking for `useTransition` hook changes
