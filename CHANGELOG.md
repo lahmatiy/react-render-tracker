@@ -1,5 +1,12 @@
 ## next
 
+- Added tracking for `useSyncExternalStore` hook changes
+- Added tracking for `useTransition` hook changes
+- Fixed crash when `useSyncExternalStore` hook is used (#34)
+- Fixed missed details capturing for first state hook changes
+
+## 0.7.1 (June 7, 2023)
+
 - Added selecting a component on the page (#31)
 - Added DOM elements highlighting of a component on hover in component's tree (#31)
 - Added capturing and displaying host components (DOM elements for `react-dom`) and portals

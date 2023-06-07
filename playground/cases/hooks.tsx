@@ -23,6 +23,8 @@ function Root() {
   React.useCallback(() => (isVisible ? setTest : dispatch), [isVisible]);
   React.useMemo(() => [isVisible, test, state], [isVisible, test, state]);
 
+  // if (test !== 555) setTest(555); // TODO: fix it to track
+
   React.useDebugValue(Date.now());
 
   React.useRef({ ref: Date.now() });
@@ -32,6 +34,7 @@ function Root() {
       if (!isVisible) {
         setIsVisible(true);
         setTest(333);
+        setTimeout(() => setTest(42));
         dispatch({ a: 1 });
       }
 
@@ -54,6 +57,35 @@ function Root() {
   React.useContext(CtxB);
 
   useFoo();
+
+  // React 18 hooks
+  if (React.useId) {
+    React.useId();
+    React.useDeferredValue(state);
+    const [, startTransition] = React.useTransition();
+    const storage = React.useRef<{ a: number } | undefined>();
+    const storageTrigger = React.useRef(function () {
+      /**/
+    });
+    React.useSyncExternalStore(
+      listener => ((storageTrigger.current = listener), () => undefined),
+      () => storage.current || state
+    );
+    React.useInsertionEffect(() => undefined, []);
+
+    React.useEffect(
+      function effect() {
+        if (!isVisible) {
+          startTransition(() => undefined);
+          setTimeout(() => {
+            storage.current = { a: 42 };
+            storageTrigger.current();
+          }, 500);
+        }
+      },
+      [isVisible]
+    );
+  }
 
   return <Child prop={42} />;
 }

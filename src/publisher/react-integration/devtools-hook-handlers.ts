@@ -351,11 +351,26 @@ export function createReactDevtoolsHookHandlers(
         const nextValue = next.memoizedState;
 
         if (!Object.is(prevValue, nextValue)) {
-          const dispatch = next.queue.dispatch;
+          let dispatch = next.queue.dispatch || next.queue.getSnapshot;
+          let hookIdx = getDispatchHookIndex(dispatch);
+
+          // useTransition stores start function in next queue node
+          if (
+            hookIdx === null &&
+            next.next &&
+            typeof next.next.memoizedState === "function"
+          ) {
+            next = next.next;
+            prev = prev.next;
+
+            dispatch = next.memoizedState;
+            hookIdx = getDispatchHookIndex(dispatch);
+          }
+
           const dispatchCalls = commitFiberUpdateCalls.get(dispatch);
 
           changes.push({
-            hook: getDispatchHookIndex(dispatch),
+            hook: hookIdx,
             prev: simpleValueSerialization(prevValue),
             next: simpleValueSerialization(nextValue),
             diff: valueDiff(prevValue, nextValue),

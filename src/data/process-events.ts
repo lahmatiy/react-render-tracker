@@ -93,7 +93,7 @@ export function processEvents(
     const normalizedChanges: FiberChanges = {
       ...changes,
       warnings: null,
-      state: changes?.state?.map(change => ({
+      state: changes.state?.map(change => ({
         ...change,
         hook: change.hook !== null ? fiber.typeDef.hooks[change.hook] : null,
       })),

@@ -425,7 +425,11 @@ export type FiberDispatcherContext = {
 
 export type FiberDispatchCall = {
   dispatch: any;
-  dispatchName: "setState" | "dispatch";
+  dispatchName:
+    | "setState"
+    | "dispatch"
+    | "startTransition"
+    | "externalStorageSync";
   root: FiberRoot;
   fiber: Fiber;
   renderFiber: Fiber | null;
