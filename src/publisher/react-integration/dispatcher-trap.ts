@@ -17,23 +17,28 @@ import { extractCallLoc, parseStackTraceLine } from "./utils/stackTrace";
 type StateHookName = "useState" | "useReducer" | "useTransition";
 type MemoHookName = "useMemo" | "useCallback";
 type EffectHookName = "useEffect" | "useLayoutEffect";
+type SubscribeFn = (listener: (next: any, prev: any) => void) => void;
+type AnyFn = () => any;
 type Dispatcher = {
-  useState(...args: any[]): [any, DispatchFn & { wrapper?: DispatchFn }];
-  useReducer(...args: any[]): [any, DispatchFn & { wrapper?: DispatchFn }];
-  useTransition(): [boolean, DispatchFn & { wrapper?: DispatchFn }];
+  useState(...args: any[]): [any, DispatchFn];
+  useReducer(...args: any[]): [any, DispatchFn];
+  useTransition(): [boolean, DispatchFn];
   useSyncExternalStore?(
-    subscribe: (listener: (next: any, prev: any) => void) => void,
-    getSnapshot: () => any,
-    getServerSnapshot?: () => any
+    subscribe: SubscribeFn,
+    getSnapshot: AnyFn,
+    getServerSnapshot?: AnyFn
   ): [any];
-  useMemo(cb: () => any, deps?: any[]): any;
-  useCallback(cb: () => any, deps?: any[]): () => any;
-  useEffect(create: () => any, deps?: any[]): void;
-  useLayoutEffect(create: () => any, deps?: any[]): void;
+  useMemo(cb: AnyFn, deps?: any[]): any;
+  useCallback(cb: AnyFn, deps?: any[]): AnyFn;
+  useEffect(create: AnyFn, deps?: any[]): void;
+  useLayoutEffect(create: AnyFn, deps?: any[]): void;
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
 };
-type DispatchFn = ((value: any) => any) & { hookIdx?: number };
+type DispatchFn = ((value: any) => any) & {
+  hookIdx?: number;
+  wrapper?: DispatchFn;
+};
 type FiberDispatcherInfo = {
   hooks: HookInfo[];
 };
@@ -98,6 +103,15 @@ export function createDispatcherTrap(
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
   const fiberComputedMemo = new WeakMap<Fiber, HookCompute[]>();
+  const fiberSyncStorageHooks = new WeakMap<
+    Fiber,
+    {
+      subscribe?: SubscribeFn;
+      getSnapshot?: AnyFn;
+      wrappedSubscribe: SubscribeFn;
+      wrappedGetSnapshot: AnyFn;
+    }[]
+  >();
 
   function trackUseHook(
     name: string,
@@ -266,16 +280,39 @@ export function createDispatcherTrap(
 
     dispatcher[hookName] = (subscribe, getSnapshot, getServerSnapshot) => {
       const hookIdx = trackUseHook(hookName);
-      const hookOwnerFiber = currentFiber as Fiber;
+
+      if (currentFiber === null) {
+        return orig(subscribe, getSnapshot, getServerSnapshot);
+      }
+
+      const hookOwnerFiber = currentFiber;
       const hookOwnerFiberRoot = currentRoot as FiberRoot;
-      const wrappedGetSnapshot = Object.assign(() => getSnapshot(), {
-        hookIdx,
-      });
-      const value = orig(
-        listener =>
-          subscribe((prev, next) => {
+      const alternate = currentFiber.alternate;
+      let fiberHooks =
+        fiberSyncStorageHooks.get(currentFiber) ||
+        (alternate !== null ? fiberSyncStorageHooks.get(alternate) : undefined);
+
+      if (fiberHooks === undefined) {
+        fiberSyncStorageHooks.set(currentFiber, (fiberHooks = []));
+      }
+
+      if (fiberHooks.length < hookIdx + 1) {
+        fiberHooks[hookIdx] = {
+          subscribe: undefined,
+          getSnapshot: undefined,
+          wrappedSubscribe: () => undefined,
+          wrappedGetSnapshot: () => undefined,
+        };
+      }
+
+      const wrapper = fiberHooks[hookIdx];
+
+      if (wrapper.subscribe !== subscribe) {
+        wrapper.subscribe = subscribe;
+        wrapper.wrappedSubscribe = function (listener) {
+          return subscribe((prev, next) => {
             dispatchCalls.push({
-              dispatch: wrappedGetSnapshot,
+              dispatch: wrapper.wrappedGetSnapshot,
               dispatchName: "externalStorageSync",
               root: hookOwnerFiberRoot,
               fiber: hookOwnerFiber,
@@ -286,12 +323,23 @@ export function createDispatcherTrap(
                 (!currentFiber && !currentEffectFiber && window.event?.type) ||
                 null,
               loc: extractCallLoc(0),
-              // stack: String(new Error().stack),
             });
 
-            return listener(prev, next);
-          }),
-        wrappedGetSnapshot,
+            listener(prev, next);
+          });
+        };
+      }
+
+      if (wrapper.getSnapshot !== getSnapshot) {
+        wrapper.getSnapshot = getSnapshot;
+        wrapper.wrappedGetSnapshot = Object.assign(() => getSnapshot(), {
+          hookIdx,
+        });
+      }
+
+      const value = orig(
+        wrapper.wrappedSubscribe,
+        wrapper.wrappedGetSnapshot,
         getServerSnapshot
       );
 
