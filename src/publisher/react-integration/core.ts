@@ -139,11 +139,11 @@ export function createIntegrationCore(
 
       default:
         switch (getTypeSymbol(fiber.type)) {
+          // case STRICT_MODE_NUMBER:
+          // case STRICT_MODE_SYMBOL_STRING:
           case CONCURRENT_MODE_NUMBER:
           case CONCURRENT_MODE_SYMBOL_STRING:
           case DEPRECATED_ASYNC_MODE_SYMBOL_STRING:
-          case STRICT_MODE_NUMBER:
-          case STRICT_MODE_SYMBOL_STRING:
             return true;
 
           default:
@@ -360,9 +360,14 @@ export function createIntegrationCore(
       return getOrGenerateFiberId(_debugOwner);
     }
 
-    const { return: parentFiber = null } = fiber;
-    if (parentFiber !== null) {
-      if (typeof parentFiber._debugOwner !== "number") {
+    let { return: parentFiber = null } = fiber;
+    while (parentFiber !== null) {
+      if (shouldFilterFiber(parentFiber)) {
+        parentFiber = parentFiber.return;
+        continue;
+      }
+
+      if (parentFiber._debugOwner) {
         return getOrGenerateFiberId(parentFiber);
       }
 
@@ -373,6 +378,8 @@ export function createIntegrationCore(
       ) {
         return getFiberOwnerId(parentFiber);
       }
+
+      break;
     }
 
     return -1;

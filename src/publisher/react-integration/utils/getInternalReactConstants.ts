@@ -350,7 +350,7 @@ export function getInternalReactConstants(version: string) {
           }
           case STRICT_MODE_NUMBER:
           case STRICT_MODE_SYMBOL_STRING:
-            return null;
+            return "StrictMode";
           case PROFILER_NUMBER:
           case PROFILER_SYMBOL_STRING:
             return `Profiler(${fiber.memoizedProps.id})`;

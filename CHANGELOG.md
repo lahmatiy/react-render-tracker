@@ -1,3 +1,8 @@
+## next
+
+- Added `StrictMode` capturing and displaying in components tree
+- Fixed capturing component owner in some cases
+
 ## 0.7.2 (June 7, 2023)
 
 - Added tracking for `useSyncExternalStore` hook changes
