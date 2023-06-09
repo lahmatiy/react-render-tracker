@@ -1,8 +1,8 @@
-## next
+## 0.7.3 (June 9, 2023)
 
 - Added `StrictMode` capturing and displaying in components tree
 - Fixed capturing component owner in some cases
-- Fixed tracking for `useSyncExternalStorage` hook usage that may lead to infinite updates loop
+- Fixed tracking for `useSyncExternalStorage` hook usage that may lead to infinite updates loop (#35)
 
 ## 0.7.2 (June 7, 2023)
 
