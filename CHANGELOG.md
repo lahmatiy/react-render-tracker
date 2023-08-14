@@ -1,3 +1,9 @@
+## next
+
+- Improved hook path capturing:
+  - Adjusted the stack trace limit to capture up to 25 entries, guaranteeing a minimum of 20 path entries, an improvement from the previous 6 (fixes #30)
+  - Implemented an alternative method for path extraction to cater to scenarios where a function is either unnamed or its name doesn't start with `use`
+
 ## 0.7.3 (June 9, 2023)
 
 - Added `StrictMode` capturing and displaying in components tree

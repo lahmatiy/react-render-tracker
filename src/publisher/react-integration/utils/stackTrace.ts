@@ -2,21 +2,43 @@
 // https://github.com/errwischt/stacktrace-parser/blob/master/src/stack-trace-parser.js
 
 const UNKNOWN_FUNCTION = "<unknown>";
+const hasOwn =
+  Object.hasOwn ||
+  ((target, prop) => Object.prototype.hasOwnProperty.call(target, prop));
 
 type LineParseResult = null | {
   name: string;
   loc: string | null;
 };
 
-function getCallStackLine(depth: number) {
-  const stack = String(new Error().stack).split("\n");
+function lazyParseArray<T extends string | NodeJS.CallSite>(
+  array: T[],
+  parse: (val: T) => LineParseResult
+) {
+  const cache: LineParseResult[] = [];
 
-  return stack[stack[0] === "Error" ? depth + 1 : depth];
+  return new Proxy(array, {
+    get(target, prop) {
+      if (typeof prop === "string") {
+        const index = Number(prop);
+
+        if (isFinite(index) && hasOwn(array, prop)) {
+          // Check if the value at the index is already parsed
+          if (typeof cache[index] === "undefined") {
+            cache[index] = parse(array[index]);
+          }
+
+          return cache[index];
+        }
+      }
+
+      return (target as any)[prop];
+    },
+  });
 }
 
 export function extractCallLoc(depth: number) {
-  const line = getCallStackLine(depth + 3);
-  const parsed = line ? parseStackTraceLine(line) : null;
+  const parsed = getParsedStackTrace()[depth + 2];
 
   if (parsed && parsed.loc) {
     return parsed.loc;
@@ -25,22 +47,51 @@ export function extractCallLoc(depth: number) {
   return null;
 }
 
-/**
- * This parses the different stack traces and puts them into one format
- * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
- */
-export function parseStackTrace(stackString: string) {
-  const lines = stackString.split("\n");
+export function getParsedStackTrace(skip = 1, limit = 25) {
+  const prevPrepareStackTrace = Error.prepareStackTrace;
+  const prevStackTraceLimit = Error.stackTraceLimit;
 
-  return lines.reduce((stack, line) => {
-    const parseResult = parseStackTraceLine(line);
+  try {
+    Error.stackTraceLimit = limit;
+    Error.prepareStackTrace = (_, callSites) => {
+      result = lazyParseArray(callSites.slice(skip), parseCallSite);
 
-    if (parseResult) {
-      stack.push(parseResult);
+      return "";
+    };
+
+    let result: NodeJS.CallSite[] | string[] | null = null;
+    const stack = new Error().stack;
+
+    if (result === null && stack) {
+      const lines = stack.trim().split("\n");
+
+      result = lazyParseArray(
+        lines.slice(lines[0] === "Error" ? skip + 1 : skip),
+        parseStackTraceLine
+      );
     }
 
-    return stack;
-  }, [] as LineParseResult[]);
+    return (result || []) as unknown as LineParseResult[]; // TS doesn't handle Proxy right
+  } finally {
+    Error.stackTraceLimit = prevStackTraceLimit;
+    Error.prepareStackTrace = prevPrepareStackTrace;
+  }
+}
+
+function parseCallSite(
+  callSite: NodeJS.CallSite & { getScriptNameOrSourceURL?: () => string | null }
+) {
+  const filename =
+    typeof callSite.getScriptNameOrSourceURL === "function"
+      ? callSite.getScriptNameOrSourceURL()
+      : callSite.getFileName();
+
+  return {
+    loc: filename
+      ? `${filename}:${callSite.getLineNumber()}:${callSite.getColumnNumber()}`
+      : null,
+    name: callSite.getFunctionName() || UNKNOWN_FUNCTION,
+  };
 }
 
 export function parseStackTraceLine(line: string): LineParseResult {

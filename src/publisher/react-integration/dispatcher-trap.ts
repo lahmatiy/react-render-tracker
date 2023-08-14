@@ -12,7 +12,7 @@ import {
   HookCompute,
 } from "../types";
 import { CoreApi } from "./core";
-import { extractCallLoc, parseStackTraceLine } from "./utils/stackTrace";
+import { extractCallLoc, getParsedStackTrace } from "./utils/stackTrace";
 
 type StateHookName = "useState" | "useReducer" | "useTransition";
 type MemoHookName = "useMemo" | "useCallback";
@@ -43,10 +43,8 @@ type FiberDispatcherInfo = {
   hooks: HookInfo[];
 };
 
-function extractHookPath(depth = 0) {
-  const stack = String(new Error().stack)
-    .split("\n")
-    .slice(4 + depth);
+function extractHookPath(depth = 0, stopHookPathLocation: string | null) {
+  const stack = getParsedStackTrace(depth + 4);
   const path = [];
   const result: TransferCallTrace = {
     path: undefined,
@@ -54,19 +52,18 @@ function extractHookPath(depth = 0) {
   };
   let prev: TransferCallTrace | TransferCallTracePoint = result;
 
-  for (const line of stack) {
-    const parsed = parseStackTraceLine(line);
-
+  for (const parsed of stack) {
     if (!parsed) {
       break;
     }
 
-    prev.loc = parsed.loc;
-
-    if (!parsed.name.startsWith("use")) {
+    if (parsed.loc === stopHookPathLocation) {
+      path.shift();
+      path.shift();
       break;
     }
 
+    prev.loc = parsed.loc;
     path.unshift(
       (prev = {
         name: parsed.name,
@@ -96,6 +93,7 @@ export function createDispatcherTrap(
   let currentEffectName: "effect" | "layout-effect" | null = null;
   let currentFiberHookIndex = 0;
   let dispatchCalls: FiberDispatchCall[] = [];
+  let stopHookPathLocation: string | null = null;
   // let currentFiberRerenderState: RerenderState | null = null;
   const knownDispatcher = new Set<Dispatcher>();
   const ignoreDispatcherTransition = new Set<Dispatcher>();
@@ -123,7 +121,7 @@ export function createDispatcherTrap(
         name,
         deps,
         context,
-        trace: extractHookPath(1),
+        trace: extractHookPath(1, stopHookPathLocation),
       });
     }
 
@@ -386,9 +384,7 @@ export function createDispatcherTrap(
 
   if (typeof renderer.getCurrentFiber === "function") {
     Object.defineProperty(renderer.currentDispatcherRef, "current", {
-      get() {
-        return currentDispatcher;
-      },
+      get: () => currentDispatcher,
       set(nextDispatcher: Dispatcher | null) {
         const nextCurrentFiber = renderer.getCurrentFiber();
         const prevDispatcher = currentDispatcher;
@@ -400,6 +396,7 @@ export function createDispatcherTrap(
           currentFiber = nextCurrentFiber;
           currentFiberCollectInfo = null;
           currentFiberHookIndex = 0;
+          currentRoot = null;
 
           if (currentFiber !== null) {
             const alternate = currentFiber.alternate;
@@ -412,6 +409,7 @@ export function createDispatcherTrap(
               );
 
               if (!fiberTypeInfo.has(fiberTypeId)) {
+                stopHookPathLocation = extractCallLoc(1);
                 fiberTypeInfo.set(
                   fiberTypeId,
                   (currentFiberCollectInfo = {

@@ -92,12 +92,33 @@ function Root() {
 }
 
 function useFoo() {
+  badNameHook();
+  evalHook();
+  anonymousHook();
+  anonymousHookFactory();
   return useBar();
 }
 
 function useBar() {
+  const [, setState] = React.useState(0);
+
+  React.useEffect(() => {
+    setState(1);
+  }, []);
+
   return React.useContext(CtxA);
 }
+
+function badNameHook() {
+  return useBar();
+}
+
+const evalHook = new Function("useBar", "return () => useBar()")(useBar);
+const anonymousHook = () => useBar();
+const anonymousHookFactory = (
+  () => () =>
+    useBar()
+)();
 
 const Child = React.forwardRef(function Child(
   { prop = 123 }: { prop: number },
