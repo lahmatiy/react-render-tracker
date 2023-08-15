@@ -21,47 +21,59 @@ const callAsap =
     ? requestIdleCallback
     : (fn: () => void) => Promise.resolve().then(fn);
 
-function sourceToResolve(filepath: string, source: string | (() => any)) {
-  const lazyResolve = (loc: string, line: number, column: number) => {
+function extractSourceMap(source: string) {
+  try {
     const [, sourceMapBase64] =
       String(source).match(
         /\/\/# sourceMappingURL=.+?;base64,([a-zA-Z0-9\+\/=]+)/
       ) || [];
-    let resolve: Resolve = noResolve;
 
     if (sourceMapBase64) {
-      try {
-        const sourceMap = new SourceMapConsumer(
-          JSON.parse(atob(sourceMapBase64))
-        );
+      return new SourceMapConsumer(JSON.parse(atob(sourceMapBase64)));
+    }
+  } catch (e) {
+    console.warn("[React Render Tracker] Source map parse error:", e);
+  }
 
-        resolve = (loc: string, line: number, column: number) => {
-          const {
-            source,
-            line: origLine,
-            column: origColumn,
-          } = sourceMap.originalPositionFor({
-            line,
-            column,
-          });
-          const resolvedLoc = source
-            ? `${source
-                .replace(/^webpack:\/\//, "")
-                .replace(/\?.*$/, "")}:${origLine}:${origColumn + 1}`
-            : loc;
+  return null;
+}
 
-          cache.set(loc, resolvedLoc);
+function sourceToResolve(filepath: string, source: string | (() => any)) {
+  let resolve: Resolve | null = null;
+  const lazyResolve = (loc: string, line: number, column: number) => {
+    if (resolve !== null) {
+      return resolve(loc, line, column);
+    }
 
-          return resolvedLoc;
-        };
-      } catch (e) {
-        console.warn("[React Render Tracker] Source map parse error:", e);
-      }
+    const sourceMap = extractSourceMap(String(source));
+
+    if (sourceMap) {
+      resolve = (loc: string, line: number, column: number) => {
+        const {
+          source,
+          line: origLine,
+          column: origColumn,
+        } = sourceMap.originalPositionFor({
+          line,
+          column,
+        });
+        const resolvedLoc = source
+          ? `${source
+              .replace(/^webpack:\/\//, "")
+              .replace(/\?.*$/, "")}:${origLine}:${origColumn + 1}`
+          : loc;
+
+        cache.set(loc, resolvedLoc);
+
+        return resolvedLoc;
+      };
+    } else {
+      resolve = noResolve;
     }
 
     sourceMapsResolve.set(filepath, resolve);
 
-    return resolve ? resolve(loc, line, column) : loc;
+    return resolve(loc, line, column);
   };
 
   sourceMapsResolve.set(filepath, lazyResolve);
