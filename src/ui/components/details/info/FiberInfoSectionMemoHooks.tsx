@@ -102,7 +102,10 @@ export function FiberInfoSectionMemoHooks({ fiber }: { fiber: MessageFiber }) {
   }
 
   return (
-    <FiberInfoSection id="memo-hooks" header={`Memo hooks (${memoHooks.size})`}>
+    <FiberInfoSection
+      id="memo-hooks"
+      header={`Memo hook updates (${memoHooks.size})`}
+    >
       <ol className="fiber-info-section-memo-content">
         {[...memoHooks.values()].map(
           ({ hook, updates, computeCount, headers }) => {

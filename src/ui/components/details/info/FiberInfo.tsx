@@ -52,16 +52,16 @@ const FiberInfo = ({
     <div className="fiber-info">
       <SectionStateContext.Provider value={sectionStatesContextValue}>
         <FiberInfoSectionAncestors fiber={fiber} />
-        <FiberInfoSectionProps fiber={fiber} />
-        {false && (
-          <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>
-        )}
         {fiber.typeDef.contexts && <FiberInfoSectionContexts fiber={fiber} />}
         {fiber.type === ElementTypeProvider && (
           <FiberInfoSectionConsumers
             fiber={fiber}
             showUnmounted={showUnmounted}
           />
+        )}
+        <FiberInfoSectionProps fiber={fiber} />
+        {false && (
+          <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
         {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
