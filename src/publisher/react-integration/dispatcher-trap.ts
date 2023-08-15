@@ -34,6 +34,8 @@ type Dispatcher = {
   useLayoutEffect(create: AnyFn, deps?: any[]): void;
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
+  useRef(): any;
+  useImperativeHandle(): any;
 };
 type DispatchFn = ((value: any) => any) & {
   hookIdx?: number;
@@ -117,7 +119,7 @@ export function createDispatcherTrap(
     context: ReactContext<any> | null = null
   ) {
     if (currentFiberCollectInfo !== null) {
-      currentFiberCollectInfo.hooks?.push({
+      currentFiberCollectInfo.hooks.push({
         name,
         deps,
         context,
@@ -350,8 +352,10 @@ export function createDispatcherTrap(
       knownDispatcher.add(dispatcher);
 
       // ContextOnlyDispatcher has a single guard function for each hook,
-      // detecting it by comparing two random hooks for equality
-      if (dispatcher.useReducer === dispatcher.useState) {
+      // detecting it by comparing two random hooks for equality;
+      // Choosed useRef and useImperativeHandle hooks since WDYR doesn't patch them
+      // more likely RRT & WDYR would functional together
+      if (dispatcher.useRef === dispatcher.useImperativeHandle) {
         ignoreDispatcherTransition.add(dispatcher);
       }
       // In dev mode InvalidNestedHooksDispatcher* are used, that's the only
@@ -474,6 +478,15 @@ export function createDispatcherTrap(
           //   }
 
           // avoid collecting info on re-renders
+          currentFiberCollectInfo = null;
+          currentFiberHookIndex = 0;
+        }
+        // Setting ContextOnlyDispatcher indicates ending of a render - stop collecting hook info,
+        // otherwise additional rendering in Strict Mode will double the hooks list
+        else if (
+          nextDispatcher !== null &&
+          nextDispatcher.useRef === nextDispatcher.useImperativeHandle
+        ) {
           currentFiberCollectInfo = null;
           currentFiberHookIndex = 0;
         }
