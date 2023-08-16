@@ -101,7 +101,7 @@ async function buildPublisher(config) {
     write: false,
     ...config,
     define: {
-      __DEV__: true,
+      __DEV__: "true",
       ...(config && config.define),
     },
   });
@@ -125,7 +125,7 @@ async function buildDataUtils(config) {
     write: false,
     ...config,
     define: {
-      __DEV__: true,
+      __DEV__: "true",
       ...(config && config.define),
     },
   });
@@ -150,7 +150,7 @@ async function buildDataClient(config) {
     write: false,
     ...config,
     define: {
-      __DEV__: true,
+      __DEV__: "true",
       ...(config && config.define),
     },
   });
@@ -184,7 +184,7 @@ async function buildBundle(config) {
     sourcemap: false,
     ...config,
     define: {
-      __DEV__: false,
+      __DEV__: "false",
       __SUBSCRIBER_SRC__: JSON.stringify(__SUBSCRIBER_SRC__),
       ...(config && config.define),
     },
