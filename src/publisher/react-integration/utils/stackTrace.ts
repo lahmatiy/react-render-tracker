@@ -85,12 +85,24 @@ function parseCallSite(
     typeof callSite.getScriptNameOrSourceURL === "function"
       ? callSite.getScriptNameOrSourceURL()
       : callSite.getFileName();
+  let functionName = callSite.getFunctionName();
+
+  if (functionName !== null && functionName.includes(".")) {
+    const typeName = callSite.getTypeName();
+    const methodName = callSite.getMethodName();
+
+    if (typeName && methodName) {
+      functionName = `${typeName}#${methodName}`;
+    } else {
+      functionName = functionName.replace(/.*?\.([^\.]+(?:\.[^\.]+)?)$/, "$1");
+    }
+  }
 
   return {
     loc: filename
       ? `${filename}:${callSite.getLineNumber()}:${callSite.getColumnNumber()}`
       : null,
-    name: callSite.getFunctionName() || UNKNOWN_FUNCTION,
+    name: functionName || UNKNOWN_FUNCTION,
   };
 }
 
@@ -138,6 +150,7 @@ function parseGecko(line: string): LineParseResult {
     return null;
   }
 
+  let name = parts[1];
   let loc = parts[3];
   const isEval = loc && loc.indexOf(" > eval") > -1;
 
@@ -147,9 +160,13 @@ function parseGecko(line: string): LineParseResult {
     loc = submatch[1];
   }
 
+  if (name && name.includes("/")) {
+    name = name.replace(/^.*\/([^\/]+)$/, "$1").replace(/\.prototype\./, "#");
+  }
+
   return {
     loc: parts[3],
-    name: parts[1] || UNKNOWN_FUNCTION,
+    name: name || UNKNOWN_FUNCTION,
   };
 }
 
