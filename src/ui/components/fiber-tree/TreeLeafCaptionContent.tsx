@@ -41,7 +41,7 @@ const TreeLeafCaptionContent = ({
   } = fiber;
 
   const setMainElementRef = React.useCallback(
-    element => setFiberElement(id, element),
+    (element: HTMLElement | null) => setFiberElement(id, element),
     [setFiberElement]
   );
 

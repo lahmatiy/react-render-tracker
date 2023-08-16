@@ -104,7 +104,7 @@ export function useDebouncedComputeSubscription<T>(
   debounced: number
 ) {
   const subscribeWithDebouncedCompute = React.useCallback(
-    (requestRecompute, acceptRequests) => {
+    (requestRecompute: () => void, acceptRequests: boolean) => {
       const debouncedRequestRecompute = debounce(requestRecompute, debounced);
       const unsubscribe = subscribe(() => debouncedRequestRecompute());
 

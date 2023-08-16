@@ -272,7 +272,7 @@ export function useEventLog(
   }, [subtree, fiberById]);
 
   const subscribe = React.useCallback(
-    requestRecompute => {
+    (requestRecompute: () => void) => {
       // subtree
       if (includeSubtree) {
         return subscribeSubtree(fiberId, tree, (added, removed) => {

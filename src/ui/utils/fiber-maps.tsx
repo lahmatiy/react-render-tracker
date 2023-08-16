@@ -29,7 +29,8 @@ export const useCommit = (commitId: number) => {
   );
 
   const subscribe = React.useCallback(
-    requestRecompute => commitById.subscribe(commitId, requestRecompute),
+    (requestRecompute: () => void) =>
+      commitById.subscribe(commitId, requestRecompute),
     [commitById, commitId]
   );
 
@@ -44,7 +45,8 @@ export const useCommits = () => {
     [commitById]
   );
   const subscribe = React.useCallback(
-    requestRecompute => commitById.subscribeValues(requestRecompute),
+    (requestRecompute: () => void) =>
+      commitById.subscribeValues(requestRecompute),
     [commitById]
   );
 
@@ -60,7 +62,8 @@ export const useFiber = (fiberId: number) => {
   );
 
   const subscribe = React.useCallback(
-    requestRecompute => fiberById.subscribe(fiberId, requestRecompute),
+    (requestRecompute: () => void) =>
+      fiberById.subscribe(fiberId, requestRecompute),
     [fiberById, fiberId]
   );
 
@@ -80,7 +83,7 @@ export const useFiberChildren = (
   const compute = React.useCallback(() => leaf.children || EMPTY_ARRAY, [leaf]);
 
   const subscribe = React.useCallback(
-    requestRecompute => leaf.subscribe(requestRecompute),
+    (requestRecompute: () => void) => leaf.subscribe(requestRecompute),
     [leaf]
   );
 
@@ -95,7 +98,7 @@ export const useFiberAncestors = (fiberId: number, groupByParent = false) => {
   const compute = React.useCallback(() => leaf.ancestors(), [leaf]);
 
   const subscribe = React.useCallback(
-    requestRecompute => leaf.subscribe(requestRecompute),
+    (requestRecompute: () => void) => leaf.subscribe(requestRecompute),
     [leaf]
   );
 
@@ -112,7 +115,7 @@ export const useTypeIdFibers = (typeId: number) => {
   );
 
   const subscribe = React.useCallback(
-    requestRecompute => subset.subscribe(requestRecompute),
+    (requestRecompute: () => void) => subset.subscribe(requestRecompute),
     [subset]
   );
 
@@ -129,7 +132,7 @@ export const useProviderConsumers = (providerId: number) => {
   );
 
   const subscribe = React.useCallback(
-    requestRecompute => subset.subscribe(requestRecompute),
+    (requestRecompute: () => void) => subset.subscribe(requestRecompute),
     [subset]
   );
 
@@ -138,12 +141,7 @@ export const useProviderConsumers = (providerId: number) => {
 
 export const useLeakedFibers = () => {
   const { leakedFibers } = useFiberMaps();
-
   const compute = React.useCallback(() => leakedFibers.value, [leakedFibers]);
-  const subscribe = React.useCallback(
-    requestRecompute => leakedFibers.subscribe(requestRecompute),
-    [leakedFibers]
-  );
 
-  return useComputeSubscription(compute, subscribe);
+  return useComputeSubscription(compute, leakedFibers.subscribe);
 };

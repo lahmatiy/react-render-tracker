@@ -24,7 +24,7 @@ function HookConsumer() {
 
 function ElementConsumer() {
   const memoCallback = React.useCallback(
-    contextValue => <Child value={contextValue} />,
+    (contextValue: string) => <Child value={contextValue} />,
     []
   );
 

@@ -9,7 +9,7 @@ import FiberMaybeLeak from "../../components/common/FiberMaybeLeak";
 
 type FiberProps = {
   fiberId: number;
-  setFiberElement?: (id: number, element: HTMLElement) => void;
+  setFiberElement?: (id: number, element: HTMLElement | null) => void;
 };
 
 const noop = () => {
@@ -35,7 +35,7 @@ export const Fiber = ({ fiberId, setFiberElement = noop }: FiberProps) => {
   }, []);
 
   const setMainElementRef = React.useCallback(
-    element => setFiberElement(id, element),
+    (element: HTMLElement | null) => setFiberElement(id, element),
     [setFiberElement]
   );
 
