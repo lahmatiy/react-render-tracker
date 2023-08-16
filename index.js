@@ -480,12 +480,23 @@ function Root6() {
   });
 }
 function useFoo() {
+  badNameHook();
+  evalHook();
+  anonymousHook();
+  anonymousHookFactory();
   return useBar();
 }
 function useBar() {
+  const [, setState] = react_default.useState(0);
+  react_default.useEffect(() => {
+    setState(1);
+  }, []);
   return react_default.useContext(CtxA);
 }
-var hooks_default, CtxA, CtxB, Child6;
+function badNameHook() {
+  return useBar();
+}
+var hooks_default, CtxA, CtxB, evalHook, anonymousHook, anonymousHookFactory, Child6;
 var init_hooks = __esm({
   "playground/cases/hooks.tsx"() {
     "use strict";
@@ -499,6 +510,10 @@ var init_hooks = __esm({
     __name(Root6, "Root");
     __name(useFoo, "useFoo");
     __name(useBar, "useBar");
+    __name(badNameHook, "badNameHook");
+    evalHook = new Function("useBar", "return () => useBar()")(useBar);
+    anonymousHook = /* @__PURE__ */ __name(() => useBar(), "anonymousHook");
+    anonymousHookFactory = (() => () => useBar())();
     Child6 = react_default.forwardRef(/* @__PURE__ */ __name(function Child7({ prop = 123 }, ref) {
       react_default.useImperativeHandle(
         ref,
