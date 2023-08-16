@@ -1,4 +1,4 @@
-## next
+## 0.7.4 (August 16, 2023)
 
 - Fixed multiple creation of source map instances for a single script
 - Improved hook path capturing:
