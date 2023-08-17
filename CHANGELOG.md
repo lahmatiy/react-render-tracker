@@ -1,6 +1,7 @@
 ## next
 
 - Added tracking for all known React hooks
+- Added `displayName` field to `fiber-type-def` event
 
 ## 0.7.4 (August 16, 2023)
 

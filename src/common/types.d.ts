@@ -161,6 +161,7 @@ declare module "common-types" {
   export interface FiberTypeDefMessage extends BaseMessage {
     op: "fiber-type-def";
     typeId: number;
+    displayName: string | null;
     definition: TransferFiberTypeDef;
   }
 

@@ -543,7 +543,8 @@ export function createReactDevtoolsHookHandlers(
   function recordFiberTypeDefIfNeeded(
     fiber: Fiber,
     typeId: number,
-    fiberType: FiberType
+    fiberType: FiberType,
+    typeDisplayName: string | null
   ) {
     if (recordedTypeDef.has(typeId)) {
       return;
@@ -640,6 +641,7 @@ export function createReactDevtoolsHookHandlers(
       op: "fiber-type-def",
       commitId: currentCommitId,
       typeId,
+      displayName: typeDisplayName,
       definition: {
         contexts,
         hooks: transferHooks,
@@ -673,6 +675,7 @@ export function createReactDevtoolsHookHandlers(
     let props: string[] = [];
     let transferFiber: TransferFiber;
     let triggerEventId: number | undefined;
+    let typeDisplayName: string | null = null;
 
     if (isRoot) {
       transferFiber = {
@@ -700,6 +703,7 @@ export function createReactDevtoolsHookHandlers(
         elementType
       );
 
+      typeDisplayName = displayName;
       triggerEventId = commitUpdatedFiberId.get(ownerId);
       transferFiber = {
         id: fiberId,
@@ -719,7 +723,12 @@ export function createReactDevtoolsHookHandlers(
       );
     }
 
-    recordFiberTypeDefIfNeeded(fiber, transferFiber.typeId, transferFiber.type);
+    recordFiberTypeDefIfNeeded(
+      fiber,
+      transferFiber.typeId,
+      transferFiber.type,
+      typeDisplayName
+    );
 
     const { selfTime, totalTime } = getDurations(fiber);
     const eventId = recordEvent({
