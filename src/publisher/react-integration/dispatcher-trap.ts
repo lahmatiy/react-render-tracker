@@ -16,13 +16,13 @@ import { extractCallLoc, getParsedStackTrace } from "./utils/stackTrace";
 
 type StateHookName = "useState" | "useReducer" | "useTransition";
 type MemoHookName = "useMemo" | "useCallback";
-type EffectHookName = "useEffect" | "useLayoutEffect";
+type EffectHookName = "useEffect" | "useLayoutEffect" | "useInsertionEffect";
 type SubscribeFn = (listener: (next: any, prev: any) => void) => void;
 type AnyFn = () => any;
 type Dispatcher = {
   useState(...args: any[]): [any, DispatchFn];
   useReducer(...args: any[]): [any, DispatchFn];
-  useTransition(): [boolean, DispatchFn];
+  useTransition?(): [boolean, DispatchFn];
   useSyncExternalStore?(
     subscribe: SubscribeFn,
     getSnapshot: AnyFn,
@@ -32,10 +32,14 @@ type Dispatcher = {
   useCallback(cb: AnyFn, deps?: any[]): AnyFn;
   useEffect(create: AnyFn, deps?: any[]): void;
   useLayoutEffect(create: AnyFn, deps?: any[]): void;
+  useInsertionEffect?(create: AnyFn, deps?: any[]): void;
   useContext(context: ReactContext<any>, ...rest: any[]): any;
   readContext(context: ReactContext<any>): any;
   useRef(): any;
   useImperativeHandle(): any;
+  useDebugValue(): any;
+  useDeferredValue?(): any;
+  useId?(): any;
 };
 type DispatchFn = ((value: any) => any) & {
   hookIdx?: number;
@@ -92,7 +96,11 @@ export function createDispatcherTrap(
   let currentFiber: Fiber | null = null;
   let currentFiberCollectInfo: FiberDispatcherInfo | null = null;
   let currentEffectFiber: Fiber | null = null;
-  let currentEffectName: "effect" | "layout-effect" | null = null;
+  let currentEffectName:
+    | "effect"
+    | "layout-effect"
+    | "insertion-effect"
+    | null = null;
   let currentFiberHookIndex = 0;
   let dispatchCalls: FiberDispatchCall[] = [];
   let stopHookPathLocation: string | null = null;
@@ -143,6 +151,10 @@ export function createDispatcherTrap(
   function patchEffectHook(hookName: EffectHookName, dispatcher: Dispatcher) {
     const orig = dispatcher[hookName];
 
+    if (typeof orig !== "function") {
+      return;
+    }
+
     dispatcher[hookName] = function (create: any, deps?: any[]) {
       const hookIdx = trackUseHook(hookName);
       const hookOwnerFiber = currentFiber;
@@ -151,7 +163,11 @@ export function createDispatcherTrap(
       const wrappedCreate = () => {
         currentEffectFiber = hookOwnerFiber;
         currentEffectName =
-          hookName === "useEffect" ? "effect" : "layout-effect";
+          hookName === "useEffect"
+            ? "effect"
+            : hookName === "useLayoutEffect"
+            ? "layout-effect"
+            : "insertion-effect";
 
         const destroy = create();
 
@@ -195,6 +211,10 @@ export function createDispatcherTrap(
         : hookName === "useTransition"
         ? "startTransition"
         : "dispatch";
+
+    if (typeof orig !== "function") {
+      return;
+    }
 
     dispatcher[hookName] = (...args: any[]) => {
       const currentFiberHookIndex = trackUseHook(hookName);
@@ -256,9 +276,8 @@ export function createDispatcherTrap(
     };
   }
 
-  function patchContextHook(dispatcher: Dispatcher) {
+  function patchContextHook(hookName: "useContext", dispatcher: Dispatcher) {
     const orig = dispatcher.useContext;
-    const hookName = "useContext";
 
     dispatcher[hookName] = (context: ReactContext<any>, ...args: any[]) => {
       trackUseHook(hookName, null, context);
@@ -269,14 +288,15 @@ export function createDispatcherTrap(
     };
   }
 
-  function patchSyncExternalStorage(dispatcher: Dispatcher) {
+  function patchSyncExternalStoreHook(
+    hookName: "useSyncExternalStore",
+    dispatcher: Dispatcher
+  ) {
     const orig = dispatcher.useSyncExternalStore;
 
     if (typeof orig !== "function") {
       return;
     }
-
-    const hookName = "useSyncExternalStore";
 
     dispatcher[hookName] = (subscribe, getSnapshot, getServerSnapshot) => {
       const hookIdx = trackUseHook(hookName);
@@ -347,6 +367,27 @@ export function createDispatcherTrap(
     };
   }
 
+  function patchTrackOnlyHook<
+    T extends
+      | "useDebugValue"
+      | "useImperativeHandle"
+      | "useRef"
+      | "useDeferredValue"
+      | "useId"
+  >(hookName: T, dispatcher: Dispatcher) {
+    const orig = dispatcher[hookName];
+
+    if (typeof orig !== "function") {
+      return;
+    }
+
+    dispatcher[hookName] = (...args: unknown[]) => {
+      trackUseHook(hookName);
+
+      return (orig as any)(...args);
+    };
+  }
+
   function patchDispatcher(dispatcher: Dispatcher | null) {
     if (dispatcher && !knownDispatcher.has(dispatcher)) {
       knownDispatcher.add(dispatcher);
@@ -371,16 +412,19 @@ export function createDispatcherTrap(
 
       patchStateHook("useState", dispatcher);
       patchStateHook("useReducer", dispatcher);
+      patchStateHook("useTransition", dispatcher);
       patchMemoHook("useMemo", dispatcher);
       patchMemoHook("useCallback", dispatcher);
       patchEffectHook("useEffect", dispatcher);
       patchEffectHook("useLayoutEffect", dispatcher);
-      patchContextHook(dispatcher);
-      patchSyncExternalStorage(dispatcher);
-
-      if (typeof dispatcher.useTransition === "function") {
-        patchStateHook("useTransition", dispatcher);
-      }
+      patchEffectHook("useInsertionEffect", dispatcher);
+      patchContextHook("useContext", dispatcher);
+      patchSyncExternalStoreHook("useSyncExternalStore", dispatcher);
+      patchTrackOnlyHook("useDebugValue", dispatcher);
+      patchTrackOnlyHook("useImperativeHandle", dispatcher);
+      patchTrackOnlyHook("useRef", dispatcher);
+      patchTrackOnlyHook("useDeferredValue", dispatcher);
+      patchTrackOnlyHook("useId", dispatcher);
     }
 
     return dispatcher;

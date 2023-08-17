@@ -1,10 +1,14 @@
+## next
+
+- Added tracking for all known React hooks
+
 ## 0.7.4 (August 16, 2023)
 
 - Fixed multiple creation of source map instances for a single script
 - Improved hook path capturing:
-  - Adjusted the stack trace limit to capture up to 25 entries, guaranteeing a minimum of 20 path entries, an improvement from the previous 6 (fixes #30)
+  - Adjusted the stack trace limit to capture up to 25 entries, guaranteeing a minimum of 20 path entries, an improvement from the previous 6 (#30)
   - Implemented an alternative method for path extraction to cater to scenarios where a function is either unnamed or its name doesn't start with `use`
-  - Resolved compatibility issues with WhyDidYouRender (fixes #22)
+  - Resolved compatibility issues with WhyDidYouRender (#22)
   - Fixed an issue where the hooks list doubled in some cases when a component rendered in StrictMode
 
 ## 0.7.3 (June 9, 2023)

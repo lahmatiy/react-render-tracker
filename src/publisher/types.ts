@@ -434,7 +434,7 @@ export type FiberDispatchCall = {
   fiber: Fiber;
   renderFiber: Fiber | null;
   effectFiber: Fiber | null;
-  effectName: "effect" | "layout-effect" | null;
+  effectName: "effect" | "layout-effect" | "insertion-effect" | null;
   event: string | null;
   loc: string | null;
   stack?: string;

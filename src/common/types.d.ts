@@ -133,7 +133,13 @@ declare module "common-types" {
     memos?: TransferMemoChange[];
   };
   export type CommitTrigger = {
-    type: "initial-mount" | "event" | "effect" | "layout-effect" | "unknown";
+    type:
+      | "initial-mount"
+      | "event"
+      | "effect"
+      | "layout-effect"
+      | "insertion-effect"
+      | "unknown";
     kind: "mount" | "setState" | "forceUpdate" | "useReducer" | "useState";
     fiberId: number;
     relatedFiberId?: number;
