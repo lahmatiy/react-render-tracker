@@ -77,6 +77,7 @@ export default function (testcase: TestCase) {
         reactRoot.render(element);
       } else {
         // React prior 18
+        // eslint-disable-next-line react/no-deprecated
         ReactDOM.render(element, reactRootEl);
       }
     },
@@ -86,6 +87,7 @@ export default function (testcase: TestCase) {
       if (reactRoot) {
         reactRoot.unmount();
       } else {
+        // eslint-disable-next-line react/no-deprecated
         ReactDOM.unmountComponentAtNode(reactRootEl);
       }
       rootEl.remove();
