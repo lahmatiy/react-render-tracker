@@ -2,6 +2,7 @@ import { Message } from "common-types";
 import {
   Commit,
   FiberTypeDef,
+  FiberTypeStat,
   LinkedEvent,
   MessageFiber,
 } from "../common/consumer-types";
@@ -15,6 +16,7 @@ export function createFiberDataset(events: Message[] = []) {
   const commitById = new SubscribeMap<number, Commit>();
   const fiberById = new SubscribeMap<number, MessageFiber>();
   const fiberTypeDefById = new SubscribeMap<number, FiberTypeDef>();
+  const fiberTypeStat = new SubscribeMap<number, FiberTypeStat>();
   const fibersByTypeId = new SubsetSplit<number, number>();
   const fibersByProviderId = new SubsetSplit<number, number>();
   const leakedFibers = new Subset<number>();
@@ -29,6 +31,7 @@ export function createFiberDataset(events: Message[] = []) {
     commitById,
     fiberById,
     fiberTypeDefById,
+    fiberTypeStat,
     fibersByTypeId,
     fibersByProviderId,
     leakedFibers,

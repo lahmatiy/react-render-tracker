@@ -27,6 +27,16 @@ export type FiberTypeDef = {
   contexts: TransferFiberContext[] | null;
   hooks: FiberTypeHook[];
 };
+export type FiberTypeStat = {
+  typeId: number;
+  typeDef: FiberTypeDef;
+  displayName: string;
+  mounts: number;
+  mountTime: number;
+  unmounts: number;
+  updates: number;
+  updateTime: number;
+};
 export type FiberChanges = {
   props?: TransferPropChange[] | null;
   context: FiberContextChange[] | null;

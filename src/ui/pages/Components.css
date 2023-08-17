@@ -1,0 +1,63 @@
+.app-page-components {
+  overflow-y: scroll;
+}
+
+.app-page-components {
+  position: relative;
+}
+.app-page-stat-table {
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.app-page-stat-table thead {
+  position: sticky;
+  top: 0px;
+}
+.app-page-stat-table thead tr {
+  border-bottom: 1px solid white;
+}
+.app-page-stat-table th {
+  background: #eee no-repeat right 1px center;
+  background-size: 16px;
+  background-clip: padding-box;
+  border: none;
+  font-weight: normal;
+  font-size: 11px;
+  text-align: left;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.app-page-stat-table th.sortable {
+  padding-right: 18px;
+  background-image: url("../images/table-sortable.svg");
+  cursor: pointer;
+}
+.app-page-stat-table th.sortable:not(.asc):not(.desc) {
+  background-size: 14px;
+  background-position: right 2px center;
+}
+.app-page-stat-table th.sortable.asc {
+  background-image: url("../images/table-sort-asc.svg");
+}
+.app-page-stat-table th.sortable.desc {
+  background-image: url("../images/table-sort-desc.svg");
+}
+.app-page-stat-table th.sortable:hover {
+  background-color: #ddd;
+}
+
+.app-page-stat-table td {
+  border: 1px solid #eee;
+  padding: 0 4px;
+}
+.app-page-stat-table td.time::after {
+  content: "ms";
+  color: #aaa;
+  font-size: 10px;
+  padding-left: 3px;
+}
+.app-page-stat-table tbody td:not(:first-child) {
+  text-align: right;
+  min-width: 32px;
+}

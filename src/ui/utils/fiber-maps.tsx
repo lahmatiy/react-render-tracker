@@ -122,6 +122,23 @@ export const useTypeIdFibers = (typeId: number) => {
   return useComputeSubscription(compute, subscribe);
 };
 
+export const useFiberTypeStat = () => {
+  const { fiberTypeStat } = useFiberMaps();
+
+  const compute = React.useCallback(
+    () => [...fiberTypeStat.values()],
+    [fiberTypeStat]
+  );
+
+  const subscribe = React.useCallback(
+    (requestRecompute: () => void) =>
+      fiberTypeStat.subscribeValues(requestRecompute),
+    [fiberTypeStat]
+  );
+
+  return useComputeSubscription(compute, subscribe);
+};
+
 export const useProviderConsumers = (providerId: number) => {
   const { fibersByProviderId } = useFiberMaps();
   const subset = fibersByProviderId.get(providerId);
@@ -141,7 +158,13 @@ export const useProviderConsumers = (providerId: number) => {
 
 export const useLeakedFibers = () => {
   const { leakedFibers } = useFiberMaps();
+
   const compute = React.useCallback(() => leakedFibers.value, [leakedFibers]);
 
-  return useComputeSubscription(compute, leakedFibers.subscribe);
+  const subscribe = React.useCallback(
+    (requestRecompute: () => void) => leakedFibers.subscribe(requestRecompute),
+    [leakedFibers]
+  );
+
+  return useComputeSubscription(compute, subscribe);
 };

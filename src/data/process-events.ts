@@ -52,6 +52,7 @@ export function processEvents(
     commitById,
     fiberById,
     fiberTypeDefById,
+    fiberTypeStat,
     fibersByTypeId,
     fibersByProviderId,
     leakedFibers,
@@ -128,7 +129,7 @@ export function processEvents(
 
     switch (event.op) {
       case "fiber-type-def": {
-        fiberTypeDefById.set(event.typeId, {
+        const typeDef = {
           ...event.definition,
           hooks: event.definition.hooks.map((hook, index) => ({
             index,
@@ -138,6 +139,18 @@ export function processEvents(
                 ? event.definition.contexts?.[hook.context] || null
                 : null,
           })),
+        };
+
+        fiberTypeDefById.set(event.typeId, typeDef);
+        fiberTypeStat.set(event.typeId, {
+          typeId: event.typeId,
+          typeDef,
+          displayName: event.displayName || "[render root]",
+          mounts: 0,
+          mountTime: 0,
+          unmounts: 0,
+          updates: 0,
+          updateTime: 0,
         });
         continue;
       }
@@ -182,6 +195,15 @@ export function processEvents(
           }
         }
 
+        const typeStat = fiberTypeStat.get(fiber.typeId);
+        if (typeStat) {
+          fiberTypeStat.set(fiber.typeId, {
+            ...typeStat,
+            mounts: typeStat.mounts + 1,
+            mountTime: typeStat.mountTime + event.selfTime,
+          });
+        }
+
         break;
       }
 
@@ -196,6 +218,14 @@ export function processEvents(
 
         parentTree.delete(fiber.id);
         ownerTree.delete(fiber.id);
+
+        const typeStat = fiberTypeStat.get(fiber.typeId);
+        if (typeStat) {
+          fiberTypeStat.set(fiber.typeId, {
+            ...typeStat,
+            unmounts: typeStat.unmounts + 1,
+          });
+        }
 
         break;
       }
@@ -212,6 +242,15 @@ export function processEvents(
           totalTime: fiber.totalTime + event.totalTime,
           warnings: fiber.warnings + (changes?.warnings?.size || 0),
         };
+
+        const typeStat = fiberTypeStat.get(fiber.typeId);
+        if (typeStat) {
+          fiberTypeStat.set(fiber.typeId, {
+            ...typeStat,
+            updates: typeStat.updates + 1,
+            updateTime: typeStat.updateTime + event.selfTime,
+          });
+        }
 
         break;
 

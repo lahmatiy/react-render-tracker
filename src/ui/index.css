@@ -46,6 +46,7 @@
 @import url("./components/toolbar/SelectionHistoryNavigation.css");
 @import url("./components/toolbar/Toolbar.css");
 @import url("./pages/Commits.css");
+@import url("./pages/Components.css");
 @import url("./pages/ComponentsTree.css");
 @import url("./pages/MaybeLeaks.css");
 @import url("./pages/maybe-leaks/Fiber.css");
