@@ -30,6 +30,7 @@
 @import url("./components/details/info/FiberInfoSectionConsumers.css");
 @import url("./components/details/info/FiberInfoSectionContexts.css");
 @import url("./components/details/info/FiberInfoSectionEvents.css");
+@import url("./components/details/info/FiberInfoSectionHooks.css");
 @import url("./components/details/info/FiberInfoSectionMemoHooks.css");
 @import url("./components/details/info/FiberInfoSectionProps.css");
 @import url("./components/fiber-tree/ButtonExpand.css");

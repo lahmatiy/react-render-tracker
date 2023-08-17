@@ -6,7 +6,7 @@ interface IFiberInfoSection {
   header: string;
   emptyText?: string;
   expandedOpts?: JSX.Element | JSX.Element[] | string | null;
-  children?: JSX.Element | JSX.Element[] | string | null;
+  children?: React.ReactNode;
 }
 
 export function FiberInfoSection({

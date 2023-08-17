@@ -1,0 +1,46 @@
+.fiber-info-section-hooks-content {
+  margin: 0;
+  padding: 0px 0px 0px 8px;
+}
+
+.fiber-info-section-hooks-map {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 2px;
+  margin: 4px 4px 8px;
+  font-size: 11px;
+}
+.fiber-info-section-hooks-map-button {
+  padding: 2px 8px;
+  background: #f4f4f4;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s background-color;
+}
+.fiber-info-section-hooks-map-button:not(.selected):hover {
+  background-color: #e4e4e4;
+}
+.fiber-info-section-hooks-map-button.selected {
+  background-color: #dde8f4;
+  cursor: default;
+}
+.fiber-info-section-hooks-map-button .count {
+  color: #888;
+  padding-left: 4px;
+  font-size: 10px;
+}
+
+.fiber-info-section-hooks-leaf {
+  margin: 2px 0;
+}
+.fiber-info-section-hooks-leaf__custom-hook {
+  color: #888;
+}
+.fiber-info-section-hooks-leaf__children {
+  padding-left: 20px;
+}
+.fiber-info-section-hooks-leaf__hook-index {
+  color: #888;
+  font-size: 10px;
+  padding-left: 1ex;
+}

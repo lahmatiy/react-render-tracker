@@ -12,6 +12,7 @@ import { MessageFiber } from "../../../types";
 import { FiberInfoSectionEvents } from "./FiberInfoSectionEvents";
 import { FiberInfoSectionAncestors } from "./FiberInfoSectionAncestors";
 import { FiberInfoSectionLeakedHooks } from "./FiberInfoSectionLeakedHooks";
+import { FiberInfoSectionHooks } from "./FiberInfoSectionHooks";
 
 interface IFiberInfo {
   fiber: MessageFiber;
@@ -60,11 +61,12 @@ const FiberInfo = ({
           />
         )}
         <FiberInfoSectionProps fiber={fiber} />
+        <FiberInfoSectionHooks key={fiber.id} fiber={fiber} />
+        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         {false && (
           <FiberInfoSection id="timings" header="Timing"></FiberInfoSection>
         )}
         <FiberInfoSectionMemoHooks fiber={fiber} />
-        {FeatureMemLeaks && <FiberInfoSectionLeakedHooks fiber={fiber} />}
         <FiberInfoSectionEvents
           fiber={fiber}
           groupByParent={groupByParent}
