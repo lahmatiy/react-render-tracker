@@ -192,6 +192,12 @@ function Hook({ hook }: { hook: FiberTypeHook }) {
       <span className="fiber-info-section-hooks-leaf__hook-index">
         #{hook.index}
       </span>
+      {hook.context && (
+        <span className="fiber-info-section-hooks-leaf__context">
+          {hook.context.name}
+          {hook.context.providerId}
+        </span>
+      )}
     </div>
   );
 }

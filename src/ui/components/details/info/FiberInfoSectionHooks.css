@@ -31,13 +31,17 @@
 }
 
 .fiber-info-section-hooks-leaf {
-  margin: 2px 0;
+  margin: 2px 0 4px;
 }
 .fiber-info-section-hooks-leaf__custom-hook {
   color: #888;
 }
 .fiber-info-section-hooks-leaf__children {
   padding-left: 20px;
+}
+.fiber-info-section-hooks-leaf__context {
+  color: #888;
+  padding-left: 1ex;
 }
 .fiber-info-section-hooks-leaf__hook-index {
   color: #888;
