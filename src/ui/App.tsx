@@ -15,22 +15,25 @@ import WaitingForRenderer from "./components/misc/WaitingForRenderer";
 import AppBar from "./components/appbar/AppBar";
 import StateBar from "./components/statebar/StateBar";
 import StatusBar from "./components/statusbar/StatusBar";
-import { AppPage, pages } from "./pages";
+import { pages } from "./pages";
 import { MemoryLeaksContextProvider } from "./utils/memory-leaks";
+import { PageContextProvider, usePageContext } from "./utils/page";
 
 function App() {
   return (
-    <SourceLocationsContextProvider>
-      <OpenFileContextProvider>
-        <MemoryLeaksContextProvider>
-          <ReactRenderersContextProvider>
-            <WaitingForRenderer>
-              <ReactRendererUI />
-            </WaitingForRenderer>
-          </ReactRenderersContextProvider>
-        </MemoryLeaksContextProvider>
-      </OpenFileContextProvider>
-    </SourceLocationsContextProvider>
+    <PageContextProvider>
+      <SourceLocationsContextProvider>
+        <OpenFileContextProvider>
+          <MemoryLeaksContextProvider>
+            <ReactRenderersContextProvider>
+              <WaitingForRenderer>
+                <ReactRendererUI />
+              </WaitingForRenderer>
+            </ReactRenderersContextProvider>
+          </MemoryLeaksContextProvider>
+        </OpenFileContextProvider>
+      </SourceLocationsContextProvider>
+    </PageContextProvider>
   );
 }
 
@@ -63,12 +66,12 @@ function ReactRendererUI() {
 }
 
 function Layout() {
-  const [page, setPage] = React.useState<AppPage>(AppPage.ComponentTree);
-  const PageContent = pages[page].content;
+  const { currentPage, openPage } = usePageContext();
+  const PageContent = pages[currentPage].content;
 
   return (
     <div className="app">
-      <AppBar pages={pages} page={page} setPage={setPage} />
+      <AppBar pages={pages} page={currentPage} setPage={openPage} />
 
       <WaitingForReady>
         <PageContent />

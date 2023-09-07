@@ -25,7 +25,7 @@
   bottom: 0px;
   font-size: 11px;
 }
-.app-page-components-table tfoot th {
+.app-page-components-table tfoot td {
   text-align: right;
   background-color: #eeee;
 }
@@ -59,6 +59,14 @@
   background-color: #ddd;
 }
 
+.app-page-components-table tr.fiber-stat {
+  background-color: #f8f8f8;
+}
+.app-page-components-table tr.type-stat:hover,
+.app-page-components-table tr.fiber-stat:hover {
+  background-color: #eee;
+}
+
 .app-page-components-table td {
   vertical-align: baseline;
   border: 1px solid #eee;
@@ -88,14 +96,32 @@
   min-width: 50px;
 }
 
+.app-page-components-table td .main-cell-content {
+  --padding-left: 12px;
+  display: flex;
+  width: calc(100% - 8px - var(--padding-left));
+  position: absolute;
+  padding-left: var(--padding-left);
+}
+.app-page-components-table .fiber-stat td .main-cell-content {
+  --padding-left: 20px;
+}
 .app-page-components-table td .component-name {
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: calc(100% - 8px);
-  position: absolute;
 }
 .app-page-components-table td .component-name .match {
   border-bottom: 2px solid #e0bf08;
+}
+.app-page-components-table td .component-instances {
+  flex: 1;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #888;
+}
+.app-page-components-table td .component-instances::before {
+  content: "×";
+  color: #aaa;
+  padding: 0 0.5ex;
 }

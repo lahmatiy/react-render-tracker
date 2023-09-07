@@ -7,6 +7,7 @@ import {
 import {
   FiberChanges,
   FiberEvent,
+  FiberStat,
   FiberStateChange,
   FiberTypeDef,
   FiberTypeStat,
@@ -72,34 +73,56 @@ export function processEvents(
   let fiberEventIndex = allEvents.length;
   allEvents.length += newEvents.length;
 
-  const getFiberStat = (
+  const addFiberTypeStat = (
+    fiberId: number,
     typeId: number,
-    typeDef?: FiberTypeDef
-  ): FiberTypeStat => {
+    update: (stat: FiberStat | FiberTypeStat) => void
+  ) => {
     let typeStat = fiberTypeStat.get(typeId);
 
     if (typeStat === undefined) {
-      if (!typeDef) {
-        typeDef = fiberTypeDefById.get(typeId);
-      }
+      const typeDef = fiberTypeDefById.get(typeId);
 
       if (!typeDef) {
-        throw new Error("");
+        throw new Error(`No type definition found for typeId "${typeId}"`);
       }
 
       typeStat = {
         typeId,
         typeDef,
         displayName: typeDef.displayName || "[render root]",
+        fibers: new Map(),
         mounts: 0,
         mountTime: 0,
         unmounts: 0,
         updates: 0,
         updateTime: 0,
       };
+    } else {
+      typeStat = { ...typeStat };
     }
 
-    return typeStat;
+    let fiberStat = typeStat.fibers.get(fiberId);
+
+    if (fiberStat === undefined) {
+      fiberStat = {
+        fiberId,
+        typeStat,
+        mounts: 0,
+        mountTime: 0,
+        unmounts: 0,
+        updates: 0,
+        updateTime: 0,
+      };
+    } else {
+      fiberStat = { ...fiberStat, typeStat };
+    }
+
+    update(typeStat);
+    update(fiberStat);
+
+    fiberTypeStat.set(typeId, typeStat);
+    typeStat.fibers.set(fiberId, fiberStat);
   };
   const linkEvent = <T extends LinkedEvent>(linkedEvent: T): T => {
     const { event } = linkedEvent;
@@ -218,11 +241,9 @@ export function processEvents(
           }
         }
 
-        const typeStat = getFiberStat(fiber.typeId, typeDef);
-        fiberTypeStat.set(fiber.typeId, {
-          ...typeStat,
-          mounts: typeStat.mounts + 1,
-          mountTime: typeStat.mountTime + event.selfTime,
+        addFiberTypeStat(fiber.id, fiber.typeId, typeStat => {
+          typeStat.mounts++;
+          typeStat.mountTime += event.selfTime;
         });
 
         break;
@@ -240,10 +261,8 @@ export function processEvents(
         parentTree.delete(fiber.id);
         ownerTree.delete(fiber.id);
 
-        const typeStat = getFiberStat(fiber.typeId);
-        fiberTypeStat.set(fiber.typeId, {
-          ...typeStat,
-          unmounts: typeStat.unmounts + 1,
+        addFiberTypeStat(fiber.id, fiber.typeId, typeStat => {
+          typeStat.unmounts++;
         });
 
         break;
@@ -262,11 +281,9 @@ export function processEvents(
           warnings: fiber.warnings + (changes?.warnings?.size || 0),
         };
 
-        const typeStat = getFiberStat(fiber.typeId);
-        fiberTypeStat.set(fiber.typeId, {
-          ...typeStat,
-          updates: typeStat.updates + 1,
-          updateTime: typeStat.updateTime + event.selfTime,
+        addFiberTypeStat(fiber.id, fiber.typeId, typeStat => {
+          typeStat.updates++;
+          typeStat.updateTime += event.selfTime;
         });
 
         break;

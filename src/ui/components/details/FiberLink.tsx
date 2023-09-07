@@ -2,7 +2,7 @@ import * as React from "react";
 import { useSelectionState } from "../../utils/selection";
 import FiberId from "../common/FiberId";
 
-export function FiberLink({ id, name }: { id: number; name: string | null }) {
+export function FiberLink({ id, name }: { id: number; name: React.ReactNode }) {
   const { selected, select } = useSelectionState(id);
 
   return (
