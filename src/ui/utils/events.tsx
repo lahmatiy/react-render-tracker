@@ -63,6 +63,7 @@ export function EventsContextProvider({
     parentTreeIncludeUnmounted,
     ownerTreeIncludeUnmounted,
     leakedFibers,
+    fiberTypeStat,
   } = maps;
   const clearAllEvents = React.useCallback(() => {
     for (const [id, fiber] of fiberById) {
@@ -89,6 +90,8 @@ export function EventsContextProvider({
         leakedFibers.delete(fiber.id);
       }
     }
+
+    fiberTypeStat.clear();
 
     setState(state => {
       eventsSince.current += state.events.length;

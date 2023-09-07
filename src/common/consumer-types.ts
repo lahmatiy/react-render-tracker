@@ -24,6 +24,7 @@ export type FiberTypeHook = Omit<TransferHookInfo, "context"> & {
   context: TransferFiberContext | null;
 };
 export type FiberTypeDef = {
+  displayName: string | null;
   contexts: TransferFiberContext[] | null;
   hooks: FiberTypeHook[];
 };

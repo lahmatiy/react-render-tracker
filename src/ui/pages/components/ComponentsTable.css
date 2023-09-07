@@ -1,0 +1,101 @@
+.app-page-components-table__empty {
+  padding: 8px 12px;
+  color: #aaa;
+}
+
+.app-page-components-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.app-page-components-table thead {
+  position: sticky;
+  top: 0px;
+  z-index: 1;
+  font-size: 11px;
+}
+.app-page-components-table thead th {
+  border-bottom: 1px solid white;
+}
+
+.app-page-components-table tfoot {
+  position: sticky;
+  bottom: 0px;
+  font-size: 11px;
+}
+.app-page-components-table tfoot th {
+  text-align: right;
+  background-color: #eeee;
+}
+
+.app-page-components-table th {
+  background: #eee no-repeat right 1px center;
+  background-size: 16px;
+  background-clip: padding-box;
+  border: none;
+  font-weight: normal;
+  text-align: left;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.app-page-components-table th.sortable {
+  padding-right: 18px;
+  background-image: url("../../images/table-sortable.svg");
+  cursor: pointer;
+}
+.app-page-components-table th.sortable:not(.asc):not(.desc) {
+  background-size: 14px;
+  background-position: right 2px center;
+}
+.app-page-components-table th.sortable.asc {
+  background-image: url("../../images/table-sort-asc.svg");
+}
+.app-page-components-table th.sortable.desc {
+  background-image: url("../../images/table-sort-desc.svg");
+}
+.app-page-components-table th.sortable:hover {
+  background-color: #ddd;
+}
+
+.app-page-components-table td {
+  vertical-align: baseline;
+  border: 1px solid #eee;
+  padding: 0 4px;
+}
+.app-page-components-table td:first-child {
+  position: relative;
+  width: 100%;
+  min-width: 150px;
+}
+.app-page-components-table th.time:not(:empty)::after,
+.app-page-components-table td.time:not(:empty)::after {
+  content: "ms";
+  color: #aaa;
+  font-size: 10px;
+  padding-left: 3px;
+}
+.app-page-components-table td.hooks:empty::after {
+  content: "–";
+  color: #ccc;
+}
+.app-page-components-table td:not(:first-child) {
+  text-align: right;
+  min-width: 40px;
+}
+.app-page-components-table td.time {
+  min-width: 50px;
+}
+
+.app-page-components-table td .component-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: calc(100% - 8px);
+  position: absolute;
+}
+.app-page-components-table td .component-name .match {
+  border-bottom: 2px solid #e0bf08;
+}

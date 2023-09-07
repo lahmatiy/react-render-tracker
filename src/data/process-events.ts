@@ -8,6 +8,8 @@ import {
   FiberChanges,
   FiberEvent,
   FiberStateChange,
+  FiberTypeDef,
+  FiberTypeStat,
   LinkedEvent,
   MessageFiber,
 } from "../common/consumer-types";
@@ -70,6 +72,35 @@ export function processEvents(
   let fiberEventIndex = allEvents.length;
   allEvents.length += newEvents.length;
 
+  const getFiberStat = (
+    typeId: number,
+    typeDef?: FiberTypeDef
+  ): FiberTypeStat => {
+    let typeStat = fiberTypeStat.get(typeId);
+
+    if (typeStat === undefined) {
+      if (!typeDef) {
+        typeDef = fiberTypeDefById.get(typeId);
+      }
+
+      if (!typeDef) {
+        throw new Error("");
+      }
+
+      typeStat = {
+        typeId,
+        typeDef,
+        displayName: typeDef.displayName || "[render root]",
+        mounts: 0,
+        mountTime: 0,
+        unmounts: 0,
+        updates: 0,
+        updateTime: 0,
+      };
+    }
+
+    return typeStat;
+  };
   const linkEvent = <T extends LinkedEvent>(linkedEvent: T): T => {
     const { event } = linkedEvent;
     const trigger =
@@ -129,8 +160,9 @@ export function processEvents(
 
     switch (event.op) {
       case "fiber-type-def": {
-        const typeDef = {
+        const typeDef: FiberTypeDef = {
           ...event.definition,
+          displayName: event.displayName,
           hooks: event.definition.hooks.map((hook, index) => ({
             index,
             ...hook,
@@ -142,21 +174,12 @@ export function processEvents(
         };
 
         fiberTypeDefById.set(event.typeId, typeDef);
-        fiberTypeStat.set(event.typeId, {
-          typeId: event.typeId,
-          typeDef,
-          displayName: event.displayName || "[render root]",
-          mounts: 0,
-          mountTime: 0,
-          unmounts: 0,
-          updates: 0,
-          updateTime: 0,
-        });
         continue;
       }
 
       case "mount": {
         const typeDef = fiberTypeDefById.get(event.fiber.typeId) || {
+          displayName: null,
           contexts: null,
           hooks: [],
         };
@@ -195,14 +218,12 @@ export function processEvents(
           }
         }
 
-        const typeStat = fiberTypeStat.get(fiber.typeId);
-        if (typeStat) {
-          fiberTypeStat.set(fiber.typeId, {
-            ...typeStat,
-            mounts: typeStat.mounts + 1,
-            mountTime: typeStat.mountTime + event.selfTime,
-          });
-        }
+        const typeStat = getFiberStat(fiber.typeId, typeDef);
+        fiberTypeStat.set(fiber.typeId, {
+          ...typeStat,
+          mounts: typeStat.mounts + 1,
+          mountTime: typeStat.mountTime + event.selfTime,
+        });
 
         break;
       }
@@ -219,13 +240,11 @@ export function processEvents(
         parentTree.delete(fiber.id);
         ownerTree.delete(fiber.id);
 
-        const typeStat = fiberTypeStat.get(fiber.typeId);
-        if (typeStat) {
-          fiberTypeStat.set(fiber.typeId, {
-            ...typeStat,
-            unmounts: typeStat.unmounts + 1,
-          });
-        }
+        const typeStat = getFiberStat(fiber.typeId);
+        fiberTypeStat.set(fiber.typeId, {
+          ...typeStat,
+          unmounts: typeStat.unmounts + 1,
+        });
 
         break;
       }
@@ -243,14 +262,12 @@ export function processEvents(
           warnings: fiber.warnings + (changes?.warnings?.size || 0),
         };
 
-        const typeStat = fiberTypeStat.get(fiber.typeId);
-        if (typeStat) {
-          fiberTypeStat.set(fiber.typeId, {
-            ...typeStat,
-            updates: typeStat.updates + 1,
-            updateTime: typeStat.updateTime + event.selfTime,
-          });
-        }
+        const typeStat = getFiberStat(fiber.typeId);
+        fiberTypeStat.set(fiber.typeId, {
+          ...typeStat,
+          updates: typeStat.updates + 1,
+          updateTime: typeStat.updateTime + event.selfTime,
+        });
 
         break;
 

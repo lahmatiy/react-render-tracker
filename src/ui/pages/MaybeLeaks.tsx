@@ -11,8 +11,8 @@ import { LeaksList } from "./maybe-leaks/LeaksList";
 import FiberDetails from "../components/details/Details";
 
 function MaybeLeaksPageBadge() {
-  const leakedFibers = useLeakedFibers();
-  return <>{leakedFibers.length || ""}</>;
+  const { length: count } = useLeakedFibers();
+  return count || null;
 }
 
 function MaybeLeaksPage() {

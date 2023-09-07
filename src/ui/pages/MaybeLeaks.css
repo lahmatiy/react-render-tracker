@@ -11,13 +11,13 @@
     "content details";
   grid-template-columns: 1fr 1fr;
 }
-.app-page-content-wrapper {
+.app-page-maybe-leaks .app-page-content-wrapper {
   grid-area: content;
   overflow-y: scroll;
   overflow-x: auto;
   position: relative;
 }
-.app-page-content {
+.app-page-maybe-leaks .app-page-content {
   position: absolute;
   min-width: 100%;
 }
