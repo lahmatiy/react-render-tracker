@@ -9,7 +9,6 @@ import {
   RerenderState,
   TransferCallTracePoint,
   HookInfo,
-  HookCompute,
 } from "../types";
 import { CoreApi } from "./core";
 import { extractCallLoc, getParsedStackTrace } from "./utils/stackTrace";
@@ -110,7 +109,6 @@ export function createDispatcherTrap(
   const fiberTypeInfo = new Map<number, any>();
   const fiberRoot = new WeakMap<Fiber, FiberRoot>();
   const rerenderStates = new WeakMap<Fiber, RerenderState[]>();
-  const fiberComputedMemo = new WeakMap<Fiber, HookCompute[]>();
   const fiberSyncStorageHooks = new WeakMap<
     Fiber,
     {
@@ -465,9 +463,6 @@ export function createDispatcherTrap(
                   })
                 );
               }
-            } else {
-              // reset stat on update
-              fiberComputedMemo.delete(currentFiber);
             }
 
             let nextCurrentRoot =
@@ -544,9 +539,6 @@ export function createDispatcherTrap(
     },
     getFiberTypeHookInfo(fiberTypeId: number) {
       return fiberTypeInfo.get(fiberTypeId)?.hooks || [];
-    },
-    getFiberComputes(fiber: Fiber) {
-      return fiberComputedMemo.get(fiber) || [];
     },
     getFiberRerenders(fiber: Fiber) {
       return rerenderStates.get(fiber);

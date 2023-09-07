@@ -499,7 +499,6 @@ export type MemoryLeakDetectionApi = {
 export type ReactDispatcherTrapApi = {
   getDispatchHookIndex: (dispatch: (state: any) => any) => number | null;
   getFiberTypeHookInfo: (fiberTypeId: number) => HookInfo[];
-  getFiberComputes: (fiber: Fiber) => HookCompute[];
   getFiberRerenders: (fiber: Fiber) => RerenderState[] | undefined;
   flushDispatchCalls: (root: FiberRoot) => FiberDispatchCall[];
 };
