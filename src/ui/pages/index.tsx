@@ -27,7 +27,7 @@ export const pages: Record<AppPage, AppPageConfig> = {
   },
   [AppPage.Components]: {
     id: AppPage.Components,
-    title: "Components",
+    title: "Component stats",
     content: ComponentsPage,
     badge: ComponentsPageBadge,
   },
