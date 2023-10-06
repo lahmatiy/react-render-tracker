@@ -1,8 +1,10 @@
-## next
+## 0.7.5 (October 6, 2023)
 
 - Added tracking for all known React hooks
-- Added `displayName` field to `fiber-type-def` event
 - Added new section `Hooks` in fiber details
+- Added `Component stats` page
+- Added `displayName` field to `fiber-type-def` event
+- Fixed missed `console.log()` (#36)
 
 ## 0.7.4 (August 16, 2023)
 
