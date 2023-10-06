@@ -25,13 +25,7 @@ __export(class_component_exports, {
 });
 function Root() {
   const [, setState] = react_default.useState(0);
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(ClassComponent, {
-    value: "OK"
-  }), /* @__PURE__ */ react_default.createElement(MemoClassComponent, {
-    value: "OK"
-  }), /* @__PURE__ */ react_default.createElement(ClassComponentWithSetState, null), /* @__PURE__ */ react_default.createElement(ClassComponentWithShouldComponentUpdate, null), /* @__PURE__ */ react_default.createElement(ShouldComponentUpdateChildWrapper, null), /* @__PURE__ */ react_default.createElement(PureComponentWrapper, null), /* @__PURE__ */ react_default.createElement(ClassComponentWithForceUpdate, null), /* @__PURE__ */ react_default.createElement("button", {
-    onClick: () => setState(Date.now())
-  }, "Trigger update"));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(ClassComponent, { value: "OK" }), /* @__PURE__ */ react_default.createElement(MemoClassComponent, { value: "OK" }), /* @__PURE__ */ react_default.createElement(ClassComponentWithSetState, null), /* @__PURE__ */ react_default.createElement(ClassComponentWithShouldComponentUpdate, null), /* @__PURE__ */ react_default.createElement(ShouldComponentUpdateChildWrapper, null), /* @__PURE__ */ react_default.createElement(PureComponentWrapper, null), /* @__PURE__ */ react_default.createElement(ClassComponentWithForceUpdate, null), /* @__PURE__ */ react_default.createElement("button", { onClick: () => setState(Date.now()) }, "Trigger update"));
 }
 function Child({ value }) {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", value, "]");
@@ -51,36 +45,39 @@ var init_class_component = __esm({
         super(...arguments);
         this.state = { test: 1 };
       }
+      static {
+        __name(this, "ClassComponent");
+      }
       render() {
         const { value } = this.props;
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value });
       }
     };
-    __name(ClassComponent, "ClassComponent");
     ClassComponentWithSetState = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.initial = true;
         this.state = { test: false };
       }
+      static {
+        __name(this, "ClassComponentWithSetState");
+      }
       render() {
         if (this.initial) {
           setTimeout(() => this.setState({ test: true }));
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value: this.state.test ? "OK" : "FAIL"
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value: this.state.test ? "OK" : "FAIL" });
       }
     };
-    __name(ClassComponentWithSetState, "ClassComponentWithSetState");
     ClassComponentWithShouldComponentUpdate = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.initial = true;
         this.state = { test: false };
+      }
+      static {
+        __name(this, "ClassComponentWithShouldComponentUpdate");
       }
       shouldComponentUpdate() {
         return false;
@@ -90,17 +87,17 @@ var init_class_component = __esm({
           setTimeout(() => this.setState({ test: true }));
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value: this.state.test ? "FAIL" : "OK"
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value: this.state.test ? "FAIL" : "OK" });
       }
     };
-    __name(ClassComponentWithShouldComponentUpdate, "ClassComponentWithShouldComponentUpdate");
     ShouldComponentUpdateChildWrapper = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.initial = true;
         this.state = { test: false, update: 1 };
+      }
+      static {
+        __name(this, "ShouldComponentUpdateChildWrapper");
       }
       render() {
         if (this.initial) {
@@ -109,30 +106,35 @@ var init_class_component = __esm({
           setTimeout(() => this.setState({ test: true, update: 4 }), 10);
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(ShouldComponentUpdateChild, {
-          update: this.state.update,
-          value: this.state.test ? "OK" : "FAIL"
-        });
+        return /* @__PURE__ */ react_default.createElement(
+          ShouldComponentUpdateChild,
+          {
+            update: this.state.update,
+            value: this.state.test ? "OK" : "FAIL"
+          }
+        );
       }
     };
-    __name(ShouldComponentUpdateChildWrapper, "ShouldComponentUpdateChildWrapper");
     ShouldComponentUpdateChild = class extends react_default.Component {
+      static {
+        __name(this, "ShouldComponentUpdateChild");
+      }
       shouldComponentUpdate(nextProps) {
         return this.props.value !== nextProps.value;
       }
       render() {
         const { value } = this.props;
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value });
       }
     };
-    __name(ShouldComponentUpdateChild, "ShouldComponentUpdateChild");
     PureComponentWrapper = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.initial = true;
         this.state = { test: 1 };
+      }
+      static {
+        __name(this, "PureComponentWrapper");
       }
       render() {
         if (this.initial) {
@@ -140,17 +142,17 @@ var init_class_component = __esm({
           setTimeout(() => this.setState({ test: 2 }), 50);
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(PureComponent, {
-          value: this.state.test
-        });
+        return /* @__PURE__ */ react_default.createElement(PureComponent, { value: this.state.test });
       }
     };
-    __name(PureComponentWrapper, "PureComponentWrapper");
     PureComponent = class extends react_default.PureComponent {
       constructor() {
         super(...arguments);
         this.initial = true;
         this.state = { test: 1 };
+      }
+      static {
+        __name(this, "PureComponent");
       }
       render() {
         if (this.initial) {
@@ -159,25 +161,25 @@ var init_class_component = __esm({
           setTimeout(() => this.setState({ test: 3 }), 10);
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(ChildPureComponent, {
-          value: this.state.test !== 3 ? "FAIL" : "OK"
-        });
+        return /* @__PURE__ */ react_default.createElement(ChildPureComponent, { value: this.state.test !== 3 ? "FAIL" : "OK" });
       }
     };
-    __name(PureComponent, "PureComponent");
     ChildPureComponent = class extends react_default.PureComponent {
+      static {
+        __name(this, "ChildPureComponent");
+      }
       render() {
         const { value } = this.props;
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value });
       }
     };
-    __name(ChildPureComponent, "ChildPureComponent");
     ClassComponentWithForceUpdate = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.initial = true;
+      }
+      static {
+        __name(this, "ClassComponentWithForceUpdate");
       }
       forceUpdate() {
         super.forceUpdate();
@@ -188,12 +190,9 @@ var init_class_component = __esm({
           setTimeout(() => this.forceUpdate());
           this.initial = false;
         }
-        return /* @__PURE__ */ react_default.createElement(Child, {
-          value: !initial ? "OK" : "FAIL"
-        });
+        return /* @__PURE__ */ react_default.createElement(Child, { value: !initial ? "OK" : "FAIL" });
       }
     };
-    __name(ClassComponentWithForceUpdate, "ClassComponentWithForceUpdate");
     MemoClassComponent = react_default.memo(ClassComponent);
     __name(Child, "Child");
   }
@@ -247,22 +246,24 @@ function Root3() {
       setCounter(counter + 1);
     }
   }, [counter]);
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(Child3, {
-    mounted,
-    array: [counter],
-    obj: { mounted, [mounted[0]]: "test" },
-    memo: /* @__PURE__ */ react_default.createElement(Memo, null),
-    forwardRef: /* @__PURE__ */ react_default.createElement(ForwardRef, {
-      ref: () => {
-      }
-    }),
-    lazy: /* @__PURE__ */ react_default.createElement(Lazy, null),
-    mix: /* @__PURE__ */ react_default.createElement(Mix, null)
-  }), /* @__PURE__ */ react_default.createElement(MemoChild, {
-    mounted,
-    array: memoArray,
-    obj: memoObj
-  }));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(
+    Child3,
+    {
+      mounted,
+      array: [counter],
+      obj: { mounted, [mounted[0]]: "test" },
+      memo: /* @__PURE__ */ react_default.createElement(Memo, null),
+      forwardRef: /* @__PURE__ */ react_default.createElement(
+        ForwardRef,
+        {
+          ref: () => {
+          }
+        }
+      ),
+      lazy: /* @__PURE__ */ react_default.createElement(Lazy, null),
+      mix: /* @__PURE__ */ react_default.createElement(Mix, null)
+    }
+  ), /* @__PURE__ */ react_default.createElement(MemoChild, { mounted, array: memoArray, obj: memoObj }));
 }
 function Child3({
   mounted
@@ -340,20 +341,14 @@ function Root5() {
 }
 function HookConsumer() {
   const contextValue = react_default.useContext(MyContext);
-  return /* @__PURE__ */ react_default.createElement(Child5, {
-    value: contextValue || "Fail"
-  });
+  return /* @__PURE__ */ react_default.createElement(Child5, { value: contextValue || "Fail" });
 }
 function ElementConsumer() {
   const memoCallback = react_default.useCallback(
-    (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, {
-      value: contextValue
-    }),
+    (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, { value: contextValue }),
     []
   );
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, {
-    value: contextValue
-  })), /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, memoCallback));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, (contextValue) => /* @__PURE__ */ react_default.createElement(Child5, { value: contextValue })), /* @__PURE__ */ react_default.createElement(MyContext.Consumer, null, memoCallback));
 }
 function Child5({ value }) {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, value || "Fail: no value");
@@ -368,9 +363,7 @@ function PaypassConsumerTarget() {
   if (state !== contextValue) {
     setState(contextValue);
   }
-  return /* @__PURE__ */ react_default.createElement(Child5, {
-    value: state
-  });
+  return /* @__PURE__ */ react_default.createElement(Child5, { value: state });
 }
 function MyContextProvider({ children }) {
   const [value, setValue] = react_default.useState(0);
@@ -379,9 +372,13 @@ function MyContextProvider({ children }) {
       setValue(value + 1);
     }
   }, [value]);
-  return /* @__PURE__ */ react_default.createElement(MyContext.Provider, {
-    value: value > 0 ? "OK" + value : "Fail: waiting for context change"
-  }, children);
+  return /* @__PURE__ */ react_default.createElement(
+    MyContext.Provider,
+    {
+      value: value > 0 ? "OK" + value : "Fail: waiting for context change"
+    },
+    children
+  );
 }
 var context_default, MemoWrapper, MyContext;
 var init_context = __esm({
@@ -475,9 +472,7 @@ function Root6() {
       [isVisible]
     );
   }
-  return /* @__PURE__ */ react_default.createElement(Child6, {
-    prop: 42
-  });
+  return /* @__PURE__ */ react_default.createElement(Child6, { prop: 42 });
 }
 function useFoo() {
   badNameHook();
@@ -541,26 +536,18 @@ function Root7() {
       setState(state + 1);
     }
   }, [state]);
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(FunctionNewChild, null), /* @__PURE__ */ react_default.createElement(FunctionSameChild, null), /* @__PURE__ */ react_default.createElement(FunctionSameProps, null), /* @__PURE__ */ react_default.createElement(ClassNewChild, null), /* @__PURE__ */ react_default.createElement(ClassSameChild, null), /* @__PURE__ */ react_default.createElement(ClassSameProps, null), /* @__PURE__ */ react_default.createElement(MemoNoPropsBailout, null), /* @__PURE__ */ react_default.createElement(MemoWithPropsBailout, {
-    value: "test"
-  }), /* @__PURE__ */ react_default.createElement(FunctionStateNoChangeBailout, null), /* @__PURE__ */ react_default.createElement(ClassStateNoChangeBailout, null));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(FunctionNewChild, null), /* @__PURE__ */ react_default.createElement(FunctionSameChild, null), /* @__PURE__ */ react_default.createElement(FunctionSameProps, null), /* @__PURE__ */ react_default.createElement(ClassNewChild, null), /* @__PURE__ */ react_default.createElement(ClassSameChild, null), /* @__PURE__ */ react_default.createElement(ClassSameProps, null), /* @__PURE__ */ react_default.createElement(MemoNoPropsBailout, null), /* @__PURE__ */ react_default.createElement(MemoWithPropsBailout, { value: "test" }), /* @__PURE__ */ react_default.createElement(FunctionStateNoChangeBailout, null), /* @__PURE__ */ react_default.createElement(ClassStateNoChangeBailout, null));
 }
 function FunctionNewChild() {
-  return /* @__PURE__ */ react_default.createElement(ShouldUpdate, {
-    value: "test"
-  });
+  return /* @__PURE__ */ react_default.createElement(ShouldUpdate, { value: "test" });
 }
 function FunctionSameChild() {
-  const child = react_default.useMemo(() => /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-    value: "test"
-  }), []);
+  const child = react_default.useMemo(() => /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value: "test" }), []);
   return child;
 }
 function FunctionSameProps() {
   const childProps = react_default.useMemo(() => ({ value: "test" }), []);
-  return /* @__PURE__ */ react_default.createElement(ShouldUpdate, {
-    ...childProps
-  });
+  return /* @__PURE__ */ react_default.createElement(ShouldUpdate, { ...childProps });
 }
 function ShouldUpdate({ value }) {
   const updateCount = react_default.useRef(0);
@@ -586,52 +573,48 @@ var init_bailouts = __esm({
     __name(FunctionSameChild, "FunctionSameChild");
     __name(FunctionSameProps, "FunctionSameProps");
     ClassNewChild = class extends react_default.Component {
+      static {
+        __name(this, "ClassNewChild");
+      }
       render() {
-        return /* @__PURE__ */ react_default.createElement(ShouldUpdate, {
-          value: "test"
-        });
+        return /* @__PURE__ */ react_default.createElement(ShouldUpdate, { value: "test" });
       }
     };
-    __name(ClassNewChild, "ClassNewChild");
     ClassSameChild = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.child = null;
       }
+      static {
+        __name(this, "ClassSameChild");
+      }
       render() {
         if (this.child === null) {
-          this.child = /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-            value: "test"
-          });
+          this.child = /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value: "test" });
         }
         return this.child;
       }
     };
-    __name(ClassSameChild, "ClassSameChild");
     ClassSameProps = class extends react_default.Component {
       constructor() {
         super(...arguments);
         this.childProps = { value: "test" };
       }
+      static {
+        __name(this, "ClassSameProps");
+      }
       render() {
-        return /* @__PURE__ */ react_default.createElement(ShouldUpdate, {
-          ...this.childProps
-        });
+        return /* @__PURE__ */ react_default.createElement(ShouldUpdate, { ...this.childProps });
       }
     };
-    __name(ClassSameProps, "ClassSameProps");
     MemoNoPropsBailout = react_default.memo(function() {
-      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-        value: "test"
-      });
+      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value: "test" });
     });
     MemoNoPropsBailout.displayName = "MemoNoPropsBailout";
     MemoWithPropsBailout = react_default.memo(function({
       value
     }) {
-      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-        value
-      });
+      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value });
     });
     MemoWithPropsBailout.displayName = "MemoWithPropsBailout";
     FunctionStateNoChangeBailout = react_default.memo(function() {
@@ -640,17 +623,18 @@ var init_bailouts = __esm({
         setState(2);
         setState(1);
       }, []);
-      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-        value: "test"
-      });
+      return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value: "test" });
     });
     FunctionStateNoChangeBailout.displayName = "FunctionStateNoChangeBailout";
     ClassStateNoChangeBailout = react_default.memo(
-      /* @__PURE__ */ __name(class ClassStateNoChangeBailout2 extends react_default.Component {
+      class ClassStateNoChangeBailout2 extends react_default.Component {
         constructor() {
           super(...arguments);
           this.initial = true;
           this.state = { value: 1 };
+        }
+        static {
+          __name(this, "ClassStateNoChangeBailout");
         }
         componentDidMount() {
           this.setState(() => ({ value: 2 }));
@@ -660,11 +644,9 @@ var init_bailouts = __esm({
           if (this.initial) {
             this.initial = false;
           }
-          return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, {
-            value: "test"
-          });
+          return /* @__PURE__ */ react_default.createElement(ShouldNotUpdate, { value: "test" });
         }
-      }, "ClassStateNoChangeBailout")
+      }
     );
     ClassStateNoChangeBailout.displayName = "ClassStateNoChangeBailout";
     __name(ShouldUpdate, "ShouldUpdate");
@@ -688,9 +670,7 @@ function Root8() {
       clearTimeout(timer);
     };
   }, [isFirstRender]);
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("button", {
-    onClick: () => setIsVisible(!isVisible)
-  }, isVisible ? "Hide" : "Show"), (isVisible || isFirstRender) && /* @__PURE__ */ react_default.createElement(Child8, null));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("button", { onClick: () => setIsVisible(!isVisible) }, isVisible ? "Hide" : "Show"), (isVisible || isFirstRender) && /* @__PURE__ */ react_default.createElement(Child8, null));
 }
 function Child8() {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "OK");
@@ -758,10 +738,7 @@ function Root10() {
 function Child9() {
   const [ok, setOk] = react_default.useState(false);
   if (!ok) {
-    return /* @__PURE__ */ react_default.createElement("div", {
-      "data-send-event": "click",
-      onClick: () => setOk(true)
-    }, "Failed: waiting for click event");
+    return /* @__PURE__ */ react_default.createElement("div", { "data-send-event": "click", onClick: () => setOk(true) }, "Failed: waiting for click event");
   }
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "OK");
 }
@@ -790,9 +767,7 @@ function Root11() {
   react_default.useEffect(() => {
     setState(Date.now());
   }, []);
-  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("button", {
-    onClick: () => setIsVisible(!isVisible)
-  }, isVisible ? "Hide" : "Show"), isVisible && /* @__PURE__ */ react_default.createElement(Child10, null));
+  return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("button", { onClick: () => setIsVisible(!isVisible) }, isVisible ? "Hide" : "Show"), isVisible && /* @__PURE__ */ react_default.createElement(Child10, null));
 }
 function usePassiveEffects() {
   react_default.useEffect(() => {
@@ -841,14 +816,10 @@ __export(suspense_exports, {
   default: () => suspense_default
 });
 function Root12() {
-  return /* @__PURE__ */ react_default.createElement(react_default.Suspense, {
-    fallback: /* @__PURE__ */ react_default.createElement(Spinner, null)
-  }, /* @__PURE__ */ react_default.createElement(LazyContent, null));
+  return /* @__PURE__ */ react_default.createElement(react_default.Suspense, { fallback: /* @__PURE__ */ react_default.createElement(Spinner, null) }, /* @__PURE__ */ react_default.createElement(LazyContent, null));
 }
 function Content() {
-  return /* @__PURE__ */ react_default.createElement(react_default.Suspense, {
-    fallback: /* @__PURE__ */ react_default.createElement(Spinner, null)
-  }, /* @__PURE__ */ react_default.createElement(LazyContent2, null));
+  return /* @__PURE__ */ react_default.createElement(react_default.Suspense, { fallback: /* @__PURE__ */ react_default.createElement(Spinner, null) }, /* @__PURE__ */ react_default.createElement(LazyContent2, null));
 }
 function Content2() {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "OK");
@@ -881,46 +852,43 @@ __export(app_exports, {
 });
 function Root13() {
   const [name, setName] = react_default.useState("World");
-  return /* @__PURE__ */ react_default.createElement("div", {
-    className: "app"
-  }, /* @__PURE__ */ react_default.createElement(Toolbar, {
-    input: /* @__PURE__ */ react_default.createElement(Input, {
-      value: name,
-      onInput: setName
-    }),
-    button: /* @__PURE__ */ react_default.createElement(Button, {
-      caption: "Click me!",
-      onClick: () => alert(`Hello, ${name}!`)
-    })
-  }), /* @__PURE__ */ react_default.createElement(List, null, ["This", "is", "example"].map((text) => /* @__PURE__ */ react_default.createElement(ListItem, {
-    key: text,
-    caption: text
-  }))));
+  return /* @__PURE__ */ react_default.createElement("div", { className: "app" }, /* @__PURE__ */ react_default.createElement(
+    Toolbar,
+    {
+      input: /* @__PURE__ */ react_default.createElement(Input, { value: name, onInput: setName }),
+      button: /* @__PURE__ */ react_default.createElement(
+        Button,
+        {
+          caption: "Click me!",
+          onClick: () => alert(`Hello, ${name}!`)
+        }
+      )
+    }
+  ), /* @__PURE__ */ react_default.createElement(List, null, ["This", "is", "example"].map((text) => /* @__PURE__ */ react_default.createElement(ListItem, { key: text, caption: text }))));
 }
 function Toolbar({
   input,
   button
 }) {
-  return /* @__PURE__ */ react_default.createElement("div", {
-    id: "toolbar"
-  }, input, button);
+  return /* @__PURE__ */ react_default.createElement("div", { id: "toolbar" }, input, button);
 }
 function Input({
   value,
   onInput
 }) {
-  return /* @__PURE__ */ react_default.createElement("input", {
-    value,
-    onChange: (e) => onInput(e.target.value)
-  });
+  return /* @__PURE__ */ react_default.createElement(
+    "input",
+    {
+      value,
+      onChange: (e) => onInput(e.target.value)
+    }
+  );
 }
 function Button({
   caption,
   onClick
 }) {
-  return /* @__PURE__ */ react_default.createElement("button", {
-    onClick
-  }, caption);
+  return /* @__PURE__ */ react_default.createElement("button", { onClick }, caption);
 }
 function ListItem({ caption }) {
   return /* @__PURE__ */ react_default.createElement("li", null, caption);
@@ -969,17 +937,21 @@ function App() {
       setUser
     );
   }, []);
-  return /* @__PURE__ */ react_default.createElement(Settings.Provider, {
-    value: { darkmode: false }
-  }, /* @__PURE__ */ react_default.createElement(Header, {
-    title: "Demo app for a screenshot",
-    datetime: new Date(),
-    user
-  }), /* @__PURE__ */ react_default.createElement(List3, {
-    items: items || [],
-    limit: 10,
-    selectedId: Math.round(selectedId || 1)
-  }), /* @__PURE__ */ react_default.createElement(Overlay, null));
+  return /* @__PURE__ */ react_default.createElement(Settings.Provider, { value: { darkmode: false } }, /* @__PURE__ */ react_default.createElement(
+    Header,
+    {
+      title: "Demo app for a screenshot",
+      datetime: /* @__PURE__ */ new Date(),
+      user
+    }
+  ), /* @__PURE__ */ react_default.createElement(
+    List3,
+    {
+      items: items || [],
+      limit: 10,
+      selectedId: Math.round(selectedId || 1)
+    }
+  ), /* @__PURE__ */ react_default.createElement(Overlay, null));
 }
 function Avatar({ name, image }) {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, "[", image, "] ", name);
@@ -990,15 +962,17 @@ function ListItem2({
   selected
 }) {
   const [localChecked, setChecked] = react_default.useState(checked);
-  return /* @__PURE__ */ react_default.createElement("li", {
-    className: [
-      localChecked ? "done" : "incomplete",
-      selected ? "selected" : ""
-    ].filter(Boolean).join(" ")
-  }, /* @__PURE__ */ react_default.createElement(Checkbox, {
-    checked: localChecked,
-    onChange: setChecked
-  }), caption);
+  return /* @__PURE__ */ react_default.createElement(
+    "li",
+    {
+      className: [
+        localChecked ? "done" : "incomplete",
+        selected ? "selected" : ""
+      ].filter(Boolean).join(" ")
+    },
+    /* @__PURE__ */ react_default.createElement(Checkbox, { checked: localChecked, onChange: setChecked }),
+    caption
+  );
 }
 function Checkbox({
   checked,
@@ -1010,24 +984,29 @@ function Checkbox({
       setTimeout(() => onChange(false));
     }
   }, [checked]);
-  return /* @__PURE__ */ react_default.createElement("input", {
-    className: darkmode ? "darkmode" : "lightmode",
-    type: "checkbox",
-    checked,
-    onChange: (e) => onChange(e.target.checked)
-  });
+  return /* @__PURE__ */ react_default.createElement(
+    "input",
+    {
+      className: darkmode ? "darkmode" : "lightmode",
+      type: "checkbox",
+      checked,
+      onChange: (e) => onChange(e.target.checked)
+    }
+  );
 }
 function Overlay() {
   const [visible, setVisible] = react_default.useState(true);
   if (!visible) {
     return null;
   }
-  return /* @__PURE__ */ react_default.createElement("div", {
-    className: "react-overlay"
-  }, /* @__PURE__ */ react_default.createElement("button", {
-    style: { position: "absolute", bottom: 0 },
-    onClick: () => setVisible(false)
-  }, "x"));
+  return /* @__PURE__ */ react_default.createElement("div", { className: "react-overlay" }, /* @__PURE__ */ react_default.createElement(
+    "button",
+    {
+      style: { position: "absolute", bottom: 0 },
+      onClick: () => setVisible(false)
+    },
+    "x"
+  ));
 }
 function Loader({ children }) {
   return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, children);
@@ -1062,10 +1041,7 @@ var init_screenshot_demo = __esm({
     }) {
       const formattedDate = useFormattedDate(datetime);
       const avatar = react_default.useMemo(
-        () => user ? /* @__PURE__ */ react_default.createElement(Avatar, {
-          name: user.name,
-          image: user.avatar
-        }) : /* @__PURE__ */ react_default.createElement(Loader, null, /* @__PURE__ */ react_default.createElement(AvatarPlaceholder, null)),
+        () => user ? /* @__PURE__ */ react_default.createElement(Avatar, { name: user.name, image: user.avatar }) : /* @__PURE__ */ react_default.createElement(Loader, null, /* @__PURE__ */ react_default.createElement(AvatarPlaceholder, null)),
         [user?.name, user?.avatar]
       );
       return /* @__PURE__ */ react_default.createElement("h1", null, avatar, title, " (", formattedDate, ")");
@@ -1084,12 +1060,15 @@ var init_screenshot_demo = __esm({
       if (!items || !items.length) {
         return /* @__PURE__ */ react_default.createElement(Loader, null, "loading...");
       }
-      return /* @__PURE__ */ react_default.createElement("ul", null, items.slice(0, limit).map((item) => /* @__PURE__ */ react_default.createElement(ListItem2, {
-        key: item.id,
-        selected: item.id === selectedId,
-        caption: item.caption,
-        checked: item.checked
-      })));
+      return /* @__PURE__ */ react_default.createElement("ul", null, items.slice(0, limit).map((item) => /* @__PURE__ */ react_default.createElement(
+        ListItem2,
+        {
+          key: item.id,
+          selected: item.id === selectedId,
+          caption: item.caption,
+          checked: item.checked
+        }
+      )));
     });
     List3.displayName = "List";
     __name(ListItem2, "ListItem");
@@ -1400,9 +1379,7 @@ Promise.all(cases_default).then((testCases) => {
         continue;
       }
       renderedTestCases.add(testCaseWrapper);
-      render(contentEl, /* @__PURE__ */ react_default.createElement(Root14, {
-        title
-      }));
+      render(contentEl, /* @__PURE__ */ react_default.createElement(Root14, { title }));
     }
   }, "syncSelectedTestCase");
   syncSelectedTestCase();
