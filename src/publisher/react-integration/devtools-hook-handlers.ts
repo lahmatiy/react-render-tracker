@@ -1382,7 +1382,10 @@ export function createReactDevtoolsHookHandlers(
 
     // TODO: relying on this seems a bit fishy.
     const wasMounted =
-      alternate !== null && Boolean(alternate.memoizedState?.element);
+      alternate !== null &&
+      Boolean(alternate.memoizedState?.element) &&
+      // A dehydrated root is not considered mounted
+      alternate.memoizedState.isDehydrated !== true;
     const isMounted = Boolean(current.memoizedState?.element);
 
     recordCommitStart(root, !wasMounted && isMounted);

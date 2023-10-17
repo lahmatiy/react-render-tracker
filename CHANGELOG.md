@@ -1,3 +1,7 @@
+## next
+
+- Fixed tracking of mounts for hydrated trees (#37)
+
 ## 0.7.5 (October 6, 2023)
 
 - Added tracking for all known React hooks
