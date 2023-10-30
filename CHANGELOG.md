@@ -1,4 +1,4 @@
-## next
+## 0.7.6 (October 17, 2023)
 
 - Fixed tracking of mounts for hydrated trees (#37)
 
