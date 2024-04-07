@@ -6,13 +6,9 @@ React Render Tracker – a tool to discover performance issues related to uninte
 
 React Render Tracker (RRT) presents component’s tree state over the time and an event log related to a selected component (fiber) or its subtree. It doesn't provide a complete state of the components, but the difference between their states. It's not a replacement for React Devtools, but a compliment to it with a focus on investigation of changes in app's component tree (like mounts, updates and unmounts) and their causes.
 
-[React Render Tracker v0.6 – Overview & Instructions](https://www.icloud.com/keynote/0bBreStPiyDi5wJVTFoqpoPeA#React_Render_Tracker_overview) ([PDF version](https://github.com/lahmatiy/react-render-tracker/files/7963996/React.Render.Tracker.overview.rev.nov.23.2021.pdf))
+[React Render Tracker v0.6 – Overview & Instructions](https://github.com/lahmatiy/react-render-tracker/files/7963996/React.Render.Tracker.overview.rev.nov.23.2021.pdf)
 
-Supported: React v16.9+ (fully functional for a React development build, for build & production builds is not capturing some data, see [issue #25](https://github.com/lahmatiy/react-render-tracker/issues/25))
-
-> STATUS: MVP / proof of concept
->
-> The project is at an early stage of development. Lots of things have yet to be added and polished (see [roadmap](https://github.com/lahmatiy/react-render-tracker/issues/6)). Feel free to create an issue if you found a bug or have an idea.
+Supported React v16.9+ (fully functional for a React development build, but for profiling and production builds it is not capturing some data, see [issue #25](https://github.com/lahmatiy/react-render-tracker/issues/25))
 
 ![Demo](https://github.com/lahmatiy/react-render-tracker/assets/270491/f57ca526-c80c-481c-b701-542a95e8d20c)
 
