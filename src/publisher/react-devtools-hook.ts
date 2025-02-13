@@ -155,7 +155,7 @@ export function installReactDevtoolsHook(
 ) {
   const existingHook = target[hookName];
 
-  if (target.hasOwnProperty(hookName)) {
+  if (existingHook && target.hasOwnProperty(hookName)) {
     if (existingHook[MARKER] === MARKER) {
       return existingHook;
     }
