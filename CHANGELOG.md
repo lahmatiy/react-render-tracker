@@ -1,3 +1,7 @@
+## 0.7.7 (February 13, 2023)
+
+- Fixed crash when React's global devtools hook is defined but `undefined` (#42)
+
 ## 0.7.6 (October 17, 2023)
 
 - Fixed tracking of mounts for hydrated trees (#37)
