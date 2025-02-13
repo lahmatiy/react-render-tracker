@@ -508,7 +508,7 @@ var init_hooks = __esm({
     __name(badNameHook, "badNameHook");
     evalHook = new Function("useBar", "return () => useBar()")(useBar);
     anonymousHook = /* @__PURE__ */ __name(() => useBar(), "anonymousHook");
-    anonymousHookFactory = (() => () => useBar())();
+    anonymousHookFactory = /* @__PURE__ */ (() => () => useBar())();
     Child6 = react_default.forwardRef(/* @__PURE__ */ __name(function Child7({ prop = 123 }, ref) {
       react_default.useImperativeHandle(
         ref,
