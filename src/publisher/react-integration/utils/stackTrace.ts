@@ -9,6 +9,9 @@ const hasOwn =
 type LineParseResult = null | {
   name: string;
   loc: string | null;
+  evalOrigin: string | null;
+  evalLoc: string | null;
+  evalMaybeSourceUrl: string | null;
 };
 
 function lazyParseArray<T extends string | NodeJS.CallSite>(
@@ -25,7 +28,18 @@ function lazyParseArray<T extends string | NodeJS.CallSite>(
         if (isFinite(index) && hasOwn(array, prop)) {
           // Check if the value at the index is already parsed
           if (typeof cache[index] === "undefined") {
-            cache[index] = parse(array[index]);
+            const res = parse(array[index]);
+
+            if (
+              res &&
+              res.loc === null &&
+              res.evalMaybeSourceUrl &&
+              /[.\/\\]/.test(res.evalMaybeSourceUrl)
+            ) {
+              res.loc = `${res.evalMaybeSourceUrl}${res.evalLoc || ""}`;
+            }
+
+            cache[index] = res;
           }
 
           return cache[index];
@@ -34,7 +48,7 @@ function lazyParseArray<T extends string | NodeJS.CallSite>(
 
       return (target as any)[prop];
     },
-  });
+  }) as unknown as LineParseResult[];
 }
 
 export function extractCallLoc(depth: number) {
@@ -59,7 +73,7 @@ export function getParsedStackTrace(skip = 1, limit = 25) {
       return "";
     };
 
-    let result: NodeJS.CallSite[] | string[] | null = null;
+    let result: LineParseResult[] | null = null;
     const stack = new Error().stack;
 
     if (result === null && stack) {
@@ -71,21 +85,51 @@ export function getParsedStackTrace(skip = 1, limit = 25) {
       );
     }
 
-    return (result || []) as unknown as LineParseResult[]; // TS doesn't handle Proxy right
+    return [...(result || [])];
   } finally {
     Error.stackTraceLimit = prevStackTraceLimit;
     Error.prepareStackTrace = prevPrepareStackTrace;
   }
 }
 
-function parseCallSite(
+function buildLoc(line: number | null, column: number | null) {
+  let res = "";
+
+  if (line !== null) {
+    res = ":" + line;
+    if (column !== null) {
+      res += ":" + column;
+    }
+  }
+
+  return res;
+}
+
+function getLocFromCallSite(
   callSite: NodeJS.CallSite & { getScriptNameOrSourceURL?: () => string | null }
 ) {
   const filename =
     typeof callSite.getScriptNameOrSourceURL === "function"
       ? callSite.getScriptNameOrSourceURL()
-      : callSite.getFileName();
+      : callSite.getFileName?.();
+
+  return filename
+    ? `${filename}${buildLoc(
+        callSite.getLineNumber(),
+        callSite.getColumnNumber()
+      )}`
+    : null;
+}
+
+function parseCallSite(
+  callSite: NodeJS.CallSite & { getScriptNameOrSourceURL?: () => string | null }
+) {
+  const callSiteEvalOrigin = callSite.getEvalOrigin();
+  let loc = getLocFromCallSite(callSite);
   let functionName = callSite.getFunctionName();
+  let evalOrigin = null;
+  let evalLoc = null;
+  let evalMaybeSourceUrl = null;
 
   if (functionName !== null && functionName.includes(".")) {
     const typeName = callSite.getTypeName();
@@ -98,11 +142,36 @@ function parseCallSite(
     }
   }
 
+  if (
+    typeof callSiteEvalOrigin === "string" &&
+    callSiteEvalOrigin.startsWith("eval at")
+  ) {
+    const evalOriginParseResult = parseChrome(callSiteEvalOrigin.slice(5));
+
+    if (evalOriginParseResult) {
+      evalOrigin = evalOriginParseResult.loc;
+      evalMaybeSourceUrl = evalOriginParseResult.name;
+      evalLoc =
+        buildLoc(callSite.getLineNumber(), callSite.getColumnNumber()) || null;
+      loc = null;
+    }
+  }
+
   return {
-    loc: filename
-      ? `${filename}:${callSite.getLineNumber()}:${callSite.getColumnNumber()}`
-      : null,
+    loc,
     name: functionName || UNKNOWN_FUNCTION,
+    evalOrigin,
+    evalLoc,
+    evalMaybeSourceUrl,
+    // dump: Object.getOwnPropertyNames(callSite.constructor.prototype).reduce(
+    //   (dump, k) => {
+    //     if (/^(is|get)/.test(k)) {
+    //       dump[k] = callSite[k]();
+    //     }
+    //     return dump;
+    //   },
+    //   {}
+    // ),
   };
 }
 
@@ -110,32 +179,63 @@ export function parseStackTraceLine(line: string): LineParseResult {
   return parseChrome(line) || parseGecko(line) || parseJSC(line);
 }
 
-const chromeRe =
-  /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)?\)?\s*$/i;
-const chromeRe2 =
-  /^\s*at ()((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)\s*$/i;
+const chromeRe = /^\s*at (.*?)\s*\((.*?)\)?\s*$/i;
+const chromeRefRx =
+  /^(?:eval at|file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\.{0,2}\/|[a-z]:\\|\\\\)/;
 const chromeEvalRe = /\((\S*)\)/;
 
 function parseChrome(line: string): LineParseResult {
-  const parts = chromeRe.exec(line) || chromeRe2.exec(line);
+  const parts = chromeRe.exec(line);
 
   if (!parts) {
     return null;
   }
 
-  let loc = parts[2];
-  const isNative = loc && loc.indexOf("native") === 0; // start of line
-  const isEval = loc && loc.indexOf("eval") === 0; // start of line
+  const ref = parts[2];
 
-  const submatch = chromeEvalRe.exec(loc);
-  if (isEval && submatch != null) {
-    // throw out eval line/column and use top-most line/column number
-    loc = submatch[1]; // url
+  if (!chromeRefRx.test(ref)) {
+    return null;
+  }
+
+  let loc = parts[2] || null;
+  let evalOrigin = null;
+  let evalMaybeSourceUrl = null;
+  let evalLoc = null;
+
+  if (loc) {
+    if (loc.startsWith("native")) {
+      loc = null;
+    } else {
+      const isEval = loc && loc.startsWith("eval"); // start of line
+
+      if (loc.startsWith("eval at")) {
+        const innerLoc = loc.match(/(?:,\s*\S+)?(:\d+:\d+)$/);
+        const inner = parseChrome(
+          loc.slice(5, innerLoc ? -innerLoc[0].length : undefined)
+        );
+
+        if (inner !== null) {
+          evalOrigin = inner.loc;
+          evalLoc = innerLoc?.[1] || null;
+          evalMaybeSourceUrl = inner.name;
+          loc = null;
+        }
+      } else {
+        const submatch = chromeEvalRe.exec(loc);
+        if (isEval && submatch != null) {
+          // throw out eval line/column and use top-most line/column number
+          loc = submatch[1]; // url
+        }
+      }
+    }
   }
 
   return {
-    loc: !isNative ? parts[2] : null,
+    loc,
     name: parts[1] || UNKNOWN_FUNCTION,
+    evalOrigin,
+    evalLoc,
+    evalMaybeSourceUrl,
   };
 }
 
@@ -167,6 +267,9 @@ function parseGecko(line: string): LineParseResult {
   return {
     loc: parts[3],
     name: name || UNKNOWN_FUNCTION,
+    evalOrigin: null,
+    evalLoc: null,
+    evalMaybeSourceUrl: null,
   };
 }
 
@@ -182,5 +285,8 @@ function parseJSC(line: string): LineParseResult {
   return {
     loc: parts[3],
     name: parts[1] || UNKNOWN_FUNCTION,
+    evalLoc: null,
+    evalOrigin: null,
+    evalMaybeSourceUrl: null,
   };
 }

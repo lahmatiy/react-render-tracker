@@ -1,3 +1,7 @@
+## next
+
+- Fixed location retrieval for evaled code without a `//# sourceURL=...` comment. Although using `eval` is considered an anti-pattern, it is widely used in dev builds by bundlers like webpack and rspack as a module wrapper. When the comment is missing, the call site entry string format in the stack trace changes. This update adds parsing support for such entries in V8 stack traces to ensure correct behavior.
+
 ## 0.7.7 (February 13, 2023)
 
 - Fixed crash when React's global devtools hook is defined but `undefined` (#42)
